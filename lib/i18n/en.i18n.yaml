@@ -1,0 +1,24 @@
+app:
+  title: My App
+common:
+  hello: Hello
+  welcome: Welcome to {appName}   # ✅ 正确
+  itemCount:
+    zero: No items
+    one: 1 item
+    other: "{count} items"
+  gender:
+    male: He
+    female: She
+    other: They
+home:
+  title: Home
+  greeting: Welcome back, {name}!
+  lastLogin: "Last login: {date}"
+settings:
+  title: Settings
+  language: Language
+  theme: Theme
+  darkMode: Dark Mode
+  zh: Chinese
+  en: English

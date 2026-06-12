@@ -1,0 +1,24 @@
+app:
+  title: 我的应用
+common:
+  hello: 你好
+  welcome: Welcome to {appName}
+  itemCount:
+    zero: 空
+    one: 1个
+    other: "{count}个"
+  gender:
+    male: 他
+    female: 她
+    other: 他们
+home:
+  title: 首页
+  greeting: 欢迎回来，{name}！
+  lastLogin: 上次登录时间：{date}
+settings:
+  title: 设置
+  language: 语言
+  theme: 主题
+  darkMode: 深色模式
+  zh: 中文
+  en: 英文

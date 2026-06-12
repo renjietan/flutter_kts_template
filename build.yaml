@@ -1,0 +1,59 @@
+targets:
+  $default:
+    builders:
+      objectbox_generator:
+        options:
+          output_dir: lib/core/databaseManager
+      slang_build_runner:
+        options:
+          base_locale: zh # 基础语言。【默认：en】
+          # 注意此处使用 base_locale 否则无法支持模板语法
+          fallback_strategy: base_locale # 兜底策略。【默认：none】【可选值：none, base_locale, base_locale_empty_string】
+          input_directory: lib/i18n # 输入目录。【默认：null】
+          input_file_pattern: .yaml # 输入文件格式。【默认：.i18n.json】
+          output_directory: lib/i18n/handle # 输出目录。【默认：null】
+          output_file_name: translations.g.dart # 输出文件名。【默认：translations.g.dart】
+          flat_map: false # 生成扁平化map。【默认：true】
+          # 以下默认⬇️
+          lazy: true # 懒加载副语言，只对Web平台生效。【默认：true】
+          locale_handling: true # 生成`LocaleSettings`, `t`等。【默认：true】
+          flutter_integration: true # 集成到 flutter 项目中。【默认：true】
+          use_icu: true  # 开启对 ICU 消息格式的支持，以使用上述功能
+          namespaces: false # 拆分输入文件，以命名空间区分。【默认：false】
+          translate_var: t # 翻译对象变量的名称。【默认：t】
+          enum_name: AppLocale # 枚举类的名称。【默认：AppLocale】
+          class_name: Translations # 翻译类的名称。【默认：Translations】
+          translation_class_visibility: private # 翻译类的可见性。【默认：private】【可选值：public, private】
+          key_case: null # 键名转换。【默认：null】【可选值：null, camel, pascal, snake】
+          key_map_case: null # 键名映射转换。【默认：null】【可选值：null, camel, pascal, snake】
+          param_case: null # 参数转换。【默认：null】【可选值：null, camel, pascal, snake】
+          sanitization:
+            enabled: true # 启用清理，当key是保留关键字时，会添加前缀。【默认：true】
+            prefix: k # 前缀。【默认：k】
+            case: camel # 转换方式。【默认：camel】【可选值：camel, pascal, snake】
+          string_interpolation: braces # 字符串插值语法。【默认：dart】【可选值：dart, braces, double_braces】
+          interpolation: true
+          translation_overrides: false # 翻译覆盖，不详。【默认：false】
+          timestamp: true # 记录生成的时间戳（文件顶部注释）。【默认：true】
+          statistics: true # 生成统计信息，语言数、字符串数（文件顶部注释）。【默认：true】
+          maps: [] # 指定map访问的key，大型项目用得上。【默认：[]】
+          pluralization: # 复数相关的配置
+            auto: cardinal
+            default_parameter: n
+            cardinal: []
+            ordinal: []
+          contexts: # 上下文相关（用于比如区分性别的称呼的场景），详见官方文档
+          obfuscation:
+            enabled: false # 混淆生成代码，防止简单查找，由于密钥在文件中，所以可被破解。【默认：false】
+            secret: null # 混淆密钥，null代表随机密钥。【默认：null】
+          format:
+            enabled: false # 对生成代码格式化，关闭以提高生成速度。【默认：false】
+            width: null # 最大宽度。【默认：null】
+
+      go_router_builder:
+        import: "package:go_router_builder/go_router_builder.dart"
+        builder_factories: [ "goRouterBuilder" ]
+        build_extensions: { ".dart": [ "go_router.g.part" ] }
+        auto_apply: dependents
+        build_to: cache
+        applies_builders: [ "source_gen|combining_builder" ]
