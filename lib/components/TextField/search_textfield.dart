@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-class SearchText extends StatelessWidget {
+class SearchTextfield extends StatelessWidget {
   final TextEditingController? controller;
   final String? hintText;
   final ValueChanged<String>? onChanged;
@@ -10,7 +9,7 @@ class SearchText extends StatelessWidget {
   final bool enabled;
   final IconData searchIcon;
 
-  const SearchText({
+  const SearchTextfield({
     super.key,
     this.controller,
     this.hintText = '搜索',
@@ -30,24 +29,20 @@ class SearchText extends StatelessWidget {
       onChanged: onChanged,
       onSubmitted: (_) => onSubmitted?.call(),
       enabled: enabled,
-      style: const TextStyle(
+      style: TextStyle(
         color: Colors.white, // 输入文字白色
-        fontSize: 14,
+        fontSize: 14.sp,
       ),
       decoration: InputDecoration(
         filled: true,
         fillColor: backgroundColor,
         hintText: hintText,
-        hintStyle: const TextStyle(
+        hintStyle: TextStyle(
           color: Colors.white70, // 提示文字半透明白色
-          fontSize: 14,
+          fontSize: 14.sp,
         ),
         // 右侧搜索图标（置于后面）
-        suffixIcon: Icon(
-          searchIcon,
-          color: Colors.white70,
-          size: 20,
-        ),
+        suffixIcon: Icon(searchIcon, color: Colors.white70, size: 20.w),
         // 移除所有边框效果
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
@@ -70,10 +65,7 @@ class SearchText extends StatelessWidget {
           borderSide: BorderSide.none,
         ),
         // 确保文字不会覆盖图标：给右侧留出图标宽度+间距
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 12,
-          vertical: 5,
-        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
       ),
     );
   }

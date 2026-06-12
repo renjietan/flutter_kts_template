@@ -1,4 +1,4 @@
-package com.example.flutter_kts_template
+package com.hytera.CPD
 
 import io.flutter.embedding.android.FlutterActivity
 
