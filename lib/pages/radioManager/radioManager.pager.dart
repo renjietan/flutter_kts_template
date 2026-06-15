@@ -1,7 +1,10 @@
 import 'package:composable_data_table/composable_data_table.dart';
+import 'package:flare_button/flare_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_kts_template/pages/radioManager/radio.model.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import '../../logger/logger.dart';
 import '../../theme/table.theme.dart';
 
 class RadioManagerPager extends StatefulWidget {
@@ -24,7 +27,6 @@ class _RadioManagerPagerState extends State<RadioManagerPager>
   final bool _showCheckboxes = true;
   late List<User> _allUsers;
   List<User> _filteredUsers = [];
-
 
   int _currentPage = 1;
   int _pageSize = 10;
@@ -49,10 +51,10 @@ class _RadioManagerPagerState extends State<RadioManagerPager>
     _filteredUsers = _allUsers.where((user) {
       if (_searchQuery.isNotEmpty) {
         final query = _searchQuery.toLowerCase();
-        if (!user.name.toLowerCase().contains(query) &&
-            !user.email.toLowerCase().contains(query) &&
+        if (!user.field1.toLowerCase().contains(query) &&
+            !user.field2.toLowerCase().contains(query) &&
             !user.id.toLowerCase().contains(query) &&
-            !user.department.toLowerCase().contains(query)) {
+            !user.field3.toLowerCase().contains(query)) {
           return false;
         }
       }
@@ -151,7 +153,10 @@ class _RadioManagerPagerState extends State<RadioManagerPager>
                     _allSelected
                         ? 'Deselect All'
                         : 'Select All (${_paginatedUsers.length})',
-                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
                 actions: [
@@ -223,7 +228,7 @@ class _RadioManagerPagerState extends State<RadioManagerPager>
                     actionLabel: 'Actions',
                     emptyWidget: _buildEmptyWidget(),
                     // 在列头下方显示[字段描述]
-                    showColumnInfo: false,
+                    showColumnInfo: _showColumnInfo,
                     // 显示字段描述, showColumnInfo 设置为 false 时,此处无效
                     onToggleColumnInfo: () =>
                         setState(() => _showColumnInfo = !_showColumnInfo),
@@ -253,12 +258,17 @@ class _RadioManagerPagerState extends State<RadioManagerPager>
     );
   }
 
-
   Widget _buildToolbar() {
     return TableFilterToolbar(
       mainFilters: [
+        Text(
+          "电台管理",
+          style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w500),
+        ),
+      ],
+      trailingActions: [
         FilterSearchField(
-          hint: 'Search by name, email, ID...',
+          hint: 'Search...',
           onChanged: (value) {
             setState(() {
               _searchQuery = value;
@@ -266,8 +276,22 @@ class _RadioManagerPagerState extends State<RadioManagerPager>
             });
           },
         ),
-      ],
-      trailingActions: [
+        FlareButton(
+          textStyle: TextStyle(fontSize: 16, color: Colors.white),
+          label: "添加电台",
+          width: 120,
+          height: 38,
+          borderRadius: 5,
+          colors: const [
+            Color(0xFF00A2E9),
+            Color(0xFF00A2E9),
+            Color(0xFF00A2E9),
+            Color(0xFF00A2E9),
+          ],
+          onPressed: () {
+            GlobalLogger.logDebug("添加电台");
+          },
+        ),
         FilterResetButton(
           onReset: () {
             setState(() {
@@ -283,70 +307,28 @@ class _RadioManagerPagerState extends State<RadioManagerPager>
   List<ColumnDefinition<User>> _buildColumns() {
     return [
       ColumnDefinition<User>(
-        label: 'ID',
-        description: 'Unique user identifier',
+        label: '电台别名',
+        description: '自定义的电台别名',
         size: const ColumnSize.auto(),
-        cellBuilder: TextCellBuilder.monospace<User>((u) => u.id),
+        cellBuilder: TextCellBuilder.text<User>((u) => u.field1),
       ),
       ColumnDefinition<User>(
-        label: 'Name',
-        description: 'Full name of the user',
+        label: '使用人',
+        description: '电台的使用人',
         flex: 2,
-        cellBuilder: (user) => Text(
-          user.name,
-          style: const TextStyle(fontWeight: FontWeight.w500),
-        ),
+        cellBuilder: TextCellBuilder.text<User>((u) => u.field2),
       ),
       ColumnDefinition<User>(
-        label: 'Email',
-        description: 'Work email address',
+        label: '位置',
+        description: '电台位置',
         flex: 3,
-        cellBuilder: TextCellBuilder.text<User>(
-              (u) => u.email,
-          overflow: TextOverflow.ellipsis,
-        ),
+        cellBuilder: TextCellBuilder.text<User>((u) => u.field3),
       ),
       ColumnDefinition<User>(
-        label: 'Dept',
-        description: 'Organizational department',
+        label: 'SN',
+        description: '电台SN号',
         size: const ColumnSize.auto(),
-        cellBuilder: TextCellBuilder.text<User>((u) => u.department),
-      ),
-      ColumnDefinition<User>(
-        label: 'Role',
-        description: 'Permission level',
-        size: const ColumnSize.auto(),
-        cellBuilder: TextCellBuilder.text<User>((u) => u.role.toString()),
-      ),
-      ColumnDefinition<User>(
-        label: 'Status',
-        description: 'Account status',
-        size: const ColumnSize.auto(),
-        cellBuilder: TextCellBuilder.text<User>((u) => u.status.toString()),
-      ),
-      ColumnDefinition<User>(
-        label: 'Created',
-        description: 'Account creation date',
-        size: const ColumnSize.auto(),
-        cellBuilder: TextCellBuilder.text<User>((u) => u.formattedCreatedAt),
-      ),
-      ColumnDefinition<User>(
-        label: 'Last Login',
-        description: 'Most recent login time',
-        flex: 2,
-        cellBuilder: TextCellBuilder.text<User>((u) => u.formattedLastLogin),
-      ),
-      ColumnDefinition<User>(
-        label: 'Logins',
-        description: 'Total login count',
-        size: const ColumnSize.auto(),
-        cellBuilder: TextCellBuilder.monospace<User>((u) => u.loginCount.toString()),
-      ),
-      ColumnDefinition<User>(
-        label: 'Score',
-        description: 'Performance score (0-100)',
-        size: const ColumnSize.auto(),
-        cellBuilder: TextCellBuilder.text<User>((u) => u.score.toString()),
+        cellBuilder: TextCellBuilder.text<User>((u) => u.field4),
       ),
     ];
   }
@@ -356,48 +338,33 @@ class _RadioManagerPagerState extends State<RadioManagerPager>
       mainAxisSize: MainAxisSize.min,
       children: [
         IconButton(
-          icon: Icon(Icons.edit_outlined, size: 18, color: _isDark ? Colors.orange[300] : Colors.orange),
+          icon: Icon(
+            Icons.edit_outlined,
+            size: 18,
+            color: _isDark ? Colors.white : Colors.orange,
+          ),
           tooltip: 'Edit',
-          onPressed: () => _showUserDialog(user, 'Edit'),
+          onPressed: () {
+            // 编辑按钮
+          },
           padding: EdgeInsets.zero,
           constraints: const BoxConstraints(),
         ),
-        const SizedBox(width: 8),
+        const SizedBox(width: 16),
         IconButton(
-          icon: Icon(Icons.delete_outline, size: 18, color: _isDark ? Colors.red[300] : Colors.red),
+          icon: Icon(
+            Icons.delete_outline,
+            size: 18,
+            color: _isDark ? Colors.white : Colors.red,
+          ),
           tooltip: 'Delete',
-          onPressed: () => _showUserDialog(user, 'Delete'),
+          onPressed: () {
+            // 删除按钮
+          },
           padding: EdgeInsets.zero,
           constraints: const BoxConstraints(),
         ),
       ],
-    );
-  }
-
-  void _showUserDialog(User user, String action) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('$action User'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('ID: ${user.id}'),
-            Text('Name: ${user.name}'),
-            Text('Email: ${user.email}'),
-            Text('Department: ${user.department}'),
-            Text('Role: ${user.roleLabel}'),
-            Text('Status: ${user.statusLabel}'),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
-          ),
-        ],
-      ),
     );
   }
 
@@ -407,16 +374,26 @@ class _RadioManagerPagerState extends State<RadioManagerPager>
       child: Center(
         child: Column(
           children: [
-            Icon(Icons.search_off, size: 48, color: _isDark ? Colors.grey[600] : Colors.grey[400]),
+            Icon(
+              Icons.search_off,
+              size: 48,
+              color: _isDark ? Colors.grey[600] : Colors.grey[400],
+            ),
             const SizedBox(height: 12),
             Text(
               'No users found',
-              style: TextStyle(fontSize: 14, color: _isDark ? Colors.grey[500] : Colors.grey[600]),
+              style: TextStyle(
+                fontSize: 14,
+                color: _isDark ? Colors.grey[500] : Colors.grey[600],
+              ),
             ),
             const SizedBox(height: 8),
             Text(
               'Try adjusting your filters',
-              style: TextStyle(fontSize: 12, color: _isDark ? Colors.grey[600] : Colors.grey[500]),
+              style: TextStyle(
+                fontSize: 12,
+                color: _isDark ? Colors.grey[600] : Colors.grey[500],
+              ),
             ),
           ],
         ),
