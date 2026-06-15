@@ -4,7 +4,8 @@ import 'package:flutter_kts_template/pages/layout/sideMenu/sideMenu.mixin.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class SideMenu extends StatefulWidget {
-  const SideMenu({super.key});
+  final void Function(int index) onSelected;
+  const SideMenu({super.key, required this.onSelected});
 
   @override
   State<SideMenu> createState() => _SideMenuState();
@@ -21,7 +22,7 @@ class _SideMenuState extends State<SideMenu> with SideMenuMixin {
           physics: const BouncingScrollPhysics(),
           child: Column(
             children: [
-              ...buildMenuItems(context),
+              ...buildMenuItems(context, widget.onSelected),
               SizedBox(height: 24.h),
             ],
           ),

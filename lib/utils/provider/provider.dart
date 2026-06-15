@@ -8,8 +8,8 @@ import 'package:provider/provider.dart';
 import 'menu_provider.dart';
 
 //状态管理
-class Provider {
-  Provider._internal();
+class ProviderStore {
+  ProviderStore._internal();
 
   //全局初始化
   static MultiProvider init(Widget child) {
@@ -18,7 +18,7 @@ class Provider {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider.value(
-            value: UserProvider(Shared.getUserInfo())),
+            value: UserProvider("")),
         ChangeNotifierProvider.value(value: MenuProvider(0)),
         ChangeNotifierProvider.value(value: SideBarProvider(true)),
       ],

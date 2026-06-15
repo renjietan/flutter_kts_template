@@ -1,15 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_kts_template/pages/radioManager/radioManager.dart';
-import '../paramsInject/paramsInject.dart';
+import 'package:flutter_kts_template/pages/radioManager/radioManager.pager.dart';
+import '../paramsInject/paramsInject.pager.dart';
 import '../test_table.dart';
 
 mixin LayoutMixin<T extends StatefulWidget> on State<T> {
-    List<Widget> pages(BuildContext context) => [
-      ParamsInject(text: '页面1',),
-      RadioManager(),
-      ParamsInject(text: '页面1',),
-    ];
     Future<bool> showBackDialog(BuildContext context) async {
       return await showDialog<bool>(
         context: context,

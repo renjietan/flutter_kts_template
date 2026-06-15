@@ -27,7 +27,7 @@ mixin SideMenuMixin<T extends StatefulWidget> on State<T> {
   };
   int _selectedIndex = 0;
 
-  List<Widget> buildMenuItems(BuildContext ctx) {
+  List<Widget> buildMenuItems(BuildContext ctx, void Function(int) onSelected) {
     return List.generate(_menuItems.length, (index) {
       final item = _menuItems[index];
       final isSelected = _selectedIndex == index;
@@ -39,6 +39,7 @@ mixin SideMenuMixin<T extends StatefulWidget> on State<T> {
           setState(() {
             _selectedIndex = index;
             context.read<MenuProvider>().selectedIndex = index;
+            onSelected(index);
           });
         },
         child: Container(

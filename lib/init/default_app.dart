@@ -3,6 +3,7 @@ import 'dart:ui';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_kts_template/config/config.dart';
 import 'package:flutter_kts_template/pages/splash/splash.dart';
 import 'package:flutter_kts_template/router/router.dart';
@@ -24,20 +25,21 @@ class DefaultApp {
         return other ?? 'other';
       },
     );
-    // SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-    //   systemNavigationBarColor: Color(0xFF5AA6FD),
-    //   systemNavigationBarDividerColor: null,
-    //   statusBarColor: Colors.transparent,
-    //   systemNavigationBarIconBrightness: Brightness.light,
-    //   statusBarIconBrightness: Brightness.light,
-    //   statusBarBrightness: Brightness.light,
-    // ));
+    SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+      systemNavigationBarColor: Color(0xFF5AA6FD),
+      systemNavigationBarDividerColor: null,
+      statusBarColor: Colors.transparent,
+      systemNavigationBarIconBrightness: Brightness.light,
+      statusBarIconBrightness: Brightness.light,
+      statusBarBrightness: Brightness.light,
+    ));
 
-    Shared.init().then((value) => runApp(Provider.init(
-        TranslationProvider(
-          child: MyApp(),
-        ),
-    )));
+    runApp(ProviderStore.init(
+      TranslationProvider(
+        child: MyApp(),
+      ),
+    ));
+
   }
 }
 
@@ -65,10 +67,10 @@ class MyApp extends StatelessWidget {
             fontFamily: 'System',
             useMaterial3: true,
           ),
-          routerConfig: routers,
+          routerConfig: router,
         );
       },
-      child: SplashPage(), // 是否需要欢迎页面
+      // child: SplashPage(),
     );
     // return material_app();
   }

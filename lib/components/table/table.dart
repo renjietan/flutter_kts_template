@@ -13,7 +13,7 @@ class TableRender extends StatefulWidget {
   });
 
   @override
-  _TableRenderState createState() => _TableRenderState();
+  State<TableRender> createState() => _TableRenderState();
 }
 
 class _TableRenderState extends State<TableRender> {
