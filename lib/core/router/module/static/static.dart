@@ -1,10 +1,8 @@
-
 import 'package:shelf/shelf.dart';
 import 'package:shelf_router/shelf_router.dart';
 import 'package:shelf_static/shelf_static.dart';
 
-import '../module/base.dart';
-
+import '../base.dart';
 
 class StaticRoutes extends BaseRouteGroup {
   @override

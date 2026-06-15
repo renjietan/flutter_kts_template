@@ -8,14 +8,15 @@ import '../../utils/response.dart';
 
 class UserController {
   static Response getList(Request request) {
-
     final db = DatabaseManager.instance;
-    List<UserEntity> users =  db.getAll<UserEntity>();
+    List<UserEntity> users = db.getAll<UserEntity>();
     return ApiResponse.success(data: {'users': users.toList(), 'total': 3});
   }
+
   static Future<Response> create(Request request) async {
     final db = DatabaseManager.instance;
-    final Map<String, dynamic> params = request.context["params"] as Map<String, dynamic>;
+    final Map<String, dynamic> params =
+        request.context["params"] as Map<String, dynamic>;
     // 通过 异步 的方式 运行在后台，防止阻塞UI
     int id = await db.writeTransactionAsync((store, _params) {
       final userBox = store.box<UserEntity>();
