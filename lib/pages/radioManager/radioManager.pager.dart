@@ -21,18 +21,6 @@ class RadioManagerPager extends StatefulWidget {
 
 class _RadioManagerPagerState extends State<RadioManagerPager>
     with AutomaticKeepAliveClientMixin, RadioManagerMixin {
-  // final Set<String> selectedIds = {};
-  // final bool showCheckboxes = true;
-  // late List<User> allUsers;
-  // List<User> filteredUsers = [];
-  //
-  // int currentPage = 1;
-  // int pageSize = 10;
-  //
-  // String searchQuery = '';
-  //
-  // bool showColumnInfo = false;
-  //
 
   @override
   bool get wantKeepAlive => true;

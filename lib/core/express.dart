@@ -29,7 +29,7 @@ class Express {
         .addMiddleware(cors())
     // 注意: 这里必须使用 call 方法 重定向指针
         .addHandler(router.call);
-    _sev = await shelf_io.serve(handler, "localhost", int.parse(AppConfig.serverConfig.port));
+    _sev = await shelf_io.serve(handler, "0.0.0.0", int.parse(AppConfig.serverConfig.port));
     GlobalLogger.logInfo("Server start :${AppConfig.serverConfig.port}");
   }
   static Future<void> stop() async {

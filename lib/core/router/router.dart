@@ -14,7 +14,7 @@ class RouterRegistry {
   static Future<Router> init() async {
     final rootRouter = Router();
     // D:\work\flutter\test\flutter_kts_template\uploads
-    String uploadPath = await getUploadsDirectory();
+    String uploadPath = await getUploadsPath();
     final staticHandler = createStaticHandler(
       uploadPath,
       defaultDocument: null, // 不需要默认文档

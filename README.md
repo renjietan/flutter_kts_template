@@ -1,15 +1,20 @@
 # flutter_kts_template
 
 ### 版本说明
-- Flutter - 3.44.0
-- Gradle - 9.1.0-all
-- AGP - 9.0.1
+- Flutter - 3.38.10
+- Gradle - 8.14-all
+- AGP - 8.11.1
+- ktolin - 2.2.20
 
 ### 运行
 - 使用 Android Studio 单独打开 Android 文件夹，此时软件将自动构建 Grade
 - 构建完成后，重新打开项目即可
 
 ### TODO
+- 文件上传
+  - 本地路径: C:\Users\Administrator\Documents\uploads
+  - 远程路径: localhost:8080/uploads
+
 - 构建
     - 配置文件：build.yaml
     - 开发环境: flutter pub run build_runner watch

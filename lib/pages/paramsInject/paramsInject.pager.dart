@@ -1,3 +1,4 @@
+import 'package:composable_data_table/composable_data_table.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_kts_template/components/tree-view/tree-view.dart';
 import 'package:flutter_kts_template/pages/paramsInject/paramsInject.mixin.dart';
@@ -6,6 +7,7 @@ import 'package:reorderable_tree_list_view/reorderable_tree_list_view.dart';
 
 import '../../components/fileUploads/fileUploads.dart';
 import '../../icons/hy_icons.dart';
+import '../../theme/table.theme.dart';
 
 class ParamsInjectPager extends StatefulWidget {
   const ParamsInjectPager({super.key});
@@ -40,6 +42,14 @@ Widget _buildMasterTree(Future<List<Uri>> Function() future) {
     ),
     child: Column(
       children: [
+        DataTablePlusThemeProvider(
+          theme: getThemePreset(ThemePreset.dark),
+          child: FilterSearchField(
+              hint: '',
+              onChanged: (value) {
+              },
+          ),
+        ),
         Align(
           alignment: Alignment.centerLeft,
           child: Padding(
