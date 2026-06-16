@@ -1,13 +1,8 @@
 //默认App的启动
-import 'dart:ui';
-
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_kts_template/config/config.dart';
-import 'package:flutter_kts_template/pages/splash/splash.dart';
 import 'package:flutter_kts_template/router/router.dart';
-import 'package:flutter_kts_template/utils/shared.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -25,21 +20,18 @@ class DefaultApp {
         return other ?? 'other';
       },
     );
-    SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-      systemNavigationBarColor: Color(0xFF5AA6FD),
-      systemNavigationBarDividerColor: null,
-      statusBarColor: Colors.transparent,
-      systemNavigationBarIconBrightness: Brightness.light,
-      statusBarIconBrightness: Brightness.light,
-      statusBarBrightness: Brightness.light,
-    ));
-
-    runApp(ProviderStore.init(
-      TranslationProvider(
-        child: MyApp(),
+    SystemChrome.setSystemUIOverlayStyle(
+      const SystemUiOverlayStyle(
+        systemNavigationBarColor: Color(0xFF5AA6FD),
+        systemNavigationBarDividerColor: null,
+        statusBarColor: Colors.transparent,
+        systemNavigationBarIconBrightness: Brightness.light,
+        statusBarIconBrightness: Brightness.light,
+        statusBarBrightness: Brightness.light,
       ),
-    ));
+    );
 
+    runApp(ProviderStore.init(TranslationProvider(child: MyApp())));
   }
 }
 
@@ -57,16 +49,12 @@ class MyApp extends StatelessWidget {
           // 不显示页面中 DEBUG 横幅
           debugShowCheckedModeBanner: false,
           // navigatorKey: AppConfig.navigatorKey,
-          locale: TranslationProvider.of(context).flutterLocale, //设置这个可以使输入框文字垂直居中
+          locale: TranslationProvider.of(
+            context,
+          ).flutterLocale, //设置这个可以使输入框文字垂直居中
           supportedLocales: AppLocaleUtils.supportedLocales,
           localizationsDelegates: [...GlobalMaterialLocalizations.delegates],
-          theme: ThemeData(
-            // fontFamily: "PingFang", // 统一指定应用的字体。
-            brightness: Brightness.dark,
-            scaffoldBackgroundColor: const Color(0xFF0E1114), // 全局背景 rgb(14,17,20)
-            fontFamily: 'System',
-            useMaterial3: true,
-          ),
+          theme: ThemeData.dark(),
           routerConfig: router,
         );
       },

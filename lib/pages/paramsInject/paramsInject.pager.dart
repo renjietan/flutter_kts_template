@@ -1,13 +1,14 @@
 import 'package:composable_data_table/composable_data_table.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_kts_template/components/tree-view/tree-view.dart';
+import 'package:flutter_kts_template/components/DropDown/simple.dropdown.dart';
 import 'package:flutter_kts_template/pages/paramsInject/paramsInject.mixin.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_kts_template/theme/table.theme.dart';
 import 'package:reorderable_tree_list_view/reorderable_tree_list_view.dart';
 
+import '../../components/TreeView/tree-view.dart';
 import '../../components/fileUploads/fileUploads.dart';
 import '../../icons/hy_icons.dart';
-import '../../theme/table.theme.dart';
+import '../radioManager/radio.model.dart';
 
 class ParamsInjectPager extends StatefulWidget {
   const ParamsInjectPager({super.key});
@@ -18,102 +19,219 @@ class ParamsInjectPager extends StatefulWidget {
 
 class _ParamsInjectPagerState extends State<ParamsInjectPager>
     with ParamsInjectMixin {
+  UserStatus? _statusFilter;
+
   @override
   Widget build(BuildContext context) {
-    return Row(
+    return Container(
+      color: ThemeData.dark().primaryColorDark,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Expanded(flex: 4, child: _buildMasterTree(getTreeData)),
+          const VerticalDivider(thickness: 1, width: 1),
+          Expanded(
+            flex: 3,
+            child: _buildDetailTree(getTreeData, "SCC-Command Vehicle-1"),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// leftTree
+  Widget _buildMasterTree(Future<List<Uri>> Function() future) {
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisAlignment: MainAxisAlignment.start,
       children: [
-        Expanded(flex: 4, child: _buildMasterTree(getTreeData)),
-        const VerticalDivider(thickness: 1, width: 1),
+        Padding(
+          padding: EdgeInsetsGeometry.fromLTRB(16, 10, 0, 0),
+          child: Text("File Parse", style: TextStyle(fontSize: 18)),
+        ),
+        const FileUploads(),
         Expanded(
-          flex: 3,
-          child: _buildDetailTree(getTreeData, "SCC-Command Vehicle-1"),
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(10, 0, 10, 10),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Color(0xFF171C22),
+                border: Border.all(
+                  width: 1,
+                  color: Color(0x8A00A2E9),
+                  style: BorderStyle.solid,
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: EdgeInsetsGeometry.fromLTRB(16, 5, 0, 10),
+                    child: Text("Net Node", style: TextStyle(fontSize: 14)),
+                  ),
+                  DataTablePlusThemeProvider(
+                    theme: getThemePreset(
+                      ThemePreset.dark,
+                    ).copyWith(borderRadius: 50),
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 3,
+                      ),
+                      child: SimpleDropdown(
+                        value: _statusFilter,
+                        hint: '',
+                        items: UserStatus.values
+                            .map(
+                              (s) => DropdownMenuItem(
+                                value: s,
+                                child: Text(
+                                  s.name[0].toUpperCase() + s.name.substring(1),
+                                ),
+                              ),
+                            )
+                            .toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            _statusFilter = value;
+                          });
+                        },
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: TreeView(
+                      future: future,
+                      folderBuilder: (context, path) {
+                        return Row(
+                          children: [
+                            Icon(HyIcons.ren, size: 14, color: Colors.amber),
+                            SizedBox(width: 8),
+                            Text(
+                              TreePath.getDisplayName(path),
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        );
+                      },
+                      itemBuilder: (context, path) {
+                        return Row(
+                          children: [
+                            Icon(HyIcons.jiantou, size: 20),
+                            SizedBox(width: 8),
+                            Text(TreePath.getDisplayName(path)),
+                          ],
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ),
       ],
     );
   }
-}
 
-/// leftTree
-Widget _buildMasterTree(Future<List<Uri>> Function() future) {
-  return Container(
-    decoration: BoxDecoration(
-      border: Border.all(color: Colors.white.withOpacity(0.05), width: 0.5),
-    ),
-    child: Column(
+  Widget _buildDetailTree(Future<List<Uri>> Function() future, String title) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisAlignment: MainAxisAlignment.start,
       children: [
-        DataTablePlusThemeProvider(
-          theme: getThemePreset(ThemePreset.dark),
-          child: FilterSearchField(
-              hint: '',
-              onChanged: (value) {
-              },
-          ),
-        ),
-        Align(
-          alignment: Alignment.centerLeft,
-          child: Padding(
-            padding: EdgeInsetsGeometry.fromLTRB(14.w, 15.h, 0, 15.h),
-            child: Text("File Parse", style: TextStyle(fontSize: 20)),
-          ),
-        ),
-        FilePickerScreen(),
-        Expanded(
-          child: TreeView(
-            future: future,
-            folderBuilder: (context, path) => Row(
-              children: [
-                Icon(HyIcons.ren, size: 20, color: Colors.amber),
-                SizedBox(width: 8),
-                Text(
-                  TreePath.getDisplayName(path),
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ],
+        Container(
+          margin: const EdgeInsetsGeometry.fromLTRB(12, 10, 0, 10),
+          padding: const EdgeInsetsGeometry.only(left: 10),
+          decoration: BoxDecoration(
+            border: Border(
+              left: BorderSide(width: 5, color: Color(0xFF00A2E9)),
             ),
-            itemBuilder: (context, path) => Row(
-              children: [
-                Icon(HyIcons.jiantou, size: 20),
-                SizedBox(width: 8),
-                Text(TreePath.getDisplayName(path)),
-              ],
+          ),
+          child: const Text("SCC Command", style: TextStyle(fontSize: 18)),
+        ),
+        Expanded(
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(10, 0, 10, 10),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Color(0xFF171C22),
+                border: Border.all(
+                  width: 1,
+                  color: Color(0x8A00A2E9),
+                  style: BorderStyle.solid,
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: EdgeInsetsGeometry.fromLTRB(16, 5, 0, 10),
+                    child: Text("Net Node", style: TextStyle(fontSize: 14)),
+                  ),
+                  DataTablePlusThemeProvider(
+                    theme: getThemePreset(
+                      ThemePreset.dark,
+                    ).copyWith(borderRadius: 50),
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 3,
+                      ),
+                      child: SimpleDropdown(
+                        value: _statusFilter,
+                        hint: '',
+                        items: UserStatus.values
+                            .map(
+                              (s) => DropdownMenuItem(
+                                value: s,
+                                child: Text(
+                                  s.name[0].toUpperCase() + s.name.substring(1),
+                                ),
+                              ),
+                            )
+                            .toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            _statusFilter = value;
+                          });
+                        },
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: TreeView(
+                      future: future,
+                      folderBuilder: (context, path) {
+                        return Row(
+                          children: [
+                            Icon(HyIcons.ren, size: 14, color: Colors.amber),
+                            SizedBox(width: 8),
+                            Text(
+                              TreePath.getDisplayName(path),
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        );
+                      },
+                      itemBuilder: (context, path) {
+                        return Row(
+                          children: [
+                            Icon(HyIcons.jiantou, size: 20),
+                            SizedBox(width: 8),
+                            Text(TreePath.getDisplayName(path)),
+                          ],
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
       ],
-    ),
-  );
-}
-
-Widget _buildDetailTree(Future<List<Uri>> Function() future, String title) {
-  return Container(
-    decoration: BoxDecoration(
-      border: Border.all(color: Colors.white.withOpacity(0.05), width: 0.5),
-    ),
-    child: Column(
-      children: [
-        Align(
-          alignment: Alignment.centerLeft,
-          child: Padding(
-            padding: EdgeInsetsGeometry.fromLTRB(14.w, 15.h, 0, 15.h),
-            child: Text(title, style: TextStyle(fontSize: 20.sp)),
-          ),
-        ),
-        Expanded(
-          child: TreeView(
-            future: future,
-            folderBuilder: (context, path) => Row(
-              children: [
-                Text(
-                  TreePath.getDisplayName(path),
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
-            itemBuilder: (context, path) => Text(TreePath.getDisplayName(path)),
-          ),
-        ),
-      ],
-    ),
-  );
+    );
+  }
 }

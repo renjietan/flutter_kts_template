@@ -1,10 +1,13 @@
 import 'dart:io';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_kts_template/core/databaseManager/databaseManager.dart';
 import 'package:flutter_kts_template/core/express.dart';
+
 import 'init/app_init.dart';
 import 'logger/logger.dart';
 
+final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
 
 void main() {
   AppInit.run();
@@ -17,5 +20,3 @@ void main() {
     exit(0);
   });
 }
-
-

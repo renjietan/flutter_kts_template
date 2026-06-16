@@ -4,6 +4,7 @@ import 'package:flutter_kts_template/pages/layout/sideMenu/sideMenu.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:go_router/go_router.dart';
+import 'package:unified_popups/unified_popups.dart';
 
 import '../../config/config.dart';
 
@@ -21,27 +22,7 @@ class MainLayout extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
-    return PopScope(
-      canPop: false, // 禁止直接返回
-      onPopInvokedWithResult: (didPop, result) async {
-        if (didPop) return; // 已处理弹出，则直接推出
-        final shouldPop = await showDialog<bool>(
-          context: context,
-          builder: (_) => AlertDialog(
-            title: Text('确认退出？'),
-            actions: [
-              TextButton(onPressed: () => Navigator.pop(context, false), child: Text('取消')),
-              TextButton(onPressed: () => Navigator.pop(context, true), child: Text('确定')),
-            ],
-          ),
-        ) ?? false;
-
-        if (shouldPop) {
-          // 确认后主动调用 pop
-          if (context.mounted) Navigator.of(context).pop(result);
-        }
-      },
+    return PopScopeWidget(
       child: Scaffold(
         appBar: PreferredSize(
           // appbar 高度
@@ -74,18 +55,23 @@ class MainLayout extends StatelessWidget {
           ),
         ),
         body: FlutterSmartDialog(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              SideMenu(onSelected: _onDestinationSelected,),
-              const VerticalDivider(thickness: 1, width: 1),
-              // 右侧内容区 (当前活跃的分支页面)
-              Expanded(
-                child: navigationShell,
+          child: Container(
+            decoration: BoxDecoration(
+              border: Border(
+                top: BorderSide(color: Color(0x8A00A2E9), width: 1),
               ),
-            ],
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                SideMenu(onSelected: _onDestinationSelected),
+                const VerticalDivider(thickness: 1, width: 1),
+                // 右侧内容区 (当前活跃的分支页面)
+                Expanded(child: navigationShell),
+              ],
+            ),
           ),
-        )
+        ),
       ),
     );
   }

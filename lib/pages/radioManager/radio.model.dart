@@ -4,7 +4,6 @@
 
 enum UserStatus { active, inactive, pending, suspended }
 
-enum UserRole { admin, editor, viewer, guest }
 
 class User {
   final String id;

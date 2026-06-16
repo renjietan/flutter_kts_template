@@ -1,9 +1,11 @@
 import 'package:flutter/cupertino.dart';
 
 mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
+  List<Uri> paths = [];
+
   Future<List<Uri>> getTreeData() async {
     await Future.delayed(Duration(seconds: 3));
-    return [
+    paths = [
       Uri.parse('file:///documents/1'),
       Uri.parse('file:///documents/images/2'),
       Uri.parse('file:///documents/images/3'),
@@ -38,6 +40,7 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
       Uri.parse('file:///downloads/15'),
       Uri.parse('file:///downloads/music/5'),
     ];
+    return paths;
   }
 
   @override

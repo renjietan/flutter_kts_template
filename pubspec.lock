@@ -1098,6 +1098,14 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "1.4.1"
+  super_tree:
+    dependency: "direct main"
+    description:
+      name: super_tree
+      sha256: e895d002d1ee7c5158ec05b19e60ebb188251587a8f65ceefef06d207720d4de
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "0.2.1"
   term_glyph:
     dependency: transitive
     description:
@@ -1122,6 +1130,14 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "1.4.0"
+  unified_popups:
+    dependency: "direct main"
+    description:
+      name: unified_popups
+      sha256: b7e23a0ac9c73aa64d5f03d6a8ac36e77ad982279f35de3bf198a5bd8acfc5b6
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "1.2.2"
   universal_file_picker:
     dependency: "direct main"
     description:

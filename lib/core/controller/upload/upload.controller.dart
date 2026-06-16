@@ -4,9 +4,9 @@ import 'package:flutter_kts_template/core/utils/common.dart';
 import 'package:flutter_kts_template/core/utils/response.dart';
 import 'package:flutter_kts_template/core/utils/time.dart';
 import 'package:flutter_kts_template/logger/logger.dart';
+import 'package:path/path.dart' as path;
 import 'package:shelf/shelf.dart';
 import 'package:shelf_essentials/shelf_essentials.dart';
-import 'package:path/path.dart' as path;
 
 class UploadController {
   static Future<Response> uploadHandler(Request request) async {
@@ -25,8 +25,8 @@ class UploadController {
       final filePath = path.join(uploadPath, "[$curTime] $safeFileName");
       final file = File(filePath);
       await file.writeAsBytes(bytes);
-      GlobalLogger.logInfo(
-        "文件名称:$filePath\n; content-type: ${uploadedFile.contentType}",
+      GlobalLogger.logDebug(
+        "文件存储路径:$filePath; \ncontent-type: ${uploadedFile.contentType}",
       );
       return ApiResponse.success(
         message: "上传成功",

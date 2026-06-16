@@ -83,7 +83,7 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
         FlareButton(
           textStyle: TextStyle(fontSize: 16, color: Colors.white),
           label: "添加电台",
-          width: 120,
+          width: 125,
           height: 38,
           borderRadius: 5,
           colors: const [
@@ -186,18 +186,10 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
             ),
             const SizedBox(height: 12),
             Text(
-              'No users found',
+              'No Data Found',
               style: TextStyle(
                 fontSize: 14,
                 color: isDark ? Colors.grey[500] : Colors.grey[600],
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Try adjusting your filters',
-              style: TextStyle(
-                fontSize: 12,
-                color: isDark ? Colors.grey[600] : Colors.grey[500],
               ),
             ),
           ],
@@ -218,8 +210,12 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
         ),
         titlePadding: EdgeInsets.fromLTRB(0, 15.h, 0, 15.h),
         actionsPadding: EdgeInsets.fromLTRB(
-          30.w, 25.h, 30.w,
-          MediaQuery.of(context).viewInsets.bottom > 0 ? 20.h : 90.h,  // 键盘弹出时减小底部间距
+          30.w,
+          25.h,
+          30.w,
+          MediaQuery.of(context).viewInsets.bottom > 0
+              ? 20.h
+              : 90.h, // 键盘弹出时减小底部间距
         ),
         contentPadding: EdgeInsets.fromLTRB(30.w, 25.h, 30.w, 25.h),
         titleTextStyle: TextStyle(fontSize: 14, color: Colors.white),
@@ -250,9 +246,9 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
                       "Device Type",
                       textAlign: TextAlign.left,
                       style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w500,
-                          fontSize: 16.sp
+                        color: Colors.white,
+                        fontWeight: FontWeight.w500,
+                        fontSize: 16.sp,
                       ),
                     ),
                   ),
@@ -287,7 +283,10 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
-                        borderSide: const BorderSide(color: Colors.white, width: 1),
+                        borderSide: const BorderSide(
+                          color: Colors.white,
+                          width: 1,
+                        ),
                       ),
                       errorBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
@@ -295,7 +294,10 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
                       ),
                       focusedErrorBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
-                        borderSide: const BorderSide(color: Colors.red, width: 2),
+                        borderSide: const BorderSide(
+                          color: Colors.red,
+                          width: 2,
+                        ),
                       ),
                       // 可调整内容内边距
                     ),
@@ -307,9 +309,9 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
                       "Network Interface",
                       textAlign: TextAlign.left,
                       style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w500,
-                          fontSize: 16.sp
+                        color: Colors.white,
+                        fontWeight: FontWeight.w500,
+                        fontSize: 16.sp,
                       ),
                     ),
                   ),
@@ -344,7 +346,10 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
-                        borderSide: const BorderSide(color: Colors.white, width: 1),
+                        borderSide: const BorderSide(
+                          color: Colors.white,
+                          width: 1,
+                        ),
                       ),
                       errorBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
@@ -352,7 +357,10 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
                       ),
                       focusedErrorBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
-                        borderSide: const BorderSide(color: Colors.red, width: 2),
+                        borderSide: const BorderSide(
+                          color: Colors.red,
+                          width: 2,
+                        ),
                       ),
                       // 可调整内容内边距
                     ),

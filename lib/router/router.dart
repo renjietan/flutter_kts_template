@@ -4,37 +4,18 @@ import 'package:flutter_kts_template/pages/radioManager/radioManager.pager.dart'
 import 'package:flutter_kts_template/pages/splash/splash.dart';
 import 'package:go_router/go_router.dart';
 
+import '../main.dart';
 import '../pages/paramsInject/paramsInject.pager.dart';
 import '../theme/table.theme.dart';
 
-// final routers = GoRouter(
-//   initialLocation: '/',
-//   routes: [
-//     GoRoute(
-//       name: 'splash',
-//       path: '/',
-//       builder: (context, state) => const SplashPage(),
-//     ),
-//     GoRoute(
-//       name: 'home',
-//       path: '/home',
-//       builder: (context, state) => const LayoutPage(),
-//     ),
-//     GoRoute(
-//       name: 'test',
-//       path: '/test',
-//       builder: (context, state) => const TestTreeView(),
-//     ),
-//   ],
-// );
-
-final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
-final GlobalKey<StatefulNavigationShellState> _layoutKey = GlobalKey<StatefulNavigationShellState>();
+// final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
+final GlobalKey<StatefulNavigationShellState> _layoutKey =
+    GlobalKey<StatefulNavigationShellState>();
 final GlobalKey<NavigatorState> _radioManagerKey = GlobalKey<NavigatorState>();
 final GlobalKey<NavigatorState> _paramsInjectKey = GlobalKey<NavigatorState>();
 
 final GoRouter router = GoRouter(
-  navigatorKey: _rootNavigatorKey,
+  navigatorKey: rootNavigatorKey,
   initialLocation: '/splash',
   redirect: (context, state) {
     // final currentPath = state.uri.path;
