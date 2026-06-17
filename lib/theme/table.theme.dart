@@ -82,6 +82,7 @@ DataTablePlusTheme getThemePreset(ThemePreset preset) {
         warningLightColor: Color(0xFFFEF3C7),
         dangerColor: Color(0xFFDC2626),
         dangerLightColor: Color(0xFFFEE2E2),
+        borderRadius: 5,
       );
   }
 }
@@ -100,4 +101,3 @@ Color getScaffoldBg(ThemePreset preset) {
       return const Color(0xFFF5F5F5);
   }
 }
-

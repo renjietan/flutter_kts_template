@@ -71,9 +71,7 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
                     child: Text("Net Node", style: TextStyle(fontSize: 14)),
                   ),
                   DataTablePlusThemeProvider(
-                    theme: getThemePreset(
-                      ThemePreset.dark,
-                    ).copyWith(borderRadius: 50),
+                    theme: getThemePreset(ThemePreset.dark),
                     child: Padding(
                       padding: EdgeInsets.symmetric(
                         horizontal: 12,
@@ -121,6 +119,7 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
                             Icon(HyIcons.jiantou, size: 20),
                             SizedBox(width: 8),
                             Text(TreePath.getDisplayName(path)),
+                            const Spacer(),
                           ],
                         );
                       },

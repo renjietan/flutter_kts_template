@@ -57,15 +57,15 @@ class SimpleTextfield extends StatelessWidget {
           fillColor: theme.backgroundColor,
           contentPadding: contentPadding,
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(theme.borderRadiusSmall),
+            borderRadius: BorderRadius.circular(5),
             borderSide: BorderSide(color: theme.borderColor),
           ),
           enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(theme.borderRadiusSmall),
+            borderRadius: BorderRadius.circular(5),
             borderSide: BorderSide(color: theme.borderColor),
           ),
           focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(theme.borderRadiusSmall),
+            borderRadius: BorderRadius.circular(5),
             borderSide: BorderSide(color: theme.accentColor),
           ),
         ),

@@ -1,7 +1,8 @@
 import 'package:composable_data_table/composable_data_table.dart';
-import 'package:flare_button/flare_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_kts_template/components/TextField/simple.textfield.dart';
+import 'package:flutter_kts_template/components/button/base.button.dart';
+import 'package:flutter_kts_template/pages/paramsInject/components/paramsFormDialog.dart';
 import 'package:flutter_kts_template/theme/table.theme.dart';
 
 import '../../icons/hy_icons.dart';
@@ -28,20 +29,12 @@ class _FileUploadsState extends State<FileUploads> with FileUploadsMixin {
             value: filePath,
           ),
         ),
-        FlareButton(
+        BaseButton(
           textStyle: TextStyle(fontSize: 12, color: Colors.white),
           label: "Browse",
           width: 116,
-          height: 34,
           icon: HyIcons.wenjian,
-          borderRadius: 5,
           isLoading: isUploadLoading,
-          colors: const [
-            Color(0xFF00A2E9),
-            Color(0xFF00A2E9),
-            Color(0xFF00A2E9),
-            Color(0xFF00A2E9),
-          ],
           onPressed: () {
             pickFiles();
           },
@@ -54,12 +47,10 @@ class _FileUploadsState extends State<FileUploads> with FileUploadsMixin {
             borderRadius: BorderRadius.circular(5),
             border: Border.all(color: Color(0xFF00A2E9), width: 2),
           ),
-          child: FlareButton(
-            textStyle: TextStyle(fontSize: 12, color: Colors.white),
+          child: BaseButton(
             label: "Parse",
             width: 80,
             height: 30,
-            borderRadius: 5,
             isLoading: isUploadLoading,
             colors: const [
               Color(0xFF0A1D35),
@@ -67,7 +58,20 @@ class _FileUploadsState extends State<FileUploads> with FileUploadsMixin {
               Color(0xFF0A1D35),
               Color(0xFF0A1D35),
             ],
-            onPressed: () {},
+            onPressed: () {
+              ParamsFormDialog.showDialog(
+                title: "Save to Key Loader",
+                fields: [],
+                onConfirm: (v) {},
+              );
+              // SimpleFullScreenDialog(
+              //   title: "Save to Key Loader",
+              //   confirmText: "Save",
+              //   cancelText: "Cancel",
+              //   fields: [],
+              //   onConfirm: (Map<String, dynamic> formData) {},
+              // );
+            },
           ),
         ),
       ],

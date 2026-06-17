@@ -57,15 +57,16 @@ dependencies:
   flutter_native_splash: ^2.4.7
   ## tree 组件
   reorderable_tree_list_view: ^0.0.1
-
+  ## tree 组件-备用
+  super_tree: ^0.2.1
   ## 表格组件
   pluto_grid: ^8.1.0
   ## 生成随机数据
   faker: ^2.2.0
-  ## 按钮
-  flare_button: ^1.0.3
   ## form表单
   flutter_form_builder: ^10.3.0+2
+  ## form表单-参数验证
+  form_builder_validators: ^11.3.0
   ## 弹窗
   flutter_smart_dialog: ^5.1.0
   ## 表格 + 分页
@@ -74,7 +75,6 @@ dependencies:
   universal_file_picker: ^0.1.0
   ## 提示框 + loading
   unified_popups: ^1.2.2
-  super_tree: ^0.2.1
 
 
 dev_dependencies:

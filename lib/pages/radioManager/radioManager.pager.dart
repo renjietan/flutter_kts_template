@@ -21,7 +21,6 @@ class RadioManagerPager extends StatefulWidget {
 
 class _RadioManagerPagerState extends State<RadioManagerPager>
     with AutomaticKeepAliveClientMixin, RadioManagerMixin {
-
   @override
   bool get wantKeepAlive => true;
 
@@ -51,6 +50,7 @@ class _RadioManagerPagerState extends State<RadioManagerPager>
         ),
         child: Column(
           children: [
+            // TableContextualBar
             DataTablePlusThemeProvider(
               theme: widget.theme,
               child: TableContextualBar(
@@ -173,7 +173,7 @@ class _RadioManagerPagerState extends State<RadioManagerPager>
                   currentPage = 1;
                 }),
                 onPageChanged: (page) => setState(() => currentPage = page),
-                itemRangeTemplate: 'Showing {start}-{end} of {total} users',
+                itemRangeTemplate: 'Showing {start}-{end} of {total} data',
               ),
             ),
           ],
