@@ -1,4 +1,8 @@
 import 'package:flutter/cupertino.dart';
+import 'package:recursive_tree_flutter/models/abstract_node_type.dart';
+import 'package:recursive_tree_flutter/models/tree_type.dart';
+
+import '../../components/TreeView/simple-tree/simple.tree.model.dart';
 
 mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
   List<Uri> paths = [];
@@ -8,39 +12,28 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
     paths = [
       Uri.parse('file:///documents/1'),
       Uri.parse('file:///documents/images/2'),
-      Uri.parse('file:///documents/images/3'),
-      Uri.parse('file:///downloads/1'),
-      Uri.parse('file:///downloads/music/5'),
-      Uri.parse('file:///downloads/2'),
-      Uri.parse('file:///downloads/music/5'),
-      Uri.parse('file:///downloads/3'),
-      Uri.parse('file:///downloads/music/5'),
-      Uri.parse('file:///downloads/4'),
-      Uri.parse('file:///downloads/music/5'),
-      Uri.parse('file:///downloads/5'),
-      Uri.parse('file:///downloads/music/5'),
-      Uri.parse('file:///downloads/6'),
-      Uri.parse('file:///downloads/music/5'),
-      Uri.parse('file:///downloads/7'),
-      Uri.parse('file:///downloads/music/5'),
-      Uri.parse('file:///downloads/8'),
-      Uri.parse('file:///downloads/music/5'),
-      Uri.parse('file:///downloads/9'),
-      Uri.parse('file:///downloads/music/5'),
-      Uri.parse('file:///downloads/10'),
-      Uri.parse('file:///downloads/music/5'),
-      Uri.parse('file:///downloads/11'),
-      Uri.parse('file:///downloads/music/5'),
-      Uri.parse('file:///downloads/12'),
-      Uri.parse('file:///downloads/music/5'),
-      Uri.parse('file:///downloads/13'),
-      Uri.parse('file:///downloads/music/5'),
-      Uri.parse('file:///downloads/14'),
-      Uri.parse('file:///downloads/music/5'),
-      Uri.parse('file:///downloads/15'),
-      Uri.parse('file:///downloads/music/5'),
     ];
     return paths;
+  }
+
+  void parseTree(
+    Map<String, dynamic> node, [
+    int depth = 0,
+    TreeType<SimpleTreeNode>? res,
+  ]) {
+    if (node['children'] != null && node['children'].isNotEmpty) {
+      for (var child in node['children']) {
+        parseTree(child, depth + 1);
+      }
+    }
+  }
+
+  TreeType<SimpleTreeNode> sampleVNRegionNode<T extends AbsNodeType>() {
+    return TreeType<SimpleTreeNode>(
+      data: SimpleTreeNode(id: 0, title: "Việt Nam", level: 0, index: 0),
+      children: [],
+      parent: null,
+    );
   }
 
   @override

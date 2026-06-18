@@ -1,9 +1,12 @@
 import 'package:composable_data_table/composable_data_table.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_kts_template/components/DropDown/simple.dropdown.dart';
+import 'package:flutter_kts_template/components/TreeView/simple-tree/simple.tree.model.dart';
+import 'package:flutter_kts_template/components/TreeView/simple-tree/simple.treeview.dart';
 import 'package:flutter_kts_template/components/text/text.title.dart';
 import 'package:flutter_kts_template/pages/paramsInject/paramsInject.mixin.dart';
 import 'package:flutter_kts_template/theme/table.theme.dart';
+import 'package:recursive_tree_flutter/models/tree_type.dart';
 import 'package:reorderable_tree_list_view/reorderable_tree_list_view.dart';
 
 import '../../components/TreeView/tree-view.dart';
@@ -21,6 +24,14 @@ class ParamsInjectPager extends StatefulWidget {
 class _ParamsInjectPagerState extends State<ParamsInjectPager>
     with ParamsInjectMixin {
   UserStatus? _statusFilter;
+  late TreeType<SimpleTreeNode> tree;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    tree = sampleVNRegionNode();
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -162,30 +173,31 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
                   style: BorderStyle.solid,
                 ),
               ),
-              child: TreeView(
-                future: future,
-                folderBuilder: (context, path) {
-                  return Row(
-                    children: [
-                      Icon(HyIcons.ren, size: 14, color: Colors.amber),
-                      SizedBox(width: 8),
-                      Text(
-                        TreePath.getDisplayName(path),
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                    ],
-                  );
-                },
-                itemBuilder: (context, path) {
-                  return Row(
-                    children: [
-                      Icon(HyIcons.wenjian, size: 16),
-                      SizedBox(width: 8),
-                      Text(TreePath.getDisplayName(path)),
-                    ],
-                  );
-                },
-              ),
+              child: SimpleTreeView(tree, onNodeDataChanged: () {}),
+              // child: TreeView(
+              //   future: future,
+              //   folderBuilder: (context, path) {
+              //     return Row(
+              //       children: [
+              //         Icon(HyIcons.ren, size: 14, color: Colors.amber),
+              //         SizedBox(width: 8),
+              //         Text(
+              //           TreePath.getDisplayName(path),
+              //           style: TextStyle(fontWeight: FontWeight.bold),
+              //         ),
+              //       ],
+              //     );
+              //   },
+              //   itemBuilder: (context, path) {
+              //     return Row(
+              //       children: [
+              //         Icon(HyIcons.wenjian, size: 16),
+              //         SizedBox(width: 8),
+              //         Text(TreePath.getDisplayName(path)),
+              //       ],
+              //     );
+              //   },
+              // ),
             ),
           ),
         ),

@@ -50,10 +50,10 @@ targets:
             enabled: false # 对生成代码格式化，关闭以提高生成速度。【默认：false】
             width: null # 最大宽度。【默认：null】
 
-      go_router_builder:
-        import: "package:go_router_builder/go_router_builder.dart"
-        builder_factories: [ "goRouterBuilder" ]
-        build_extensions: { ".dart": [ "go_router.g.part" ] }
-        auto_apply: dependents
-        build_to: cache
-        applies_builders: [ "source_gen|combining_builder" ]
+#      go_router_builder:
+#        import: "package:go_router_builder/go_router_builder.dart"
+#        builder_factories: [ "goRouterBuilder" ]
+#        build_extensions: { ".dart": [ "go_router.g.part" ] }
+#        auto_apply: dependents
+#        build_to: cache
+#        applies_builders: [ "source_gen|combining_builder" ]
