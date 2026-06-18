@@ -32,7 +32,7 @@ class _FileUploadsState extends State<FileUploads> with FileUploadsMixin {
         BaseButton(
           textStyle: TextStyle(fontSize: 12, color: Colors.white),
           label: "Browse",
-          width: 116,
+          width: 95,
           icon: HyIcons.wenjian,
           isLoading: isUploadLoading,
           onPressed: () {
@@ -41,7 +41,7 @@ class _FileUploadsState extends State<FileUploads> with FileUploadsMixin {
         ),
         Container(
           // FlareButton 没有边框可供配置,所以在 FlareButton  外围套了一层 container,此 container 只作边框使用
-          width: 84,
+          width: 70,
           height: 34,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(5),
@@ -49,7 +49,7 @@ class _FileUploadsState extends State<FileUploads> with FileUploadsMixin {
           ),
           child: BaseButton(
             label: "Parse",
-            width: 80,
+            width: 66,
             height: 30,
             isLoading: isUploadLoading,
             colors: const [

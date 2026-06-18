@@ -93,7 +93,7 @@ class ParamsFormDialog {
               const Spacer(),
               BaseButton(
                 label: cancelText,
-                width: 100.w,
+                width: 70,
                 colors: [
                   Color(0xFF42474E),
                   Color(0xFF42474E),
@@ -107,7 +107,7 @@ class ParamsFormDialog {
               const SizedBox(width: 10),
               BaseButton(
                 label: confirmText,
-                width: 100.w,
+                width: 70,
                 onPressed: () {
                   // 验证通过，获取表单数据
                   if (formKey.currentState?.saveAndValidate() ?? false) {

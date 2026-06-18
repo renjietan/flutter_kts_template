@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class BaseButton extends StatefulWidget {
   final String label;
@@ -41,7 +42,7 @@ class BaseButton extends StatefulWidget {
     this.gradientDuration = const Duration(seconds: 3),
     this.enablePulse = true,
     this.borderRadius = 5,
-    this.width,
+    this.width = 100,
     this.height = 34,
     this.textStyle = const TextStyle(fontSize: 12, color: Colors.white),
     this.icon,
@@ -145,7 +146,7 @@ class _BaseButtonState extends State<BaseButton> with TickerProviderStateMixin {
           child: Transform.scale(
             scale: _scaleAnimation.value,
             child: SizedBox(
-              width: widget.width,
+              width: widget.width!.w,
               height: widget.height,
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(widget.borderRadius),
