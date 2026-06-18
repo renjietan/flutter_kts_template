@@ -87,7 +87,6 @@ Future<void> SimpleFormDialog({
       actions: [
         BaseButton(
           label: confirmText,
-          height: 100.h,
           onPressed: () {
             // 验证通过，获取表单数据
             if (formKey.currentState?.saveAndValidate() ?? false) {
