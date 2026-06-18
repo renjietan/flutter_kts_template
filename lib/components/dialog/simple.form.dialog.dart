@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:flutter_kts_template/components/text/text.title.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 
@@ -53,9 +54,10 @@ Future<void> SimpleFormDialog({
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
-              title,
-              style: TextStyle(fontSize: titleFontSize.sp, color: titleColor),
+            TextTitle(
+              text: title,
+              fontSize: titleFontSize.sp,
+              color: titleColor,
             ),
             const Spacer(),
             IconButton(
@@ -126,7 +128,13 @@ List<Widget> _buildFormFields(
       ),
     );
     // 添加输入框
-    widgets.add(SimpleFormTextField(field: field, fillColor: fillColor, labelFontSize: labelFontSize,));
+    widgets.add(
+      SimpleFormTextField(
+        field: field,
+        fillColor: fillColor,
+        labelFontSize: labelFontSize,
+      ),
+    );
   }
   // 最后加一个底部间距
   widgets.add(SizedBox(height: 60.h));

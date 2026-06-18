@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_kts_template/pages/InjectEncryptionStick/InjectEncryptionStick.dart';
 import 'package:flutter_kts_template/pages/layout/layout.pager.dart';
 import 'package:flutter_kts_template/pages/radioManager/radioManager.pager.dart';
 import 'package:flutter_kts_template/pages/splash/splash.dart';
@@ -13,6 +14,8 @@ final GlobalKey<StatefulNavigationShellState> _layoutKey =
     GlobalKey<StatefulNavigationShellState>();
 final GlobalKey<NavigatorState> _radioManagerKey = GlobalKey<NavigatorState>();
 final GlobalKey<NavigatorState> _paramsInjectKey = GlobalKey<NavigatorState>();
+final GlobalKey<NavigatorState> _injectEncryptStickKey =
+    GlobalKey<NavigatorState>();
 
 final GoRouter router = GoRouter(
   navigatorKey: rootNavigatorKey,
@@ -69,11 +72,13 @@ final GoRouter router = GoRouter(
           ],
         ),
         StatefulShellBranch(
+          navigatorKey: _injectEncryptStickKey,
           routes: [
             GoRoute(
-              path: '/keyInject',
-              name: 'keyInject',
-              builder: (context, state) => RadioManagerPager(
+              path: '/injectEncryptStick',
+              name: 'injectEncryptStick',
+              parentNavigatorKey: _injectEncryptStickKey,
+              builder: (context, state) => InjectEncryptionStickPager(
                 theme: getThemePreset(ThemePreset.dark),
                 themePreset: ThemePreset.dark,
               ),

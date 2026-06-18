@@ -1,6 +1,7 @@
 import 'package:composable_data_table/composable_data_table.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_kts_template/components/DropDown/simple.dropdown.dart';
+import 'package:flutter_kts_template/components/text/text.title.dart';
 import 'package:flutter_kts_template/pages/paramsInject/paramsInject.mixin.dart';
 import 'package:flutter_kts_template/theme/table.theme.dart';
 import 'package:reorderable_tree_list_view/reorderable_tree_list_view.dart';
@@ -47,7 +48,7 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
       children: [
         Padding(
           padding: EdgeInsetsGeometry.fromLTRB(16, 10, 0, 0),
-          child: Text("File Parse", style: TextStyle(fontSize: 18)),
+          child: TextTitle(text: "File Parse"),
         ),
         const FileUploads(),
         Expanded(
@@ -147,7 +148,7 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
               left: BorderSide(width: 5, color: Color(0xFF00A2E9)),
             ),
           ),
-          child: const Text("SCC Command", style: TextStyle(fontSize: 18)),
+          child: TextTitle(text: title),
         ),
         Expanded(
           child: Padding(
@@ -161,71 +162,29 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
                   style: BorderStyle.solid,
                 ),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: EdgeInsetsGeometry.fromLTRB(16, 5, 0, 10),
-                    child: Text("Net Node", style: TextStyle(fontSize: 14)),
-                  ),
-                  DataTablePlusThemeProvider(
-                    theme: getThemePreset(
-                      ThemePreset.dark,
-                    ).copyWith(borderRadius: 50),
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 3,
+              child: TreeView(
+                future: future,
+                folderBuilder: (context, path) {
+                  return Row(
+                    children: [
+                      Icon(HyIcons.ren, size: 14, color: Colors.amber),
+                      SizedBox(width: 8),
+                      Text(
+                        TreePath.getDisplayName(path),
+                        style: TextStyle(fontWeight: FontWeight.bold),
                       ),
-                      child: SimpleDropdown(
-                        value: _statusFilter,
-                        hint: '',
-                        items: UserStatus.values
-                            .map(
-                              (s) => DropdownMenuItem(
-                                value: s,
-                                child: Text(
-                                  s.name[0].toUpperCase() + s.name.substring(1),
-                                ),
-                              ),
-                            )
-                            .toList(),
-                        onChanged: (value) {
-                          setState(() {
-                            _statusFilter = value;
-                          });
-                        },
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    child: TreeView(
-                      future: future,
-                      folderBuilder: (context, path) {
-                        return Row(
-                          children: [
-                            Icon(HyIcons.ren, size: 14, color: Colors.amber),
-                            SizedBox(width: 8),
-                            Text(
-                              TreePath.getDisplayName(path),
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                          ],
-                        );
-                      },
-                      itemBuilder: (context, path) {
-                        return Row(
-                          children: [
-                            Icon(HyIcons.jiantou, size: 20),
-                            SizedBox(width: 8),
-                            Text(TreePath.getDisplayName(path)),
-                          ],
-                        );
-                      },
-                    ),
-                  ),
-                ],
+                    ],
+                  );
+                },
+                itemBuilder: (context, path) {
+                  return Row(
+                    children: [
+                      Icon(HyIcons.wenjian, size: 16),
+                      SizedBox(width: 8),
+                      Text(TreePath.getDisplayName(path)),
+                    ],
+                  );
+                },
               ),
             ),
           ),

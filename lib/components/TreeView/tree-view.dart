@@ -51,9 +51,7 @@ class _TreeViewState extends State<TreeView> {
                 },
                 folderBuilder: widget.folderBuilder,
                 itemBuilder: widget.itemBuilder,
-                onItemTap: (Uri path) {
-                  print(path);
-                },
+                onItemTap: (Uri path) {},
                 // 是否开启拖拽事件
                 enableDragAndDrop: false,
                 // 拖拽事件

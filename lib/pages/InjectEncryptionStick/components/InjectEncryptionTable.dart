@@ -1,23 +1,22 @@
 import 'package:composable_data_table/composable_data_table.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_kts_template/components/DropDown/simple.dropdown.dart';
+import 'package:flutter_kts_template/components/button/base.button.dart';
+import 'package:flutter_kts_template/components/text/text.title.dart';
 
-import '../../../components/TextField/simple.textfield.dart';
 import '../../../theme/table.theme.dart';
 import '../../radioManager/radio.model.dart';
 
-class ParamsInjectTable extends StatefulWidget {
-  // final int? currentPage;
-  // final int? pageSize;
-  // final String? searchQuery;
+class InjectEncryptionTable extends StatefulWidget {
   final ThemePreset? themePreset;
 
-  const ParamsInjectTable({super.key, this.themePreset = ThemePreset.dark});
+  const InjectEncryptionTable({super.key, this.themePreset = ThemePreset.dark});
 
   @override
-  State<ParamsInjectTable> createState() => _ParamsInjectTableState();
+  State<InjectEncryptionTable> createState() => _InjectEncryptionTableState();
 }
 
-class _ParamsInjectTableState extends State<ParamsInjectTable> {
+class _InjectEncryptionTableState extends State<InjectEncryptionTable> {
   late final DataTablePlusTheme theme;
   List<User> allUsers = [];
   List<User> filteredUsers = [];
@@ -49,33 +48,46 @@ class _ParamsInjectTableState extends State<ParamsInjectTable> {
   @override
   Widget build(BuildContext context) {
     return Column(
-      mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text("Key Loader"),
-        SizedBox(height: 10),
-        DataTablePlusThemeProvider(
-          theme: theme,
-          child: SimpleTextfield(
-            height: 35,
-            hint: "Select",
-            contentPadding: EdgeInsets.symmetric(horizontal: 10),
-            onChanged: (v) {
-              searchQuery = v;
-            },
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              TextTitle(text: "参数配对"),
+              BaseButton(label: "导出", onPressed: () {}, width: 70),
+            ],
           ),
         ),
-        SizedBox(height: 10),
-        SingleChildScrollView(
-          child: DataTablePlusThemeProvider(
-            theme: theme,
-            child: DataTablePlus<User>(
-              items: paginatedUsers,
-              idGetter: (user) => user.id,
-              columns: buildColumns(),
-              emptyWidget: buildEmptyWidget(),
-              showCheckboxes: false,
+        Expanded(
+          child: SingleChildScrollView(
+            child: DataTablePlusThemeProvider(
+              theme: theme,
+              child: DataTablePlus<User>(
+                items: paginatedUsers,
+                idGetter: (user) => user.id,
+                columns: buildColumns(),
+                emptyWidget: buildEmptyWidget(),
+                showCheckboxes: false,
+              ),
             ),
+          ),
+        ),
+        DataTablePlusThemeProvider(
+          theme: theme,
+          child: TablePagination(
+            currentPage: currentPage,
+            totalPages: totalPages,
+            totalItems: filteredUsers.length,
+            pageSize: pageSize,
+            pageSizeOptions: const [10, 20, 50, 100],
+            onPageSizeChanged: (size) => setState(() {
+              pageSize = size;
+              currentPage = 1;
+            }),
+            onPageChanged: (page) => setState(() => currentPage = page),
+            itemRangeTemplate: 'Showing {start}-{end} of {total} data',
           ),
         ),
       ],
@@ -133,7 +145,12 @@ class _ParamsInjectTableState extends State<ParamsInjectTable> {
       ColumnDefinition<User>(
         label: '配对电台',
         flex: 2,
-        cellBuilder: TextCellBuilder.text<User>((u) => u.field2),
+        cellBuilder: (user) => SimpleDropdown(
+          hint: "电台别名",
+          value: "",
+          items: [],
+          onChanged: (v) {},
+        ),
       ),
       ColumnDefinition<User>(
         label: '使用人',

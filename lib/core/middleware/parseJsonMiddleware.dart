@@ -13,7 +13,7 @@ Middleware parseJsonMiddleware() {
       String contentType = request.headers['Content-Type'] ?? '';
       if (method == "GET") {
         data = request.url.queryParameters;
-      } else if (contentType?.startsWith(EnumContentType.json.value) == true) {
+      } else if (contentType.startsWith(EnumContentType.json.value) == true) {
         try {
           final body = await request.readAsString();
           data = jsonDecode(body);

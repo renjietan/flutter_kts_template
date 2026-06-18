@@ -893,6 +893,14 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "0.6.0"
+  recursive_tree_flutter:
+    dependency: "direct main"
+    description:
+      name: recursive_tree_flutter
+      sha256: c54ffceb64f554fa2b005884852225a14e01d73b5b06d09879b8bcf8e4adb8a1
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "1.0.4"
   reorderable_tree_list_view:
     dependency: "direct main"
     description:

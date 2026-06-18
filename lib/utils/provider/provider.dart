@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_kts_template/logger/logger.dart';
 import 'package:flutter_kts_template/utils/provider/sidebar_provider.dart';
 import 'package:flutter_kts_template/utils/provider/user_provider.dart';
-import 'package:flutter_kts_template/utils/shared.dart';
 import 'package:provider/provider.dart';
 
 import 'menu_provider.dart';
@@ -17,8 +16,7 @@ class ProviderStore {
     //多个Provider
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider.value(
-            value: UserProvider("")),
+        ChangeNotifierProvider.value(value: UserProvider("")),
         ChangeNotifierProvider.value(value: MenuProvider(0)),
         ChangeNotifierProvider.value(value: SideBarProvider(true)),
       ],
@@ -41,6 +39,3 @@ class ProviderStore {
     return Consumer<T>(builder: builder, child: child);
   }
 }
-
-
-

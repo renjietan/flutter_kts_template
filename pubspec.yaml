@@ -55,10 +55,14 @@ dependencies:
   flutter_screenutil: ^5.9.3
   ## 接管 android studio 自带的 闪屏 页面
   flutter_native_splash: ^2.4.7
+
   ## tree 组件
+  ## 使用中
   reorderable_tree_list_view: ^0.0.1
-  ## tree 组件-备用
+  ## 组件-备用
   super_tree: ^0.2.1
+  recursive_tree_flutter: ^1.0.4
+
   ## 表格组件
   pluto_grid: ^8.1.0
   ## 生成随机数据
@@ -75,6 +79,7 @@ dependencies:
   universal_file_picker: ^0.1.0
   ## 提示框 + loading
   unified_popups: ^1.2.2
+
 
 
 dev_dependencies:

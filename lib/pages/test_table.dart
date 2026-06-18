@@ -37,7 +37,9 @@ class _RowLazyPaginationScreenState extends State<RowLazyPaginationScreen> {
     fakeFetchedRows.addAll(dummyData.rows);
   }
 
-  Future<PlutoLazyPaginationResponse> fetch(PlutoLazyPaginationRequest request) async {
+  Future<PlutoLazyPaginationResponse> fetch(
+    PlutoLazyPaginationRequest request,
+  ) async {
     List<PlutoRow> tempList = fakeFetchedRows;
     if (request.filterRows.isNotEmpty) {
       final filter = FilterHelper.convertRowsToFilter(
@@ -47,7 +49,6 @@ class _RowLazyPaginationScreenState extends State<RowLazyPaginationScreen> {
 
       tempList = fakeFetchedRows.where(filter!).toList();
     }
-
 
     if (request.sortColumn != null && !request.sortColumn!.sort.isNone) {
       tempList = [...tempList];
@@ -76,10 +77,12 @@ class _RowLazyPaginationScreenState extends State<RowLazyPaginationScreen> {
 
     await Future.delayed(const Duration(milliseconds: 500));
 
-    return Future.value(PlutoLazyPaginationResponse(
-      totalPage: totalPage,
-      rows: fetchedRows.toList(),
-    ));
+    return Future.value(
+      PlutoLazyPaginationResponse(
+        totalPage: totalPage,
+        rows: fetchedRows.toList(),
+      ),
+    );
   }
 
   @override
@@ -91,9 +94,7 @@ class _RowLazyPaginationScreenState extends State<RowLazyPaginationScreen> {
         stateManager = event.stateManager;
         stateManager.setShowColumnFilter(true);
       },
-      onChanged: (PlutoGridOnChangedEvent event) {
-        print(event);
-      },
+      onChanged: (PlutoGridOnChangedEvent event) {},
       configuration: const PlutoGridConfiguration(),
       createFooter: (stateManager) {
         return PlutoLazyPagination(
@@ -127,18 +128,17 @@ class _RowLazyPaginationScreenState extends State<RowLazyPaginationScreen> {
   }
 }
 
-
-
 class DummyData {
   late List<PlutoColumn> columns;
 
   late List<PlutoRow> rows;
 
-  DummyData(int columnLength,
-      int rowLength, {
-        List<int> leftFrozenColumnIndexes = const [],
-        List<int> rightFrozenColumnIndexes = const [],
-      }) {
+  DummyData(
+    int columnLength,
+    int rowLength, {
+    List<int> leftFrozenColumnIndexes = const [],
+    List<int> rightFrozenColumnIndexes = const [],
+  }) {
     var faker = Faker();
 
     columns = List<int>.generate(columnLength, (index) => index).map((i) {
@@ -203,7 +203,6 @@ class DummyData {
     }).toList();
   }
 
-
   static PlutoRow rowByColumns(List<PlutoColumn> columns) {
     return PlutoRow(cells: _cellsByColumn(columns));
   }
@@ -212,9 +211,7 @@ class DummyData {
     final cells = <String, PlutoCell>{};
 
     for (var column in columns) {
-      cells[column.field] = PlutoCell(
-        value: valueByColumnType(column),
-      );
+      cells[column.field] = PlutoCell(value: valueByColumnType(column));
     }
 
     return cells;
@@ -231,8 +228,10 @@ class DummyData {
           .toString();
     } else if (column.type.isTime) {
       final hour = faker.randomGenerator.integer(12).toString().padLeft(2, '0');
-      final minute =
-      faker.randomGenerator.integer(60).toString().padLeft(2, '0');
+      final minute = faker.randomGenerator
+          .integer(60)
+          .toString()
+          .padLeft(2, '0');
       return '$hour:$minute';
     } else {
       return faker.randomGenerator.element(multilingualWords);

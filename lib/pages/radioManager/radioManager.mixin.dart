@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_kts_template/components/button/base.button.dart';
 import 'package:flutter_kts_template/components/dialog/simple.form.dialog.dart';
+import 'package:flutter_kts_template/components/text/text.title.dart';
 import 'package:flutter_kts_template/logger/logger.dart';
 import 'package:flutter_kts_template/pages/radioManager/radio.model.dart';
 import 'package:flutter_kts_template/pages/radioManager/radioManager.pager.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 
 import '../../components/TextField/simple.form.textfield.dart';
@@ -66,10 +66,11 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
   // =============================================================================
   Widget buildToolbar() {
     return TableFilterToolbar(
+      padding: EdgeInsets.all(12),
       mainFilters: [
-        Text(
-          "电台管理",
-          style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w500),
+        Padding(
+          padding: EdgeInsets.only(top: 6),
+          child: TextTitle(text: "电台管理"),
         ),
       ],
       trailingActions: [
