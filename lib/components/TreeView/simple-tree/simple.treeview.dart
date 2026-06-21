@@ -5,7 +5,6 @@ import 'package:recursive_tree_flutter/models/abstract_node_type.dart';
 import 'package:recursive_tree_flutter/models/tree_type.dart';
 import 'package:recursive_tree_flutter/views/expandable_tree_mixin.dart';
 
-import '../../../logger/logger.dart';
 import '../../button/base.button.dart';
 
 class SimpleTreeView extends StatefulWidget {
@@ -63,50 +62,38 @@ class _SimpleTreeViewState<T extends AbsNodeType> extends State<SimpleTreeView>
 
   @override
   Widget buildNode() {
-    if (!widget.tree.data.isShowedInSearching) return const SizedBox.shrink();
-    Color colorByLevel = widget.tree.data.index % 2 == 0
-        ? Color(0xFF171C22)
-        : Color(0xFF23282D);
-    if (widget.tree.data.title == "张伟") {
-      GlobalLogger.logInfo(
-        "张伟：${widget.tree.data.leafActionWidgetOnPressed.toString()}",
-      );
-    }
+    if (!tree.data.isShowedInSearching) return const SizedBox.shrink();
     return InkWell(
       onTap: updateStateToggleExpansion,
       child: Container(
-        color: colorByLevel,
+        color: widget.tree.data.nodeBgColor,
         height: 44,
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Padding(
               padding: EdgeInsets.only(
-                left: tree.isLeaf
-                    ? widget.tree.data.padding + 26
-                    : widget.tree.data.padding,
+                left: tree.isLeaf ? tree.data.padding + 26 : tree.data.padding,
               ),
-              child: widget.tree.children.isNotEmpty
+              child: tree.children.isNotEmpty
                   ? buildRotationIcon()
                   : const SizedBox.shrink(),
             ),
-            if (widget.tree.data.titleIcon != null)
-              Icon(widget.tree.data.titleIcon, color: Colors.white, size: 16),
+            if (tree.data.titleIcon != null)
+              Icon(tree.data.titleIcon, color: Colors.white, size: 16),
             SizedBox(width: 10),
             Expanded(child: buildTitle()),
-            if (widget.tree.data.leafActionWidgetLabel != null && tree.isLeaf)
+            if (tree.data.leafActionWidgetLabel != null && tree.isLeaf)
               BaseButton(
-                label: widget.tree.data.leafActionWidgetLabel!,
-                width: widget.tree.data.leafActionWidgetSize?.width ?? 70,
+                label: tree.data.leafActionWidgetLabel!,
+                width: tree.data.leafActionWidgetSize?.width ?? 70,
                 onPressed: () {
-                  if (widget.tree.data.leafActionWidgetOnPressed != null) {
-                    widget.tree.data.leafActionWidgetOnPressed!(
-                      widget.tree.data,
-                    );
+                  if (tree.data.leafActionWidgetOnPressed != null) {
+                    tree.data.leafActionWidgetOnPressed!(tree.data);
                   }
                 },
               ),
-            if (tree.isLeaf && widget.tree.data.isShowCheckbox) buildTrailing(),
+            if (tree.isLeaf && tree.data.isShowCheckbox) buildTrailing(),
             SizedBox(width: 10),
           ],
         ),
@@ -181,5 +168,10 @@ class _SimpleTreeViewState<T extends AbsNodeType> extends State<SimpleTreeView>
   );
 
   @override
-  void updateStateToggleExpansion() => setState(() => toggleExpansion());
+  void updateStateToggleExpansion() {
+    if (tree.isLeaf) {
+      tree.data.onSelected?.call(tree.data);
+    }
+    return setState(() => toggleExpansion());
+  }
 }

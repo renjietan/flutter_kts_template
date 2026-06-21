@@ -15,6 +15,8 @@ class SimpleTreeNode extends AbsNodeType {
     this.leafActionWidgetLabel,
     this.leafActionWidgetOnPressed,
     this.leafActionWidgetSize,
+    this.onSelected,
+    this.nodeBgColor,
   }) : super(id: id, title: title, isInner: isInner, isExpanded: isExpanded);
 
   int level;
@@ -24,8 +26,10 @@ class SimpleTreeNode extends AbsNodeType {
   bool isShowCheckbox;
   IconData? titleIcon;
   String? leafActionWidgetLabel;
-  void Function(dynamic)? leafActionWidgetOnPressed;
+  void Function(AbsNodeType)? leafActionWidgetOnPressed;
   Size? leafActionWidgetSize;
+  void Function(AbsNodeType)? onSelected;
+  Color? nodeBgColor;
 
   @override
   T clone<T extends AbsNodeType>() {
@@ -42,6 +46,8 @@ class SimpleTreeNode extends AbsNodeType {
       leafActionWidgetLabel: leafActionWidgetLabel,
       leafActionWidgetOnPressed: leafActionWidgetOnPressed,
       leafActionWidgetSize: leafActionWidgetSize,
+      onSelected: onSelected,
+      nodeBgColor: nodeBgColor,
     );
     newData.isUnavailable = isUnavailable;
     newData.isChosen = isChosen;

@@ -4,6 +4,7 @@ import 'package:flutter_kts_template/components/DropDown/simple.dropdown.dart';
 import 'package:flutter_kts_template/components/TreeView/simple-tree/simple.tree.model.dart';
 import 'package:flutter_kts_template/components/TreeView/simple-tree/simple.treeview.dart';
 import 'package:flutter_kts_template/components/text/text.title.dart';
+import 'package:flutter_kts_template/logger/logger.dart';
 import 'package:flutter_kts_template/pages/paramsInject/paramsInject.mixin.dart';
 import 'package:flutter_kts_template/pages/paramsInject/treeData/treeData.dart';
 import 'package:flutter_kts_template/theme/table.theme.dart';
@@ -32,7 +33,7 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
       mockData1,
       leafActionWidgetLabel: "inject",
       leafActionWidgetOnPressed: (v) {
-        print(v);
+        GlobalLogger.logInfo(v.toString());
       },
       leafActionWidgetSize: Size(60, 30),
     );
