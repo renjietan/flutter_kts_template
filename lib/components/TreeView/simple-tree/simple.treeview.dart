@@ -10,9 +10,9 @@ import '../../button/base.button.dart';
 class SimpleTreeView extends StatefulWidget {
   final TreeType<SimpleTreeNode> tree;
 
-  final VoidCallback onChecked;
+  final VoidCallback onNodeDataChanged;
 
-  const SimpleTreeView(this.tree, {super.key, required this.onChecked});
+  const SimpleTreeView(this.tree, {super.key, required this.onNodeDataChanged});
 
   @override
   State<SimpleTreeView> createState() => _SimpleTreeViewState();
@@ -21,7 +21,6 @@ class SimpleTreeView extends StatefulWidget {
 class _SimpleTreeViewState<T extends AbsNodeType> extends State<SimpleTreeView>
     with SingleTickerProviderStateMixin, ExpandableTreeMixin<SimpleTreeNode> {
   final Tween<double> _turnsTween = Tween<double>(begin: -0.25, end: 0.0);
-  late int count = 0;
 
   @override
   initState() {
@@ -53,20 +52,18 @@ class _SimpleTreeViewState<T extends AbsNodeType> extends State<SimpleTreeView>
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [buildNode(), buildChildrenNodes()],
-    );
-  }
+  Widget build(BuildContext context) => buildView();
 
   @override
   Widget buildNode() {
     if (!tree.data.isShowedInSearching) return const SizedBox.shrink();
+    Color? bgColor = tree.data.isChosen == true
+        ? Color(0xFF004098)
+        : tree.data.nodeBgColor;
     return InkWell(
       onTap: updateStateToggleExpansion,
       child: Container(
-        color: widget.tree.data.nodeBgColor,
+        color: bgColor,
         height: 44,
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -93,7 +90,8 @@ class _SimpleTreeViewState<T extends AbsNodeType> extends State<SimpleTreeView>
                   }
                 },
               ),
-            if (tree.isLeaf && tree.data.isShowCheckbox) buildTrailing(),
+            // if (tree.isLeaf && tree.data.isShowCheckbox) buildTrailing(),
+            buildTrailing(),
             SizedBox(width: 10),
           ],
         ),
@@ -152,7 +150,7 @@ class _SimpleTreeViewState<T extends AbsNodeType> extends State<SimpleTreeView>
         value: tree.data.isChosen!,
         onChanged: (value) {
           updateTreeSingleChoice(tree, !tree.data.isChosen!);
-          widget.onChecked();
+          widget.onNodeDataChanged();
         },
       );
     }
@@ -164,14 +162,12 @@ class _SimpleTreeViewState<T extends AbsNodeType> extends State<SimpleTreeView>
     List<TreeType<SimpleTreeNode>> list,
   ) => List.generate(
     list.length,
-    (int index) => SimpleTreeView(list[index], onChecked: widget.onChecked),
+    (int index) => SimpleTreeView(
+      list[index],
+      onNodeDataChanged: widget.onNodeDataChanged,
+    ),
   );
 
   @override
-  void updateStateToggleExpansion() {
-    if (tree.isLeaf) {
-      tree.data.onSelected?.call(tree.data);
-    }
-    return setState(() => toggleExpansion());
-  }
+  void updateStateToggleExpansion() => setState(() => toggleExpansion());
 }

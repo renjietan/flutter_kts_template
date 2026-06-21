@@ -29,6 +29,7 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
   void initState() {
     // TODO: implement initState
     tree = buildTree(treeMockData);
+    // tree = sampleVNRegionNode(vnJson);
     detailTree = buildTree(
       mockData1,
       leafActionWidgetLabel: "inject",
@@ -122,7 +123,7 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
                   ),
                   Expanded(
                     child: SingleChildScrollView(
-                      child: SimpleTreeView(tree, onChecked: () {}),
+                      child: SimpleTreeView(tree, onNodeDataChanged: () {}),
                     ),
                   ),
                 ],
@@ -162,7 +163,7 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
                 ),
               ),
               child: SingleChildScrollView(
-                child: SimpleTreeView(detailTree, onChecked: () {}),
+                child: SimpleTreeView(detailTree, onNodeDataChanged: () {}),
               ),
             ),
           ),
