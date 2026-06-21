@@ -57,10 +57,9 @@ dependencies:
   flutter_native_splash: ^2.4.7
 
   ## tree 组件
-  ## 使用中
-  reorderable_tree_list_view: ^0.0.1
+  ## reorderable_tree_list_view: ^0.0.1
   ## 组件-备用
-  super_tree: ^0.2.1
+  ## super_tree: ^0.2.1
   recursive_tree_flutter: ^1.0.4
 
   ## 表格组件

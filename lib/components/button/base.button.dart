@@ -1,7 +1,6 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class BaseButton extends StatefulWidget {
   final String label;
@@ -146,7 +145,7 @@ class _BaseButtonState extends State<BaseButton> with TickerProviderStateMixin {
           child: Transform.scale(
             scale: _scaleAnimation.value,
             child: SizedBox(
-              width: widget.width!.w,
+              width: widget.width,
               height: widget.height,
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(widget.borderRadius),

@@ -5,13 +5,11 @@ import 'package:flutter_kts_template/components/TreeView/simple-tree/simple.tree
 import 'package:flutter_kts_template/components/TreeView/simple-tree/simple.treeview.dart';
 import 'package:flutter_kts_template/components/text/text.title.dart';
 import 'package:flutter_kts_template/pages/paramsInject/paramsInject.mixin.dart';
+import 'package:flutter_kts_template/pages/paramsInject/treeData/treeData.dart';
 import 'package:flutter_kts_template/theme/table.theme.dart';
 import 'package:recursive_tree_flutter/models/tree_type.dart';
-import 'package:reorderable_tree_list_view/reorderable_tree_list_view.dart';
 
-import '../../components/TreeView/tree-view.dart';
 import '../../components/fileUploads/fileUploads.dart';
-import '../../icons/hy_icons.dart';
 import '../radioManager/radio.model.dart';
 
 class ParamsInjectPager extends StatefulWidget {
@@ -25,11 +23,25 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
     with ParamsInjectMixin {
   UserStatus? _statusFilter;
   late TreeType<SimpleTreeNode> tree;
-
+  late TreeType<SimpleTreeNode> detailTree;
   @override
   void initState() {
     // TODO: implement initState
-    tree = sampleVNRegionNode();
+    tree = buildTree(treeMockData);
+    detailTree = buildTree(
+      mockData1,
+      leafActionWidgetLabel: "inject",
+      leafActionWidgetOnPressed: (v) {
+        print(v);
+      },
+      leafActionWidgetSize: Size(60, 30),
+    );
+    // Future.delayed(Duration(seconds: 10)).then((_) {
+    //   tree = buildTree(
+    //     mockData1,
+    //     leafActionWidget: BaseButton(label: "inject", onPressed: () {}),
+    //   );
+    // });
     super.initState();
   }
 
@@ -40,19 +52,16 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Expanded(flex: 4, child: _buildMasterTree(getTreeData)),
+          Expanded(flex: 4, child: _buildMasterTree()),
           const VerticalDivider(thickness: 1, width: 1),
-          Expanded(
-            flex: 3,
-            child: _buildDetailTree(getTreeData, "SCC-Command Vehicle-1"),
-          ),
+          Expanded(flex: 3, child: _buildDetailTree("SCC-Command Vehicle-1")),
         ],
       ),
     );
   }
 
   /// leftTree
-  Widget _buildMasterTree(Future<List<Uri>> Function() future) {
+  Widget _buildMasterTree() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisAlignment: MainAxisAlignment.start,
@@ -111,30 +120,8 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
                     ),
                   ),
                   Expanded(
-                    child: TreeView(
-                      future: future,
-                      folderBuilder: (context, path) {
-                        return Row(
-                          children: [
-                            Icon(HyIcons.ren, size: 14, color: Colors.amber),
-                            SizedBox(width: 8),
-                            Text(
-                              TreePath.getDisplayName(path),
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                          ],
-                        );
-                      },
-                      itemBuilder: (context, path) {
-                        return Row(
-                          children: [
-                            Icon(HyIcons.jiantou, size: 20),
-                            SizedBox(width: 8),
-                            Text(TreePath.getDisplayName(path)),
-                            const Spacer(),
-                          ],
-                        );
-                      },
+                    child: SingleChildScrollView(
+                      child: SimpleTreeView(tree, onChecked: () {}),
                     ),
                   ),
                 ],
@@ -146,7 +133,7 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
     );
   }
 
-  Widget _buildDetailTree(Future<List<Uri>> Function() future, String title) {
+  Widget _buildDetailTree(String title) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisAlignment: MainAxisAlignment.start,
@@ -173,31 +160,9 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
                   style: BorderStyle.solid,
                 ),
               ),
-              child: SimpleTreeView(tree, onNodeDataChanged: () {}),
-              // child: TreeView(
-              //   future: future,
-              //   folderBuilder: (context, path) {
-              //     return Row(
-              //       children: [
-              //         Icon(HyIcons.ren, size: 14, color: Colors.amber),
-              //         SizedBox(width: 8),
-              //         Text(
-              //           TreePath.getDisplayName(path),
-              //           style: TextStyle(fontWeight: FontWeight.bold),
-              //         ),
-              //       ],
-              //     );
-              //   },
-              //   itemBuilder: (context, path) {
-              //     return Row(
-              //       children: [
-              //         Icon(HyIcons.wenjian, size: 16),
-              //         SizedBox(width: 8),
-              //         Text(TreePath.getDisplayName(path)),
-              //       ],
-              //     );
-              //   },
-              // ),
+              child: SingleChildScrollView(
+                child: SimpleTreeView(detailTree, onChecked: () {}),
+              ),
             ),
           ),
         ),

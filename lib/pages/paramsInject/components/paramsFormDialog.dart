@@ -109,10 +109,8 @@ class ParamsFormDialog {
                 label: confirmText,
                 width: 70,
                 onPressed: () {
-                  // 验证通过，获取表单数据
                   if (formKey.currentState?.saveAndValidate() ?? false) {
                     final formData = formKey.currentState?.value;
-                    // 可将 formData 作为参数传给 onConfirm，但这里保持简单
                     SmartDialog.dismiss();
                     onConfirm(formData!);
                   }

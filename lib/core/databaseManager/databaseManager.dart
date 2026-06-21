@@ -1,10 +1,9 @@
 import 'package:flutter_kts_template/config/config.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 
 import '../../logger/logger.dart';
 import '../../objectbox.g.dart';
-
 
 class DatabaseManager {
   static DatabaseManager? _instance;
@@ -19,13 +18,15 @@ class DatabaseManager {
     if (_instance != null) return _instance!;
     String path = (await getApplicationDocumentsDirectory()).path;
     final store = await openStore(
-        directory: p.join(path, AppConfig.dataBaseConfig.name),
-        debugFlags: DebugFlags.logQueries | DebugFlags.logQueryParameters,
+      directory: p.join(path, AppConfig.dataBaseConfig.name),
+      debugFlags: DebugFlags.logQueries | DebugFlags.logQueryParameters,
     );
     _instance = DatabaseManager._create(store);
     // OS 访问: http://localhost:8081
     // Android 访问:http://10.0.2.2:8081
-    GlobalLogger.logInfo("DBServer start ${p.join(path, AppConfig.dataBaseConfig.name)}");
+    GlobalLogger.logInfo(
+      "DBServer start ${p.join(path, AppConfig.dataBaseConfig.name)}",
+    );
     return _instance!;
   }
 
@@ -64,12 +65,12 @@ class DatabaseManager {
 
   // 后台事务
   Future<T> writeTransactionAsync<T, P>(
-      T Function(Store store, P param) action,
-      P param,
-      ) {
+    T Function(Store store, P param) action,
+    P param,
+  ) {
     return _store.runInTransactionAsync<T, P>(
       TxMode.write,
-          (store, p) => action(store, p),
+      (store, p) => action(store, p),
       param,
     );
   }

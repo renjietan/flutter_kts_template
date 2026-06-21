@@ -1,5 +1,5 @@
 import 'package:flutter/cupertino.dart';
-import 'package:recursive_tree_flutter/models/abstract_node_type.dart';
+import 'package:flutter_kts_template/icons/hy_icons.dart';
 import 'package:recursive_tree_flutter/models/tree_type.dart';
 
 import '../../components/TreeView/simple-tree/simple.tree.model.dart';
@@ -7,33 +7,72 @@ import '../../components/TreeView/simple-tree/simple.tree.model.dart';
 mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
   List<Uri> paths = [];
 
-  Future<List<Uri>> getTreeData() async {
-    await Future.delayed(Duration(seconds: 3));
-    paths = [
-      Uri.parse('file:///documents/1'),
-      Uri.parse('file:///documents/images/2'),
-    ];
-    return paths;
-  }
+  TreeType<SimpleTreeNode> buildTree(
+    Map<String, dynamic> rootData, {
+    String? leafActionWidgetLabel,
+    void Function(dynamic)? leafActionWidgetOnPressed,
+    Size? leafActionWidgetSize,
+  }) {
+    // 递归构建函数，返回 (当前节点, 下一个可用索引)
+    (TreeType<SimpleTreeNode>, int) _buildNode(
+      Map<String, dynamic> data,
+      TreeType<SimpleTreeNode>? parent,
+      int level,
+      int currentIndex, // 当前节点应使用的索引
+    ) {
+      // 当前节点使用 currentIndex
+      int nextIndex = currentIndex + 1; // 子节点起始索引
+      double padding = level * 16;
+      var node = TreeType<SimpleTreeNode>(
+        data: SimpleTreeNode(
+          id: data["id"],
+          title: data["name"],
+          level: level,
+          index: currentIndex,
+          padding: padding,
+          isShowCheckbox: false,
+        ),
+        children: [],
+        parent: parent,
+      );
 
-  void parseTree(
-    Map<String, dynamic> node, [
-    int depth = 0,
-    TreeType<SimpleTreeNode>? res,
-  ]) {
-    if (node['children'] != null && node['children'].isNotEmpty) {
-      for (var child in node['children']) {
-        parseTree(child, depth + 1);
+      final rawChildren = (data['children'] ?? []) as List<dynamic>;
+      List<TreeType<SimpleTreeNode>> childNodes = [];
+      for (var childData in rawChildren) {
+        if (childData is Map<String, dynamic>) {
+          // 递归构建子节点，传入 nextIndex 作为其索引
+          var (childNode, newIndex) = _buildNode(
+            childData,
+            node,
+            level + 1,
+            nextIndex,
+          );
+          childNodes.add(childNode);
+          nextIndex = newIndex; // 更新下一个可用索引
+        }
       }
-    }
-  }
+      node.children = childNodes;
+      if (node.children.isEmpty) {
+        node.data.isInner = false;
+        node.data.padding = node.data.padding + 10;
+        node.data.titleIcon = HyIcons.wenjian;
 
-  TreeType<SimpleTreeNode> sampleVNRegionNode<T extends AbsNodeType>() {
-    return TreeType<SimpleTreeNode>(
-      data: SimpleTreeNode(id: 0, title: "Việt Nam", level: 0, index: 0),
-      children: [],
-      parent: null,
-    );
+        if (leafActionWidgetLabel != null) {
+          node.data.leafActionWidgetLabel = leafActionWidgetLabel;
+        }
+        if (leafActionWidgetOnPressed != null) {
+          node.data.leafActionWidgetOnPressed = leafActionWidgetOnPressed;
+        }
+        if (leafActionWidgetSize != null) {
+          node.data.leafActionWidgetSize = leafActionWidgetSize;
+        }
+      }
+      return (node, nextIndex);
+    }
+
+    // 从根节点开始，层级为1，索引从0开始
+    var (rootNode, _) = _buildNode(rootData, null, 0, 0);
+    return rootNode;
   }
 
   @override

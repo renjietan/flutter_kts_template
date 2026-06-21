@@ -64,6 +64,7 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
   // =============================================================================
   // 2026/6/15 下午2:54 构建 widget
   // =============================================================================
+  // 勾选框-工具栏
   Widget buildToolbar() {
     return TableFilterToolbar(
       padding: EdgeInsets.all(12),
@@ -103,6 +104,7 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
     );
   }
 
+  // 列
   List<ColumnDefinition<User>> buildColumns() {
     return [
       ColumnDefinition<User>(
@@ -132,6 +134,7 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
     ];
   }
 
+  // 编辑、删除
   Widget buildActionCell(User user) {
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -167,6 +170,7 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
     );
   }
 
+  // 空
   Widget buildEmptyWidget() {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 48),

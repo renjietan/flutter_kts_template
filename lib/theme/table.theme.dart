@@ -1,6 +1,5 @@
-import 'dart:ui';
-
 import 'package:composable_data_table/composable_data_table.dart';
+import 'package:flutter/cupertino.dart';
 
 // =============================================================================
 // 2026/6/15 composable_data_table 的主题定制,具体细节参照 pub.dev
@@ -28,6 +27,14 @@ DataTablePlusTheme getThemePreset(ThemePreset preset) {
         warningLightColor: Color(0xFF4D3800),
         dangerColor: Color(0xFFE57373),
         dangerLightColor: Color(0xFF4D1F1F),
+        cellPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        headerPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        cellTextStyle: TextStyle(fontSize: 13, color: Color(0xFFFFFFFF)),
+        headerTextStyle: TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+          color: Color(0xFFFFFFFF),
+        ),
       );
     case ThemePreset.blue:
       return const DataTablePlusTheme(
@@ -46,6 +53,14 @@ DataTablePlusTheme getThemePreset(ThemePreset preset) {
         warningLightColor: Color(0xFFFEF3C7),
         dangerColor: Color(0xFFDC2626),
         dangerLightColor: Color(0xFFFEE2E2),
+        cellPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        headerPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        cellTextStyle: TextStyle(fontSize: 13, color: const Color(0xFF1F2937)),
+        headerTextStyle: TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+          color: const Color(0xFF6B7280),
+        ),
       );
     case ThemePreset.green:
       return const DataTablePlusTheme(
@@ -64,6 +79,14 @@ DataTablePlusTheme getThemePreset(ThemePreset preset) {
         warningLightColor: Color(0xFFFEF9C3),
         dangerColor: Color(0xFFDC2626),
         dangerLightColor: Color(0xFFFEE2E2),
+        cellPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        headerPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        cellTextStyle: TextStyle(fontSize: 13, color: const Color(0xFF1F2937)),
+        headerTextStyle: TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+          color: const Color(0xFF6B7280),
+        ),
       );
     case ThemePreset.purple:
       return const DataTablePlusTheme(
@@ -83,6 +106,14 @@ DataTablePlusTheme getThemePreset(ThemePreset preset) {
         dangerColor: Color(0xFFDC2626),
         dangerLightColor: Color(0xFFFEE2E2),
         borderRadius: 5,
+        cellPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        headerPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        cellTextStyle: TextStyle(fontSize: 13, color: const Color(0xFF1F2937)),
+        headerTextStyle: TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+          color: const Color(0xFF6B7280),
+        ),
       );
   }
 }

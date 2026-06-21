@@ -334,14 +334,6 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "10.3.0+2"
-  flutter_hooks:
-    dependency: transitive
-    description:
-      name: flutter_hooks
-      sha256: cde36b12f7188c85286fba9b38cc5a902e7279f36dd676967106c041dc9dde70
-      url: "https://pub.flutter-io.cn"
-    source: hosted
-    version: "0.20.5"
   flutter_lints:
     dependency: "direct dev"
     description:
@@ -901,14 +893,6 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "1.0.4"
-  reorderable_tree_list_view:
-    dependency: "direct main"
-    description:
-      name: reorderable_tree_list_view
-      sha256: "3edd07260f7f6afc60738d0726037e0722565b59677a27c78e0f092cdaf08937"
-      url: "https://pub.flutter-io.cn"
-    source: hosted
-    version: "0.0.1"
   rxdart:
     dependency: transitive
     description:
@@ -1106,14 +1090,6 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "1.4.1"
-  super_tree:
-    dependency: "direct main"
-    description:
-      name: super_tree
-      sha256: e895d002d1ee7c5158ec05b19e60ebb188251587a8f65ceefef06d207720d4de
-      url: "https://pub.flutter-io.cn"
-    source: hosted
-    version: "0.2.1"
   term_glyph:
     dependency: transitive
     description:

@@ -5,12 +5,15 @@ import 'package:recursive_tree_flutter/models/abstract_node_type.dart';
 import 'package:recursive_tree_flutter/models/tree_type.dart';
 import 'package:recursive_tree_flutter/views/expandable_tree_mixin.dart';
 
-class SimpleTreeView extends StatefulWidget {
-  const SimpleTreeView(this.tree, {super.key, required this.onNodeDataChanged});
+import '../../../logger/logger.dart';
+import '../../button/base.button.dart';
 
+class SimpleTreeView extends StatefulWidget {
   final TreeType<SimpleTreeNode> tree;
 
-  final VoidCallback onNodeDataChanged;
+  final VoidCallback onChecked;
+
+  const SimpleTreeView(this.tree, {super.key, required this.onChecked});
 
   @override
   State<SimpleTreeView> createState() => _SimpleTreeViewState();
@@ -51,7 +54,12 @@ class _SimpleTreeViewState<T extends AbsNodeType> extends State<SimpleTreeView>
   }
 
   @override
-  Widget build(BuildContext context) => buildView();
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [buildNode(), buildChildrenNodes()],
+    );
+  }
 
   @override
   Widget buildNode() {
@@ -59,23 +67,47 @@ class _SimpleTreeViewState<T extends AbsNodeType> extends State<SimpleTreeView>
     Color colorByLevel = widget.tree.data.index % 2 == 0
         ? Color(0xFF171C22)
         : Color(0xFF23282D);
-    Widget wd = widget.tree.data.index % 2 == 0
-        ? Icon(Icons.one_k_outlined, color: Colors.white, size: 16)
-        : Icon(Icons.file_copy, color: Colors.white, size: 16);
+    if (widget.tree.data.title == "张伟") {
+      GlobalLogger.logInfo(
+        "张伟：${widget.tree.data.leafActionWidgetOnPressed.toString()}",
+      );
+    }
     return InkWell(
       onTap: updateStateToggleExpansion,
       child: Container(
         color: colorByLevel,
+        height: 44,
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Padding(
-              padding: EdgeInsets.only(left: widget.tree.data.padding),
-              child: buildRotationIcon(),
+              padding: EdgeInsets.only(
+                left: tree.isLeaf
+                    ? widget.tree.data.padding + 26
+                    : widget.tree.data.padding,
+              ),
+              child: widget.tree.children.isNotEmpty
+                  ? buildRotationIcon()
+                  : const SizedBox.shrink(),
             ),
-            wd,
+            if (widget.tree.data.titleIcon != null)
+              Icon(widget.tree.data.titleIcon, color: Colors.white, size: 16),
             SizedBox(width: 10),
             Expanded(child: buildTitle()),
-            buildTrailing(),
+            if (widget.tree.data.leafActionWidgetLabel != null && tree.isLeaf)
+              BaseButton(
+                label: widget.tree.data.leafActionWidgetLabel!,
+                width: widget.tree.data.leafActionWidgetSize?.width ?? 70,
+                onPressed: () {
+                  if (widget.tree.data.leafActionWidgetOnPressed != null) {
+                    widget.tree.data.leafActionWidgetOnPressed!(
+                      widget.tree.data,
+                    );
+                  }
+                },
+              ),
+            if (tree.isLeaf && widget.tree.data.isShowCheckbox) buildTrailing(),
+            SizedBox(width: 10),
           ],
         ),
       ),
@@ -128,17 +160,15 @@ class _SimpleTreeViewState<T extends AbsNodeType> extends State<SimpleTreeView>
     if (tree.data.isUnavailable) {
       return const Icon(Icons.close_rounded, color: Colors.red);
     }
-
     if (tree.isLeaf) {
       return Checkbox(
-        value: tree.data.isChosen!, // leaves always is true or false
+        value: tree.data.isChosen!,
         onChanged: (value) {
           updateTreeSingleChoice(tree, !tree.data.isChosen!);
-          widget.onNodeDataChanged();
+          widget.onChecked();
         },
       );
     }
-
     return const SizedBox.shrink();
   }
 
@@ -147,10 +177,7 @@ class _SimpleTreeViewState<T extends AbsNodeType> extends State<SimpleTreeView>
     List<TreeType<SimpleTreeNode>> list,
   ) => List.generate(
     list.length,
-    (int index) => SimpleTreeView(
-      list[index],
-      onNodeDataChanged: widget.onNodeDataChanged,
-    ),
+    (int index) => SimpleTreeView(list[index], onChecked: widget.onChecked),
   );
 
   @override

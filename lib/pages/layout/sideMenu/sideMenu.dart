@@ -15,7 +15,7 @@ class _SideMenuState extends State<SideMenu> with SideMenuMixin {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 75.w,
+      width: 70,
       child: Container(
         color: const Color(0xFF171C22),
         child: SingleChildScrollView(

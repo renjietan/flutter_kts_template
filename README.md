@@ -78,10 +78,7 @@ t.common.welcome(appName: 'Slang')
     - 使用
         - 实体类转JSON: flutter pub run build_runner build --delete-conflicting-outputs
         - 通过网页查看数据库: docker run -d --name objectbox-admin -v C:\Users\Administrator\Documents\app_db:/db --publish 8081:8081 objectboxio/admin:latest
-- 树：
-    - fvm flutter pub add flutter_simple_treeview
-- 服务请求封装（含多线程）
-
-
-
+        - 指定文件: dart run build_runner build --build-filter="lib/models/user.dart"
+        - 注意： 生成的缓存文件在 [lib](.dart_tool/build/generated/flutter_kts_template/lib/core/databaseManager/entities/xx/xxx.info)
+          
 

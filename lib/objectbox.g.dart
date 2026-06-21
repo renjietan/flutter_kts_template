@@ -124,7 +124,7 @@ Future<obx.Store> openStore({
   int? maxReaders,
   bool queriesCaseSensitiveDefault = true,
   String? macosApplicationGroup,
-  int? debugFlags
+  required int debugFlags,
 }) async {
   await loadObjectBoxLibraryAndroidCompat();
   return obx.Store(
@@ -136,7 +136,7 @@ Future<obx.Store> openStore({
     maxReaders: maxReaders,
     queriesCaseSensitiveDefault: queriesCaseSensitiveDefault,
     macosApplicationGroup: macosApplicationGroup,
-    debugFlags: debugFlags
+    debugFlags: debugFlags,
   );
 }
 
