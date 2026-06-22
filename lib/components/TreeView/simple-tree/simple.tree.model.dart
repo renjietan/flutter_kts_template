@@ -17,6 +17,7 @@ class SimpleTreeNode extends AbsNodeType {
     this.leafActionWidgetOnPressed,
     this.leafActionWidgetSize,
     this.nodeBgColor,
+    this.activeSelection,
   }) : super(
          id: id,
          title: title,
@@ -35,6 +36,7 @@ class SimpleTreeNode extends AbsNodeType {
   void Function(AbsNodeType)? leafActionWidgetOnPressed;
   Size? leafActionWidgetSize;
   Color? nodeBgColor;
+  bool? activeSelection;
 
   @override
   T clone<T extends AbsNodeType>() {

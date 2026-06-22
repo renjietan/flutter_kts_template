@@ -25,27 +25,23 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
   UserStatus? _statusFilter;
   late TreeType<SimpleTreeNode> _tree;
   late TreeType<SimpleTreeNode> _detailTree;
+  bool detailLoading = false;
   @override
   void initState() {
     // TODO: implement initState
+    _tree = buildTree(treeMockData, activeSelection: true);
+    // tree = sampleVNRegionNode(vnJson);
+    _detailTree = buildTree(
+      mockData1,
+      leafActionWidgetLabel: "inject",
+      leafActionWidgetOnPressed: (v) {
+        GlobalLogger.logInfo(v.toString());
+      },
+      leafActionWidgetSize: Size(60, 30),
+    );
     setState(() {
-      _tree = buildTree(treeMockData);
-      // tree = sampleVNRegionNode(vnJson);
-      _detailTree = buildTree(
-        mockData1,
-        leafActionWidgetLabel: "inject",
-        leafActionWidgetOnPressed: (v) {
-          GlobalLogger.logInfo(v.toString());
-        },
-        leafActionWidgetSize: Size(60, 30),
-      );
+      detailLoading = true;
     });
-    // Future.delayed(Duration(seconds: 10)).then((_) {
-    //   tree = buildTree(
-    //     mockData1,
-    //     leafActionWidget: BaseButton(label: "inject", onPressed: () {}),
-    //   );
-    // });
     super.initState();
   }
 
@@ -64,7 +60,7 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
     );
   }
 
-  /// leftTree
+  /// master tree
   Widget _buildMasterTree() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -129,9 +125,23 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
                         _tree,
                         onNodeDataChanged: (v) {
                           GlobalLogger.logInfo(v.toString());
+                          //! 重点：可以什么都不干 但是必须 调用setState 否则 选中行颜色变化后，其他颜色无法恢复
                           setState(() {
-                            /// 这个是重点，否则 选中行颜色变化后，其他颜色无法恢复
+                            detailLoading = false;
                           });
+                          _detailTree = buildTree(
+                            v.data.title == "张小明" ? mockData1 : mockData2,
+                            leafActionWidgetLabel: "inject",
+                            leafActionWidgetOnPressed: (v) {
+                              GlobalLogger.logInfo(v.toString());
+                            },
+                            leafActionWidgetSize: Size(60, 30),
+                          );
+                          Future.delayed(Duration(seconds: 1)).then(
+                            (_) => setState(() {
+                              detailLoading = true;
+                            }),
+                          );
                         },
                       ),
                     ),
@@ -145,6 +155,7 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
     );
   }
 
+  /// detail tree
   Widget _buildDetailTree(String title) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -173,7 +184,15 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
                 ),
               ),
               child: SingleChildScrollView(
-                child: SimpleTreeView(_detailTree, onNodeDataChanged: (v) {}),
+                child: Visibility(
+                  visible: detailLoading,
+                  child: SimpleTreeView(
+                    _detailTree,
+                    onNodeDataChanged: (v) {
+                      GlobalLogger.logInfo(v.toString());
+                    },
+                  ),
+                ),
               ),
             ),
           ),

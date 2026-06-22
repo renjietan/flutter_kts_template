@@ -63,10 +63,10 @@ class _SimpleTreeViewState<T extends AbsNodeType> extends State<SimpleTreeView>
         : tree.data.nodeBgColor;
     return GestureDetector(
       onTap: () {
-        if (tree.isLeaf) {
+        if (tree.isLeaf && (tree.data.activeSelection ?? false)) {
           updateTreeSingleChoiceDms4(tree, !tree.data.isChosen!);
-          widget.onNodeDataChanged(tree);
         }
+        widget.onNodeDataChanged(tree);
       },
       child: Container(
         decoration: BoxDecoration(color: bgColor),
@@ -173,32 +173,6 @@ class _SimpleTreeViewState<T extends AbsNodeType> extends State<SimpleTreeView>
       onNodeDataChanged: widget.onNodeDataChanged,
     ),
   );
-
-  //   @override
-  //   void updateStateToggleExpansion() {
-  //     // setState(() {
-  //     //   if (tree.isLeaf) {
-  //     //     // updateTreeMultipleChoice(root, false);
-  //     //     var root = findRoot(tree);
-  //     //     GlobalLogger.logInfo(
-  //     //       "1=======================${tree.data.isChosen.toString()}===${root.children[0].children[0].children[0].data.isChosen}",
-  //     //     );
-  //     //     // var cur = findTreeWithId(root, tree.data.id);
-  //     //     updateTreeSingleChoice(tree, !tree.data.isChosen!);
-  //     //     // tree.data.nodeBgColor = tree.data.isChosen == true
-  //     //     //     ? Color(0xFF004098)
-  //     //     //     : (tree.data.index % 2 == 0
-  //     //     //           ? Color(0xFF171C22)
-  //     //     //           : Color(0xFF23282D));
-  //     //     GlobalLogger.logInfo(
-  //     //       "2=======================${tree.data.isChosen.toString()}===${root.children[0].children[0].children[0].data.isChosen}",
-  //     //     );
-  //     //   } else {
-  //     //     toggleExpansion();
-  //     //   }
-  //     // });
-  //   }
-  // }
 
   @override
   void updateStateToggleExpansion() => setState(() => toggleExpansion());
