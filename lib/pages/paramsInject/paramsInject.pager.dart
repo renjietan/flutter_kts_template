@@ -23,21 +23,23 @@ class ParamsInjectPager extends StatefulWidget {
 class _ParamsInjectPagerState extends State<ParamsInjectPager>
     with ParamsInjectMixin {
   UserStatus? _statusFilter;
-  late TreeType<SimpleTreeNode> tree;
-  late TreeType<SimpleTreeNode> detailTree;
+  late TreeType<SimpleTreeNode> _tree;
+  late TreeType<SimpleTreeNode> _detailTree;
   @override
   void initState() {
     // TODO: implement initState
-    tree = buildTree(treeMockData);
-    // tree = sampleVNRegionNode(vnJson);
-    detailTree = buildTree(
-      mockData1,
-      leafActionWidgetLabel: "inject",
-      leafActionWidgetOnPressed: (v) {
-        GlobalLogger.logInfo(v.toString());
-      },
-      leafActionWidgetSize: Size(60, 30),
-    );
+    setState(() {
+      _tree = buildTree(treeMockData);
+      // tree = sampleVNRegionNode(vnJson);
+      _detailTree = buildTree(
+        mockData1,
+        leafActionWidgetLabel: "inject",
+        leafActionWidgetOnPressed: (v) {
+          GlobalLogger.logInfo(v.toString());
+        },
+        leafActionWidgetSize: Size(60, 30),
+      );
+    });
     // Future.delayed(Duration(seconds: 10)).then((_) {
     //   tree = buildTree(
     //     mockData1,
@@ -123,7 +125,15 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
                   ),
                   Expanded(
                     child: SingleChildScrollView(
-                      child: SimpleTreeView(tree, onNodeDataChanged: () {}),
+                      child: SimpleTreeView(
+                        _tree,
+                        onNodeDataChanged: (v) {
+                          GlobalLogger.logInfo(v.toString());
+                          setState(() {
+                            /// 这个是重点，否则 选中行颜色变化后，其他颜色无法恢复
+                          });
+                        },
+                      ),
                     ),
                   ),
                 ],
@@ -163,7 +173,7 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
                 ),
               ),
               child: SingleChildScrollView(
-                child: SimpleTreeView(detailTree, onNodeDataChanged: () {}),
+                child: SimpleTreeView(_detailTree, onNodeDataChanged: (v) {}),
               ),
             ),
           ),

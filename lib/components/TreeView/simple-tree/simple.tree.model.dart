@@ -16,7 +16,6 @@ class SimpleTreeNode extends AbsNodeType {
     this.leafActionWidgetLabel,
     this.leafActionWidgetOnPressed,
     this.leafActionWidgetSize,
-    this.onSelected,
     this.nodeBgColor,
   }) : super(
          id: id,
@@ -35,7 +34,6 @@ class SimpleTreeNode extends AbsNodeType {
   String? leafActionWidgetLabel;
   void Function(AbsNodeType)? leafActionWidgetOnPressed;
   Size? leafActionWidgetSize;
-  void Function(AbsNodeType)? onSelected;
   Color? nodeBgColor;
 
   @override
@@ -53,7 +51,6 @@ class SimpleTreeNode extends AbsNodeType {
       // leafActionWidgetLabel: leafActionWidgetLabel,
       // leafActionWidgetOnPressed: leafActionWidgetOnPressed,
       // leafActionWidgetSize: leafActionWidgetSize,
-      // onSelected: onSelected,
       // nodeBgColor: nodeBgColor,
     );
     newData.isUnavailable = isUnavailable;

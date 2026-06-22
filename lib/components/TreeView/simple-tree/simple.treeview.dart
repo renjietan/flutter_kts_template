@@ -10,7 +10,7 @@ import '../../button/base.button.dart';
 class SimpleTreeView extends StatefulWidget {
   final TreeType<SimpleTreeNode> tree;
 
-  final VoidCallback onNodeDataChanged;
+  final void Function(TreeType<SimpleTreeNode>) onNodeDataChanged;
 
   const SimpleTreeView(this.tree, {super.key, required this.onNodeDataChanged});
 
@@ -57,23 +57,19 @@ class _SimpleTreeViewState<T extends AbsNodeType> extends State<SimpleTreeView>
   @override
   Widget buildNode() {
     if (!tree.data.isShowedInSearching) return const SizedBox.shrink();
-    if (widget.tree.isRoot) return const SizedBox.shrink();
+    // if (widget.tree.isRoot) return const SizedBox.shrink();
     Color? bgColor = tree.data.isChosen == true
         ? Color(0xFF004098)
         : tree.data.nodeBgColor;
     return GestureDetector(
       onTap: () {
-        setState(() {
+        if (tree.isLeaf) {
           updateTreeSingleChoiceDms4(tree, !tree.data.isChosen!);
-          widget.onNodeDataChanged();
-        });
+          widget.onNodeDataChanged(tree);
+        }
       },
       child: Container(
-        decoration: BoxDecoration(
-          color: tree.data.isChosen == true
-              ? Color(0xFF004098)
-              : tree.data.nodeBgColor,
-        ),
+        decoration: BoxDecoration(color: bgColor),
         height: 44,
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -160,7 +156,7 @@ class _SimpleTreeViewState<T extends AbsNodeType> extends State<SimpleTreeView>
         value: tree.data.isChosen!,
         onChanged: (value) {
           updateTreeSingleChoice(tree, !tree.data.isChosen!);
-          widget.onNodeDataChanged();
+          widget.onNodeDataChanged(tree);
         },
       );
     }

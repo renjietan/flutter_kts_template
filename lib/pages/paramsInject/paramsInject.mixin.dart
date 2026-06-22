@@ -1,6 +1,5 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_kts_template/icons/hy_icons.dart';
-import 'package:flutter_kts_template/logger/logger.dart';
 import 'package:recursive_tree_flutter/models/abstract_node_type.dart';
 import 'package:recursive_tree_flutter/models/tree_type.dart';
 
@@ -35,9 +34,6 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
           nodeBgColor: nodeBgColor,
           padding: padding,
           isShowCheckbox: false,
-          onSelected: (v) {
-            GlobalLogger.logInfo(v.toString());
-          },
           isChosen: false,
         ),
         children: [],
