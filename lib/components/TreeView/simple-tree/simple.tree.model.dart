@@ -9,7 +9,7 @@ class SimpleTreeNode extends AbsNodeType {
     this.level = 0,
     this.index = 0,
     this.padding = 0,
-    this.isExpanded = true,
+    this.expanded = true,
     this.isShowCheckbox = false,
     this.titleIcon,
     this.leafActionWidgetLabel,
@@ -17,12 +17,12 @@ class SimpleTreeNode extends AbsNodeType {
     this.leafActionWidgetSize,
     this.onSelected,
     this.nodeBgColor,
-  }) : super(id: id, title: title, isInner: isInner, isExpanded: isExpanded);
+  }) : super(id: id, title: title, isInner: isInner, isExpanded: expanded);
 
   int level;
   double padding;
   int index;
-  bool isExpanded;
+  bool expanded;
   bool isShowCheckbox;
   IconData? titleIcon;
   String? leafActionWidgetLabel;

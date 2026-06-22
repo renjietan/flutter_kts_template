@@ -15,8 +15,7 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
     void Function(dynamic)? leafActionWidgetOnPressed,
     Size? leafActionWidgetSize,
   }) {
-    // 递归构建函数，返回 (当前节点, 下一个可用索引)
-    (TreeType<SimpleTreeNode>, int) _buildNode(
+    (TreeType<SimpleTreeNode>, int) buildNodes(
       Map<String, dynamic> data,
       TreeType<SimpleTreeNode>? parent,
       int level,
@@ -48,7 +47,7 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
       List<TreeType<SimpleTreeNode>> childNodes = [];
       for (var childData in rawChildren) {
         if (childData is Map<String, dynamic>) {
-          var (childNode, newIndex) = _buildNode(
+          var (childNode, newIndex) = buildNodes(
             childData,
             node,
             level + 1,
@@ -64,7 +63,6 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
         // node.data.isShowCheckbox = true;
         node.data.padding = node.data.padding + 10;
         node.data.titleIcon = HyIcons.wenjian;
-        // node.data.isChosen = false;
 
         if (leafActionWidgetLabel != null) {
           node.data.leafActionWidgetLabel = leafActionWidgetLabel;
@@ -80,7 +78,7 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
     }
 
     // 从根节点开始，层级为1，索引从0开始
-    var (rootNode, _) = _buildNode(rootData, null, 0, 0);
+    var (rootNode, _) = buildNodes(rootData, null, 0, 0);
     return rootNode;
   }
 
