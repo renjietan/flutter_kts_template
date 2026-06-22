@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_kts_template/components/TreeView/simple-tree/simple.tree.model.dart';
-import 'package:flutter_kts_template/logger/logger.dart';
-import 'package:recursive_tree_flutter/functions/tree_traversal_functions.dart';
 import 'package:recursive_tree_flutter/functions/tree_update_functions.dart';
 import 'package:recursive_tree_flutter/models/abstract_node_type.dart';
 import 'package:recursive_tree_flutter/models/tree_type.dart';
@@ -59,13 +57,23 @@ class _SimpleTreeViewState<T extends AbsNodeType> extends State<SimpleTreeView>
   @override
   Widget buildNode() {
     if (!tree.data.isShowedInSearching) return const SizedBox.shrink();
-    // Color? bgColor = tree.data.isChosen == true
-    //     ? Color(0xFF004098)
-    //     : tree.data.nodeBgColor;
-    return InkWell(
-      onTap: updateStateToggleExpansion,
+    if (widget.tree.isRoot) return const SizedBox.shrink();
+    Color? bgColor = tree.data.isChosen == true
+        ? Color(0xFF004098)
+        : tree.data.nodeBgColor;
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          updateTreeSingleChoiceDms4(tree, !tree.data.isChosen!);
+          widget.onNodeDataChanged();
+        });
+      },
       child: Container(
-        color: tree.data.nodeBgColor,
+        decoration: BoxDecoration(
+          color: tree.data.isChosen == true
+              ? Color(0xFF004098)
+              : tree.data.nodeBgColor,
+        ),
         height: 44,
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -170,31 +178,32 @@ class _SimpleTreeViewState<T extends AbsNodeType> extends State<SimpleTreeView>
     ),
   );
 
-  @override
-  void updateStateToggleExpansion() {
-    setState(() {
-      if (tree.isLeaf) {
-        // updateTreeMultipleChoice(root, false);
+  //   @override
+  //   void updateStateToggleExpansion() {
+  //     // setState(() {
+  //     //   if (tree.isLeaf) {
+  //     //     // updateTreeMultipleChoice(root, false);
+  //     //     var root = findRoot(tree);
+  //     //     GlobalLogger.logInfo(
+  //     //       "1=======================${tree.data.isChosen.toString()}===${root.children[0].children[0].children[0].data.isChosen}",
+  //     //     );
+  //     //     // var cur = findTreeWithId(root, tree.data.id);
+  //     //     updateTreeSingleChoice(tree, !tree.data.isChosen!);
+  //     //     // tree.data.nodeBgColor = tree.data.isChosen == true
+  //     //     //     ? Color(0xFF004098)
+  //     //     //     : (tree.data.index % 2 == 0
+  //     //     //           ? Color(0xFF171C22)
+  //     //     //           : Color(0xFF23282D));
+  //     //     GlobalLogger.logInfo(
+  //     //       "2=======================${tree.data.isChosen.toString()}===${root.children[0].children[0].children[0].data.isChosen}",
+  //     //     );
+  //     //   } else {
+  //     //     toggleExpansion();
+  //     //   }
+  //     // });
+  //   }
+  // }
 
-        var root = findRoot(tree);
-        GlobalLogger.logInfo(
-          "1=======================${tree.data.isChosen.toString()}===${root.children[0].children[0].children[0]}",
-        );
-        // var cur = findTreeWithId(root, tree.data.id);
-        updateTreeSingleChoice(tree, !tree.data.isChosen!);
-        widget.onNodeDataChanged();
-        tree.data.nodeBgColor = tree.data.isChosen == true
-            ? Color(0xFF004098)
-            : (tree.data.index % 2 == 0
-                  ? Color(0xFF171C22)
-                  : Color(0xFF23282D));
-        GlobalLogger.logInfo(
-          "1=======================${tree.data.isChosen.toString()}===${root.children[0].children[0].children[0]}",
-        );
-      } else {
-        toggleExpansion();
-      }
-    });
-    // return setState(() => toggleExpansion());
-  }
+  @override
+  void updateStateToggleExpansion() => setState(() => toggleExpansion());
 }

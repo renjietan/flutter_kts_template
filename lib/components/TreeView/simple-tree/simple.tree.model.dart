@@ -6,6 +6,7 @@ class SimpleTreeNode extends AbsNodeType {
     required dynamic id,
     required dynamic title,
     bool isInner = true,
+    bool isChosen = false,
     this.level = 0,
     this.index = 0,
     this.padding = 0,
@@ -17,7 +18,13 @@ class SimpleTreeNode extends AbsNodeType {
     this.leafActionWidgetSize,
     this.onSelected,
     this.nodeBgColor,
-  }) : super(id: id, title: title, isInner: isInner, isExpanded: expanded);
+  }) : super(
+         id: id,
+         title: title,
+         isInner: isInner,
+         isExpanded: expanded,
+         isChosen: isChosen,
+       );
 
   int level;
   double padding;

@@ -38,6 +38,7 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
           onSelected: (v) {
             GlobalLogger.logInfo(v.toString());
           },
+          isChosen: false,
         ),
         children: [],
         parent: parent,
