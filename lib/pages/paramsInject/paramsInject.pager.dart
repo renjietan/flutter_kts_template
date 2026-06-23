@@ -123,12 +123,18 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
                     child: SingleChildScrollView(
                       child: SimpleTreeView(
                         _tree,
-                        onNodeDataChanged: (v) {
+                        onNodeDataChanged: (v) async {
                           GlobalLogger.logInfo(v.toString());
                           //! 重点：可以什么都不干 但是必须 调用setState 否则 选中行颜色变化后，其他颜色无法恢复
                           setState(() {
                             detailLoading = false;
                           });
+                          mockData1["name"] =
+                              mockData1["name"] +
+                              DateTime.now().second.toString();
+                          mockData2["name"] =
+                              mockData2["name"] +
+                              DateTime.now().second.toString();
                           _detailTree = buildTree(
                             v.data.title == "张小明" ? mockData1 : mockData2,
                             leafActionWidgetLabel: "inject",
@@ -137,11 +143,9 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
                             },
                             leafActionWidgetSize: Size(60, 30),
                           );
-                          Future.delayed(Duration(seconds: 1)).then(
-                            (_) => setState(() {
-                              detailLoading = true;
-                            }),
-                          );
+                          setState(() {
+                            detailLoading = true;
+                          });
                         },
                       ),
                     ),

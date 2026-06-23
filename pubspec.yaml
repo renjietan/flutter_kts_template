@@ -78,6 +78,7 @@ dependencies:
   universal_file_picker: ^0.1.0
   ## 提示框 + loading
   unified_popups: ^1.2.2
+  dio: ^5.9.2
 
 
 

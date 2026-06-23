@@ -21,7 +21,6 @@ class UploadController {
       String safeFileName = sanitizeFileName(uploadedFile.name);
       String curTime = parseDateTime(DateTime.now());
       curTime = curTime.replaceAll(':', '-');
-      // final filePath = '$uploadPath/($curTime) $safeFileName';
       final filePath = path.join(uploadPath, "[$curTime] $safeFileName");
       final file = File(filePath);
       await file.writeAsBytes(bytes);
