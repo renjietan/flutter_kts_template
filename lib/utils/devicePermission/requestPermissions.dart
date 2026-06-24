@@ -20,7 +20,6 @@ class RequestPermission {
       return await _requestLegacyStorage();
     }
 
-    // 检查当前权限状态
     var status = await Permission.manageExternalStorage.status;
 
     if (status.isGranted) {
@@ -29,7 +28,6 @@ class RequestPermission {
 
     if (status.isPermanentlyDenied) {
       // 被永久拒绝，引导用户去设置
-      await openAppSettings();
       return false;
     }
 
@@ -54,7 +52,7 @@ class RequestPermission {
     if (status.isGranted) return true;
 
     if (status.isPermanentlyDenied) {
-      await openAppSettings();
+      return false;
     }
     return false;
   }

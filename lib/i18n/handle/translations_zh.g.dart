@@ -36,6 +36,8 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 
 	// Translations
 	late final Translations$app$zh app = Translations$app$zh.internal(_root);
+	late final Translations$common$zh common = Translations$common$zh.internal(_root);
+	late final Translations$permission$zh permission = Translations$permission$zh.internal(_root);
 	late final Translations$uploads$zh uploads = Translations$uploads$zh.internal(_root);
 	late final Translations$home$zh home = Translations$home$zh.internal(_root);
 	late final Translations$settings$zh settings = Translations$settings$zh.internal(_root);
@@ -53,6 +55,36 @@ class Translations$app$zh {
 	String get title => '我的应用';
 
 	late final Translations$app$appbar$zh appbar = Translations$app$appbar$zh.internal(_root);
+}
+
+// Path: common
+class Translations$common$zh {
+	Translations$common$zh.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// zh: '确认'
+	String get confirm => '确认';
+
+	/// zh: '取消'
+	String get cancel => '取消';
+}
+
+// Path: permission
+class Translations$permission$zh {
+	Translations$permission$zh.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// zh: '是否立即前往设置？'
+	String get setting => '是否立即前往设置？';
+
+	/// zh: '操作已取消'
+	String get cancel => '操作已取消';
 }
 
 // Path: uploads

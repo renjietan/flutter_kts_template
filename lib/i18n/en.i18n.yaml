@@ -4,6 +4,12 @@ app:
     paramsInject: Params inject
     radioManager: Radio manager
     keyManager: Key manager
+common:
+  confirm: Confirm
+  cancel: Cancel
+permission:
+  setting: Go to settings？
+  cancel: Operation has been cancelled
 uploads:
   success: Upload successful
   cancel: Operation cancelled

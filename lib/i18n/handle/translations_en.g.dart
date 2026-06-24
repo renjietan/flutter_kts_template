@@ -34,6 +34,8 @@ class TranslationsEn extends Translations with BaseTranslations<AppLocale, Trans
 
 	// Translations
 	@override late final _Translations$app$en app = _Translations$app$en._(_root);
+	@override late final _Translations$common$en common = _Translations$common$en._(_root);
+	@override late final _Translations$permission$en permission = _Translations$permission$en._(_root);
 	@override late final _Translations$uploads$en uploads = _Translations$uploads$en._(_root);
 	@override late final _Translations$home$en home = _Translations$home$en._(_root);
 	@override late final _Translations$settings$en settings = _Translations$settings$en._(_root);
@@ -48,6 +50,28 @@ class _Translations$app$en extends Translations$app$zh {
 	// Translations
 	@override String get title => 'My App';
 	@override late final _Translations$app$appbar$en appbar = _Translations$app$appbar$en._(_root);
+}
+
+// Path: common
+class _Translations$common$en extends Translations$common$zh {
+	_Translations$common$en._(TranslationsEn root) : this._root = root, super.internal(root);
+
+	final TranslationsEn _root; // ignore: unused_field
+
+	// Translations
+	@override String get confirm => 'Confirm';
+	@override String get cancel => 'Cancel';
+}
+
+// Path: permission
+class _Translations$permission$en extends Translations$permission$zh {
+	_Translations$permission$en._(TranslationsEn root) : this._root = root, super.internal(root);
+
+	final TranslationsEn _root; // ignore: unused_field
+
+	// Translations
+	@override String get setting => 'Go to settings？';
+	@override String get cancel => 'Operation has been cancelled';
 }
 
 // Path: uploads

@@ -4,6 +4,12 @@ app:
     paramsInject: 参数加注
     radioManager: 电台管理
     keyManager: 注钥管理
+common:
+  confirm: 确认
+  cancel: 取消
+permission:
+  setting: 是否立即前往设置？
+  cancel: 操作已取消
 uploads:
   success: 上传成功
   cancel: 操作已取消
