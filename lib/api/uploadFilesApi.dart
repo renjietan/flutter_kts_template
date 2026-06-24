@@ -1,0 +1,55 @@
+import 'package:dio/dio.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter_kts_template/utils/request/httpClient.dart';
+
+class UploadFilesApi {
+  static final DioClient _instance = DioClient();
+
+  // 上传单个文件（任意类型）
+  static Future<String> single({
+    String url = "/uploadServer/zip",
+    required PlatformFile file,
+    Map<String, dynamic>? extraFields,
+    void Function(int count, int total)? onProgress,
+  }) async {
+    FormData formData = FormData();
+    if (kIsWeb) {
+      // Web 平台：使用 bytes
+      if (file.bytes == null) {
+        throw Exception('Web 平台文件 bytes 为空，请确保 pickFiles 时 withData: true');
+      }
+      formData.files.add(
+        MapEntry(
+          'file',
+          MultipartFile.fromBytes(file.bytes!, filename: file.name),
+        ),
+      );
+    } else {
+      // 移动端/桌面端：使用文件路径
+      if (file.path == null) {
+        throw Exception('文件路径为空');
+      }
+      formData.files.add(
+        MapEntry(
+          'file',
+          await MultipartFile.fromFile(file.path!, filename: file.name),
+        ),
+      );
+    }
+
+    // 添加额外表单字段
+    if (extraFields != null) {
+      extraFields.forEach((key, value) {
+        formData.fields.add(MapEntry(key, value.toString()));
+      });
+    }
+
+    String res = await _instance.post(
+      url,
+      data: formData,
+      parser: (dynamic data) => data,
+    );
+    return res;
+  }
+}

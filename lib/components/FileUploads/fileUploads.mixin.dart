@@ -1,47 +1,55 @@
-import 'package:flutter/material.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter_kts_template/logger/logger.dart';
+import 'package:flutter_kts_template/utils/files/FileSelector.dart';
 import 'package:unified_popups/unified_popups.dart';
-import 'package:universal_file_picker/universal_file_picker.dart';
 
+import '../../api/uploadFilesApi.dart';
 import 'fileUploads.dart';
 
 mixin FileUploadsMixin on State<FileUploads> {
-  late String filePath = "";
-  late bool isUploadLoading = false;
-  List<UFile> _selectedFiles = [];
+  final TextEditingController simpleTextController = TextEditingController();
 
-  Future<void> pickFiles() async {
-    final files = await UniversalFilePicker().pickFiles(
-      options: PickOptions(allowMultiple: true, allowedExtensions: ["zip"]),
-    );
+  late bool isUploadLoading = false;
+
+  Future<void> pickFiles(BuildContext ctx) async {
     setState(() {
-      _selectedFiles = files;
-      isUploadLoading = false;
-      filePath = files.isNotEmpty ? files[0].path! : "";
-      _uploadFiles();
+      isUploadLoading = true;
     });
+    _uploadFiles(ctx);
   }
 
-  Future<void> _uploadFiles() async {
-    if (_selectedFiles.isEmpty) return;
-
-    setState(() => isUploadLoading = true);
-    final uploader = UFileUploader();
-
+  Future<void> _uploadFiles(BuildContext ctx) async {
+    PlatformFile? file = await FileSelector.pickFile(null);
+    if (file == null) {
+      setState(() {
+        isUploadLoading = false;
+      });
+      Pop.toast('已取消', toastType: ToastType.warn);
+      return;
+    }
     try {
-      final result = await uploader.uploadFile(
-        file: _selectedFiles[0],
-        options: UploadOptions(
-          url: 'http://localhost:8080/api/uploadServer/zip',
-        ),
-      );
-      if (result.success) {
+      String response = await UploadFilesApi.single(file: file);
+      if (response.isNotEmpty) {
+        GlobalLogger.logInfo("response: $response");
         Pop.toast('文件已上传', toastType: ToastType.success);
+        setState(() {
+          simpleTextController.text = file.path!;
+          isUploadLoading = false;
+        });
+      } else {
+        Pop.toast('文件上传失败', toastType: ToastType.error);
+        setState(() {
+          simpleTextController.text = "";
+          isUploadLoading = false;
+        });
       }
     } catch (e) {
-      return;
-    } finally {
-      setState(() => isUploadLoading = false);
+      Pop.toast(e.toString(), toastType: ToastType.error);
+      setState(() {
+        simpleTextController.text = "";
+        isUploadLoading = false;
+      });
     }
-    return;
   }
 }

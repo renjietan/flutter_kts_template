@@ -26,7 +26,8 @@ class _FileUploadsState extends State<FileUploads> with FileUploadsMixin {
           child: SimpleTextfield(
             height: 35,
             contentPadding: EdgeInsets.symmetric(horizontal: 10),
-            value: filePath,
+            controller: simpleTextController,
+            readonly: true,
           ),
         ),
         BaseButton(
@@ -36,7 +37,7 @@ class _FileUploadsState extends State<FileUploads> with FileUploadsMixin {
           icon: HyIcons.wenjian,
           isLoading: isUploadLoading,
           onPressed: () {
-            pickFiles();
+            pickFiles(context);
           },
         ),
         Container(
@@ -64,13 +65,6 @@ class _FileUploadsState extends State<FileUploads> with FileUploadsMixin {
                 fields: [],
                 onConfirm: (v) {},
               );
-              // SimpleFullScreenDialog(
-              //   title: "Save to Key Loader",
-              //   confirmText: "Save",
-              //   cancelText: "Cancel",
-              //   fields: [],
-              //   onConfirm: (Map<String, dynamic> formData) {},
-              // );
             },
           ),
         ),

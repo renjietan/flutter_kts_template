@@ -27,10 +27,7 @@ class UploadController {
       GlobalLogger.logDebug(
         "文件存储路径:$filePath; \ncontent-type: ${uploadedFile.contentType}",
       );
-      return ApiResponse.success(
-        message: "上传成功",
-        data: DateTime.now().millisecondsSinceEpoch ~/ 1000,
-      );
+      return ApiResponse.success(message: "上传成功", data: filePath);
     } else {
       return Response.badRequest(body: '上传失败');
     }

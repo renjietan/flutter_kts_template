@@ -1,18 +1,17 @@
-// response_entity.dart
-class ResponseEntity<T> {
+class ResponseInstance<T> {
   final int code;
   final String message;
   final T? data;
 
-  ResponseEntity({required this.code, required this.message, this.data});
+  ResponseInstance({required this.code, required this.message, this.data});
 
-  factory ResponseEntity.fromJson(
+  factory ResponseInstance.fromJson(
     Map<String, dynamic> json,
     T Function(dynamic)? parser,
   ) {
-    return ResponseEntity<T>(
+    return ResponseInstance<T>(
       code: json['code'] ?? -1,
-      message: json['message'] ?? '', // 与后端一致
+      message: json['message'] ?? '',
       data: parser != null ? parser(json['data']) : json['data'] as T?,
     );
   }

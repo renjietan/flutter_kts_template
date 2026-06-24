@@ -3,19 +3,19 @@ import 'dart:async';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_kts_template/config/config.dart';
-import 'package:flutter_kts_template/utils/request/response.dart';
+import 'package:flutter_kts_template/utils/request/responseInstance.dart';
 
 import 'interceptor/error_interceptor.dart';
 
-class HttpClient {
+class DioClient {
   // 单例对象
-  static final HttpClient _instance = HttpClient._internal();
-  factory HttpClient() => _instance;
+  static final DioClient _instance = DioClient._internal();
+  factory DioClient() => _instance;
 
   late Dio _dio;
   final CancelToken _cancelToken = CancelToken();
 
-  HttpClient._internal() {
+  DioClient._internal() {
     _dio = Dio(
       BaseOptions(
         baseUrl: AppConfig.baseUrl,
@@ -50,12 +50,10 @@ class HttpClient {
     _dio.options.baseUrl = baseUrl;
   }
 
-  // 添加额外拦截器（外部传入）
   void addInterceptor(Interceptor interceptor) {
     _dio.interceptors.add(interceptor);
   }
 
-  // ----- 封装 GET 请求 -----
   Future<T> get<T>(
     String path, {
     Map<String, dynamic>? queryParameters,
@@ -86,6 +84,7 @@ class HttpClient {
     CancelToken? cancelToken,
     ProgressCallback? onSendProgress,
     ProgressCallback? onReceiveProgress,
+    // parser: (data) => (data as List).map((e) => e['url'] as String).toList(),
     required T Function(dynamic) parser,
   }) async {
     try {
@@ -152,7 +151,7 @@ class HttpClient {
     if (response.statusCode == 200) {
       final json = response.data;
       if (json is Map<String, dynamic>) {
-        final entity = ResponseEntity<T>.fromJson(json, parser);
+        final entity = ResponseInstance<T>.fromJson(json, parser);
         if (entity.isSuccess) {
           return entity.data as T;
         } else {
@@ -160,7 +159,6 @@ class HttpClient {
           throw BusinessException(entity.code, entity.message);
         }
       } else {
-        // 如果后端直接返回数据（非标准格式），依然可以通过 parser 解析
         return parser(json);
       }
     } else {

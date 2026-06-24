@@ -36,7 +36,7 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 
 	// Translations
 	late final Translations$app$zh app = Translations$app$zh.internal(_root);
-	late final Translations$common$zh common = Translations$common$zh.internal(_root);
+	late final Translations$uploads$zh uploads = Translations$uploads$zh.internal(_root);
 	late final Translations$home$zh home = Translations$home$zh.internal(_root);
 	late final Translations$settings$zh settings = Translations$settings$zh.internal(_root);
 }
@@ -53,28 +53,22 @@ class Translations$app$zh {
 	String get title => '我的应用';
 }
 
-// Path: common
-class Translations$common$zh {
-	Translations$common$zh.internal(this._root);
+// Path: uploads
+class Translations$uploads$zh {
+	Translations$uploads$zh.internal(this._root);
 
 	final Translations _root; // ignore: unused_field
 
 	// Translations
 
-	/// zh: '你好'
-	String get hello => '你好';
+	/// zh: '上传成功'
+	String get success => '上传成功';
 
-	/// zh: 'Welcome to {appName}'
-	String welcome({required Object appName}) => 'Welcome to ${appName}';
+	/// zh: '操作已取消'
+	String get cancel => '操作已取消';
 
-	/// zh: '(zero) {空} (one) {1个} (other) {{count}个}'
-	String itemCount({required num n, required Object count}) => (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('zh'))(n,
-		zero: '空',
-		one: '1个',
-		other: '${count}个',
-	);
-
-	late final Translations$common$gender$zh gender = Translations$common$gender$zh.internal(_root);
+	/// zh: '上传失败'
+	String get failed => '上传失败';
 }
 
 // Path: home
@@ -109,33 +103,9 @@ class Translations$settings$zh {
 	/// zh: '语言'
 	String get language => '语言';
 
-	/// zh: '主题'
-	String get theme => '主题';
-
-	/// zh: '深色模式'
-	String get darkMode => '深色模式';
-
 	/// zh: '中文'
 	String get zh => '中文';
 
 	/// zh: '英文'
 	String get en => '英文';
-}
-
-// Path: common.gender
-class Translations$common$gender$zh {
-	Translations$common$gender$zh.internal(this._root);
-
-	final Translations _root; // ignore: unused_field
-
-	// Translations
-
-	/// zh: '他'
-	String get male => '他';
-
-	/// zh: '她'
-	String get female => '她';
-
-	/// zh: '他们'
-	String get other => '他们';
 }

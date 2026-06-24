@@ -74,11 +74,18 @@ dependencies:
   flutter_smart_dialog: ^5.1.0
   ## 表格 + 分页
   composable_data_table: ^0.1.1
-  ## 文件上传 - 不带 widget
-  universal_file_picker: ^0.1.0
+  ## 文件上传 - 不带 widget（废弃，使用 dio + file_picker 实现）
+#  universal_file_picker: ^0.1.0
   ## 提示框 + loading
   unified_popups: ^1.2.2
+  ## 前端网络库
   dio: ^5.9.2
+  ## 移动端 权限申请
+  permission_handler: ^12.0.3
+  ## 文件选择
+  file_picker: ^11.0.2
+  ## 获取文件类型
+  mime: ^2.0.0
 
 
 

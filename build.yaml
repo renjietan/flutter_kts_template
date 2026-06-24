@@ -1,9 +1,6 @@
 targets:
   $default:
     builders:
-      objectbox_generator:
-        options:
-          output_dir: lib/core/databaseManager
       slang_build_runner:
         options:
           base_locale: zh # 基础语言。【默认：en】

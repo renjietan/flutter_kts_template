@@ -27,21 +27,16 @@ Middleware parseJsonMiddleware() {
               true &&
           method == "POST") {
         try {
-          // // 使用 shelf_essentials 解析 multipart 请求
+          // 此处在 container 中处理，不在拦截器处理
           // final form = await request.formData();
-          //
-          // // 提取普通字段 -> params
           // var params = Map<String, dynamic>.from(form.fields);
-          // // 将文件信息单独放入 context，key 为 'files'
-          // // form.files 是 Map<String, FormDataFile>
           // final files = form.files;
-          //
           // request = request.change(
           //   context: {
           //     ...request.context,
           //     'params': params,
-          //     'files': files, // 后续 handler 可以通过 request.context['files'] 获取
-          //     // 你也可以存放原始的 FormData 对象
+          //     'files': files, // 切记：通过 request.context['files'] 获取
+          //     //存放原始的 FormData 对象
           //     'formData': form,
           //   },
           // );

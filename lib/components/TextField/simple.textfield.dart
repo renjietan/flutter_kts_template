@@ -22,6 +22,8 @@ class SimpleTextfield extends StatelessWidget {
 
   final EdgeInsets? contentPadding;
 
+  final bool readonly;
+
   const SimpleTextfield({
     super.key,
     this.value = '',
@@ -34,6 +36,7 @@ class SimpleTextfield extends StatelessWidget {
     this.textInputAction,
     this.prefixIconWidget,
     this.contentPadding = EdgeInsets.zero,
+    this.readonly = false,
   });
 
   @override
@@ -48,6 +51,7 @@ class SimpleTextfield extends StatelessWidget {
         onChanged: onChanged,
         keyboardType: keyboardType,
         textInputAction: textInputAction,
+        readOnly: readonly!,
         style: TextStyle(fontSize: 13, color: theme.textPrimaryColor),
         decoration: InputDecoration(
           hintText: hint,

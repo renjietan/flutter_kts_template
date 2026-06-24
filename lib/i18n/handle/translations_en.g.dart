@@ -34,7 +34,7 @@ class TranslationsEn extends Translations with BaseTranslations<AppLocale, Trans
 
 	// Translations
 	@override late final _Translations$app$en app = _Translations$app$en._(_root);
-	@override late final _Translations$common$en common = _Translations$common$en._(_root);
+	@override late final _Translations$uploads$en uploads = _Translations$uploads$en._(_root);
 	@override late final _Translations$home$en home = _Translations$home$en._(_root);
 	@override late final _Translations$settings$en settings = _Translations$settings$en._(_root);
 }
@@ -49,21 +49,16 @@ class _Translations$app$en extends Translations$app$zh {
 	@override String get title => 'My App';
 }
 
-// Path: common
-class _Translations$common$en extends Translations$common$zh {
-	_Translations$common$en._(TranslationsEn root) : this._root = root, super.internal(root);
+// Path: uploads
+class _Translations$uploads$en extends Translations$uploads$zh {
+	_Translations$uploads$en._(TranslationsEn root) : this._root = root, super.internal(root);
 
 	final TranslationsEn _root; // ignore: unused_field
 
 	// Translations
-	@override String get hello => 'Hello';
-	@override String welcome({required Object appName}) => 'Welcome to ${appName}';
-	@override String itemCount({required num n, required Object count}) => (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('en'))(n,
-		zero: 'No items',
-		one: '1 item',
-		other: '${count} items',
-	);
-	@override late final _Translations$common$gender$en gender = _Translations$common$gender$en._(_root);
+	@override String get success => 'Upload successful';
+	@override String get cancel => 'Operation cancelled';
+	@override String get failed => 'Upload failed';
 }
 
 // Path: home
@@ -87,20 +82,6 @@ class _Translations$settings$en extends Translations$settings$zh {
 	// Translations
 	@override String get title => 'Settings';
 	@override String get language => 'Language';
-	@override String get theme => 'Theme';
-	@override String get darkMode => 'Dark Mode';
 	@override String get zh => 'Chinese';
 	@override String get en => 'English';
-}
-
-// Path: common.gender
-class _Translations$common$gender$en extends Translations$common$gender$zh {
-	_Translations$common$gender$en._(TranslationsEn root) : this._root = root, super.internal(root);
-
-	final TranslationsEn _root; // ignore: unused_field
-
-	// Translations
-	@override String get male => 'He';
-	@override String get female => 'She';
-	@override String get other => 'They';
 }

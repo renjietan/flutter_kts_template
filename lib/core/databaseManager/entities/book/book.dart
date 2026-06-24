@@ -2,7 +2,7 @@ import 'package:flutter_kts_template/core/databaseManager/entities/user/user.dar
 import 'package:json_annotation/json_annotation.dart';
 import 'package:objectbox/objectbox.dart';
 
-part 'book.g.dart';
+part 'book.g.dart'; // JsonSerializable: 序列化的关键
 
 @Entity()
 @JsonSerializable(explicitToJson: true)

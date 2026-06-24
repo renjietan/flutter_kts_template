@@ -3,8 +3,7 @@ import 'package:objectbox/objectbox.dart';
 
 import '../book/book.dart';
 
-// JsonSerializable: 序列化的关键
-part 'user.g.dart';
+part 'user.g.dart'; // JsonSerializable: 序列化的关键
 
 ///这个标注是告诉生成器，这个类是需要生成Model类的
 @JsonSerializable()
@@ -35,7 +34,8 @@ class UserEntity {
     DateTime? createdAt,
   }) : createdAt = createdAt ?? DateTime.now();
 
-  factory UserEntity.fromJson(Map<String, dynamic> json) => _$UserEntityFromJson(json);
+  factory UserEntity.fromJson(Map<String, dynamic> json) =>
+      _$UserEntityFromJson(json);
   // Map<String, dynamic> toJson() => _$UserEntityToJson(this);
   Map<String, dynamic> toJson() {
     final json = _$UserEntityToJson(this);
