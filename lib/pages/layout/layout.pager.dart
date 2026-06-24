@@ -1,7 +1,7 @@
 // layout/main_layout.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_kts_template/pages/layout/sideMenu/sideMenu.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_kts_template/pages/layout/switchLanguage/switchLanguage.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:go_router/go_router.dart';
 import 'package:unified_popups/unified_popups.dart';
@@ -25,32 +25,38 @@ class MainLayout extends StatelessWidget {
     return PopScopeWidget(
       child: Scaffold(
         appBar: PreferredSize(
-          // appbar 高度
           preferredSize: const Size.fromHeight(56.0),
           child: AppBar(
-            title: const Text(
-              AppConfig.appName,
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w500,
-                letterSpacing: 0.5,
-              ),
+            title: const Row(
+              children: [
+                // Icon(HyIcons., size: 20),
+                SizedBox(width: 5),
+                Text(
+                  AppConfig.appName,
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w500,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ],
             ),
             centerTitle: false,
-            backgroundColor: const Color(0xFF002250), // rgb(0,34,80)
+            backgroundColor: const Color(0xFF002250),
             elevation: 0,
             foregroundColor: Colors.white,
             actions: [
-              Padding(
-                padding: const EdgeInsets.only(right: 16.0),
-                child: Row(
-                  children: [
-                    Icon(Icons.info_outline, size: 20.w),
-                    const SizedBox(width: 8),
-                    const Text('v1.0'),
-                  ],
-                ),
-              ),
+              // Padding(
+              //   padding: const EdgeInsets.only(right: 16.0),
+              //   child: Row(
+              //     children: [
+              //       Icon(Icons.info_outline, size: 20.w),
+              //       const SizedBox(width: 8),
+              //       const Text('v1.0'),
+              //     ],
+              //   ),
+              // ),
+              SwitchLanguage(),
             ],
           ),
         ),

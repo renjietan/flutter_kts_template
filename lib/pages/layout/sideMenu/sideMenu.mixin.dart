@@ -3,14 +3,10 @@ import 'package:flutter_kts_template/pages/layout/sideMenu/sideMenu.model.dart';
 import 'package:flutter_kts_template/utils/provider/menu_provider.dart';
 import 'package:provider/provider.dart';
 
+import '../../../i18n/handle/translations.g.dart';
 import '../../../icons/hy_icons.dart';
 
 mixin SideMenuMixin<T extends StatefulWidget> on State<T> {
-  final List<MenuItem> _menuItems = const [
-    MenuItem(icon: HyIcons.canshujiazhu, label: '参数加注'),
-    MenuItem(icon: HyIcons.diantaiguanli, label: '电台管理'),
-    MenuItem(icon: HyIcons.zhuyueqiangguanli, label: '注销管理'),
-  ];
   final selectedStyle = {
     "0": const {
       // 未选中
@@ -28,13 +24,19 @@ mixin SideMenuMixin<T extends StatefulWidget> on State<T> {
   int _selectedIndex = 0;
 
   List<Widget> buildMenuItems(BuildContext ctx, void Function(int) onSelected) {
+    late final t = Translations.of(context);
+    // 需要定义在 方法类， 当 TranslationsProvider 通知 widget build时，此时 语言切换才会生效，
+    List<MenuItem> _menuItems = [
+      MenuItem(icon: HyIcons.canshujiazhu, label: t.app.appbar.paramsInject),
+      MenuItem(icon: HyIcons.diantaiguanli, label: t.app.appbar.radioManager),
+      MenuItem(icon: HyIcons.zhuyueqiangguanli, label: t.app.appbar.keyManager),
+    ];
     return List.generate(_menuItems.length, (index) {
       final item = _menuItems[index];
       final isSelected = _selectedIndex == index;
       final _selectedStyle = isSelected
           ? selectedStyle["1"]
           : selectedStyle["0"];
-      // final bgColor = _selectedStyle!["bg_color"];
       // 手势识别器
       return GestureDetector(
         onTap: () {

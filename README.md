@@ -75,10 +75,10 @@ t.common.welcome(appName: 'Slang')
         - 需要访问同步功能
             - flutter pub add objectbox objectbox_sync_flutter_libs:any
             - flutter pub add --dev build_runner objectbox_generator:any
-    - 使用
-        - 实体类转JSON: flutter pub run build_runner build --delete-conflicting-outputs
-        - 通过网页查看数据库: docker run -d --name objectbox-admin -v C:\Users\Administrator\Documents\app_db:/db --publish 8081:8081 objectboxio/admin:latest
-        - 指定文件: dart run build_runner build --build-filter="lib/models/user.dart"
-        - 注意： 生成的缓存文件在 [lib](.dart_tool/build/generated/flutter_kts_template/lib/core/databaseManager/entities/xx/xxx.info)
-          
+      - 使用
+            - 实体类转JSON: flutter pub run build_runner build --delete-conflicting-outputs
+            - 通过网页查看数据库: docker run -d --name objectbox-admin -v C:\Users\Administrator\Documents\app_db:/db --publish 8081:8081 objectboxio/admin:latest
+            - 指定文件: dart run build_runner build --build-filter="lib/models/user.dart"
+            - 注意： 生成的缓存文件在 [lib](.dart_tool/build/generated/flutter_kts_template/lib/core/databaseManager/entities/xx/xxx.info)
+      - 如果以上 build_runner 命令出现问题，请使用：dart run build_runner build --delete-conflicting-outputs --verbose
 

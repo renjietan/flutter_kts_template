@@ -68,17 +68,47 @@
         }
       ],
       "relations": []
+    },
+    {
+      "id": "4:3041742923072573707",
+      "lastPropertyId": "3:3971463092837512991",
+      "name": "RadiosEntity",
+      "properties": [
+        {
+          "id": "1:8212549522126293471",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:4353079850130922898",
+          "name": "createdAt",
+          "type": 10
+        },
+        {
+          "id": "3:3971463092837512991",
+          "name": "updatedAt",
+          "type": 10
+        }
+      ],
+      "relations": []
     }
   ],
-  "lastEntityId": "2:8006931716750502718",
+  "lastEntityId": "4:3041742923072573707",
   "lastIndexId": "1:7435491961108656421",
   "lastRelationId": "0:0",
   "lastSequenceId": "0:0",
   "modelVersion": 5,
   "modelVersionParserMinimum": 5,
-  "retiredEntityUids": [],
+  "retiredEntityUids": [
+    2827524875656266667
+  ],
   "retiredIndexUids": [],
-  "retiredPropertyUids": [],
+  "retiredPropertyUids": [
+    812668694605346950,
+    7877995074749865462,
+    7919633563325803080
+  ],
   "retiredRelationUids": [],
   "version": 1
 }

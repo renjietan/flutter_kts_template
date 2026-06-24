@@ -37,8 +37,8 @@ dependencies:
   ## 向量数据库
   objectbox: ^5.3.2
   ## ObjectBox 在各个平台（如 iOS, Android）上运行的原生底层库，它是运行时的“引擎”，负责真正地读写数据
-  ## ^5.3.2
-  objectbox_flutter_libs: any
+  ## ^5.3.2 | any
+  objectbox_flutter_libs: ^5.3.2
   ## 集成数据时，顺带安装 =》 生成 创建数据库本地文件 的路径
   path_provider: ^2.1.5
   ## 用于各平台的路径拼接
@@ -95,8 +95,8 @@ dev_dependencies:
 
   ## 代码书写遵循的规则集
   flutter_lints: ^6.0.0
-  ## 生成工具：所有插件都可以使用它能生成代码
-  build_runner: ^2.15.0
+  ## 生成工具：所有插件都可以使用它能生成代码 2.15.0
+  build_runner: ^2.4.15
   ## 国际化生成工具: dart slang -d
   slang_build_runner: ^4.15.0
   ## 一键修改Android包名: dart run change_app_package_name:main com.hytera.flutter_kts_templtae
@@ -104,8 +104,8 @@ dev_dependencies:
   ## 阿里巴巴字体转图标: dart run iconfont_convert --config iconfont.yaml
   iconfont_convert: ^1.0.2
   ## 数据库表-代码生成功能： flutter pub run build_runner build --delete-conflicting-outputs
-  ## ^5.3.2
-  objectbox_generator: any
+  ## ^5.3.2 | any
+  objectbox_generator: ^5.3.2
   ## JSON 序列化生成器
   json_serializable: ^6.14.0
   # 路由

@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 import 'package:flutter_kts_template/utils/request/httpClient.dart';
 
 class UploadFilesApi {
@@ -17,7 +18,7 @@ class UploadFilesApi {
     if (kIsWeb) {
       // Web 平台：使用 bytes
       if (file.bytes == null) {
-        throw Exception('Web 平台文件 bytes 为空，请确保 pickFiles 时 withData: true');
+        throw Exception(t.uploads.emptyData);
       }
       formData.files.add(
         MapEntry(
@@ -28,7 +29,7 @@ class UploadFilesApi {
     } else {
       // 移动端/桌面端：使用文件路径
       if (file.path == null) {
-        throw Exception('文件路径为空');
+        throw Exception(t.uploads.emptyPath);
       }
       formData.files.add(
         MapEntry(

@@ -51,6 +51,8 @@ class Translations$app$zh {
 
 	/// zh: '我的应用'
 	String get title => '我的应用';
+
+	late final Translations$app$appbar$zh appbar = Translations$app$appbar$zh.internal(_root);
 }
 
 // Path: uploads
@@ -69,6 +71,12 @@ class Translations$uploads$zh {
 
 	/// zh: '上传失败'
 	String get failed => '上传失败';
+
+	/// zh: '文件路径不可为空'
+	String get emptyPath => '文件路径不可为空';
+
+	/// zh: '文件数据不可为空'
+	String get emptyData => '文件数据不可为空';
 }
 
 // Path: home
@@ -108,4 +116,22 @@ class Translations$settings$zh {
 
 	/// zh: '英文'
 	String get en => '英文';
+}
+
+// Path: app.appbar
+class Translations$app$appbar$zh {
+	Translations$app$appbar$zh.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// zh: '参数加注'
+	String get paramsInject => '参数加注';
+
+	/// zh: '电台管理'
+	String get radioManager => '电台管理';
+
+	/// zh: '注钥管理'
+	String get keyManager => '注钥管理';
 }

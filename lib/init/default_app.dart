@@ -13,13 +13,14 @@ class DefaultApp {
   //运行app
   static void run() async {
     WidgetsFlutterBinding.ensureInitialized();
-    LocaleSettings.setPluralResolver(
-      locale: AppLocale.zh,
-      cardinalResolver: (n, {zero, one, two, few, many, other}) {
-        // 返回 'other' 表示总是使用翻译中定义的 'other' 键
-        return other ?? 'other';
-      },
-    );
+    LocaleSettings.useDeviceLocale();
+    // LocaleSettings.setPluralResolver(
+    //   locale: AppLocale.zh,
+    //   cardinalResolver: (n, {zero, one, two, few, many, other}) {
+    //     // 返回 'other' 表示总是使用翻译中定义的 'other' 键
+    //     return other ?? 'other';
+    //   },
+    // );
     SystemChrome.setSystemUIOverlayStyle(
       const SystemUiOverlayStyle(
         systemNavigationBarColor: Color(0xFF5AA6FD),
@@ -49,9 +50,7 @@ class MyApp extends StatelessWidget {
           // 不显示页面中 DEBUG 横幅
           debugShowCheckedModeBanner: false,
           // navigatorKey: AppConfig.navigatorKey,
-          locale: TranslationProvider.of(
-            context,
-          ).flutterLocale, //设置这个可以使输入框文字垂直居中
+          locale: TranslationProvider.of(context).flutterLocale,
           supportedLocales: AppLocaleUtils.supportedLocales,
           localizationsDelegates: [...GlobalMaterialLocalizations.delegates],
           theme: ThemeData.dark(),

@@ -47,6 +47,7 @@ class _Translations$app$en extends Translations$app$zh {
 
 	// Translations
 	@override String get title => 'My App';
+	@override late final _Translations$app$appbar$en appbar = _Translations$app$appbar$en._(_root);
 }
 
 // Path: uploads
@@ -59,6 +60,8 @@ class _Translations$uploads$en extends Translations$uploads$zh {
 	@override String get success => 'Upload successful';
 	@override String get cancel => 'Operation cancelled';
 	@override String get failed => 'Upload failed';
+	@override String get emptyPath => 'The file path is empty';
+	@override String get emptyData => 'The file data is empty';
 }
 
 // Path: home
@@ -84,4 +87,16 @@ class _Translations$settings$en extends Translations$settings$zh {
 	@override String get language => 'Language';
 	@override String get zh => 'Chinese';
 	@override String get en => 'English';
+}
+
+// Path: app.appbar
+class _Translations$app$appbar$en extends Translations$app$appbar$zh {
+	_Translations$app$appbar$en._(TranslationsEn root) : this._root = root, super.internal(root);
+
+	final TranslationsEn _root; // ignore: unused_field
+
+	// Translations
+	@override String get paramsInject => 'Params inject';
+	@override String get radioManager => 'Radio manager';
+	@override String get keyManager => 'Key manager';
 }

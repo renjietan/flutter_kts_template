@@ -37,7 +37,7 @@ class _FileUploadsState extends State<FileUploads> with FileUploadsMixin {
           icon: HyIcons.wenjian,
           isLoading: isUploadLoading,
           onPressed: () {
-            pickFiles(context);
+            pickFiles();
           },
         ),
         Container(

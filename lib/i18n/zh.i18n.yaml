@@ -1,9 +1,15 @@
 app:
   title: 我的应用
+  appbar:
+    paramsInject: 参数加注
+    radioManager: 电台管理
+    keyManager: 注钥管理
 uploads:
   success: 上传成功
   cancel: 操作已取消
   failed: 上传失败
+  emptyPath: 文件路径不可为空
+  emptyData: 文件数据不可为空
 home:
   title: 首页
   greeting: 欢迎回来，{name}！

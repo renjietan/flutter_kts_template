@@ -1,9 +1,15 @@
 app:
   title: My App
+  appbar:
+    paramsInject: Params inject
+    radioManager: Radio manager
+    keyManager: Key manager
 uploads:
   success: Upload successful
   cancel: Operation cancelled
   failed: Upload failed
+  emptyPath: The file path is empty
+  emptyData: The file data is empty
 home:
   title: Home
   greeting: Welcome back, {name}!
