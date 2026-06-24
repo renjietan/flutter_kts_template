@@ -37,8 +37,6 @@ class RequestPermission {
     if (status.isGranted) {
       return true;
     } else {
-      // 用户拒绝或未开启，可根据需要再次引导
-      // 也可以在这里调用 openAppSettings()
       return false;
     }
   }
