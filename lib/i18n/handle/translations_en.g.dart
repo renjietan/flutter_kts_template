@@ -37,6 +37,8 @@ class TranslationsEn extends Translations with BaseTranslations<AppLocale, Trans
 	@override late final _Translations$common$en common = _Translations$common$en._(_root);
 	@override late final _Translations$permission$en permission = _Translations$permission$en._(_root);
 	@override late final _Translations$uploads$en uploads = _Translations$uploads$en._(_root);
+	@override late final _Translations$json$en json = _Translations$json$en._(_root);
+	@override late final _Translations$platform$en platform = _Translations$platform$en._(_root);
 	@override late final _Translations$home$en home = _Translations$home$en._(_root);
 	@override late final _Translations$settings$en settings = _Translations$settings$en._(_root);
 }
@@ -82,10 +84,32 @@ class _Translations$uploads$en extends Translations$uploads$zh {
 
 	// Translations
 	@override String get success => 'Upload successful';
+	@override String successWithPath({required Object path}) => 'Upload successful; 路径：${path}!';
 	@override String get cancel => 'Operation cancelled';
 	@override String get failed => 'Upload failed';
 	@override String get emptyPath => 'The file path is empty';
 	@override String get emptyData => 'The file data is empty';
+	@override String get existPath => 'The file path is not exist';
+}
+
+// Path: json
+class _Translations$json$en extends Translations$json$zh {
+	_Translations$json$en._(TranslationsEn root) : this._root = root, super.internal(root);
+
+	final TranslationsEn _root; // ignore: unused_field
+
+	// Translations
+	@override String get serialization => 'The received information seems unfamiliar';
+}
+
+// Path: platform
+class _Translations$platform$en extends Translations$platform$zh {
+	_Translations$platform$en._(TranslationsEn root) : this._root = root, super.internal(root);
+
+	final TranslationsEn _root; // ignore: unused_field
+
+	// Translations
+	@override String get webNotReadFile => 'web 平台无法根据路径处理文件';
 }
 
 // Path: home

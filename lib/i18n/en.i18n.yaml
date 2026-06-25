@@ -12,10 +12,16 @@ permission:
   cancel: Operation has been cancelled
 uploads:
   success: Upload successful
+  successWithPath: Upload successful; 路径：{path}!
   cancel: Operation cancelled
   failed: Upload failed
   emptyPath: The file path is empty
   emptyData: The file data is empty
+  existPath: The file path is not exist
+json:
+  serialization: The received information seems unfamiliar
+platform:
+  webNotReadFile: web 平台无法根据路径处理文件
 home:
   title: Home
   greeting: Welcome back, {name}!

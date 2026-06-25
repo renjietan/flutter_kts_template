@@ -2,8 +2,8 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 
-import '../devicePermission/requestPermissions.dart';
-import 'PermissionException.dart';
+import '../../devicePermission/requestPermissions.dart';
+import '../exception/PermissionException.dart';
 
 class FileSelector {
   /// 选择单个文件（任意类型）

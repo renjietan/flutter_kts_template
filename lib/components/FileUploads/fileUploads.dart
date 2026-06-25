@@ -2,7 +2,6 @@ import 'package:composable_data_table/composable_data_table.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_kts_template/components/TextField/simple.textfield.dart';
 import 'package:flutter_kts_template/components/button/base.button.dart';
-import 'package:flutter_kts_template/pages/paramsInject/components/paramsFormDialog.dart';
 import 'package:flutter_kts_template/theme/table.theme.dart';
 
 import '../../icons/hy_icons.dart';
@@ -60,11 +59,7 @@ class _FileUploadsState extends State<FileUploads> with FileUploadsMixin {
               Color(0xFF0A1D35),
             ],
             onPressed: () {
-              ParamsFormDialog.showDialog(
-                title: "Save to Key Loader",
-                fields: [],
-                onConfirm: (v) {},
-              );
+              parseFile();
             },
           ),
         ),

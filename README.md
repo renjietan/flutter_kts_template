@@ -28,7 +28,7 @@
         - fvm flutter pub add slang_flutter
         - fvm flutter pub add dev:build_runner
         - fvm flutter pub add dev:slang_build_runner
-    - 生成: dart slang -d
+    - 生成: dart run slang -d
     - 使用
 ```
 final t = Translations.of(context);

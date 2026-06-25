@@ -1,0 +1,5 @@
+- Nuget
+  - 错误信息: Nuget.exe not found, trying to download or use cached version.
+  - 解决：
+    - 以管理员身份打开命令提示符，运行 winget install Microsoft.NuGet
+    - 如果不行，可以手动从 [nuget.org](https://www.nuget.org/downloads) 下载 nuget.exe，并将其所在文件夹路径添加到系统 Path 环境变量中

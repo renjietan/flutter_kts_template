@@ -39,6 +39,8 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 	late final Translations$common$zh common = Translations$common$zh.internal(_root);
 	late final Translations$permission$zh permission = Translations$permission$zh.internal(_root);
 	late final Translations$uploads$zh uploads = Translations$uploads$zh.internal(_root);
+	late final Translations$json$zh json = Translations$json$zh.internal(_root);
+	late final Translations$platform$zh platform = Translations$platform$zh.internal(_root);
 	late final Translations$home$zh home = Translations$home$zh.internal(_root);
 	late final Translations$settings$zh settings = Translations$settings$zh.internal(_root);
 }
@@ -98,6 +100,9 @@ class Translations$uploads$zh {
 	/// zh: '上传成功'
 	String get success => '上传成功';
 
+	/// zh: '上传成功; 路径：{path}!'
+	String successWithPath({required Object path}) => '上传成功; 路径：${path}!';
+
 	/// zh: '操作已取消'
 	String get cancel => '操作已取消';
 
@@ -109,6 +114,33 @@ class Translations$uploads$zh {
 
 	/// zh: '文件数据不可为空'
 	String get emptyData => '文件数据不可为空';
+
+	/// zh: '文件路径不存在'
+	String get existPath => '文件路径不存在';
+}
+
+// Path: json
+class Translations$json$zh {
+	Translations$json$zh.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// zh: '收到的信息格式有点陌生'
+	String get serialization => '收到的信息格式有点陌生';
+}
+
+// Path: platform
+class Translations$platform$zh {
+	Translations$platform$zh.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// zh: 'The current page isn’t set up for file handling'
+	String get webNotReadFile => 'The current page isn’t set up for file handling';
 }
 
 // Path: home
