@@ -82,8 +82,8 @@ class Translations$permission$zh {
 
 	// Translations
 
-	/// zh: '是否立即前往设置？'
-	String get setting => '是否立即前往设置？';
+	/// zh: '暂无访问权限,是否立即前往【设置】？'
+	String get no => '暂无访问权限,是否立即前往【设置】？';
 
 	/// zh: '操作已取消'
 	String get cancel => '操作已取消';

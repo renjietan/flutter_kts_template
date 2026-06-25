@@ -19,7 +19,7 @@ class AppConfig {
     }
     if (Platform.isAndroid) {
       // Android 模拟器使用 10.0.2.2，真机使用电脑的局域网 IP
-      return 'http://10.0.2.2:8080/api'; // 模拟器
+      return 'http://localhost:8080/api'; // 模拟器
     }
     if (Platform.isIOS) {
       // 真机改为电脑 IP

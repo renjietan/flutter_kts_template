@@ -8,7 +8,7 @@ common:
   confirm: Confirm
   cancel: Cancel
 permission:
-  setting: Go to settings？
+  no: No permission, Go to settings now？
   cancel: Operation has been cancelled
 uploads:
   success: Upload successful

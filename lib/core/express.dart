@@ -19,22 +19,25 @@ class Express {
     final router = await RouterRegistry.init();
     // 应用中间件管道，包装路由处理器
     final handler = const Pipeline()
-    // 注意: 必须放在第一个: 可捕获所有后续代码的异常，包括其他中间件和路由
+        // 注意: 必须放在第一个: 可捕获所有后续代码的异常，包括其他中间件和路由
         .addMiddleware(errorHandler())
-    // 读取并解析请求体，存入 context，供后续路由直接使用。
+        // 读取并解析请求体，存入 context，供后续路由直接使用。
         .addMiddleware(parseJsonMiddleware())
-    // 记录 cors 和 parseJsonMiddleware 处理后的请求/响应，并受到 errorHandler 的保护
+        // 记录 cors 和 parseJsonMiddleware 处理后的请求/响应，并受到 errorHandler 的保护
         .addMiddleware(customLogger())
-    // 跨域中间件可以滞后一点，在请求处理前添加 CORS 头，
+        // 跨域中间件可以滞后一点，在请求处理前添加 CORS 头，
         .addMiddleware(cors())
-    // 注意: 这里必须使用 call 方法 重定向指针
+        // 注意: 这里必须使用 call 方法 重定向指针
         .addHandler(router.call);
-    _sev = await shelf_io.serve(handler, "0.0.0.0", int.parse(AppConfig.serverConfig.port));
+    _sev = await shelf_io.serve(
+      handler,
+      InternetAddress.anyIPv4,
+      int.parse(AppConfig.serverConfig.port),
+    );
     GlobalLogger.logInfo("Server start :${AppConfig.serverConfig.port}");
   }
+
   static Future<void> stop() async {
     await _sev.close();
   }
-
 }
-

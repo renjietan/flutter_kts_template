@@ -8,7 +8,7 @@ common:
   confirm: 确认
   cancel: 取消
 permission:
-  setting: 是否立即前往设置？
+  no: 暂无访问权限,是否立即前往【设置】？
   cancel: 操作已取消
 uploads:
   success: 上传成功

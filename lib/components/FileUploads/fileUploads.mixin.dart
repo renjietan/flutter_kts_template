@@ -67,7 +67,7 @@ mixin FileUploadsMixin on State<FileUploads> {
       });
       Pop.confirm(
         title: t.common.confirm,
-        content: t.permission.setting,
+        content: t.permission.no,
         confirmText: t.common.confirm,
         cancelText: t.common.cancel,
         onConfirm: () async {
@@ -95,9 +95,7 @@ mixin FileUploadsMixin on State<FileUploads> {
     try {
       var archiveExt = getInputExtension(remoteFilePath);
       String outPath = remoteFilePath.split(archiveExt)[0];
-
       await extractFileToDisk(remoteFilePath, outPath);
-
       List<Directory> subFolders = await FileTools.getDirectSubFolders(outPath);
       List<Future<Map<String, dynamic>>> futures = subFolders
           .map((item) => FileTools.readAllJsonFiles(item))

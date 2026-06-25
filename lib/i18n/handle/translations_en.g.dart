@@ -72,7 +72,7 @@ class _Translations$permission$en extends Translations$permission$zh {
 	final TranslationsEn _root; // ignore: unused_field
 
 	// Translations
-	@override String get setting => 'Go to settings？';
+	@override String get no => 'No permission, Go to settings now？';
 	@override String get cancel => 'Operation has been cancelled';
 }
 
