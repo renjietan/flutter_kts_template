@@ -33,6 +33,11 @@
 ```
 final t = Translations.of(context);
 t.common.welcome(appName: 'Slang')
+
+或者
+t.common.welcome(appName: 'Slang')
+
+第二中方式，无法实时切换
 ```
 - 一键修改包名 ✅
     - 安装：fvm flutter pub add dev:change_app_package_name
@@ -52,11 +57,13 @@ t.common.welcome(appName: 'Slang')
     - 注意：此插件貌似有问题, 无法在 pubspec.yaml 中自动填入iconfont，可以先手动填写，再执行命令
 
 - 配置文件 ✅
-    - 文件名称
-        - .env.dev
-        - .env.pro
-    - 使用：
-        - static const String mode = String.fromEnvironment('ENV_MODE', defaultValue: 'test');
+  - 配置环境变量:
+    - --dart-define-from-file D:\work\flutter\template\3.38.10\flutter_kts_template\.env.dev
+  - 文件名称
+      - .env.dev
+      - .env.pro
+  - 使用：
+      - static const String mode = String.fromEnvironment('ENV_MODE', defaultValue: 'test');
 
 - 后端服务封装
     - 路由 ✅

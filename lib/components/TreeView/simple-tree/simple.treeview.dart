@@ -65,8 +65,11 @@ class _SimpleTreeViewState<T extends AbsNodeType> extends State<SimpleTreeView>
       onTap: () {
         if (tree.isLeaf && (tree.data.activeSelection ?? false)) {
           updateTreeSingleChoiceDms4(tree, !tree.data.isChosen!);
+          widget.onNodeDataChanged(tree);
+        } else if (!tree.isLeaf) {
+          updateStateToggleExpansion();
+          // TODO:  是否需要调用 widget.onNodeDataChanged(tree); 强制出发更新
         }
-        widget.onNodeDataChanged(tree);
       },
       child: Container(
         decoration: BoxDecoration(color: bgColor),

@@ -14,9 +14,9 @@ import 'package:objectbox/internal.dart'
 import 'package:objectbox/objectbox.dart' as obx;
 import 'package:objectbox_flutter_libs/objectbox_flutter_libs.dart';
 
-import 'core/databaseManager/entities/book/book.dart';
-import 'core/databaseManager/entities/radios/radios.dart';
-import 'core/databaseManager/entities/user/user.dart';
+import 'core/entities/book/book.dart';
+import 'core/entities/radios/radios.dart';
+import 'core/entities/user/user.dart';
 
 export 'package:objectbox/objectbox.dart'; // so that callers only have to import this file
 

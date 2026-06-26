@@ -9,14 +9,26 @@ class RadiosEntity {
   @Id()
   int id;
 
+  String consumer;
+
+  String location;
+
+  String serialNumber;
+
   @Property(type: PropertyType.date)
   DateTime createdAt = DateTime.now();
 
   @Property(type: PropertyType.date)
   DateTime updatedAt;
 
-  RadiosEntity({this.id = 0, required this.updatedAt, DateTime? createdAt})
-    : createdAt = createdAt ?? DateTime.now();
+  RadiosEntity({
+    this.id = 0,
+    required this.consumer,
+    required this.location,
+    required this.serialNumber,
+    required this.updatedAt,
+    DateTime? createdAt,
+  }) : createdAt = createdAt ?? DateTime.now();
 
   factory RadiosEntity.fromJson(Map<String, dynamic> json) =>
       _$RadiosEntityFromJson(json);

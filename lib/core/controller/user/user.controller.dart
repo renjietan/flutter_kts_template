@@ -1,9 +1,9 @@
-import 'package:flutter_kts_template/core/databaseManager/entities/book/book.dart';
 import 'package:flutter_kts_template/core/utils/time.dart';
 import 'package:shelf/shelf.dart';
 
 import '../../databaseManager/databaseManager.dart';
-import '../../databaseManager/entities/user/user.dart';
+import '../../entities/book/book.dart';
+import '../../entities/user/user.dart';
 import '../../utils/response.dart';
 
 class UserController {
