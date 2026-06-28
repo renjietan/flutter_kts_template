@@ -1,16 +1,16 @@
-import 'package:flutter_kts_template/core/databaseManager/entities/book/book.dart';
+import 'package:flutter_kts_template/core/databaseManager/entities/book/bookEntity.dart';
 import 'package:flutter_kts_template/core/utils/time.dart';
 import 'package:shelf/shelf.dart';
 
 import '../../databaseManager/databaseManager.dart';
-import '../../databaseManager/entities/user/user.dart';
+import '../../databaseManager/entities/user/userEntity.dart';
 import '../../utils/response.dart';
 
 class UserController {
   static Response getList(Request request) {
     final db = DatabaseManager.instance;
     List<UserEntity> users = db.getAll<UserEntity>();
-    return ApiResponse.success(data: {'users': users.toList(), 'total': 3});
+    return ApiResponse.success(data: {'list': users.toList(), 'total': 3});
   }
 
   static Future<Response> create(Request request) async {

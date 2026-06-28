@@ -1,12 +1,12 @@
 import 'package:json_annotation/json_annotation.dart';
 import 'package:objectbox/objectbox.dart';
 
-import '../book/book.dart';
+import '../book/bookEntity.dart';
 
-part 'user.g.dart'; // JsonSerializable: 序列化的关键
+part 'userEntity.g.dart'; // JsonSerializable: 序列化的关键
 
 ///这个标注是告诉生成器，这个类是需要生成Model类的
-@JsonSerializable()
+@JsonSerializable(explicitToJson: true)
 @Entity()
 class UserEntity {
   @Id()

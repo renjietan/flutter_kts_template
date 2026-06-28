@@ -1,6 +1,4 @@
-import 'package:flutter_kts_template/config/config.dart';
-import 'package:path/path.dart' as p;
-import 'package:path_provider/path_provider.dart';
+import 'package:flutter_kts_template/core/utils/director.dart';
 
 import '../../logger/logger.dart';
 import '../../objectbox.g.dart';
@@ -16,17 +14,15 @@ class DatabaseManager {
   /// 初始化数据库，可指定数据库名称和路径
   static Future<DatabaseManager> init() async {
     if (_instance != null) return _instance!;
-    String path = (await getApplicationDocumentsDirectory()).path;
+    String dbPath = await DirectoryManager.instance.getDataBasePath();
     final store = await openStore(
-      directory: p.join(path, AppConfig.dataBaseConfig.name),
+      directory: dbPath,
       debugFlags: DebugFlags.logQueries | DebugFlags.logQueryParameters,
     );
     _instance = DatabaseManager._create(store);
     // OS 访问: http://localhost:8081
     // Android 访问:http://10.0.2.2:8081
-    GlobalLogger.logInfo(
-      "DBServer start ${p.join(path, AppConfig.dataBaseConfig.name)}",
-    );
+    GlobalLogger.logInfo("DBServer start $dbPath");
     return _instance!;
   }
 

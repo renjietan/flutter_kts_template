@@ -51,7 +51,7 @@ class SimpleTextfield extends StatelessWidget {
         onChanged: onChanged,
         keyboardType: keyboardType,
         textInputAction: textInputAction,
-        readOnly: readonly!,
+        readOnly: readonly,
         style: TextStyle(fontSize: 13, color: theme.textPrimaryColor),
         decoration: InputDecoration(
           hintText: hint,

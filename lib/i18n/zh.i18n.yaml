@@ -7,6 +7,16 @@ app:
 common:
   confirm: 确认
   cancel: 取消
+  noData: 无数据
+  OperationSuccess: 操作成功
+  OperationError: 操作失败
+  requestError: 请求失败
+  requestCancel: 请求取消
+  requestTimeout: 网络超时，请稍后重试
+  requestConnectionError: 网络连接失败，请检查网络,
+  serverError: 服务器异常
+  UnknowError: 未知错误
+
 permission:
   no: 暂无访问权限,是否立即前往【设置】？
   cancel: 操作已取消
@@ -20,6 +30,15 @@ uploads:
   existPath: 文件路径不存在
 json:
   serialization: 收到的信息格式有点陌生
+pageable:
+  pageSizeMin: pageSize必须大于等于1
+  pageSizeMax: pageSize不能超过100
+  pageMin: page 必须大于等于 1
+  paramsValidateError: "参数验证失败: {errors}"
+  keywordValidateError: "关键词文字不可超过{count}个字符"
+errorMiddle:
+  error500: 发生意外错误，请稍后再试
+  errorArg: 无效参数,{error}
 platform:
   webNotReadFile: The current page isn’t set up for file handling
 home:

@@ -64,7 +64,9 @@ class _SimpleTreeViewState<T extends AbsNodeType> extends State<SimpleTreeView>
     return GestureDetector(
       onTap: () {
         if (tree.isLeaf && (tree.data.activeSelection ?? false)) {
-          updateTreeSingleChoiceDms4(tree, !tree.data.isChosen!);
+          updateTreeSingleChoiceDms4(tree, true);
+        } else if (!tree.isLeaf) {
+          updateStateToggleExpansion();
         }
         widget.onNodeDataChanged(tree);
       },

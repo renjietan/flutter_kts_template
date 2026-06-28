@@ -11,7 +11,7 @@ class AppConfig {
   );
   static const String mode = String.fromEnvironment(
     'ENV_MODE',
-    defaultValue: 'prod',
+    defaultValue: 'dev',
   );
   static String get baseUrl {
     if (kIsWeb) {

@@ -38,6 +38,8 @@ class TranslationsEn extends Translations with BaseTranslations<AppLocale, Trans
 	@override late final _Translations$permission$en permission = _Translations$permission$en._(_root);
 	@override late final _Translations$uploads$en uploads = _Translations$uploads$en._(_root);
 	@override late final _Translations$json$en json = _Translations$json$en._(_root);
+	@override late final _Translations$pageable$en pageable = _Translations$pageable$en._(_root);
+	@override late final _Translations$errorMiddle$en errorMiddle = _Translations$errorMiddle$en._(_root);
 	@override late final _Translations$platform$en platform = _Translations$platform$en._(_root);
 	@override late final _Translations$home$en home = _Translations$home$en._(_root);
 	@override late final _Translations$settings$en settings = _Translations$settings$en._(_root);
@@ -63,6 +65,15 @@ class _Translations$common$en extends Translations$common$zh {
 	// Translations
 	@override String get confirm => 'Confirm';
 	@override String get cancel => 'Cancel';
+	@override String get noData => 'No data';
+	@override String get OperationSuccess => 'Operation Successful';
+	@override String get OperationError => 'Operation failed';
+	@override String get requestError => 'Request failed';
+	@override String get requestCancel => 'Request cancelled';
+	@override String get requestTimeout => 'Timeout, retry later';
+	@override String get requestConnectionError => 'Connection failed, check network';
+	@override String get serverError => 'Server error';
+	@override String get UnknowError => 'Unknown error';
 }
 
 // Path: permission
@@ -100,6 +111,31 @@ class _Translations$json$en extends Translations$json$zh {
 
 	// Translations
 	@override String get serialization => 'The received information seems unfamiliar';
+}
+
+// Path: pageable
+class _Translations$pageable$en extends Translations$pageable$zh {
+	_Translations$pageable$en._(TranslationsEn root) : this._root = root, super.internal(root);
+
+	final TranslationsEn _root; // ignore: unused_field
+
+	// Translations
+	@override String get pageSizeMin => 'The page size must be greater than or equal to 1';
+	@override String get pageSizeMax => 'The page size cannot exceed 100.';
+	@override String get pageMin => 'The page must be greater than or equal to 1';
+	@override String paramsValidateError({required Object errors}) => 'Parameter verification failed: ${errors}';
+	@override String keywordValidateError({required Object count}) => 'Key words should not exceed ${count} characters';
+}
+
+// Path: errorMiddle
+class _Translations$errorMiddle$en extends Translations$errorMiddle$zh {
+	_Translations$errorMiddle$en._(TranslationsEn root) : this._root = root, super.internal(root);
+
+	final TranslationsEn _root; // ignore: unused_field
+
+	// Translations
+	@override String get error500 => 'An unexpected error occurred. Please try again later';
+	@override String errorArg({required Object error}) => 'Invalid argument,${error}';
 }
 
 // Path: platform

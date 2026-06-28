@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_kts_template/pages/radioManager/radio.model.dart';
 import 'package:flutter_kts_template/pages/radioManager/radioManager.mixin.dart';
 
+import '../../api/RadiosManagerApi.dart';
 import '../../theme/table.theme.dart';
 
 class RadioManagerPager extends StatefulWidget {
@@ -28,6 +29,10 @@ class _RadioManagerPagerState extends State<RadioManagerPager>
   void initState() {
     super.initState();
     allUsers = generateUsers(300);
+    RadiosManagerApi.getList().then((Map<String, dynamic> res) {
+      allUsers = res["list"] ?? [];
+      print(allUsers);
+    });
     applyFilters();
   }
 

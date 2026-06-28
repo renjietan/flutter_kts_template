@@ -3,6 +3,7 @@ import 'dart:async';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_kts_template/config/config.dart';
+import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 import 'package:flutter_kts_template/utils/request/responseInstance.dart';
 
 import 'interceptor/error_interceptor.dart';
@@ -60,7 +61,7 @@ class DioClient {
     Options? options,
     CancelToken? cancelToken,
     ProgressCallback? onReceiveProgress,
-    required T Function(dynamic) parser, // 解析器
+    T Function(dynamic)? parser, // 解析器
   }) async {
     try {
       final response = await _dio.get(
@@ -85,7 +86,7 @@ class DioClient {
     ProgressCallback? onSendProgress,
     ProgressCallback? onReceiveProgress,
     // parser: (data) => (data as List).map((e) => e['url'] as String).toList(),
-    required T Function(dynamic) parser,
+    T Function(dynamic)? parser,
   }) async {
     try {
       final response = await _dio.post(
@@ -109,7 +110,7 @@ class DioClient {
     Map<String, dynamic>? queryParameters,
     Options? options,
     CancelToken? cancelToken,
-    required T Function(dynamic) parser,
+    T Function(dynamic)? parser,
   }) async {
     try {
       final response = await _dio.put(
@@ -131,7 +132,7 @@ class DioClient {
     Map<String, dynamic>? queryParameters,
     Options? options,
     CancelToken? cancelToken,
-    required T Function(dynamic) parser,
+    T Function(dynamic)? parser,
   }) async {
     try {
       final response = await _dio.delete(
@@ -147,7 +148,7 @@ class DioClient {
     }
   }
 
-  T _handleResponse<T>(Response response, T Function(dynamic) parser) {
+  T _handleResponse<T>(Response response, T Function(dynamic)? parser) {
     if (response.statusCode == 200) {
       final json = response.data;
       if (json is Map<String, dynamic>) {
@@ -159,13 +160,13 @@ class DioClient {
           throw BusinessException(entity.code, entity.message);
         }
       } else {
-        return parser(json);
+        return parser != null ? parser.call(json) : json;
       }
     } else {
       // HTTP 状态码错误
       throw HttpException(
         response.statusCode ?? -1,
-        response.statusMessage ?? '请求失败',
+        response.statusMessage ?? t.common.requestError,
       );
     }
   }
@@ -174,19 +175,19 @@ class DioClient {
     if (error is DioException) {
       switch (error.type) {
         case DioExceptionType.cancel:
-          return CancelException('请求被取消');
+          return CancelException(t.common.requestCancel);
         case DioExceptionType.connectionTimeout:
         case DioExceptionType.sendTimeout:
         case DioExceptionType.receiveTimeout:
-          return NetWorkException('网络超时，请稍后重试');
+          return NetWorkException(t.common.requestTimeout);
         case DioExceptionType.connectionError:
-          return NetWorkException('网络连接失败，请检查网络');
+          return NetWorkException(t.common.requestConnectionError);
         case DioExceptionType.badResponse:
           final code = error.response?.statusCode ?? -1;
-          final msg = error.response?.statusMessage ?? '服务器异常';
+          final msg = error.response?.statusMessage ?? t.common.serverError;
           return HttpException(code, msg);
         default:
-          return UnknownException(error.message ?? '未知错误');
+          return UnknownException(error.message ?? t.common.UnknowError);
       }
     }
     return UnknownException(error.toString());

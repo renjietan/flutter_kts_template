@@ -14,9 +14,9 @@ import 'package:objectbox/internal.dart'
 import 'package:objectbox/objectbox.dart' as obx;
 import 'package:objectbox_flutter_libs/objectbox_flutter_libs.dart';
 
-import 'core/databaseManager/entities/book/book.dart';
+import 'core/databaseManager/entities/book/bookEntity.dart';
 import 'core/databaseManager/entities/radios/radios.dart';
-import 'core/databaseManager/entities/user/user.dart';
+import 'core/databaseManager/entities/user/userEntity.dart';
 
 export 'package:objectbox/objectbox.dart'; // so that callers only have to import this file
 
@@ -107,7 +107,7 @@ final _entities = <obx_int.ModelEntity>[
   obx_int.ModelEntity(
     id: const obx_int.IdUid(4, 3041742923072573707),
     name: 'RadiosEntity',
-    lastPropertyId: const obx_int.IdUid(3, 3971463092837512991),
+    lastPropertyId: const obx_int.IdUid(7, 1938772858763471383),
     flags: 0,
     properties: <obx_int.ModelProperty>[
       obx_int.ModelProperty(
@@ -126,6 +126,30 @@ final _entities = <obx_int.ModelEntity>[
         id: const obx_int.IdUid(3, 3971463092837512991),
         name: 'updatedAt',
         type: 10,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(4, 720313766199209011),
+        name: 'consumer',
+        type: 9,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(5, 3031192070671928960),
+        name: 'location',
+        type: 9,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(6, 3312982194520429936),
+        name: 'sn',
+        type: 9,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(7, 1938772858763471383),
+        name: 'alias',
+        type: 9,
         flags: 0,
       ),
     ],
@@ -320,10 +344,18 @@ obx_int.ModelDefinition getObjectBoxModel() {
         object.id = id;
       },
       objectToFB: (RadiosEntity object, fb.Builder fbb) {
-        fbb.startTable(4);
+        final consumerOffset = fbb.writeString(object.consumer);
+        final locationOffset = fbb.writeString(object.location);
+        final snOffset = fbb.writeString(object.sn);
+        final aliasOffset = fbb.writeString(object.alias);
+        fbb.startTable(8);
         fbb.addInt64(0, object.id);
         fbb.addInt64(1, object.createdAt.millisecondsSinceEpoch);
         fbb.addInt64(2, object.updatedAt.millisecondsSinceEpoch);
+        fbb.addOffset(3, consumerOffset);
+        fbb.addOffset(4, locationOffset);
+        fbb.addOffset(5, snOffset);
+        fbb.addOffset(6, aliasOffset);
         fbb.finish(fbb.endTable());
         return object.id;
       },
@@ -339,12 +371,28 @@ obx_int.ModelDefinition getObjectBoxModel() {
         final updatedAtParam = DateTime.fromMillisecondsSinceEpoch(
           const fb.Int64Reader().vTableGet(buffer, rootOffset, 8, 0),
         );
+        final consumerParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGet(buffer, rootOffset, 10, '');
+        final locationParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGet(buffer, rootOffset, 12, '');
+        final snParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGet(buffer, rootOffset, 14, '');
+        final aliasParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGet(buffer, rootOffset, 16, '');
         final createdAtParam = DateTime.fromMillisecondsSinceEpoch(
           const fb.Int64Reader().vTableGet(buffer, rootOffset, 6, 0),
         );
         final object = RadiosEntity(
           id: idParam,
           updatedAt: updatedAtParam,
+          consumer: consumerParam,
+          location: locationParam,
+          sn: snParam,
+          alias: aliasParam,
           createdAt: createdAtParam,
         );
 
@@ -427,5 +475,25 @@ class RadiosEntity_ {
   /// See [RadiosEntity.updatedAt].
   static final updatedAt = obx.QueryDateProperty<RadiosEntity>(
     _entities[2].properties[2],
+  );
+
+  /// See [RadiosEntity.consumer].
+  static final consumer = obx.QueryStringProperty<RadiosEntity>(
+    _entities[2].properties[3],
+  );
+
+  /// See [RadiosEntity.location].
+  static final location = obx.QueryStringProperty<RadiosEntity>(
+    _entities[2].properties[4],
+  );
+
+  /// See [RadiosEntity.sn].
+  static final sn = obx.QueryStringProperty<RadiosEntity>(
+    _entities[2].properties[5],
+  );
+
+  /// See [RadiosEntity.alias].
+  static final alias = obx.QueryStringProperty<RadiosEntity>(
+    _entities[2].properties[6],
   );
 }

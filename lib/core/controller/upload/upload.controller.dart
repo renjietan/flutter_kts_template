@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter_kts_template/core/utils/common.dart';
+import 'package:flutter_kts_template/core/utils/director.dart';
 import 'package:flutter_kts_template/core/utils/response.dart';
 import 'package:flutter_kts_template/core/utils/time.dart';
 import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
@@ -18,7 +19,7 @@ class UploadController {
     final uploadedFile = form.files['file'];
     if (uploadedFile != null) {
       final bytes = await uploadedFile.readAsBytes();
-      String uploadPath = await getUploadsPath();
+      String uploadPath = await DirectoryManager.instance.getUploadsPath();
       String safeFileName = sanitizeFileName(uploadedFile.name);
       String curTime = parseDateTime(DateTime.now());
       curTime = curTime.replaceAll(':', '-');
@@ -42,7 +43,7 @@ class UploadController {
     final uploadedFile = form.files['file'];
     if (uploadedFile != null) {
       final bytes = await uploadedFile.readAsBytes();
-      String uploadPath = await getUploadsPath();
+      String uploadPath = await DirectoryManager.instance.getUploadsPath();
       String safeFileName = sanitizeFileName(uploadedFile.name);
       String curTime = parseDateTime(DateTime.now());
       curTime = curTime.replaceAll(':', '-');

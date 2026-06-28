@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'book.dart';
+part of 'bookEntity.dart';
 
 // **************************************************************************
 // JsonSerializableGenerator

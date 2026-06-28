@@ -1,7 +1,8 @@
-import 'package:flutter_kts_template/core/utils/response.dart';
+import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 import 'package:shelf/shelf.dart';
 
 import '../../logger/logger.dart';
+import '../utils/response.dart';
 
 Middleware errorHandler() {
   return (Handler innerHandler) {
@@ -11,12 +12,11 @@ Middleware errorHandler() {
       } catch (error, stackTrace) {
         GlobalLogger.logError("errors: $error\n stackTrace: $stackTrace");
         if (error is ArgumentError) {
-          return ApiResponse.error(message: 'Invalid argument: ${error.message}');
+          return ApiResponse.error(
+            message: t.errorMiddle.errorArg(error: error.message),
+          );
         }
-        // 默认返回 500 Internal Server Error
-        return ApiResponse.internalError(
-          message: 'An unexpected error occurred. Please try again later.',
-        );
+        return ApiResponse.internalError(message: t.errorMiddle.error500);
       }
     };
   };

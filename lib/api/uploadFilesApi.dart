@@ -6,10 +6,11 @@ import 'package:flutter_kts_template/utils/request/httpClient.dart';
 
 class UploadFilesApi {
   static final DioClient _instance = DioClient();
+  static final String pre = "/uploadServer";
 
   // 上传单个文件（任意类型）
   static Future<String> single({
-    String url = "/uploadServer/zip",
+    String url = "/zip",
     required PlatformFile file,
     Map<String, dynamic>? extraFields,
     void Function(int count, int total)? onProgress,
@@ -47,7 +48,7 @@ class UploadFilesApi {
     }
 
     String res = await _instance.post(
-      url,
+      pre + url,
       data: formData,
       parser: (dynamic data) => data,
     );

@@ -30,7 +30,7 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
   void initState() {
     // TODO: implement initState
     _tree = buildTree(treeMockData, activeSelection: true);
-    // tree = sampleVNRegionNode(vnJson);
+
     _detailTree = buildTree(
       mockData1,
       leafActionWidgetLabel: "inject",
@@ -47,6 +47,8 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
 
   @override
   Widget build(BuildContext context) {
+    String ss = String.fromEnvironment("APP_NAME");
+    GlobalLogger.logInfo("环境变量: $ss");
     return Container(
       color: ThemeData.dark().primaryColorDark,
       child: Row(

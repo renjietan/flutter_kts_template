@@ -40,6 +40,8 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 	late final Translations$permission$zh permission = Translations$permission$zh.internal(_root);
 	late final Translations$uploads$zh uploads = Translations$uploads$zh.internal(_root);
 	late final Translations$json$zh json = Translations$json$zh.internal(_root);
+	late final Translations$pageable$zh pageable = Translations$pageable$zh.internal(_root);
+	late final Translations$errorMiddle$zh errorMiddle = Translations$errorMiddle$zh.internal(_root);
 	late final Translations$platform$zh platform = Translations$platform$zh.internal(_root);
 	late final Translations$home$zh home = Translations$home$zh.internal(_root);
 	late final Translations$settings$zh settings = Translations$settings$zh.internal(_root);
@@ -72,6 +74,33 @@ class Translations$common$zh {
 
 	/// zh: '取消'
 	String get cancel => '取消';
+
+	/// zh: '无数据'
+	String get noData => '无数据';
+
+	/// zh: '操作成功'
+	String get OperationSuccess => '操作成功';
+
+	/// zh: '操作失败'
+	String get OperationError => '操作失败';
+
+	/// zh: '请求失败'
+	String get requestError => '请求失败';
+
+	/// zh: '请求取消'
+	String get requestCancel => '请求取消';
+
+	/// zh: '网络超时，请稍后重试'
+	String get requestTimeout => '网络超时，请稍后重试';
+
+	/// zh: '网络连接失败，请检查网络,'
+	String get requestConnectionError => '网络连接失败，请检查网络,';
+
+	/// zh: '服务器异常'
+	String get serverError => '服务器异常';
+
+	/// zh: '未知错误'
+	String get UnknowError => '未知错误';
 }
 
 // Path: permission
@@ -129,6 +158,45 @@ class Translations$json$zh {
 
 	/// zh: '收到的信息格式有点陌生'
 	String get serialization => '收到的信息格式有点陌生';
+}
+
+// Path: pageable
+class Translations$pageable$zh {
+	Translations$pageable$zh.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// zh: 'pageSize必须大于等于1'
+	String get pageSizeMin => 'pageSize必须大于等于1';
+
+	/// zh: 'pageSize不能超过100'
+	String get pageSizeMax => 'pageSize不能超过100';
+
+	/// zh: 'page 必须大于等于 1'
+	String get pageMin => 'page 必须大于等于 1';
+
+	/// zh: '参数验证失败: {errors}'
+	String paramsValidateError({required Object errors}) => '参数验证失败: ${errors}';
+
+	/// zh: '关键词文字不可超过{count}个字符'
+	String keywordValidateError({required Object count}) => '关键词文字不可超过${count}个字符';
+}
+
+// Path: errorMiddle
+class Translations$errorMiddle$zh {
+	Translations$errorMiddle$zh.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// zh: '发生意外错误，请稍后再试'
+	String get error500 => '发生意外错误，请稍后再试';
+
+	/// zh: '无效参数,{error}'
+	String errorArg({required Object error}) => '无效参数,${error}';
 }
 
 // Path: platform

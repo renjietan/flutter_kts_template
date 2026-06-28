@@ -10,7 +10,6 @@
 - 使用 Android Studio 单独打开 Android 文件夹，此时软件将自动构建 Grade
 - 构建完成后，重新打开项目即可
 
-### TODO
 - 文件上传
   - 本地路径: C:\Users\Administrator\Documents\uploads
   - 远程路径: localhost:8080/uploads
@@ -30,10 +29,10 @@
         - fvm flutter pub add dev:slang_build_runner
     - 生成: dart run slang -d
     - 使用
-```
-final t = Translations.of(context);
-t.common.welcome(appName: 'Slang')
-```
+        ```
+        final t = Translations.of(context);
+        t.common.welcome(appName: 'Slang')
+        ```
 - 一键修改包名 ✅
     - 安装：fvm flutter pub add dev:change_app_package_name
     - 使用
@@ -80,5 +79,10 @@ t.common.welcome(appName: 'Slang')
             - 通过网页查看数据库: docker run -d --name objectbox-admin -v C:\Users\Administrator\Documents\app_db:/db --publish 8081:8081 objectboxio/admin:latest
             - 指定文件: dart run build_runner build --build-filter="lib/models/user.dart"
             - 注意： 生成的缓存文件在 [lib](.dart_tool/build/generated/flutter_kts_template/lib/core/databaseManager/entities/xx/xxx.info)
-      - 如果以上 build_runner 命令出现问题，请使用：dart run build_runner build --delete-conflicting-outputs --verbose
+      - 如果以上 build_runner 命令出现问题，请使用：
+        - dart run build_runner build --delete-conflicting-outputs --verbose
+        - flutter pub run build_runner build --delete-conflicting-outputs --force-jit (大概率能解决，使用 jit 方式 跳过预编译、Hook 生成文件)
 
+- TODO:
+  - shelf_limiter 
+  - shelf_rate_limiter

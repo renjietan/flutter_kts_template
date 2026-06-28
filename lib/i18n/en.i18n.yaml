@@ -7,6 +7,15 @@ app:
 common:
   confirm: Confirm
   cancel: Cancel
+  noData: No data
+  OperationSuccess: Operation Successful
+  OperationError: Operation failed
+  requestError: Request failed
+  requestCancel: Request cancelled
+  requestTimeout: Timeout, retry later
+  requestConnectionError: Connection failed, check network
+  serverError: Server error
+  UnknowError: Unknown error
 permission:
   no: No permission, Go to settings now？
   cancel: Operation has been cancelled
@@ -20,6 +29,15 @@ uploads:
   existPath: The file path is not exist
 json:
   serialization: The received information seems unfamiliar
+pageable:
+  pageSizeMin: The page size must be greater than or equal to 1
+  pageSizeMax: The page size cannot exceed 100.
+  pageMin: The page must be greater than or equal to 1
+  paramsValidateError: "Parameter verification failed: {errors}"
+  keywordValidateError: "Key words should not exceed {count} characters"
+errorMiddle:
+  error500: An unexpected error occurred. Please try again later
+  errorArg: Invalid argument,{error}
 platform:
   webNotReadFile: web 平台无法根据路径处理文件
 home:
