@@ -1,7 +1,7 @@
 import 'package:json_annotation/json_annotation.dart';
 import 'package:objectbox/objectbox.dart';
 
-part 'radios.g.dart'; // JsonSerializable: 序列化的关键
+part 'radiosEntity.g.dart'; // JsonSerializable: 序列化的关键
 
 @Entity()
 @JsonSerializable()

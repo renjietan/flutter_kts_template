@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'dart:io';
 
 import 'package:archive/archive_io.dart';
@@ -102,7 +101,6 @@ mixin FileUploadsMixin on State<FileUploads> {
           .map((item) => FileTools.readAllJsonFiles(item))
           .toList();
       await Future.wait(futures).then((res) {
-        debugger();
         print(res);
       });
     } on FileException catch (e) {

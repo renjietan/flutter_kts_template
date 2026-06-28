@@ -1,6 +1,7 @@
-import 'package:flutter_kts_template/core/databaseManager/entities/user/userEntity.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:objectbox/objectbox.dart';
+
+import '../user/userEntity.dart';
 
 part 'bookEntity.g.dart'; // JsonSerializable: 序列化的关键
 

@@ -1,10 +1,10 @@
 import 'package:flutter_kts_template/core/controller/radioManager/radioManager.dto.dart';
-import 'package:flutter_kts_template/core/databaseManager/entities/radios/radios.dart';
 import 'package:flutter_kts_template/objectbox.g.dart';
 import 'package:shelf/shelf.dart';
 
 import '../../../i18n/handle/translations.g.dart';
 import '../../databaseManager/databaseManager.dart';
+import '../../entities/radios/radiosEntity.dart';
 import '../../utils/response.dart';
 import '../../utils/time.dart';
 import '../../utils/url.dart';
