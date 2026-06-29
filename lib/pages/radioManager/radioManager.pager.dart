@@ -1,9 +1,9 @@
 import 'package:composable_data_table/composable_data_table.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_kts_template/pages/radioManager/radio.model.dart';
+import 'package:flutter_kts_template/core/entities/radios/radiosEntity.dart';
+import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 import 'package:flutter_kts_template/pages/radioManager/radioManager.mixin.dart';
 
-import '../../api/RadiosManagerApi.dart';
 import '../../theme/table.theme.dart';
 
 class RadioManagerPager extends StatefulWidget {
@@ -28,12 +28,7 @@ class _RadioManagerPagerState extends State<RadioManagerPager>
   @override
   void initState() {
     super.initState();
-    allUsers = generateUsers(300);
-    RadiosManagerApi.getList().then((Map<String, dynamic> res) {
-      allUsers = res["list"] ?? [];
-      print(allUsers);
-    });
-    applyFilters();
+    getList();
   }
 
   @override
@@ -58,7 +53,7 @@ class _RadioManagerPagerState extends State<RadioManagerPager>
             theme: widget.theme,
             child: TableContextualBar(
               selectedCount: selectedIds.length,
-              normalToolbar: buildToolbar(),
+              normalToolbar: buildToolbar(context),
               selectedCountTemplate: '{count} selected',
               selectAllWidget: OutlinedButton(
                 onPressed: toggleSelectAll,
@@ -78,8 +73,8 @@ class _RadioManagerPagerState extends State<RadioManagerPager>
                 ),
                 child: Text(
                   allSelected
-                      ? 'Deselect All'
-                      : 'Select All (${paginatedUsers.length})',
+                      ? t.checkbox.DeselectAll
+                      : t.checkbox.SelectAll(count: paginatedData.length),
                   style: const TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
@@ -96,7 +91,7 @@ class _RadioManagerPagerState extends State<RadioManagerPager>
                     color: widget.theme.textSecondaryColor,
                   ),
                   label: Text(
-                    'Clear',
+                    t.button.radioManager.clear,
                     style: TextStyle(
                       fontSize: 13,
                       color: widget.theme.textSecondaryColor,
@@ -120,7 +115,9 @@ class _RadioManagerPagerState extends State<RadioManagerPager>
                     clearSelection();
                   },
                   icon: const Icon(Icons.delete_outline, size: 16),
-                  label: Text('Delete (${selectedIds.length})'),
+                  label: Text(
+                    '${t.button.radioManager.delete} (${selectedIds.length})',
+                  ),
                   style: FilledButton.styleFrom(
                     backgroundColor: widget.theme.dangerColor,
                     foregroundColor: Colors.white,
@@ -141,21 +138,21 @@ class _RadioManagerPagerState extends State<RadioManagerPager>
             child: SingleChildScrollView(
               child: DataTablePlusThemeProvider(
                 theme: widget.theme,
-                child: DataTablePlus<User>(
-                  items: paginatedUsers,
-                  idGetter: (user) => user.id,
+                child: DataTablePlus<RadiosEntity>(
+                  items: data,
+                  idGetter: (item) => item.id.toString(),
                   selectedIds: selectedIds,
                   allSelected: allSelected,
                   showCheckboxes: showCheckboxes,
                   onSelectionChanged: toggleSelection,
                   onSelectAllChanged: toggleSelectAll,
-                  columns: buildColumns(),
+                  columns: buildColumns(context),
                   // 设置未null时,不显示操作列
                   actionBuilder: buildActionCell,
-                  actionLabel: 'Actions',
-                  emptyWidget: buildEmptyWidget(),
+                  actionLabel: t.tableColumn.base.actions,
+                  emptyWidget: buildEmptyWidget(context),
                   // 在列头下方显示[字段描述]
-                  showColumnInfo: showColumnInfo,
+                  // showColumnInfo: showColumnInfo,
                   // 显示字段描述, showColumnInfo 设置为 false 时,此处无效
                   onToggleColumnInfo: () =>
                       setState(() => showColumnInfo = !showColumnInfo),
@@ -169,14 +166,19 @@ class _RadioManagerPagerState extends State<RadioManagerPager>
             child: TablePagination(
               currentPage: currentPage,
               totalPages: totalPages,
-              totalItems: filteredUsers.length,
+              totalItems: totalItems,
               pageSize: pageSize,
               pageSizeOptions: const [10, 20, 50, 100],
+              pageSizeTemplate: "{count}",
               onPageSizeChanged: (size) => setState(() {
                 pageSize = size;
                 currentPage = 1;
+                getList();
               }),
-              onPageChanged: (page) => setState(() => currentPage = page),
+              onPageChanged: (page) {
+                setState(() => currentPage = page);
+                getList();
+              },
               itemRangeTemplate: 'Showing {start}-{end} of {total} data',
             ),
           ),

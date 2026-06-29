@@ -39,6 +39,12 @@ class TranslationsEn extends Translations with BaseTranslations<AppLocale, Trans
 	@override late final _Translations$uploads$en uploads = _Translations$uploads$en._(_root);
 	@override late final _Translations$json$en json = _Translations$json$en._(_root);
 	@override late final _Translations$pageable$en pageable = _Translations$pageable$en._(_root);
+	@override late final _Translations$pager$en pager = _Translations$pager$en._(_root);
+	@override late final _Translations$tableColumn$en tableColumn = _Translations$tableColumn$en._(_root);
+	@override late final _Translations$button$en button = _Translations$button$en._(_root);
+	@override late final _Translations$checkbox$en checkbox = _Translations$checkbox$en._(_root);
+	@override late final _Translations$TextField$en TextField = _Translations$TextField$en._(_root);
+	@override late final _Translations$Form$en Form = _Translations$Form$en._(_root);
 	@override late final _Translations$errorMiddle$en errorMiddle = _Translations$errorMiddle$en._(_root);
 	@override late final _Translations$platform$en platform = _Translations$platform$en._(_root);
 	@override late final _Translations$home$en home = _Translations$home$en._(_root);
@@ -127,6 +133,68 @@ class _Translations$pageable$en extends Translations$pageable$zh {
 	@override String keywordValidateError({required Object count}) => 'Key words should not exceed ${count} characters';
 }
 
+// Path: pager
+class _Translations$pager$en extends Translations$pager$zh {
+	_Translations$pager$en._(TranslationsEn root) : this._root = root, super.internal(root);
+
+	final TranslationsEn _root; // ignore: unused_field
+
+	// Translations
+	@override late final _Translations$pager$radioManager$en radioManager = _Translations$pager$radioManager$en._(_root);
+}
+
+// Path: tableColumn
+class _Translations$tableColumn$en extends Translations$tableColumn$zh {
+	_Translations$tableColumn$en._(TranslationsEn root) : this._root = root, super.internal(root);
+
+	final TranslationsEn _root; // ignore: unused_field
+
+	// Translations
+	@override late final _Translations$tableColumn$base$en base = _Translations$tableColumn$base$en._(_root);
+	@override late final _Translations$tableColumn$radioManager$en radioManager = _Translations$tableColumn$radioManager$en._(_root);
+}
+
+// Path: button
+class _Translations$button$en extends Translations$button$zh {
+	_Translations$button$en._(TranslationsEn root) : this._root = root, super.internal(root);
+
+	final TranslationsEn _root; // ignore: unused_field
+
+	// Translations
+	@override late final _Translations$button$radioManager$en radioManager = _Translations$button$radioManager$en._(_root);
+}
+
+// Path: checkbox
+class _Translations$checkbox$en extends Translations$checkbox$zh {
+	_Translations$checkbox$en._(TranslationsEn root) : this._root = root, super.internal(root);
+
+	final TranslationsEn _root; // ignore: unused_field
+
+	// Translations
+	@override String get DeselectAll => 'Deselect All';
+	@override String SelectAll({required Object count}) => 'Select All (${count})';
+}
+
+// Path: TextField
+class _Translations$TextField$en extends Translations$TextField$zh {
+	_Translations$TextField$en._(TranslationsEn root) : this._root = root, super.internal(root);
+
+	final TranslationsEn _root; // ignore: unused_field
+
+	// Translations
+	@override String get search => 'Search......';
+}
+
+// Path: Form
+class _Translations$Form$en extends Translations$Form$zh {
+	_Translations$Form$en._(TranslationsEn root) : this._root = root, super.internal(root);
+
+	final TranslationsEn _root; // ignore: unused_field
+
+	// Translations
+	@override late final _Translations$Form$radioManager$en radioManager = _Translations$Form$radioManager$en._(_root);
+}
+
 // Path: errorMiddle
 class _Translations$errorMiddle$en extends Translations$errorMiddle$zh {
 	_Translations$errorMiddle$en._(TranslationsEn root) : this._root = root, super.internal(root);
@@ -183,4 +251,113 @@ class _Translations$app$appbar$en extends Translations$app$appbar$zh {
 	@override String get paramsInject => 'Params inject';
 	@override String get radioManager => 'Radio manager';
 	@override String get keyManager => 'Key manager';
+}
+
+// Path: pager.radioManager
+class _Translations$pager$radioManager$en extends Translations$pager$radioManager$zh {
+	_Translations$pager$radioManager$en._(TranslationsEn root) : this._root = root, super.internal(root);
+
+	final TranslationsEn _root; // ignore: unused_field
+
+	// Translations
+	@override String get title => 'Radio manager';
+}
+
+// Path: tableColumn.base
+class _Translations$tableColumn$base$en extends Translations$tableColumn$base$zh {
+	_Translations$tableColumn$base$en._(TranslationsEn root) : this._root = root, super.internal(root);
+
+	final TranslationsEn _root; // ignore: unused_field
+
+	// Translations
+	@override String get actions => 'Actions';
+}
+
+// Path: tableColumn.radioManager
+class _Translations$tableColumn$radioManager$en extends Translations$tableColumn$radioManager$zh {
+	_Translations$tableColumn$radioManager$en._(TranslationsEn root) : this._root = root, super.internal(root);
+
+	final TranslationsEn _root; // ignore: unused_field
+
+	// Translations
+	@override String get alias => 'Radio alias';
+	@override String get alias_desc => 'Custom radio alias';
+	@override String get consumer => 'Consumer';
+	@override String get consumer_desc => 'Radio consumer';
+	@override String get location => 'Location';
+	@override String get location_desc => 'Radio location';
+	@override String get sn => 'SN';
+	@override String get sn_desc => 'Radio SN';
+	@override String get columnInfo => 'Show column info';
+}
+
+// Path: button.radioManager
+class _Translations$button$radioManager$en extends Translations$button$radioManager$zh {
+	_Translations$button$radioManager$en._(TranslationsEn root) : this._root = root, super.internal(root);
+
+	final TranslationsEn _root; // ignore: unused_field
+
+	// Translations
+	@override String get createRadio => 'Create Radio';
+	@override String get resetRadio => 'Reset';
+	@override String get edit => 'Edit';
+	@override String get delete => 'Delete';
+	@override String get clear => 'Clear';
+}
+
+// Path: Form.radioManager
+class _Translations$Form$radioManager$en extends Translations$Form$radioManager$zh {
+	_Translations$Form$radioManager$en._(TranslationsEn root) : this._root = root, super.internal(root);
+
+	final TranslationsEn _root; // ignore: unused_field
+
+	// Translations
+	@override late final _Translations$Form$radioManager$alias$en alias = _Translations$Form$radioManager$alias$en._(_root);
+	@override late final _Translations$Form$radioManager$sn$en sn = _Translations$Form$radioManager$sn$en._(_root);
+	@override late final _Translations$Form$radioManager$location$en location = _Translations$Form$radioManager$location$en._(_root);
+	@override late final _Translations$Form$radioManager$consumer$en consumer = _Translations$Form$radioManager$consumer$en._(_root);
+}
+
+// Path: Form.radioManager.alias
+class _Translations$Form$radioManager$alias$en extends Translations$Form$radioManager$alias$zh {
+	_Translations$Form$radioManager$alias$en._(TranslationsEn root) : this._root = root, super.internal(root);
+
+	final TranslationsEn _root; // ignore: unused_field
+
+	// Translations
+	@override String get placeholder => 'Please enter radio alias';
+	@override String get validate => 'Radio alias cannot be empty';
+}
+
+// Path: Form.radioManager.sn
+class _Translations$Form$radioManager$sn$en extends Translations$Form$radioManager$sn$zh {
+	_Translations$Form$radioManager$sn$en._(TranslationsEn root) : this._root = root, super.internal(root);
+
+	final TranslationsEn _root; // ignore: unused_field
+
+	// Translations
+	@override String get placeholder => 'Please enter radio sn';
+	@override String get validate => 'Radio sn cannot be empty';
+}
+
+// Path: Form.radioManager.location
+class _Translations$Form$radioManager$location$en extends Translations$Form$radioManager$location$zh {
+	_Translations$Form$radioManager$location$en._(TranslationsEn root) : this._root = root, super.internal(root);
+
+	final TranslationsEn _root; // ignore: unused_field
+
+	// Translations
+	@override String get placeholder => 'Please enter radio location';
+	@override String get validate => 'Radio location cannot be empty';
+}
+
+// Path: Form.radioManager.consumer
+class _Translations$Form$radioManager$consumer$en extends Translations$Form$radioManager$consumer$zh {
+	_Translations$Form$radioManager$consumer$en._(TranslationsEn root) : this._root = root, super.internal(root);
+
+	final TranslationsEn _root; // ignore: unused_field
+
+	// Translations
+	@override String get placeholder => 'Please enter radio consumer';
+	@override String get validate => 'Radio consumer cannot be empty';
 }

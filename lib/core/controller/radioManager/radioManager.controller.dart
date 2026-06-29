@@ -10,7 +10,6 @@ import '../../utils/time.dart';
 import '../../utils/url.dart';
 
 class RadioManagerController {
-  // TODO: 暂时不做分页，数据量太少
   static Response getList(Request request) {
     final db = DatabaseManager.instance;
     final RadioManagerDto params = RadioManagerDto.fromJson(
@@ -36,6 +35,10 @@ class RadioManagerController {
           .order(RadiosEntity_.updatedAt, flags: Order.descending)
           .build();
       var count = query.count();
+      if (params.offset == 0) {
+        query.offset = params.offset;
+        query.limit = int.parse(params.pageSize);
+      }
       var res = query.find();
       return ApiResponse.success(data: {'list': res.toList(), 'total': count});
     } catch (err) {

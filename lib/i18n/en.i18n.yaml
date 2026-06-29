@@ -35,6 +35,48 @@ pageable:
   pageMin: The page must be greater than or equal to 1
   paramsValidateError: "Parameter verification failed: {errors}"
   keywordValidateError: "Key words should not exceed {count} characters"
+pager:
+  radioManager:
+    title: Radio manager
+tableColumn:
+  base:
+    actions: Actions
+  radioManager:
+    alias: Radio alias
+    alias_desc: Custom radio alias
+    consumer: Consumer
+    consumer_desc: Radio consumer
+    location: Location
+    location_desc: Radio location
+    sn: SN
+    sn_desc: Radio SN
+    columnInfo: Show column info
+button:
+  radioManager:
+    createRadio: Create Radio
+    resetRadio: Reset
+    edit: Edit
+    delete: Delete
+    clear: Clear
+checkbox:
+  DeselectAll: Deselect All
+  SelectAll: Select All ({count})
+TextField:
+  search: "Search......"
+Form:
+  radioManager:
+    alias:
+      placeholder: Please enter radio alias
+      validate: Radio alias cannot be empty
+    sn:
+      placeholder: Please enter radio sn
+      validate: Radio sn cannot be empty
+    location:
+      placeholder: Please enter radio location
+      validate: Radio location cannot be empty
+    consumer:
+      placeholder: Please enter radio consumer
+      validate: Radio consumer cannot be empty
 errorMiddle:
   error500: An unexpected error occurred. Please try again later
   errorArg: Invalid argument,{error}

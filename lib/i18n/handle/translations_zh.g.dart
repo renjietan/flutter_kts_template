@@ -41,6 +41,12 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 	late final Translations$uploads$zh uploads = Translations$uploads$zh.internal(_root);
 	late final Translations$json$zh json = Translations$json$zh.internal(_root);
 	late final Translations$pageable$zh pageable = Translations$pageable$zh.internal(_root);
+	late final Translations$pager$zh pager = Translations$pager$zh.internal(_root);
+	late final Translations$tableColumn$zh tableColumn = Translations$tableColumn$zh.internal(_root);
+	late final Translations$button$zh button = Translations$button$zh.internal(_root);
+	late final Translations$checkbox$zh checkbox = Translations$checkbox$zh.internal(_root);
+	late final Translations$TextField$zh TextField = Translations$TextField$zh.internal(_root);
+	late final Translations$Form$zh Form = Translations$Form$zh.internal(_root);
 	late final Translations$errorMiddle$zh errorMiddle = Translations$errorMiddle$zh.internal(_root);
 	late final Translations$platform$zh platform = Translations$platform$zh.internal(_root);
 	late final Translations$home$zh home = Translations$home$zh.internal(_root);
@@ -184,6 +190,74 @@ class Translations$pageable$zh {
 	String keywordValidateError({required Object count}) => '关键词文字不可超过${count}个字符';
 }
 
+// Path: pager
+class Translations$pager$zh {
+	Translations$pager$zh.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+	late final Translations$pager$radioManager$zh radioManager = Translations$pager$radioManager$zh.internal(_root);
+}
+
+// Path: tableColumn
+class Translations$tableColumn$zh {
+	Translations$tableColumn$zh.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+	late final Translations$tableColumn$base$zh base = Translations$tableColumn$base$zh.internal(_root);
+	late final Translations$tableColumn$radioManager$zh radioManager = Translations$tableColumn$radioManager$zh.internal(_root);
+}
+
+// Path: button
+class Translations$button$zh {
+	Translations$button$zh.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+	late final Translations$button$radioManager$zh radioManager = Translations$button$radioManager$zh.internal(_root);
+}
+
+// Path: checkbox
+class Translations$checkbox$zh {
+	Translations$checkbox$zh.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// zh: '取消全选'
+	String get DeselectAll => '取消全选';
+
+	/// zh: '全选 ({count})'
+	String SelectAll({required Object count}) => '全选 (${count})';
+}
+
+// Path: TextField
+class Translations$TextField$zh {
+	Translations$TextField$zh.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// zh: '搜索......'
+	String get search => '搜索......';
+}
+
+// Path: Form
+class Translations$Form$zh {
+	Translations$Form$zh.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+	late final Translations$Form$radioManager$zh radioManager = Translations$Form$radioManager$zh.internal(_root);
+}
+
 // Path: errorMiddle
 class Translations$errorMiddle$zh {
 	Translations$errorMiddle$zh.internal(this._root);
@@ -266,4 +340,161 @@ class Translations$app$appbar$zh {
 
 	/// zh: '注钥管理'
 	String get keyManager => '注钥管理';
+}
+
+// Path: pager.radioManager
+class Translations$pager$radioManager$zh {
+	Translations$pager$radioManager$zh.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// zh: '电台管理'
+	String get title => '电台管理';
+}
+
+// Path: tableColumn.base
+class Translations$tableColumn$base$zh {
+	Translations$tableColumn$base$zh.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// zh: '操作'
+	String get actions => '操作';
+}
+
+// Path: tableColumn.radioManager
+class Translations$tableColumn$radioManager$zh {
+	Translations$tableColumn$radioManager$zh.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// zh: '电台别名'
+	String get alias => '电台别名';
+
+	/// zh: '自定义的电台别名'
+	String get alias_desc => '自定义的电台别名';
+
+	/// zh: '使用人'
+	String get consumer => '使用人';
+
+	/// zh: '电台的使用人'
+	String get consumer_desc => '电台的使用人';
+
+	/// zh: '位置'
+	String get location => '位置';
+
+	/// zh: '电台位置'
+	String get location_desc => '电台位置';
+
+	/// zh: 'SN'
+	String get sn => 'SN';
+
+	/// zh: '电台SN号'
+	String get sn_desc => '电台SN号';
+
+	/// zh: '展示列信息'
+	String get columnInfo => '展示列信息';
+}
+
+// Path: button.radioManager
+class Translations$button$radioManager$zh {
+	Translations$button$radioManager$zh.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// zh: '添加电台'
+	String get createRadio => '添加电台';
+
+	/// zh: '重置'
+	String get resetRadio => '重置';
+
+	/// zh: '编辑'
+	String get edit => '编辑';
+
+	/// zh: '删除'
+	String get delete => '删除';
+
+	/// zh: '清除'
+	String get clear => '清除';
+}
+
+// Path: Form.radioManager
+class Translations$Form$radioManager$zh {
+	Translations$Form$radioManager$zh.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+	late final Translations$Form$radioManager$alias$zh alias = Translations$Form$radioManager$alias$zh.internal(_root);
+	late final Translations$Form$radioManager$sn$zh sn = Translations$Form$radioManager$sn$zh.internal(_root);
+	late final Translations$Form$radioManager$location$zh location = Translations$Form$radioManager$location$zh.internal(_root);
+	late final Translations$Form$radioManager$consumer$zh consumer = Translations$Form$radioManager$consumer$zh.internal(_root);
+}
+
+// Path: Form.radioManager.alias
+class Translations$Form$radioManager$alias$zh {
+	Translations$Form$radioManager$alias$zh.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// zh: '请输入电台别名'
+	String get placeholder => '请输入电台别名';
+
+	/// zh: '电台别名不可为空'
+	String get validate => '电台别名不可为空';
+}
+
+// Path: Form.radioManager.sn
+class Translations$Form$radioManager$sn$zh {
+	Translations$Form$radioManager$sn$zh.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// zh: '请输入电台SN号'
+	String get placeholder => '请输入电台SN号';
+
+	/// zh: '电台SN号不可为空'
+	String get validate => '电台SN号不可为空';
+}
+
+// Path: Form.radioManager.location
+class Translations$Form$radioManager$location$zh {
+	Translations$Form$radioManager$location$zh.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// zh: '请输入电台位置'
+	String get placeholder => '请输入电台位置';
+
+	/// zh: '电台位置不可为空'
+	String get validate => '电台位置不可为空';
+}
+
+// Path: Form.radioManager.consumer
+class Translations$Form$radioManager$consumer$zh {
+	Translations$Form$radioManager$consumer$zh.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// zh: '请输入电台使用人'
+	String get placeholder => '请输入电台使用人';
+
+	/// zh: '电台使用人不可为空'
+	String get validate => '电台使用人不可为空';
 }

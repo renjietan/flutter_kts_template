@@ -36,6 +36,48 @@ pageable:
   pageMin: page 必须大于等于 1
   paramsValidateError: "参数验证失败: {errors}"
   keywordValidateError: "关键词文字不可超过{count}个字符"
+pager:
+  radioManager:
+    title: 电台管理
+tableColumn:
+  base:
+    actions: 操作
+  radioManager:
+    alias: 电台别名
+    alias_desc: 自定义的电台别名
+    consumer: 使用人
+    consumer_desc: 电台的使用人
+    location: 位置
+    location_desc: 电台位置
+    sn: SN
+    sn_desc: 电台SN号
+    columnInfo: 展示列信息
+button:
+  radioManager:
+    createRadio: 添加电台
+    resetRadio: 重置
+    edit: 编辑
+    delete: 删除
+    clear: 清除
+checkbox:
+  DeselectAll: 取消全选
+  SelectAll: 全选 ({count})
+TextField:
+  search: "搜索......"
+Form:
+  radioManager:
+    alias:
+      placeholder: 请输入电台别名
+      validate: 电台别名不可为空
+    sn:
+      placeholder: 请输入电台SN号
+      validate: 电台SN号不可为空
+    location:
+      placeholder: 请输入电台位置
+      validate: 电台位置不可为空
+    consumer:
+      placeholder: 请输入电台使用人
+      validate: 电台使用人不可为空
 errorMiddle:
   error500: 发生意外错误，请稍后再试
   errorArg: 无效参数,{error}
