@@ -173,6 +173,7 @@ class _Translations$checkbox$en extends Translations$checkbox$zh {
 	// Translations
 	@override String get DeselectAll => 'Deselect All';
 	@override String SelectAll({required Object count}) => 'Select All (${count})';
+	@override String get selected => 'selected';
 }
 
 // Path: TextField

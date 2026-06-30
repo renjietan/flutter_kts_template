@@ -62,6 +62,7 @@ button:
 checkbox:
   DeselectAll: Deselect All
   SelectAll: Select All ({count})
+  selected: selected
 TextField:
   search: "Search......"
 Form:

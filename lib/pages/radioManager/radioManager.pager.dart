@@ -55,7 +55,7 @@ class _RadioManagerPagerState extends State<RadioManagerPager>
             child: TableContextualBar(
               selectedCount: selectedIds.length,
               normalToolbar: buildToolbar(context),
-              selectedCountTemplate: '{count} selected',
+              selectedCountTemplate: '{count} ${t.checkbox.selected}',
               selectAllWidget: OutlinedButton(
                 onPressed: toggleSelectAll,
                 style: OutlinedButton.styleFrom(

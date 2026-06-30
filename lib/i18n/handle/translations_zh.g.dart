@@ -234,6 +234,9 @@ class Translations$checkbox$zh {
 
 	/// zh: '全选 ({count})'
 	String SelectAll({required Object count}) => '全选 (${count})';
+
+	/// zh: '已选中'
+	String get selected => '已选中';
 }
 
 // Path: TextField

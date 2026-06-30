@@ -63,6 +63,7 @@ button:
 checkbox:
   DeselectAll: 取消全选
   SelectAll: 全选 ({count})
+  selected: 已选中
 TextField:
   search: "搜索......"
 Form:
