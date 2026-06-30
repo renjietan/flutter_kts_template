@@ -3,13 +3,14 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 import 'package:flutter_kts_template/utils/request/httpClient.dart';
+import 'package:flutter_kts_template/utils/response/BaseResponse.dart';
 
 class UploadFilesApi {
   static final DioClient _instance = DioClient();
   static final String pre = "/uploadServer";
 
   // 上传单个文件（任意类型）
-  static Future<String> single({
+  static Future<BaseResponse<dynamic>> single({
     String url = "/zip",
     required PlatformFile file,
     Map<String, dynamic>? extraFields,
@@ -47,11 +48,7 @@ class UploadFilesApi {
       });
     }
 
-    String res = await _instance.post(
-      pre + url,
-      data: formData,
-      parser: (dynamic data) => data,
-    );
+    var res = await _instance.post(pre + url, data: formData, fromJson: null);
     return res;
   }
 }

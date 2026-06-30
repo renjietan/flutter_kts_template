@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_kts_template/core/entities/radios/radiosEntity.dart';
 import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 import 'package:flutter_kts_template/pages/radioManager/radioManager.mixin.dart';
+import 'package:unified_popups/unified_popups.dart';
 
 import '../../theme/table.theme.dart';
 
@@ -74,7 +75,7 @@ class _RadioManagerPagerState extends State<RadioManagerPager>
                 child: Text(
                   allSelected
                       ? t.checkbox.DeselectAll
-                      : t.checkbox.SelectAll(count: paginatedData.length),
+                      : t.checkbox.SelectAll(count: data.length),
                   style: const TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
@@ -112,7 +113,7 @@ class _RadioManagerPagerState extends State<RadioManagerPager>
                 const SizedBox(width: 4),
                 FilledButton.icon(
                   onPressed: () {
-                    clearSelection();
+                    patchDelete();
                   },
                   icon: const Icon(Icons.delete_outline, size: 16),
                   label: Text(
@@ -122,12 +123,12 @@ class _RadioManagerPagerState extends State<RadioManagerPager>
                     backgroundColor: widget.theme.dangerColor,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 18,
-                      vertical: 10,
+                      horizontal: 12,
+                      vertical: 12,
                     ),
                     minimumSize: const Size(0, 36),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(6),
                     ),
                   ),
                 ),
@@ -154,8 +155,8 @@ class _RadioManagerPagerState extends State<RadioManagerPager>
                   // 在列头下方显示[字段描述]
                   // showColumnInfo: showColumnInfo,
                   // 显示字段描述, showColumnInfo 设置为 false 时,此处无效
-                  onToggleColumnInfo: () =>
-                      setState(() => showColumnInfo = !showColumnInfo),
+                  // onToggleColumnInfo: () =>
+                  //     setState(() => showColumnInfo = !showColumnInfo),
                 ),
               ),
             ),
@@ -169,14 +170,16 @@ class _RadioManagerPagerState extends State<RadioManagerPager>
               totalItems: totalItems,
               pageSize: pageSize,
               pageSizeOptions: const [10, 20, 50, 100],
-              pageSizeTemplate: "{count}",
+              // pageSizeTemplate: "{count}",
               onPageSizeChanged: (size) => setState(() {
                 pageSize = size;
                 currentPage = 1;
+                Pop.loading();
                 getList();
               }),
               onPageChanged: (page) {
                 setState(() => currentPage = page);
+                Pop.loading();
                 getList();
               },
               itemRangeTemplate: 'Showing {start}-{end} of {total} data',

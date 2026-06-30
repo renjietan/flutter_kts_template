@@ -79,11 +79,9 @@ class RadioManagerController {
 
   static Future<Response> delete(Request request) async {
     final db = DatabaseManager.instance;
-    int id = getId(request.context["path"] as List<String>?);
-    bool status = db.box<RadiosEntity>().remove(id);
-    return ApiResponse.success(
-      data: status,
-      message: t.common.OperationSuccess,
-    );
+    List<int> ids = getIds(request.context["path"] as List<String>?);
+    var box = db.box<RadiosEntity>();
+    int data = box.removeMany(ids);
+    return ApiResponse.success(data: data, message: t.common.OperationSuccess);
   }
 }

@@ -424,6 +424,9 @@ class Translations$button$radioManager$zh {
 
 	/// zh: '清除'
 	String get clear => '清除';
+
+	/// zh: '搜索'
+	String get search => '搜索';
 }
 
 // Path: Form.radioManager

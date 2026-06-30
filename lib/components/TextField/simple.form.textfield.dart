@@ -24,6 +24,7 @@ class _SimpleFormTextFieldState extends State<SimpleFormTextField> {
   Widget build(BuildContext context) {
     return FormBuilderTextField(
       name: widget.field.name,
+      controller: widget.field.textEditingController,
       obscureText: widget.field.obscureText,
       keyboardType: widget.field.keyboardType,
       validator: widget.field.validators != null
@@ -75,6 +76,7 @@ class FormFieldConfig {
   final List<FormFieldValidator<String>>? validators;
   final TextInputType? keyboardType;
   final bool obscureText;
+  final TextEditingController? textEditingController;
 
   FormFieldConfig({
     required this.name,
@@ -83,5 +85,6 @@ class FormFieldConfig {
     this.validators,
     this.keyboardType,
     this.obscureText = false,
+    this.textEditingController,
   });
 }

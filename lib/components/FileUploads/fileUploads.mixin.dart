@@ -7,6 +7,7 @@ import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 import 'package:flutter_kts_template/logger/logger.dart';
 import 'package:flutter_kts_template/utils/files/FileTools.dart';
 import 'package:flutter_kts_template/utils/files/exception/FileException.dart';
+import 'package:flutter_kts_template/utils/response/BaseResponse.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:unified_popups/unified_popups.dart';
 
@@ -39,15 +40,15 @@ mixin FileUploadsMixin on State<FileUploads> {
         Pop.toast(t.uploads.cancel, toastType: ToastType.warn);
         return;
       }
-      String response = await UploadFilesApi.single(file: file);
-      if (response.isNotEmpty) {
+      BaseResponse<dynamic> response = await UploadFilesApi.single(file: file);
+      if (response.data is String) {
         // String successMsg = t.uploads.success(path: response);
         Pop.toast(
           t.uploads.successWithPath(path: response),
           toastType: ToastType.success,
         );
         setState(() {
-          remoteFilePath = response;
+          remoteFilePath = response.data;
           simpleTextController.text = file.path!;
           isUploadLoading = false;
         });

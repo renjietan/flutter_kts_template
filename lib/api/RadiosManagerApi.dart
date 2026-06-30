@@ -1,36 +1,40 @@
-import '../core/entities/radios/radiosEntity.dart';
+import 'package:flutter_kts_template/core/entities/radios/radiosEntity.dart';
+import 'package:flutter_kts_template/utils/response/BaseListResponse.dart';
+
 import '../utils/request/httpClient.dart';
-import '../utils/response/BaseListResponse.dart';
 
 class RadiosManagerApi {
   static final DioClient _instance = DioClient();
   static final String url = "/radiosManager";
 
-  static Future<BaseListResponse<RadiosEntity>> getList({
+  static Future getList({
     required String page,
     required String pageSize,
     required String keyword,
   }) async {
-    Map<String, dynamic> resJson = await _instance.get<Map<String, dynamic>>(
+    final res = await _instance.get(
       url,
       queryParameters: {"page": page, "pageSize": pageSize, "keyword": keyword},
-    );
-    BaseListResponse<RadiosEntity> res = BaseListResponse.fromJson(
-      resJson,
-      (item) => RadiosEntity.fromJson(item),
+      fromJson: (json) => BaseListResponse.fromJson(
+        json as Map<String, dynamic>,
+        (item) => RadiosEntity.fromJson(item),
+      ),
     );
     return res;
   }
 
-  static Future<dynamic> create(Map<String, dynamic> data) async {
-    Map<String, dynamic> res = await _instance.post<Map<String, dynamic>>(
-      url,
-      data: data,
-    );
-    // BaseListResponse<RadiosEntity> res = BaseListResponse.fromJson(
-    //   resJson,
-    //   (item) => RadiosEntity.fromJson(item),
-    // );
+  static Future create(Map<String, dynamic> data) async {
+    final res = await _instance.post(url, data: data, fromJson: null);
+    return res;
+  }
+
+  static Future update(int id, {required Map<String, dynamic> data}) async {
+    final res = await _instance.put("$url/$id", data: data, fromJson: null);
+    return res;
+  }
+
+  static Future delete(String id) async {
+    final res = await _instance.delete("$url/$id", fromJson: null);
     return res;
   }
 }

@@ -1,0 +1,1 @@
+enum DialogTypeEnum { edit, create }

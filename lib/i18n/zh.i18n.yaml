@@ -59,6 +59,7 @@ button:
     edit: 编辑
     delete: 删除
     clear: 清除
+    search: 搜索
 checkbox:
   DeselectAll: 取消全选
   SelectAll: 全选 ({count})

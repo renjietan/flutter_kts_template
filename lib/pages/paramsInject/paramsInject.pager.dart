@@ -47,8 +47,6 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
 
   @override
   Widget build(BuildContext context) {
-    String ss = String.fromEnvironment("APP_NAME");
-    GlobalLogger.logInfo("环境变量: $ss");
     return Container(
       color: ThemeData.dark().primaryColorDark,
       child: Row(

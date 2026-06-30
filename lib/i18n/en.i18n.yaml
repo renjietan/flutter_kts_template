@@ -58,6 +58,7 @@ button:
     edit: Edit
     delete: Delete
     clear: Clear
+    search: Search
 checkbox:
   DeselectAll: Deselect All
   SelectAll: Select All ({count})

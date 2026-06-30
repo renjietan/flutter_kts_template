@@ -4,45 +4,92 @@ import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_kts_template/components/button/base.button.dart';
 import 'package:flutter_kts_template/components/dialog/simple.form.dialog.dart';
 import 'package:flutter_kts_template/components/text/text.title.dart';
-import 'package:flutter_kts_template/logger/logger.dart';
 import 'package:flutter_kts_template/pages/radioManager/radioManager.pager.dart';
+import 'package:flutter_kts_template/utils/enum/dialog_enum.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
+import 'package:unified_popups/unified_popups.dart';
 
 import '../../api/RadiosManagerApi.dart';
+import '../../components/TextField/simple.filter.search.textField.dart';
 import '../../components/TextField/simple.form.textfield.dart';
 import '../../core/entities/radios/radiosEntity.dart';
 import '../../i18n/handle/translations.g.dart';
 import '../../theme/table.theme.dart';
-import '../../utils/response/BaseListResponse.dart';
 
 mixin RadioManagerMixin on State<RadioManagerPager> {
+  // =============================================================================
+  // 2026/6/30 下午4:34 table 相关
+  // =============================================================================
+  final searchFieldController = TextEditingController();
   late List<RadiosEntity> data = [];
-  late List<RadiosEntity> filteredData = [];
-  int totalItems = 0;
   final Set<String> selectedIds = {};
   final bool showCheckboxes = true;
-  final formKey = GlobalKey<FormBuilderState>();
-
+  int totalItems = 0;
   int currentPage = 1;
   int pageSize = 10;
-
+  int totalPages = 0;
   String searchQuery = '';
-
   bool showColumnInfo = false;
+  // =============================================================================
+  // 2026/6/30 下午4:34 表单相关
+  // =============================================================================
+  final formKey = GlobalKey<FormBuilderState>();
+  final aliasTextEditController = TextEditingController();
+  final consumerTextEditController = TextEditingController();
+  final locationTextEditController = TextEditingController();
+  final snTextEditController = TextEditingController();
 
   // =============================================================================
-  // 2026/6/29 数据获取
+  // 2026/6/29 接口请求
   // =============================================================================
   void getList() {
     RadiosManagerApi.getList(
       page: currentPage.toString(),
       pageSize: pageSize.toString(),
       keyword: searchQuery,
-    ).then((BaseListResponse<RadiosEntity> res) {
-      setState(() {
-        data = res.list;
-        totalItems = res.total;
+    ).then((res) {
+      Future.delayed(Duration(milliseconds: 70)).then((_) {
+        Pop.hideLoading();
+        setState(() {
+          data = res.data.list;
+          totalItems = res.data.total;
+          totalPages = (totalItems / pageSize).ceil().clamp(1, 999);
+        });
       });
+    });
+  }
+
+  void create(Map<String, dynamic> v) {
+    Pop.loading();
+    RadiosManagerApi.create(v).then((res) {
+      Pop.toast(t.common.OperationSuccess);
+      getList();
+    });
+  }
+
+  void delete(RadiosEntity data) {
+    Pop.loading();
+    RadiosManagerApi.delete("${data.id}").then((res) {
+      Pop.toast(t.common.OperationSuccess);
+      getList();
+    });
+  }
+
+  void patchDelete() {
+    Pop.loading();
+    String idsStr = selectedIds.join("、");
+    RadiosManagerApi.delete(idsStr).then((res) {
+      Pop.toast(t.common.OperationSuccess);
+      clearSelection();
+      getList();
+    });
+  }
+
+  void update(RadiosEntity? data) {
+    Pop.loading();
+    RadiosManagerApi.update(data!.id, data: data.toJson()).then((res) {
+      getList();
+      Pop.toast(t.common.OperationSuccess);
     });
   }
 
@@ -52,38 +99,9 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
   bool get isDark => widget.themePreset == ThemePreset.dark;
 
   // =============================================================================
-  // 2026/6/15 下午2:47 分页相关
-  // =============================================================================
-
-  void applyFilters() {
-    filteredData = data.where((item) {
-      if (searchQuery.isNotEmpty) {
-        final query = searchQuery.toLowerCase();
-        if (!item.alias.toLowerCase().contains(query) &&
-            !item.consumer.toLowerCase().contains(query) &&
-            !item.location.toLowerCase().contains(query) &&
-            !item.sn.toLowerCase().contains(query)) {
-          return false;
-        }
-      }
-      return true;
-    }).toList();
-    currentPage = 1;
-  }
-
-  List<RadiosEntity> get paginatedData {
-    final startIndex = (currentPage - 1) * pageSize;
-    if (startIndex >= filteredData.length) return [];
-    final endIndex = (startIndex + pageSize).clamp(0, filteredData.length);
-    return filteredData.sublist(startIndex, endIndex);
-  }
-
-  int get totalPages => (totalItems / pageSize).ceil().clamp(1, 999);
-
-  // =============================================================================
   // 2026/6/15 下午2:54 构建 widget
   // =============================================================================
-  // 勾选框-工具栏
+  // 搜索-工具栏
   Widget buildToolbar(BuildContext context) {
     final t = Translations.of(context);
     return TableFilterToolbar(
@@ -95,20 +113,29 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
         ),
       ],
       trailingActions: [
-        FilterSearchField(
+        SimpleFilterSearchField(
           height: 36,
+          controller: searchFieldController,
+          textInputAction: TextInputAction.search,
           onChanged: (value) {
             setState(() {
               searchQuery = value;
-              getList();
             });
+          },
+          onSubmit: (value) {
+            Pop.loading();
+            getList();
           },
         ),
         BaseButton(
           label: t.button.radioManager.createRadio,
           width: 100,
           onPressed: () {
-            showDialog(context);
+            aliasTextEditController.text = "";
+            consumerTextEditController.text = "";
+            locationTextEditController.text = "";
+            snTextEditController.text = "";
+            showDialog(DialogTypeEnum.create, null);
           },
         ),
         FilterResetButton(
@@ -116,6 +143,8 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
           onReset: () {
             setState(() {
               searchQuery = '';
+              searchFieldController.text = "";
+              Pop.loading();
               getList();
             });
           },
@@ -156,7 +185,7 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
   }
 
   // 编辑、删除
-  Widget buildActionCell(RadiosEntity user) {
+  Widget buildActionCell(RadiosEntity data) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -168,7 +197,11 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
           ),
           tooltip: t.button.radioManager.edit,
           onPressed: () {
-            // 编辑按钮
+            showDialog(DialogTypeEnum.edit, data);
+            aliasTextEditController.text = data.alias;
+            consumerTextEditController.text = data.consumer;
+            locationTextEditController.text = data.location;
+            snTextEditController.text = data.sn;
           },
           padding: EdgeInsets.zero,
           constraints: const BoxConstraints(),
@@ -182,7 +215,7 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
           ),
           tooltip: t.button.radioManager.delete,
           onPressed: () {
-            // 删除按钮
+            delete(data);
           },
           padding: EdgeInsets.zero,
           constraints: const BoxConstraints(),
@@ -218,8 +251,7 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
     );
   }
 
-  Future<void> showDialog(BuildContext context) async {
-    final t = Translations.of(context);
+  Future<void> showDialog(DialogTypeEnum type, RadiosEntity? data) async {
     SimpleFormDialog(
       title: t.button.radioManager.createRadio,
       confirmText: t.button.radioManager.createRadio,
@@ -228,6 +260,7 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
           name: 'alias',
           label: t.tableColumn.radioManager.alias,
           hintText: t.Form.radioManager.alias.placeholder,
+          textEditingController: aliasTextEditController,
           validators: [
             FormBuilderValidators.required(
               errorText: t.Form.radioManager.alias.validate,
@@ -238,6 +271,7 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
           name: 'consumer',
           label: t.tableColumn.radioManager.consumer,
           hintText: t.Form.radioManager.consumer.placeholder,
+          textEditingController: consumerTextEditController,
           validators: [
             FormBuilderValidators.required(
               errorText: t.Form.radioManager.consumer.validate,
@@ -248,6 +282,7 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
           name: 'location',
           label: t.tableColumn.radioManager.location,
           hintText: t.Form.radioManager.location.placeholder,
+          textEditingController: locationTextEditController,
           validators: [
             FormBuilderValidators.required(
               errorText: t.Form.radioManager.location.validate,
@@ -258,6 +293,7 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
           name: 'sn',
           label: t.tableColumn.radioManager.sn,
           hintText: t.Form.radioManager.sn.placeholder,
+          textEditingController: snTextEditController,
           validators: [
             FormBuilderValidators.required(
               errorText: t.Form.radioManager.sn.validate,
@@ -266,10 +302,11 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
         ),
       ],
       onConfirm: (v) {
-        // 提交逻辑
-        RadiosManagerApi.create(v).then((res) {
-          GlobalLogger.logInfo("表单数据: $v");
-        });
+        if (type == DialogTypeEnum.create) {
+          create(v);
+        } else {
+          update(data);
+        }
       },
     );
   }
@@ -278,9 +315,9 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
   // 2026/6/15 下午2:54 勾选相关
   // =============================================================================
   bool get allSelected {
-    final current = paginatedData;
+    final current = data;
     if (current.isEmpty) return false;
-    return current.every((u) => selectedIds.contains(u.id));
+    return current.every((u) => selectedIds.contains(u.id.toString()));
   }
 
   void toggleSelection(String id) {
@@ -295,7 +332,7 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
 
   void toggleSelectAll() {
     setState(() {
-      final current = paginatedData;
+      final current = data;
       if (allSelected) {
         for (final item in current) {
           selectedIds.remove(item.id.toString());
@@ -310,5 +347,15 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
 
   void clearSelection() {
     setState(() => selectedIds.clear());
+  }
+
+  @override
+  void dispose() {
+    aliasTextEditController.dispose();
+    consumerTextEditController.dispose();
+    locationTextEditController.dispose();
+    snTextEditController.dispose();
+    searchFieldController.dispose();
+    super.dispose();
   }
 }

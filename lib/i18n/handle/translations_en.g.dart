@@ -303,6 +303,7 @@ class _Translations$button$radioManager$en extends Translations$button$radioMana
 	@override String get edit => 'Edit';
 	@override String get delete => 'Delete';
 	@override String get clear => 'Clear';
+	@override String get search => 'Search';
 }
 
 // Path: Form.radioManager

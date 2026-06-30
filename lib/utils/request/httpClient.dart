@@ -4,8 +4,8 @@ import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:flutter_kts_template/config/config.dart';
 import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
-import 'package:flutter_kts_template/utils/request/responseInstance.dart';
 
+import '../response/BaseResponse.dart';
 import 'interceptor/error_interceptor.dart';
 
 class DioClient {
@@ -55,13 +55,13 @@ class DioClient {
     _dio.interceptors.add(interceptor);
   }
 
-  Future<T> get<T>(
+  Future<BaseResponse<T>> get<T>(
     String path, {
     Map<String, dynamic>? queryParameters,
     Options? options,
     CancelToken? cancelToken,
     ProgressCallback? onReceiveProgress,
-    T Function(dynamic)? parser, // 解析器
+    required T Function(dynamic json)? fromJson,
   }) async {
     try {
       final response = await _dio.get(
@@ -71,22 +71,21 @@ class DioClient {
         cancelToken: cancelToken ?? _cancelToken,
         onReceiveProgress: onReceiveProgress,
       );
-      return _handleResponse(response, parser);
+      return _handleResponse(response, fromJson);
     } catch (e) {
       throw _handleError(e);
     }
   }
 
-  Future<T> post<T>(
+  Future<BaseResponse<T>> post<T>(
     String path, {
-    Map<String, dynamic>? data,
+    dynamic data,
     Map<String, dynamic>? queryParameters,
     Options? options,
     CancelToken? cancelToken,
     ProgressCallback? onSendProgress,
     ProgressCallback? onReceiveProgress,
-    // parser: (data) => (data as List).map((e) => e['url'] as String).toList(),
-    T Function(dynamic)? parser,
+    required T Function(dynamic json)? fromJson,
   }) async {
     try {
       final response = await _dio.post(
@@ -98,19 +97,19 @@ class DioClient {
         onSendProgress: onSendProgress,
         onReceiveProgress: onReceiveProgress,
       );
-      return _handleResponse(response, parser);
+      return _handleResponse(response, fromJson);
     } catch (e) {
       throw _handleError(e);
     }
   }
 
-  Future<T> put<T>(
+  Future<BaseResponse<T>> put<T>(
     String path, {
     dynamic data,
     Map<String, dynamic>? queryParameters,
     Options? options,
     CancelToken? cancelToken,
-    T Function(dynamic)? parser,
+    required T Function(dynamic json)? fromJson,
   }) async {
     try {
       final response = await _dio.put(
@@ -120,19 +119,19 @@ class DioClient {
         options: options,
         cancelToken: cancelToken ?? _cancelToken,
       );
-      return _handleResponse(response, parser);
+      return _handleResponse(response, fromJson);
     } catch (e) {
       throw _handleError(e);
     }
   }
 
-  Future<T> delete<T>(
+  Future<BaseResponse<T>> delete<T>(
     String path, {
     dynamic data,
     Map<String, dynamic>? queryParameters,
     Options? options,
     CancelToken? cancelToken,
-    T Function(dynamic)? parser,
+    required T Function(dynamic json)? fromJson,
   }) async {
     try {
       final response = await _dio.delete(
@@ -142,26 +141,27 @@ class DioClient {
         options: options,
         cancelToken: cancelToken ?? _cancelToken,
       );
-      return _handleResponse(response, parser);
+      return _handleResponse(response, fromJson);
     } catch (e) {
       throw _handleError(e);
     }
   }
 
-  T _handleResponse<T>(Response response, T Function(dynamic)? parser) {
+  BaseResponse<T> _handleResponse<T>(
+    Response response,
+    T Function(dynamic json)? fromJson,
+  ) {
     if (response.statusCode == 200) {
-      final json = response.data;
-      if (json is Map<String, dynamic>) {
-        final entity = ResponseInstance<T>.fromJson(json, parser);
-        if (entity.isSuccess) {
-          return entity.data as T;
-        } else {
-          // 业务错误，抛出异常并携带后端返回的 message
-          throw BusinessException(entity.code, entity.message);
-        }
-      } else {
-        return parser != null ? parser.call(json) : json;
-      }
+      dynamic data = response.data;
+      // return response.data;
+      return BaseResponse<T>(
+        code: data["code"],
+        message: data["message"],
+        data: fromJson == null
+            ? data["data"]
+            : fromJson(data["data"]), // 👈 用回调解析内部 data
+      );
+      ;
     } else {
       // HTTP 状态码错误
       throw HttpException(

@@ -17,7 +17,9 @@ Middleware parseJsonMiddleware() {
       } else if (contentType.startsWith(EnumContentType.json.value) == true) {
         try {
           final body = await request.readAsString();
-          data = jsonDecode(body);
+          if (body.isNotEmpty) {
+            data = jsonDecode(body);
+          }
         } on FormatException catch (e) {
           GlobalLogger.logError('Invalid JSON: ${e.message}');
           return ApiResponse.internalError(
