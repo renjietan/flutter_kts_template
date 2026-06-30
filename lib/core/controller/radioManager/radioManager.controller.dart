@@ -15,7 +15,6 @@ class RadioManagerController {
     final RadioManagerDto params = RadioManagerDto.fromJson(
       request.context["params"] as Map<String, dynamic>,
     );
-
     try {
       params.validateOrThrow();
       final condition = <Condition<RadiosEntity>>[];
@@ -35,9 +34,9 @@ class RadioManagerController {
           .order(RadiosEntity_.updatedAt, flags: Order.descending)
           .build();
       var count = query.count();
-      if (params.offset == 0) {
+      if (params.pageLimit != 0 && params.pageNum != 0) {
         query.offset = params.offset;
-        query.limit = int.parse(params.pageSize);
+        query.limit = params.pageLimit;
       }
       var res = query.find();
       return ApiResponse.success(data: {'list': res.toList(), 'total': count});

@@ -99,8 +99,11 @@ class Translations$common$zh {
 	/// zh: '网络超时，请稍后重试'
 	String get requestTimeout => '网络超时，请稍后重试';
 
-	/// zh: '网络连接失败，请检查网络,'
-	String get requestConnectionError => '网络连接失败，请检查网络,';
+	/// zh: '网络连接超时,'
+	String get connectionTimeout => '网络连接超时,';
+
+	/// zh: '发送超时'
+	String get sendTimeout => '发送超时';
 
 	/// zh: '服务器异常'
 	String get serverError => '服务器异常';

@@ -1,5 +1,6 @@
 import 'package:composable_data_table/composable_data_table.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_kts_template/components/loading/simple.loading.dart';
 import 'package:flutter_kts_template/core/entities/radios/radiosEntity.dart';
 import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 import 'package:flutter_kts_template/pages/radioManager/radioManager.mixin.dart';
@@ -83,7 +84,6 @@ class _RadioManagerPagerState extends State<RadioManagerPager>
                 ),
               ),
               actions: [
-                // 执行操作按钮时的弹窗
                 OutlinedButton.icon(
                   onPressed: clearSelection,
                   icon: Icon(
@@ -174,12 +174,12 @@ class _RadioManagerPagerState extends State<RadioManagerPager>
               onPageSizeChanged: (size) => setState(() {
                 pageSize = size;
                 currentPage = 1;
-                Pop.loading();
+                SimplePopup.loading();
                 getList();
               }),
               onPageChanged: (page) {
                 setState(() => currentPage = page);
-                Pop.loading();
+                SimplePopup.loading();
                 getList();
               },
               itemRangeTemplate: 'Showing {start}-{end} of {total} data',

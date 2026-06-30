@@ -14,6 +14,7 @@ import 'package:unified_popups/unified_popups.dart';
 import '../../api/uploadFilesApi.dart';
 import '../../utils/files/exception/PermissionException.dart';
 import '../../utils/files/pick_files/FileSelector.dart';
+import '../loading/simple.loading.dart';
 import 'fileUploads.dart';
 
 mixin FileUploadsMixin on State<FileUploads> {
@@ -37,23 +38,20 @@ mixin FileUploadsMixin on State<FileUploads> {
         setState(() {
           isUploadLoading = false;
         });
-        Pop.toast(t.uploads.cancel, toastType: ToastType.warn);
+        SimplePopup.warn(t.uploads.cancel);
         return;
       }
       BaseResponse<dynamic> response = await UploadFilesApi.single(file: file);
       if (response.data is String) {
         // String successMsg = t.uploads.success(path: response);
-        Pop.toast(
-          t.uploads.successWithPath(path: response),
-          toastType: ToastType.success,
-        );
+        SimplePopup.success(t.uploads.successWithPath(path: response));
         setState(() {
           remoteFilePath = response.data;
           simpleTextController.text = file.path!;
           isUploadLoading = false;
         });
       } else {
-        Pop.toast(t.uploads.failed, toastType: ToastType.error);
+        SimplePopup.error(t.uploads.failed);
         setState(() {
           remoteFilePath = "";
           simpleTextController.text = "";
@@ -61,7 +59,7 @@ mixin FileUploadsMixin on State<FileUploads> {
         });
       }
     } on PermissionException catch (e) {
-      Pop.toast(e.toString(), toastType: ToastType.error);
+      SimplePopup.error(e.toString());
       setState(() {
         simpleTextController.text = "";
         isUploadLoading = false;
@@ -76,11 +74,11 @@ mixin FileUploadsMixin on State<FileUploads> {
           GlobalLogger.logInfo(r.toString());
         },
         onCancel: () async {
-          Pop.toast(t.permission.cancel, toastType: ToastType.warn);
+          SimplePopup.warn(t.permission.cancel);
         },
       );
     } catch (e) {
-      Pop.toast(e.toString(), toastType: ToastType.error);
+      SimplePopup.error(e.toString());
       setState(() {
         simpleTextController.text = "";
         isUploadLoading = false;
@@ -90,7 +88,7 @@ mixin FileUploadsMixin on State<FileUploads> {
 
   Future<void> parseFile() async {
     if (remoteFilePath.isEmpty) {
-      Pop.toast(t.uploads.emptyPath, toastType: ToastType.error);
+      SimplePopup.error(t.uploads.emptyPath);
       return;
     }
     try {
@@ -105,9 +103,9 @@ mixin FileUploadsMixin on State<FileUploads> {
         print(res);
       });
     } on FileException catch (e) {
-      Pop.toast(e.toString(), toastType: ToastType.error);
+      SimplePopup.error(e.toString());
     } catch (e) {
-      Pop.toast(e.toString(), toastType: ToastType.error);
+      SimplePopup.error(e.toString());
     }
   }
 }
