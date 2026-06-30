@@ -177,7 +177,7 @@ Future<obx.Store> openStore({
   int? maxReaders,
   bool queriesCaseSensitiveDefault = true,
   String? macosApplicationGroup,
-  required int debugFlags,
+  int? debugFlags,
 }) async {
   await loadObjectBoxLibraryAndroidCompat();
   return obx.Store(
@@ -368,9 +368,6 @@ obx_int.ModelDefinition getObjectBoxModel() {
           4,
           0,
         );
-        final updatedAtParam = DateTime.fromMillisecondsSinceEpoch(
-          const fb.Int64Reader().vTableGet(buffer, rootOffset, 8, 0),
-        );
         final consumerParam = const fb.StringReader(
           asciiOptimization: true,
         ).vTableGet(buffer, rootOffset, 10, '');
@@ -386,14 +383,17 @@ obx_int.ModelDefinition getObjectBoxModel() {
         final createdAtParam = DateTime.fromMillisecondsSinceEpoch(
           const fb.Int64Reader().vTableGet(buffer, rootOffset, 6, 0),
         );
+        final updatedAtParam = DateTime.fromMillisecondsSinceEpoch(
+          const fb.Int64Reader().vTableGet(buffer, rootOffset, 8, 0),
+        );
         final object = RadiosEntity(
           id: idParam,
-          updatedAt: updatedAtParam,
           consumer: consumerParam,
           location: locationParam,
           sn: snParam,
           alias: aliasParam,
           createdAt: createdAtParam,
+          updatedAt: updatedAtParam,
         );
 
         return object;

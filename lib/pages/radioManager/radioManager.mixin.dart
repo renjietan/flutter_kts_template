@@ -5,6 +5,7 @@ import 'package:flutter_kts_template/components/button/base.button.dart';
 import 'package:flutter_kts_template/components/dialog/simple.form.dialog.dart';
 import 'package:flutter_kts_template/components/loading/simple.loading.dart';
 import 'package:flutter_kts_template/components/text/text.title.dart';
+import 'package:flutter_kts_template/logger/logger.dart';
 import 'package:flutter_kts_template/pages/radioManager/radioManager.pager.dart';
 import 'package:flutter_kts_template/utils/enum/dialog_enum.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
@@ -52,6 +53,7 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
         SimplePopup.hideLoading();
         setState(() {
           data = res.data.list;
+          GlobalLogger.logInfo(data.length.toString());
           totalItems = res.data.total;
           totalPages = (totalItems / pageSize).ceil().clamp(1, 999);
         });
@@ -120,6 +122,7 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
           },
           onSubmit: (value) {
             SimplePopup.loading();
+            currentPage = 1;
             getList();
           },
         ),

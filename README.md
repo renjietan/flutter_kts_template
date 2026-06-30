@@ -81,8 +81,10 @@
             - 注意： 生成的缓存文件在 [lib](.dart_tool/build/generated/flutter_kts_template/lib/core/databaseManager/entities/xx/xxx.info)
       - 如果以上 build_runner 命令出现问题，请使用：
         - dart run build_runner build --delete-conflicting-outputs --verbose
-        - flutter pub run build_runner build --delete-conflicting-outputs --force-jit (大概率能解决，使用 jit 方式 跳过预编译、Hook 生成文件)
-
+        - 100% 可行：
+          - 运行前需要: dart run slang -d
+          - flutter pub run build_runner build --delete-conflicting-outputs --force-jit (大概率能解决，使用 jit 方式 跳过预编译、Hook 生成文件)
+       
 - TODO:
   - shelf_limiter 
   - shelf_rate_limiter
