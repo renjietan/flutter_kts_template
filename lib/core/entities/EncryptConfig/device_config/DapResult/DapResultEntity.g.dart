@@ -8,7 +8,7 @@ part of 'DapResultEntity.dart';
 
 DapResultEntity _$DapResultEntityFromJson(Map<String, dynamic> json) =>
     DapResultEntity(
-      dapUid: (json['dapUid'] as num?)?.toInt(),
+      dapUid: json['dapUid'] as String?,
       name: json['name'] as String?,
     );
 

@@ -5,10 +5,10 @@ part 'TransTableEntry.g.dart';
 @JsonSerializable(includeIfNull: false)
 class TransTableEntry {
   @JsonKey(name: 'dstNum')
-  final int? dstNum;
+  final String? dstNum;
 
   @JsonKey(name: 'dstReserve')
-  final int? dstReserve;
+  final String? dstReserve;
 
   @JsonKey(name: 'dstSlfCode')
   final String? dstSlfCode;

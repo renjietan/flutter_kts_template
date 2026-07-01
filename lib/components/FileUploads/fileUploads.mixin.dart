@@ -28,6 +28,7 @@ mixin FileUploadsMixin on State<FileUploads> {
     setState(() {
       remoteFilePath = "";
       isUploadLoading = true;
+      simpleTextController.text = "";
     });
     _uploadFiles();
   }

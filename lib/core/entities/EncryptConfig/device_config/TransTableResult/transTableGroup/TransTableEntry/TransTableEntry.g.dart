@@ -8,8 +8,8 @@ part of 'TransTableEntry.dart';
 
 TransTableEntry _$TransTableEntryFromJson(Map<String, dynamic> json) =>
     TransTableEntry(
-      dstNum: (json['dstNum'] as num?)?.toInt(),
-      dstReserve: (json['dstReserve'] as num?)?.toInt(),
+      dstNum: json['dstNum'] as String?,
+      dstReserve: json['dstReserve'] as String?,
       dstSlfCode: json['dstSlfCode'] as String?,
       dstType: (json['dstType'] as num?)?.toInt(),
       index: (json['index'] as num?)?.toInt(),

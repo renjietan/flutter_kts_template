@@ -5,7 +5,7 @@ part "DapResultEntity.g.dart";
 @JsonSerializable(includeIfNull: false)
 class DapResultEntity {
   @JsonKey(name: 'dapUid')
-  final int? dapUid;
+  final String? dapUid;
   final String? name;
 
   DapResultEntity({this.dapUid, this.name});
