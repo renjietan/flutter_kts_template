@@ -4,6 +4,7 @@ import 'package:flutter_kts_template/components/DropDown/simple.dropdown.dart';
 import 'package:flutter_kts_template/components/TreeView/simple-tree/simple.tree.model.dart';
 import 'package:flutter_kts_template/components/TreeView/simple-tree/simple.treeview.dart';
 import 'package:flutter_kts_template/components/text/text.title.dart';
+import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 import 'package:flutter_kts_template/logger/logger.dart';
 import 'package:flutter_kts_template/pages/paramsInject/paramsInject.mixin.dart';
 import 'package:flutter_kts_template/pages/paramsInject/treeData/treeData.dart';
@@ -12,6 +13,7 @@ import 'package:recursive_tree_flutter/models/tree_type.dart';
 
 import '../../components/fileUploads/fileUploads.dart';
 import '../radioManager/radio.model.dart';
+import 'components/paramsFormDialog.dart';
 
 class ParamsInjectPager extends StatefulWidget {
   const ParamsInjectPager({super.key});
@@ -30,12 +32,19 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
   void initState() {
     // TODO: implement initState
     _tree = buildTree(treeMockData, activeSelection: true);
-
+    final t = Translations.of(context);
     _detailTree = buildTree(
       mockData1,
-      leafActionWidgetLabel: "inject",
+      leafActionWidgetLabel: t.button.paramsInject.inject,
       leafActionWidgetOnPressed: (v) {
         GlobalLogger.logInfo(v.toString());
+        ParamsFormDialog.showDialog(
+          title: "111",
+          fields: [],
+          onConfirm: (v) {
+            print(v);
+          },
+        );
       },
       leafActionWidgetSize: Size(60, 30),
     );

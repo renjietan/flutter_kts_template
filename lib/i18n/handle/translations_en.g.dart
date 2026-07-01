@@ -165,6 +165,7 @@ class _Translations$button$en extends Translations$button$zh {
 
 	// Translations
 	@override late final _Translations$button$radioManager$en radioManager = _Translations$button$radioManager$en._(_root);
+	@override late final _Translations$button$paramsInject$en paramsInject = _Translations$button$paramsInject$en._(_root);
 }
 
 // Path: checkbox
@@ -308,6 +309,16 @@ class _Translations$button$radioManager$en extends Translations$button$radioMana
 	@override String get delete => 'Delete';
 	@override String get clear => 'Clear';
 	@override String get search => 'Search';
+}
+
+// Path: button.paramsInject
+class _Translations$button$paramsInject$en extends Translations$button$paramsInject$zh {
+	_Translations$button$paramsInject$en._(TranslationsEn root) : this._root = root, super.internal(root);
+
+	final TranslationsEn _root; // ignore: unused_field
+
+	// Translations
+	@override String get inject => 'inject';
 }
 
 // Path: Form.radioManager

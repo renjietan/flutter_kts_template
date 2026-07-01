@@ -228,6 +228,7 @@ class Translations$button$zh {
 
 	// Translations
 	late final Translations$button$radioManager$zh radioManager = Translations$button$radioManager$zh.internal(_root);
+	late final Translations$button$paramsInject$zh paramsInject = Translations$button$paramsInject$zh.internal(_root);
 }
 
 // Path: checkbox
@@ -439,6 +440,18 @@ class Translations$button$radioManager$zh {
 
 	/// zh: '搜索'
 	String get search => '搜索';
+}
+
+// Path: button.paramsInject
+class Translations$button$paramsInject$zh {
+	Translations$button$paramsInject$zh.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// zh: '注入'
+	String get inject => '注入';
 }
 
 // Path: Form.radioManager

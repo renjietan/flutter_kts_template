@@ -100,7 +100,7 @@ class _SimpleTreeViewState<T extends AbsNodeType> extends State<SimpleTreeView>
               ),
             if (tree.isLeaf && tree.data.isShowCheckbox) buildTrailing(),
             // buildTrailing(),
-            SizedBox(width: 10),
+            SizedBox(width: 30),
           ],
         ),
       ),

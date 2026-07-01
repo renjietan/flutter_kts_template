@@ -62,6 +62,8 @@ button:
     delete: 删除
     clear: 清除
     search: 搜索
+  paramsInject:
+    inject: 注入
 checkbox:
   DeselectAll: 取消全选
   SelectAll: 全选 ({count})
