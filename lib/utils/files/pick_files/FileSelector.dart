@@ -1,6 +1,7 @@
 // file_selector.dart
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 
 import '../../devicePermission/requestPermissions.dart';
 import '../exception/PermissionException.dart';
@@ -11,7 +12,7 @@ class FileSelector {
     // 处理权限
     bool hasPermission = await RequestPermission.requestStoragePermission();
     if (!hasPermission) {
-      throw PermissionException("存储权限未授予，无法选择文件");
+      throw PermissionException(t.permission.no);
     }
     FilePickerResult? result;
     // 打开文件选择器

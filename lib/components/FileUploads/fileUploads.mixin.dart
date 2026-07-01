@@ -90,8 +90,14 @@ mixin FileUploadsMixin on State<FileUploads> {
 
   Future<void> parseFile() async {
     if (remoteFilePath.isEmpty) {
-      Pop.toast(t.uploads.emptyPath, toastType: ToastType.error);
-      return;
+      PlatformFile? file = await FileSelector.pickFile(null);
+      if (file == null) {
+        setState(() {
+          isUploadLoading = false;
+        });
+        Pop.toast(t.uploads.cancel, toastType: ToastType.warn);
+        return;
+      }
     }
     try {
       var archiveExt = getInputExtension(remoteFilePath);
