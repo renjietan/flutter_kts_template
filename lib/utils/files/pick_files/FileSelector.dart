@@ -1,6 +1,5 @@
 // file_selector.dart
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 
 import '../../devicePermission/requestPermissions.dart';
@@ -20,7 +19,7 @@ class FileSelector {
       type: FileType.custom,
       allowedExtensions: extensions ?? ['json', 'zip'],
       allowMultiple: false,
-      withData: kIsWeb,
+      withData: true,
     );
     if (result != null && result.files.isNotEmpty) {
       return result.files.first; // 返回选中的文件

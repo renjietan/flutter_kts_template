@@ -15,7 +15,6 @@ class UploadController {
     final form = await request.formData();
     // 获取额外字段
     // final description = form.fields['description'];
-
     final uploadedFile = form.files['file'];
     if (uploadedFile != null) {
       final bytes = await uploadedFile.readAsBytes();

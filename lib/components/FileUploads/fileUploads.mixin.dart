@@ -9,11 +9,13 @@ import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 import 'package:flutter_kts_template/logger/logger.dart';
 import 'package:flutter_kts_template/utils/files/FileTools.dart';
 import 'package:flutter_kts_template/utils/files/exception/FileException.dart';
-import 'package:flutter_kts_template/utils/response/BaseResponse.dart';
+import 'package:path/path.dart' as path;
 import 'package:permission_handler/permission_handler.dart';
 import 'package:unified_popups/unified_popups.dart';
 
-import '../../api/uploadFilesApi.dart';
+import '../../core/utils/common.dart';
+import '../../core/utils/director.dart';
+import '../../core/utils/time.dart';
 import '../../utils/files/exception/PermissionException.dart';
 import '../../utils/files/pick_files/FileSelector.dart';
 import 'fileUploads.dart';
@@ -43,15 +45,22 @@ mixin FileUploadsMixin on State<FileUploads> {
         Pop.toast(t.uploads.cancel, toastType: ToastType.warn);
         return;
       }
-      BaseResponse<dynamic> response = await UploadFilesApi.single(file: file);
-      if (response.data is String) {
-        // String successMsg = t.uploads.success(path: response);
+      // 逻辑修改，不调用接口
+      var bytes = file.bytes;
+      if (bytes != null) {
+        String uploadPath = await DirectoryManager.instance.getUploadsPath();
+        String safeFileName = sanitizeFileName(file.name);
+        String curTime = parseDateTime(DateTime.now());
+        curTime = curTime.replaceAll(':', '-');
+        final saveFilePath = path.join(uploadPath, "[$curTime] $safeFileName");
+        final fileObject = File(saveFilePath);
+        await fileObject.writeAsBytes(bytes);
         Pop.toast(
-          t.uploads.successWithPath(path: response),
+          t.uploads.successWithPath(path: saveFilePath),
           toastType: ToastType.success,
         );
         setState(() {
-          remoteFilePath = response.data;
+          remoteFilePath = saveFilePath;
           simpleTextController.text = file.path!;
           isUploadLoading = false;
         });
@@ -63,6 +72,25 @@ mixin FileUploadsMixin on State<FileUploads> {
           isUploadLoading = false;
         });
       }
+      // BaseResponse<dynamic> response = await UploadFilesApi.single(file: file);
+      // if (response.data is String) {
+      //   Pop.toast(
+      //     t.uploads.successWithPath(path: response),
+      //     toastType: ToastType.success,
+      //   );
+      //   setState(() {
+      //     remoteFilePath = response.data;
+      //     simpleTextController.text = file.path!;
+      //     isUploadLoading = false;
+      //   });
+      // } else {
+      //   Pop.toast(t.uploads.failed, toastType: ToastType.error);
+      //   setState(() {
+      //     remoteFilePath = "";
+      //     simpleTextController.text = "";
+      //     isUploadLoading = false;
+      //   });
+      // }
     } on PermissionException catch (e) {
       Pop.toast(e.toString(), toastType: ToastType.error);
       setState(() {
