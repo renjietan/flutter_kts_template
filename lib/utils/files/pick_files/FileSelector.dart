@@ -7,7 +7,7 @@ import '../../devicePermission/requestPermissions.dart';
 import '../exception/PermissionException.dart';
 
 class FileSelector {
-  /// 选择单个文件（任意类型）
+  /// 选择单个文件（zip、json）
   static Future<PlatformFile?> pickFile(List<String>? extensions) async {
     // 处理权限
     bool hasPermission = await RequestPermission.requestStoragePermission();
@@ -26,5 +26,17 @@ class FileSelector {
       return result.files.first; // 返回选中的文件
     }
     return null;
+  }
+
+  /// 选择文件夹
+  static Future<String?> pickFolder() async {
+    bool hasPermission = await RequestPermission.requestStoragePermission();
+    if (!hasPermission) {
+      throw PermissionException(t.permission.no);
+    }
+    String? path = await FilePicker.getDirectoryPath(
+      dialogTitle: t.uploads.selectedFolderDialogTitle,
+    );
+    return path;
   }
 }

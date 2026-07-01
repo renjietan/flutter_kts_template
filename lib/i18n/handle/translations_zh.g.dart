@@ -155,6 +155,12 @@ class Translations$uploads$zh {
 
 	/// zh: '文件路径不存在'
 	String get existPath => '文件路径不存在';
+
+	/// zh: '请选择一个文件夹'
+	String get selectedFolderDialogTitle => '请选择一个文件夹';
+
+	/// zh: '当前仅支持 ZIP 和文件夹'
+	String get selectedAllow => '当前仅支持 ZIP 和文件夹';
 }
 
 // Path: json

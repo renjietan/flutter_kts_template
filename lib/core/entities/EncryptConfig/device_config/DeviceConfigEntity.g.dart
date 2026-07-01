@@ -1,0 +1,81 @@
+// GENERATED CODE - DO NOT MODIFY BY HAND
+
+part of 'DeviceConfigEntity.dart';
+
+// **************************************************************************
+// JsonSerializableGenerator
+// **************************************************************************
+
+DeviceConfigEntity _$DeviceConfigEntityFromJson(Map<String, dynamic> json) =>
+    DeviceConfigEntity(
+      audioBoardIpConfig: json['audioBoardIpConfig'] == null
+          ? null
+          : AudioBoardIpConfigEntity.fromJson(
+              json['audioBoardIpConfig'] as Map<String, dynamic>,
+            ),
+      controlBoardIpConfig: json['controlBoardIpConfig'] == null
+          ? null
+          : ControlBoardIpConfigEntity.fromJson(
+              json['controlBoardIpConfig'] as Map<String, dynamic>,
+            ),
+      dap: json['dap'] == null
+          ? null
+          : GenericResult<List<DapResultEntity?>?>.fromJson(
+              json['dap'] as Map<String, dynamic>,
+              (value) => (value as List<dynamic>?)
+                  ?.map(
+                    (e) => e == null
+                        ? null
+                        : DapResultEntity.fromJson(e as Map<String, dynamic>),
+                  )
+                  .toList(),
+            ),
+      hfRadio: json['hfRadio'] == null
+          ? null
+          : GenericResult<List<dynamic>?>.fromJson(
+              json['hfRadio'] as Map<String, dynamic>,
+              (value) => value as List<dynamic>?,
+            ),
+      mediaBoardIpConfig: json['mediaBoardIpConfig'] == null
+          ? null
+          : GenericResult<IPMaskEntity?>.fromJson(
+              json['mediaBoardIpConfig'] as Map<String, dynamic>,
+              (value) => value == null
+                  ? null
+                  : IPMaskEntity.fromJson(value as Map<String, dynamic>),
+            ),
+      mmrParam: json['mmrParam'] == null
+          ? null
+          : GenericResult<MmrParamEntity?>.fromJson(
+              json['mmrParam'] as Map<String, dynamic>,
+              (value) => value == null
+                  ? null
+                  : MmrParamEntity.fromJson(value as Map<String, dynamic>),
+            ),
+      ntpTimeSync: json['ntpTimeSync'] == null
+          ? null
+          : GenericResult<NtpTimeSyncResult?>.fromJson(
+              json['ntpTimeSync'] as Map<String, dynamic>,
+              (value) => value == null
+                  ? null
+                  : NtpTimeSyncResult.fromJson(value as Map<String, dynamic>),
+            ),
+      transTable: json['transTable'] == null
+          ? null
+          : TransTableResultEntity.fromJson(
+              json['transTable'] as Map<String, dynamic>,
+            ),
+    );
+
+Map<String, dynamic> _$DeviceConfigEntityToJson(
+  DeviceConfigEntity instance,
+) => <String, dynamic>{
+  'audioBoardIpConfig': ?instance.audioBoardIpConfig,
+  'controlBoardIpConfig': ?instance.controlBoardIpConfig,
+  'dap': ?instance.dap?.toJson((value) => value),
+  'hfRadio': ?instance.hfRadio?.toJson((value) => value),
+  'mediaBoardIpConfig': ?instance.mediaBoardIpConfig?.toJson((value) => value),
+  'mmrParam': ?instance.mmrParam?.toJson((value) => value),
+  'ntpTimeSync': ?instance.ntpTimeSync?.toJson((value) => value),
+  'transTable': ?instance.transTable,
+};

@@ -108,6 +108,8 @@ class _Translations$uploads$en extends Translations$uploads$zh {
 	@override String get emptyPath => 'The file path is empty';
 	@override String get emptyData => 'The file data is empty';
 	@override String get existPath => 'The file path is not exist';
+	@override String get selectedFolderDialogTitle => 'Please select a folder';
+	@override String get selectedAllow => 'Only ZIP and folders are supported';
 }
 
 // Path: json

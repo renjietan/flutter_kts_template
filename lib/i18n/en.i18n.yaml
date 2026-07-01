@@ -28,6 +28,8 @@ uploads:
   emptyPath: The file path is empty
   emptyData: The file data is empty
   existPath: The file path is not exist
+  selectedFolderDialogTitle: Please select a folder
+  selectedAllow: Only ZIP and folders are supported
 json:
   serialization: The received information seems unfamiliar
 pageable:

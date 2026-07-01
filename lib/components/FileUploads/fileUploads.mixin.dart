@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:archive/archive_io.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_kts_template/components/loading/simple.loading.dart';
+import 'package:flutter_kts_template/core/entities/EncryptConfig/EncryptConfigEntity.dart';
 import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 import 'package:flutter_kts_template/logger/logger.dart';
 import 'package:flutter_kts_template/utils/files/FileTools.dart';
@@ -89,31 +91,74 @@ mixin FileUploadsMixin on State<FileUploads> {
   }
 
   Future<void> parseFile() async {
-    if (remoteFilePath.isEmpty) {
-      PlatformFile? file = await FileSelector.pickFile(null);
-      if (file == null) {
-        setState(() {
-          isUploadLoading = false;
-        });
-        Pop.toast(t.uploads.cancel, toastType: ToastType.warn);
+    setState(() {
+      isUploadLoading = true;
+    });
+    String? outPath;
+    try {
+      if (remoteFilePath.isEmpty) {
+        outPath = await FileSelector.pickFolder();
+        if (outPath == null) {
+          setState(() {
+            isUploadLoading = false;
+          });
+          SimplePopup.warn(t.uploads.cancel);
+          return;
+        }
+        remoteFilePath = outPath;
+        simpleTextController.text = outPath;
+      }
+      var archiveExt = getInputExtension(remoteFilePath);
+      if (archiveExt == ".zip") {
+        outPath = remoteFilePath.split(archiveExt)[0];
+        await extractFileToDisk(remoteFilePath, outPath);
+      } else if (archiveExt == "") {
+        outPath = remoteFilePath;
+      } else {
+        SimplePopup.error(t.uploads.selectedAllow);
         return;
       }
-    }
-    try {
-      var archiveExt = getInputExtension(remoteFilePath);
-      String outPath = remoteFilePath.split(archiveExt)[0];
-      await extractFileToDisk(remoteFilePath, outPath);
       List<Directory> subFolders = await FileTools.getDirectSubFolders(outPath);
       List<Future<Map<String, dynamic>>> futures = subFolders
           .map((item) => FileTools.readAllJsonFiles(item))
           .toList();
       await Future.wait(futures).then((res) {
-        print(res);
+        var temp = res.fold(
+          {"key": {}, "radio_subnet": {}, "device_config": {}, "net_node": {}},
+          (cur, pre) {
+            if (pre.isEmpty) {
+              return cur;
+            }
+            List<String> keys = pre.keys.toList();
+            if (keys.every((item) => item.indexOf("rs_") == 0)) {
+              cur["radio_subnet"] = pre;
+            } else if (keys.every((item) => item.indexOf("dc_") == 0)) {
+              cur["device_config"] = pre;
+            } else if (keys.every((item) => item.indexOf("nn_") == 0)) {
+              cur["net_node"] = pre;
+            } else {
+              cur["key"] = pre;
+            }
+            return cur;
+          },
+        );
+        EncryptConfigEntity ee = EncryptConfigEntity.fromJson(temp);
+        print(temp);
+        print(ee);
+        setState(() {
+          isUploadLoading = false;
+        });
       });
     } on FileException catch (e) {
-      Pop.toast(e.toString(), toastType: ToastType.error);
+      setState(() {
+        isUploadLoading = false;
+      });
+      SimplePopup.error(e.toString());
     } catch (e) {
-      Pop.toast(e.toString(), toastType: ToastType.error);
+      setState(() {
+        isUploadLoading = false;
+      });
+      SimplePopup.error(e.toString());
     }
   }
 }

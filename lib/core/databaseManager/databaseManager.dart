@@ -17,7 +17,7 @@ class DatabaseManager {
     String dbPath = await DirectoryManager.instance.getDataBasePath();
     final store = await openStore(
       directory: dbPath,
-      debugFlags: DebugFlags.logQueries | DebugFlags.logQueryParameters,
+      // debugFlags: DebugFlags.logQueries | DebugFlags.logQueryParameters,
     );
     _instance = DatabaseManager._create(store);
     // OS 访问: http://localhost:8081

@@ -17,7 +17,6 @@ common:
   sendTimeout: 发送超时
   serverError: 服务器异常
   UnknowError: 未知错误
-
 permission:
   no: 暂无访问权限,是否立即前往【设置】？
   cancel: 操作已取消
@@ -29,6 +28,8 @@ uploads:
   emptyPath: 文件路径不可为空
   emptyData: 文件数据不可为空
   existPath: 文件路径不存在
+  selectedFolderDialogTitle: 请选择一个文件夹
+  selectedAllow: 当前仅支持 ZIP 和文件夹
 json:
   serialization: 收到的信息格式有点陌生
 pageable:

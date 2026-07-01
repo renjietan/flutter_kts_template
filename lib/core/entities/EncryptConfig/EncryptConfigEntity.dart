@@ -1,0 +1,31 @@
+import 'package:flutter_kts_template/core/entities/EncryptConfig/device_config/DeviceConfigEntity.dart';
+import 'package:flutter_kts_template/core/entities/EncryptConfig/key/KeyEntity.dart';
+import 'package:flutter_kts_template/core/entities/EncryptConfig/net_node/NetNodeEntity.dart';
+import 'package:flutter_kts_template/core/entities/EncryptConfig/radio_subnet/RadioSubnetEntity.dart';
+import 'package:json_annotation/json_annotation.dart';
+
+part 'EncryptConfigEntity.g.dart';
+
+@JsonSerializable(includeIfNull: false)
+class EncryptConfigEntity {
+  @JsonKey(name: 'key')
+  final Map<String, KeyEntity>? keys;
+  @JsonKey(name: 'radio_subnet')
+  final Map<String, RadioSubnetEntity>? radioSubnets;
+  @JsonKey(name: 'device_config')
+  final Map<String, DeviceConfigEntity>? deviceConfig;
+  @JsonKey(name: 'net_node')
+  final Map<String, NetNodeEntity?>? NetNodes;
+
+  EncryptConfigEntity({
+    this.keys,
+    this.radioSubnets,
+    this.NetNodes,
+    this.deviceConfig,
+  });
+
+  factory EncryptConfigEntity.fromJson(Map<String, dynamic> json) {
+    return _$EncryptConfigEntityFromJson(json);
+  }
+  Map<String, dynamic> toJson() => _$EncryptConfigEntityToJson(this);
+}
