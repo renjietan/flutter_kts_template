@@ -9,8 +9,6 @@ class ResponseInstance<T> {
     Map<String, dynamic> json,
     T Function(dynamic)? parser,
   ) {
-    print(json);
-    print(json);
     return ResponseInstance<T>(
       code: json['code'] ?? -1,
       message: json['message'] ?? '',

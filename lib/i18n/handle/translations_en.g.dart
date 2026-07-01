@@ -77,7 +77,8 @@ class _Translations$common$en extends Translations$common$zh {
 	@override String get requestError => 'Request failed';
 	@override String get requestCancel => 'Request cancelled';
 	@override String get requestTimeout => 'Timeout, retry later';
-	@override String get requestConnectionError => 'Connection failed, check network';
+	@override String get connectionTimeout => 'Network connection timeout';
+	@override String get sendTimeout => 'Send timeout';
 	@override String get serverError => 'Server error';
 	@override String get UnknowError => 'Unknown error';
 }

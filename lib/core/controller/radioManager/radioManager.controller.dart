@@ -15,7 +15,6 @@ class RadioManagerController {
     final RadioManagerDto params = RadioManagerDto.fromJson(
       request.context["params"] as Map<String, dynamic>,
     );
-
     try {
       params.validateOrThrow();
       final condition = <Condition<RadiosEntity>>[];
@@ -32,12 +31,12 @@ class RadioManagerController {
       final query = db
           .box<RadiosEntity>()
           .query(condition.isEmpty ? null : condition.first)
-          .order(RadiosEntity_.updatedAt, flags: Order.descending)
+          .order(RadiosEntity_.id, flags: Order.descending)
           .build();
       var count = query.count();
-      if (params.offset == 0) {
+      if (params.pageLimit != 0 && params.pageNum != 0) {
         query.offset = params.offset;
-        query.limit = int.parse(params.pageSize);
+        query.limit = params.pageLimit;
       }
       var res = query.find();
       return ApiResponse.success(data: {'list': res.toList(), 'total': count});
@@ -50,7 +49,7 @@ class RadioManagerController {
     final db = DatabaseManager.instance;
     final Map<String, dynamic> params =
         request.context["params"] as Map<String, dynamic>;
-    params["updatedAt"] = parseDateTime(DateTime.now());
+    params["createdAt"] = parseDateTime(DateTime.now());
     // 通过 异步 的方式 运行在后台，防止阻塞UI
     final radiosBox = db.box<RadiosEntity>();
     RadiosEntity radio = RadiosEntity.fromJson(params);
@@ -72,6 +71,7 @@ class RadioManagerController {
     if (radiosEntity == null) {
       return ApiResponse.error(message: t.common.noData);
     }
+    params["createdAt"] = parseDateTime(radiosEntity.createdAt);
     radiosEntity = RadiosEntity.fromJson(params);
     int id = radiosBox.put(radiosEntity);
     return ApiResponse.success(data: id, message: t.common.OperationSuccess);

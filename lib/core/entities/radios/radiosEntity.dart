@@ -18,20 +18,20 @@ class RadiosEntity {
   String sn;
 
   @Property(type: PropertyType.date)
-  DateTime createdAt = DateTime.now();
+  DateTime createdAt;
 
   @Property(type: PropertyType.date)
-  DateTime updatedAt;
+  DateTime updatedAt = DateTime.now();
 
   RadiosEntity({
     this.id = 0,
-    required this.updatedAt,
     required this.consumer,
     required this.location,
     required this.sn,
     required this.alias,
-    DateTime? createdAt,
-  }) : createdAt = createdAt ?? DateTime.now();
+    required this.createdAt,
+    DateTime? updatedAt,
+  }) : updatedAt = updatedAt ?? DateTime.now();
 
   factory RadiosEntity.fromJson(Map<String, dynamic> json) =>
       _$RadiosEntityFromJson(json);

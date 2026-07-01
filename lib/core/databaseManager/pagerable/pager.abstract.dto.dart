@@ -38,8 +38,11 @@ abstract class PagerDtoAbstract {
     }
   }
 
-  int get offset =>
-      (safeParseNum(page) - 1).toInt() * safeParseNum(pageSize).toInt();
+  int get pageLimit => safeParseNum(pageSize).toInt();
+
+  int get pageNum => safeParseNum(page).toInt();
+
+  int get offset => (pageNum - 1) * pageLimit;
 
   @override
   String toString() => 'BasePageDto(page: $page, pageSize: $pageSize)';

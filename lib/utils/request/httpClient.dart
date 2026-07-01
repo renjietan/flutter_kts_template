@@ -2,6 +2,7 @@
 import 'dart:async';
 
 import 'package:dio/dio.dart';
+import 'package:flutter_kts_template/components/loading/simple.loading.dart';
 import 'package:flutter_kts_template/config/config.dart';
 import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 
@@ -172,25 +173,36 @@ class DioClient {
   }
 
   Exception _handleError(dynamic error) {
+    SimplePopup.hideLoading();
+    Exception tipException = UnknownException(
+      error.message ?? t.common.UnknowError,
+    );
     if (error is DioException) {
       switch (error.type) {
         case DioExceptionType.cancel:
-          return CancelException(t.common.requestCancel);
+          tipException = CancelException(t.common.requestCancel);
         case DioExceptionType.connectionTimeout:
+          tipException = ConnectionTimeoutException(t.common.connectionTimeout);
         case DioExceptionType.sendTimeout:
         case DioExceptionType.receiveTimeout:
-          return NetWorkException(t.common.requestTimeout);
+          tipException = NetWorkException(t.common.requestTimeout);
         case DioExceptionType.connectionError:
-          return NetWorkException(t.common.requestConnectionError);
+          tipException = ConnectionTimeoutException(t.common.connectionTimeout);
         case DioExceptionType.badResponse:
           final code = error.response?.statusCode ?? -1;
           final msg = error.response?.statusMessage ?? t.common.serverError;
-          return HttpException(code, msg);
+          tipException = HttpException(code, msg);
         default:
-          return UnknownException(error.message ?? t.common.UnknowError);
+          tipException = UnknownException(
+            error.message ?? t.common.UnknowError,
+          );
       }
     }
-    return UnknownException(error.toString());
+    SimplePopup.error(
+      tipException.toString(),
+      duration: Duration(milliseconds: 1500),
+    );
+    return tipException;
   }
 
   void cancelRequests({CancelToken? cancelToken}) {
@@ -209,7 +221,7 @@ class BusinessException implements Exception {
   final String message;
   BusinessException(this.code, this.message);
   @override
-  String toString() => 'BusinessException ($code): $message';
+  String toString() => '($code): $message';
 }
 
 class HttpException implements Exception {
@@ -217,26 +229,33 @@ class HttpException implements Exception {
   final String message;
   HttpException(this.code, this.message);
   @override
-  String toString() => 'HttpException ($code): $message';
+  String toString() => '($code): $message';
+}
+
+class ConnectionTimeoutException implements Exception {
+  final String message;
+  ConnectionTimeoutException(this.message);
+  @override
+  String toString() => message;
 }
 
 class NetWorkException implements Exception {
   final String message;
   NetWorkException(this.message);
   @override
-  String toString() => 'NetWorkException $message';
+  String toString() => message;
 }
 
 class CancelException implements Exception {
   final String message;
   CancelException(this.message);
   @override
-  String toString() => 'CancelException $message';
+  String toString() => message;
 }
 
 class UnknownException implements Exception {
   final String message;
   UnknownException(this.message);
   @override
-  String toString() => 'UnknownException: $message';
+  String toString() => message;
 }

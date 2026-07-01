@@ -3,11 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_kts_template/components/button/base.button.dart';
 import 'package:flutter_kts_template/components/dialog/simple.form.dialog.dart';
+import 'package:flutter_kts_template/components/loading/simple.loading.dart';
 import 'package:flutter_kts_template/components/text/text.title.dart';
+import 'package:flutter_kts_template/logger/logger.dart';
 import 'package:flutter_kts_template/pages/radioManager/radioManager.pager.dart';
 import 'package:flutter_kts_template/utils/enum/dialog_enum.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
-import 'package:unified_popups/unified_popups.dart';
 
 import '../../api/RadiosManagerApi.dart';
 import '../../components/TextField/simple.filter.search.textField.dart';
@@ -49,9 +50,10 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
       keyword: searchQuery,
     ).then((res) {
       Future.delayed(Duration(milliseconds: 70)).then((_) {
-        Pop.hideLoading();
+        SimplePopup.hideLoading();
         setState(() {
           data = res.data.list;
+          GlobalLogger.logInfo(data.length.toString());
           totalItems = res.data.total;
           totalPages = (totalItems / pageSize).ceil().clamp(1, 999);
         });
@@ -60,36 +62,32 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
   }
 
   void create(Map<String, dynamic> v) {
-    Pop.loading();
     RadiosManagerApi.create(v).then((res) {
-      Pop.toast(t.common.OperationSuccess);
+      SimplePopup.success(t.common.OperationSuccess);
       getList();
     });
   }
 
   void delete(RadiosEntity data) {
-    Pop.loading();
     RadiosManagerApi.delete("${data.id}").then((res) {
-      Pop.toast(t.common.OperationSuccess);
+      SimplePopup.success(t.common.OperationSuccess);
       getList();
     });
   }
 
   void patchDelete() {
-    Pop.loading();
     String idsStr = selectedIds.join("、");
     RadiosManagerApi.delete(idsStr).then((res) {
-      Pop.toast(t.common.OperationSuccess);
+      SimplePopup.success(t.common.OperationSuccess);
       clearSelection();
       getList();
     });
   }
 
-  void update(RadiosEntity? data) {
-    Pop.loading();
-    RadiosManagerApi.update(data!.id, data: data.toJson()).then((res) {
+  void update(RadiosEntity? data, Map<String, dynamic> v) {
+    RadiosManagerApi.update(data!.id, data: v).then((res) {
       getList();
-      Pop.toast(t.common.OperationSuccess);
+      SimplePopup.toast(t.common.OperationSuccess);
     });
   }
 
@@ -123,7 +121,8 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
             });
           },
           onSubmit: (value) {
-            Pop.loading();
+            SimplePopup.loading();
+            currentPage = 1;
             getList();
           },
         ),
@@ -144,7 +143,7 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
             setState(() {
               searchQuery = '';
               searchFieldController.text = "";
-              Pop.loading();
+              SimplePopup.loading();
               getList();
             });
           },
@@ -251,7 +250,7 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
     );
   }
 
-  Future<void> showDialog(DialogTypeEnum type, RadiosEntity? data) async {
+  Future<void> showDialog(DialogTypeEnum type, RadiosEntity? rowData) async {
     SimpleFormDialog(
       title: t.button.radioManager.createRadio,
       confirmText: t.button.radioManager.createRadio,
@@ -305,7 +304,7 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
         if (type == DialogTypeEnum.create) {
           create(v);
         } else {
-          update(data);
+          update(rowData, v);
         }
       },
     );

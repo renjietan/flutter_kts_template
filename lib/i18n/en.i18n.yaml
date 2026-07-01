@@ -13,7 +13,8 @@ common:
   requestError: Request failed
   requestCancel: Request cancelled
   requestTimeout: Timeout, retry later
-  requestConnectionError: Connection failed, check network
+  connectionTimeout: Network connection timeout
+  sendTimeout: Send timeout
   serverError: Server error
   UnknowError: Unknown error
 permission:

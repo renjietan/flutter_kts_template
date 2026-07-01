@@ -8,14 +8,14 @@ part of 'radiosEntity.dart';
 
 RadiosEntity _$RadiosEntityFromJson(Map<String, dynamic> json) => RadiosEntity(
   id: (json['id'] as num?)?.toInt() ?? 0,
-  updatedAt: DateTime.parse(json['updatedAt'] as String),
   consumer: json['consumer'] as String,
   location: json['location'] as String,
   sn: json['sn'] as String,
   alias: json['alias'] as String,
-  createdAt: json['createdAt'] == null
+  createdAt: DateTime.parse(json['createdAt'] as String),
+  updatedAt: json['updatedAt'] == null
       ? null
-      : DateTime.parse(json['createdAt'] as String),
+      : DateTime.parse(json['updatedAt'] as String),
 );
 
 Map<String, dynamic> _$RadiosEntityToJson(RadiosEntity instance) =>
