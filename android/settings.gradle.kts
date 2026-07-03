@@ -8,8 +8,9 @@ pluginManagement {
             flutterSdkPath
         }
 
-    includeBuild("$flutterSdkPath/packages/flutter_tools/gradle")
-
+//    includeBuild("$flutterSdkPath/packages/flutter_tools/gradle")
+    // 高版本AGP 此处需要修改 成这样
+    includeBuild(file("$flutterSdkPath/packages/flutter_tools/gradle").toPath().toRealPath().toAbsolutePath().toString())
     repositories {
         // 国内镜像（阿里云） –– 放在最前面以优先使用
         // maven { url = uri("https://maven.aliyun.com/repository/public") }

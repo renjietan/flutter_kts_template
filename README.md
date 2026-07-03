@@ -84,7 +84,11 @@
         - 100% 可行：
           - 运行前需要: dart run slang -d
           - flutter pub run build_runner build --delete-conflicting-outputs --force-jit (大概率能解决，使用 jit 方式 跳过预编译、Hook 生成文件)
-       
+- rename_app: 重命名应用名称
+  - dart run rename_app:main all="CPD"
+  - dart run rename_app:main android="CPD" ios="CPD" others="CPD"
+  - dart run rename_app:main android="CPD_ANDROID" ios="CPD_IOS" web="CPD_WEB" mac="CPD_MAC" windows="CPD_WINDOWS" linux="CPD_LINUX"
+
 - TODO:
   - shelf_limiter 
   - shelf_rate_limiter
