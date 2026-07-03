@@ -44,7 +44,7 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
           },
         );
       },
-      leafActionWidgetSize: Size(60, 30),
+      leafActionWidgetSize: Size(70, 30),
     );
     setState(() {
       detailLoading = true;
@@ -148,7 +148,7 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
                             leafActionWidgetOnPressed: (v) {
                               GlobalLogger.logInfo(v.toString());
                             },
-                            leafActionWidgetSize: Size(60, 30),
+                            leafActionWidgetSize: Size(70, 30),
                           );
                           setState(() {
                             detailLoading = true;

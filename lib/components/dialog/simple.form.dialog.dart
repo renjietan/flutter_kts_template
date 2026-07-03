@@ -22,8 +22,8 @@ Future<void> SimpleFormDialog({
   Color? fieldBorderColor = Colors.white,
   double borderRadius = 10,
   double titleFontSize = 16,
-  double labelFontSize = 12,
-  double fieldLabelFontSize = 12,
+  double labelFontSize = 16,
+  double fieldLabelFontSize = 16,
   bool clickMaskDismiss = false,
   Color maskColor = const Color(0x1AFFFFFF),
 }) async {
@@ -36,17 +36,17 @@ Future<void> SimpleFormDialog({
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(borderRadius),
       ),
-      titlePadding: EdgeInsets.fromLTRB(0, 15.h, 0, 15.h),
-      actionsPadding: EdgeInsets.fromLTRB(
-        30.w,
-        25.h,
-        30.w,
-        MediaQuery.of(context).viewInsets.bottom > 0 ? 20.h : 90.h,
-      ),
-      contentPadding: EdgeInsets.fromLTRB(30.w, 25.h, 30.w, 25.h),
-      titleTextStyle: TextStyle(fontSize: 14, color: titleColor),
+      titlePadding: EdgeInsets.symmetric(vertical: 7),
+      // actionsPadding: EdgeInsets.fromLTRB(
+      //   30,
+      //   25,
+      //   30,
+      //   MediaQuery.of(context).viewInsets.bottom > 0 ? 20 : 90,
+      // ),
+      contentPadding: EdgeInsets.fromLTRB(5, 10, 0, 0),
+      titleTextStyle: TextStyle(fontSize: 16, color: titleColor),
       title: Container(
-        padding: EdgeInsets.fromLTRB(18.w, 15.h, 18.w, 15.h),
+        padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
         decoration: BoxDecoration(
           color: Colors.transparent,
           border: Border(bottom: BorderSide(color: Colors.white38, width: 1)),
@@ -54,11 +54,8 @@ Future<void> SimpleFormDialog({
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            TextTitle(
-              text: title,
-              fontSize: titleFontSize.sp,
-              color: titleColor,
-            ),
+            SizedBox(width: 15),
+            TextTitle(text: title, fontSize: titleFontSize, color: titleColor),
             const Spacer(),
             IconButton(
               onPressed: () => SmartDialog.dismiss(),
@@ -70,17 +67,20 @@ Future<void> SimpleFormDialog({
       actionsAlignment: MainAxisAlignment.center,
       content: SingleChildScrollView(
         child: SizedBox(
-          width: 270.w,
+          width: 320,
           child: FormBuilder(
             key: formKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: _buildFormFields(
-                fields,
-                labelColor!,
-                fieldFillColor!,
-                fieldBorderColor!,
-                fieldLabelFontSize,
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 15),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: _buildFormFields(
+                  fields,
+                  labelColor!,
+                  fieldFillColor!,
+                  fieldBorderColor!,
+                  fieldLabelFontSize,
+                ),
               ),
             ),
           ),
@@ -118,11 +118,11 @@ List<Widget> _buildFormFields(
     widgets.add(
       Container(
         alignment: Alignment.centerLeft,
-        margin: EdgeInsetsGeometry.only(top: i == 0 ? 0 : 45.h, bottom: 45.h),
+        margin: EdgeInsetsGeometry.only(top: i == 0 ? 0 : 15, bottom: 15),
         child: Text(
           field.label,
           textAlign: TextAlign.left,
-          style: TextStyle(color: labelColor, fontSize: labelFontSize.sp),
+          style: TextStyle(color: labelColor, fontSize: labelFontSize),
         ),
       ),
     );

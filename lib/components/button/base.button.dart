@@ -43,7 +43,7 @@ class BaseButton extends StatefulWidget {
     this.borderRadius = 5,
     this.width = 100,
     this.height = 34,
-    this.textStyle = const TextStyle(fontSize: 12, color: Colors.white),
+    this.textStyle = const TextStyle(fontSize: 15, color: Colors.white),
     this.icon,
     this.isLoading = false,
     this.loadingColor,

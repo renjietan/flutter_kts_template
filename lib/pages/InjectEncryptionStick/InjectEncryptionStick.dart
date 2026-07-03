@@ -1,7 +1,6 @@
 import 'package:composable_data_table/composable_data_table.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_kts_template/components/text/text.title.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../theme/table.theme.dart';
 import 'components/InjectEncryptionTable.dart';
@@ -28,12 +27,12 @@ class _InjectEncryptStickPagerState extends State<InjectEncryptionStickPager> {
     return Row(
       children: [
         SizedBox(
-          width: 200.w,
+          width: 160,
           child: Column(
             children: [
               Container(
                 height: 45,
-                padding: EdgeInsets.symmetric(horizontal: 16),
+                padding: EdgeInsets.fromLTRB(16, 0, 0, 0),
                 decoration: BoxDecoration(
                   color: Colors.black,
                   border: Border(
