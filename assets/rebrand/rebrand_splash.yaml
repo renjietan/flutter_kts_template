@@ -1,0 +1,23 @@
+flutter_native_splash:
+  color: "#FFFFFF"
+  image: "assets/rebrand/rebrand_splash_padded.png"
+  android_gravity: "center"
+  ios_content_mode: "center"
+  android: true
+  ios: true
+  fullscreen: false
+  color_dark: "#111111"
+  image_dark: "assets/rebrand/rebrand_splash_dark_padded.png"
+  branding: "assets/ic_launcher/ic_launcher.png"
+  branding_dark: "assets/ic_launcher/ic_launcher.png"
+  branding_mode: "bottom"
+  branding_bottom_padding: 24
+  android_12:
+    color: "#FFFFFF"
+    image: "assets/rebrand/rebrand_splash_android12_padded.png"
+    color_dark: "#111111"
+    image_dark: "assets/rebrand/rebrand_splash_android12_dark_padded.png"
+    icon_background_color: "#FFFFFF"
+    icon_background_color_dark: "#000000"
+    branding: "assets/ic_launcher/ic_launcher.png"
+    branding_dark: "assets/ic_launcher/ic_launcher.png"

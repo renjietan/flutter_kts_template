@@ -1,0 +1,9 @@
+{
+  "app_name": "CPD",
+  "package_name": "com.hytera.cpd",
+  "icon_path": "assets/ic_launcher/ic_launcher.png",
+  "enable_android": true,
+  "enable_ios": true,
+  "clear_splash": true,
+  "splash_config": null
+}
