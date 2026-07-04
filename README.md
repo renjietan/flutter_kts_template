@@ -88,7 +88,10 @@
   - dart run rename_app:main all="CPD"
   - dart run rename_app:main android="CPD" ios="CPD" others="CPD"
   - dart run rename_app:main android="CPD_ANDROID" ios="CPD_IOS" web="CPD_WEB" mac="CPD_MAC" windows="CPD_WINDOWS" linux="CPD_LINUX"
-
+- reband-cli
+  - dart pub global activate rebrand_cli
+  - 配置环境变量 PATH 添加一行：D:\work\flutter\template\3-38-10\PUB_CACHE\bin
+  - rebrand
 - TODO:
   - shelf_limiter 
   - shelf_rate_limiter

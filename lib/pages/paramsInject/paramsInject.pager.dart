@@ -44,7 +44,7 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
           },
         );
       },
-      leafActionWidgetSize: Size(60, 30),
+      leafActionWidgetSize: Size(70, 30),
     );
     super.initState();
   }
@@ -144,7 +144,7 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
                                 "inject value: ${v.toString()}",
                               );
                             },
-                            leafActionWidgetSize: Size(60, 30),
+                            leafActionWidgetSize: Size(70, 30),
                           );
                           _detailTree = temp;
                           Future.delayed(Duration(milliseconds: 100)).then((_) {

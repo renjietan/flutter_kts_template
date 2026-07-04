@@ -25,13 +25,20 @@ class MainLayout extends StatelessWidget {
     return PopScopeWidget(
       child: Scaffold(
         appBar: PreferredSize(
-          preferredSize: const Size.fromHeight(56.0),
+          preferredSize: const Size.fromHeight(48),
           child: AppBar(
-            title: const Row(
+            title: Row(
+              mainAxisSize: MainAxisSize.max,
               children: [
                 // Icon(HyIcons., size: 20),
-                SizedBox(width: 5),
-                Text(
+                const SizedBox(width: 5),
+                Image.asset(
+                  'assets/appbar/logo.png',
+                  height: 20,
+                  fit: BoxFit.contain,
+                ),
+                const SizedBox(width: 7),
+                const Text(
                   AppConfig.appName,
                   style: TextStyle(
                     fontSize: 20,
@@ -60,21 +67,28 @@ class MainLayout extends StatelessWidget {
             ],
           ),
         ),
-        body: FlutterSmartDialog(
-          child: Container(
-            decoration: BoxDecoration(
-              border: Border(
-                top: BorderSide(color: Color(0x8A00A2E9), width: 1),
+        body: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () {
+            // 关闭当前所有输入框的键盘
+            FocusScope.of(context).unfocus();
+          },
+          child: FlutterSmartDialog(
+            child: Container(
+              decoration: BoxDecoration(
+                border: Border(
+                  top: BorderSide(color: Color(0x8A00A2E9), width: 1),
+                ),
               ),
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                SideMenu(onSelected: _onDestinationSelected),
-                const VerticalDivider(thickness: 1, width: 1),
-                // 右侧内容区 (当前活跃的分支页面)
-                Expanded(child: navigationShell),
-              ],
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  SideMenu(onSelected: _onDestinationSelected),
+                  const VerticalDivider(thickness: 1, width: 1),
+                  // 右侧内容区 (当前活跃的分支页面)
+                  Expanded(child: navigationShell),
+                ],
+              ),
             ),
           ),
         ),

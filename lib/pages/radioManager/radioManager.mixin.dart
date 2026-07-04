@@ -115,7 +115,7 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
         SimpleFilterSearchField(
           height: 36,
           controller: searchFieldController,
-          textInputAction: TextInputAction.search,
+          textInputAction: TextInputAction.done,
           onChanged: (value) {
             setState(() {
               searchQuery = value;
@@ -166,19 +166,20 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
       ColumnDefinition<RadiosEntity>(
         label: t.tableColumn.radioManager.consumer,
         description: t.tableColumn.radioManager.consumer_desc,
-        flex: 2,
+        flex: 1,
         cellBuilder: TextCellBuilder.text<RadiosEntity>((u) => u.consumer),
       ),
       ColumnDefinition<RadiosEntity>(
         label: t.tableColumn.radioManager.location,
         description: t.tableColumn.radioManager.location_desc,
-        flex: 3,
+        flex: 1,
         cellBuilder: TextCellBuilder.text<RadiosEntity>((u) => u.location),
       ),
       ColumnDefinition<RadiosEntity>(
         label: t.tableColumn.radioManager.sn,
         description: t.tableColumn.radioManager.sn_desc,
-        size: const ColumnSize.auto(),
+        // size: const ColumnSize.auto(),
+        flex: 1,
         cellBuilder: TextCellBuilder.text<RadiosEntity>((u) => u.sn),
       ),
     ];
@@ -187,12 +188,12 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
   // 编辑、删除
   Widget buildActionCell(RadiosEntity data) {
     return Row(
-      mainAxisSize: MainAxisSize.min,
+      // mainAxisSize: MainAxisSize.min,
       children: [
         IconButton(
           icon: Icon(
             Icons.edit_outlined,
-            size: 18,
+            size: 16,
             color: isDark ? Colors.white : Colors.orange,
           ),
           tooltip: t.button.radioManager.edit,
@@ -206,11 +207,10 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
           padding: EdgeInsets.zero,
           constraints: const BoxConstraints(),
         ),
-        const SizedBox(width: 16),
         IconButton(
           icon: Icon(
             Icons.delete_outline,
-            size: 18,
+            size: 16,
             color: isDark ? Colors.white : Colors.red,
           ),
           tooltip: t.button.radioManager.delete,

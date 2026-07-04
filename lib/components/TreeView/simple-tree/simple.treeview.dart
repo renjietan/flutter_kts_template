@@ -93,7 +93,7 @@ class _SimpleTreeViewState<T extends AbsNodeType> extends State<SimpleTreeView>
             if (tree.data.leafActionWidgetLabel != null && tree.isLeaf)
               BaseButton(
                 label: tree.data.leafActionWidgetLabel!,
-                width: tree.data.leafActionWidgetSize?.width ?? 70,
+                width: tree.data.leafActionWidgetSize?.width ?? 80,
                 onPressed: () {
                   if (tree.data.leafActionWidgetOnPressed != null) {
                     tree.data.leafActionWidgetOnPressed!(tree.data);
