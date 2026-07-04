@@ -29,6 +29,7 @@ class MainLayout extends StatelessWidget {
           child: AppBar(
             title: Row(
               mainAxisSize: MainAxisSize.max,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 // Icon(HyIcons., size: 20),
                 const SizedBox(width: 5),
@@ -41,7 +42,7 @@ class MainLayout extends StatelessWidget {
                 const Text(
                   AppConfig.appName,
                   style: TextStyle(
-                    fontSize: 20,
+                    fontSize: 18,
                     fontWeight: FontWeight.w500,
                     letterSpacing: 0.5,
                   ),

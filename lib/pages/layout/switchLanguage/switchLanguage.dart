@@ -12,7 +12,7 @@ class SwitchLanguage extends StatefulWidget {
 class _SwitchLanguageState extends State<SwitchLanguage> {
   late String currentLocale;
   void _toggleLocale() {
-    if (currentLocale == 'zh') {
+    if (currentLocale == "zh") {
       LocaleSettings.setLocale(AppLocale.en);
       setState(() {
         currentLocale = "en";
@@ -52,7 +52,10 @@ class _SwitchLanguageState extends State<SwitchLanguage> {
         children: [
           Icon(Icons.language),
           SizedBox(width: 5),
-          Text(currentLocale, style: TextStyle(color: Colors.white)),
+          Text(
+            currentLocale == "zh" ? t.settings.zh : t.settings.en,
+            style: TextStyle(color: Colors.white),
+          ),
         ],
       ),
     );

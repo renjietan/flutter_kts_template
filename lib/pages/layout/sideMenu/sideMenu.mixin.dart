@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_kts_template/pages/layout/sideMenu/sideMenu.model.dart';
-import 'package:flutter_kts_template/utils/provider/menu_provider.dart';
 import 'package:provider/provider.dart';
 
 import '../../../i18n/handle/translations.g.dart';
 import '../../../icons/hy_icons.dart';
+import '../../../utils/provider/menu.provider.dart';
 
 mixin SideMenuMixin<T extends StatefulWidget> on State<T> {
   final selectedStyle = {
@@ -24,8 +24,7 @@ mixin SideMenuMixin<T extends StatefulWidget> on State<T> {
   int _selectedIndex = 0;
 
   List<Widget> buildMenuItems(BuildContext ctx, void Function(int) onSelected) {
-    late final t = Translations.of(context);
-    // 需要定义在 方法类， 当 TranslationsProvider 通知 widget build时，此时 语言切换才会生效，
+    late final t = Translations.of(ctx);
     List<MenuItem> _menuItems = [
       MenuItem(icon: HyIcons.canshujiazhu, label: t.app.appbar.paramsInject),
       MenuItem(icon: HyIcons.diantaiguanli, label: t.app.appbar.radioManager),
@@ -42,7 +41,7 @@ mixin SideMenuMixin<T extends StatefulWidget> on State<T> {
         onTap: () {
           setState(() {
             _selectedIndex = index;
-            context.read<MenuProvider>().selectedIndex = index;
+            ctx.read<MenuProvider>().selectedIndex = index;
             onSelected(index);
           });
         },

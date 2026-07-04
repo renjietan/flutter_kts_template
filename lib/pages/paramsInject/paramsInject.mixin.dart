@@ -5,8 +5,6 @@ import 'package:recursive_tree_flutter/models/tree_type.dart';
 import '../../components/TreeView/simple-tree/simple.tree.model.dart';
 
 mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
-  List<Uri> paths = [];
-
   TreeType<SimpleTreeNode> buildTree(
     Map<String, dynamic> rootData, {
     String? leafActionWidgetLabel,
@@ -57,7 +55,7 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
         node.data.isInner = false;
         node.data.isShowCheckbox = true;
         node.data.padding = node.data.padding + 10;
-        node.data.titleIcon = HyIcons.wenjian;
+        node.data.titleIcon = getTreeNodeIcon(data["type"]);
         node.data.isShowCheckbox = data["isShowCheckbox"] ?? false;
         node.data.isChosen = data["isChosen"] ?? false;
         if (leafActionWidgetLabel != null) {
@@ -79,6 +77,21 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
     // 从根节点开始，层级为1，索引从0开始
     var (rootNode, _) = buildNodes(rootData, null, 0, 0);
     return rootNode;
+  }
+
+  IconData getTreeNodeIcon(String type) {
+    IconData res;
+    switch (type) {
+      case "post":
+        res = HyIcons.zhihuisuo;
+      case "vehicle":
+        res = HyIcons.che;
+      case "soldiers":
+        res = HyIcons.ren;
+      default:
+        res = HyIcons.wenjian;
+    }
+    return res;
   }
 
   @override

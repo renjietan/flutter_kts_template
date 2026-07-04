@@ -13,9 +13,9 @@ final Map<String, dynamic> treeMockData = {
           "name": "前端开发组",
           "type": "team",
           "children": [
-            {"id": "emp_01", "name": "张小明", "type": "employee", "children": []},
-            {"id": "emp_02", "name": "李小红", "type": "employee", "children": []},
-            {"id": "emp_03", "name": "王德华", "type": "employee", "children": []},
+            {"id": "emp_01", "name": "张小明", "type": "post", "children": []},
+            {"id": "emp_02", "name": "李小红", "type": "vehicle", "children": []},
+            {"id": "emp_03", "name": "王德华", "type": "soldiers", "children": []},
           ],
         },
         {
@@ -23,8 +23,8 @@ final Map<String, dynamic> treeMockData = {
           "name": "后端开发组",
           "type": "team",
           "children": [
-            {"id": "emp_04", "name": "赵子龙", "type": "employee", "children": []},
-            {"id": "emp_05", "name": "陈双全", "type": "employee", "children": []},
+            {"id": "emp_04", "name": "赵子龙", "type": "post", "children": []},
+            {"id": "emp_05", "name": "陈双全", "type": "vehicle", "children": []},
             {
               "id": "team_02_sub",
               "name": "数据库专项组",
@@ -33,7 +33,7 @@ final Map<String, dynamic> treeMockData = {
                 {
                   "id": "emp_06",
                   "name": "刘三石",
-                  "type": "employee",
+                  "type": "soldiers",
                   "children": [],
                 },
               ],
@@ -52,8 +52,8 @@ final Map<String, dynamic> treeMockData = {
           "name": "产品策划组",
           "type": "team",
           "children": [
-            {"id": "emp_07", "name": "林产品", "type": "employee", "children": []},
-            {"id": "emp_08", "name": "何交互", "type": "employee", "children": []},
+            {"id": "emp_07", "name": "林产品", "type": "post", "children": []},
+            {"id": "emp_08", "name": "何交互", "type": "vehicle", "children": []},
           ],
         },
       ],
@@ -63,7 +63,7 @@ final Map<String, dynamic> treeMockData = {
       "name": "运营中心",
       "type": "department",
       "children": [
-        {"id": "emp_09", "name": "黄运营", "type": "employee", "children": []},
+        {"id": "emp_09", "name": "黄运营", "type": "soldiers", "children": []},
       ],
     },
   ],

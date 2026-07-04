@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_kts_template/utils/provider/user_provider.dart';
 import 'package:flutter_kts_template/utils/shared.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:unified_popups/unified_popups.dart';
 
+import '../../api/RadiosManagerApi.dart';
 import '../../core/databaseManager/databaseManager.dart';
 import '../../core/express.dart';
 import '../../main.dart';
+import '../../utils/provider/radios.provider.dart';
+import '../../utils/provider/user.provider.dart';
 
 mixin SplashMixin<T extends StatefulWidget> on State<T> {
   @override
@@ -22,7 +24,10 @@ mixin SplashMixin<T extends StatefulWidget> on State<T> {
       String userInfo = Shared.getUserInfo() ?? '';
       userProvider.userInfo = userInfo;
       if (mounted) {
-        goHomePage();
+        RadiosManagerApi.getAll().then((res) {
+          context.read<RadiosProvider>().setRadios = res.data.list;
+          goHomePage();
+        });
       }
     });
   }

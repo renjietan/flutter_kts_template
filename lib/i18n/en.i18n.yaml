@@ -41,6 +41,8 @@ pageable:
 pager:
   radioManager:
     title: Radio manager
+    netNode: Net Node
+    fileParse: File Parse
 tableColumn:
   base:
     actions: Actions
@@ -62,6 +64,9 @@ button:
     delete: Delete
     clear: Clear
     search: Search
+    save: Save
+    browse: Browse
+    parse: Parse
   paramsInject:
     inject: inject
 checkbox:
@@ -70,6 +75,7 @@ checkbox:
   selected: selected
 TextField:
   search: "Search......"
+  select: "Select......"
 Form:
   radioManager:
     alias:

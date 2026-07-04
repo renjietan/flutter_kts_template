@@ -41,6 +41,8 @@ pageable:
 pager:
   radioManager:
     title: 电台管理
+    netNode: 网络节点
+    fileParse: 文件分析
 tableColumn:
   base:
     actions: 操作
@@ -62,6 +64,9 @@ button:
     delete: 删除
     clear: 清除
     search: 搜索
+    save: 保存
+    browse: 浏览
+    parse: 分析
   paramsInject:
     inject: 注入
 checkbox:
@@ -70,6 +75,7 @@ checkbox:
   selected: 已选中
 TextField:
   search: "搜索......"
+  select: "选择......"
 Form:
   radioManager:
     alias:
@@ -89,12 +95,6 @@ errorMiddle:
   errorArg: 无效参数,{error}
 platform:
   webNotReadFile: The current page isn’t set up for file handling
-home:
-  title: 首页
-  greeting: 欢迎回来，{name}！
-  lastLogin: 上次登录时间：{date}
 settings:
-  title: 设置
-  language: 语言
   zh: 中文
   en: 英文

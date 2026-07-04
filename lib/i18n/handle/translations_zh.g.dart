@@ -259,6 +259,9 @@ class Translations$TextField$zh {
 
 	/// zh: '搜索......'
 	String get search => '搜索......';
+
+	/// zh: '选择......'
+	String get select => '选择......';
 }
 
 // Path: Form
@@ -365,6 +368,12 @@ class Translations$pager$radioManager$zh {
 
 	/// zh: '电台管理'
 	String get title => '电台管理';
+
+	/// zh: '网络节点'
+	String get netNode => '网络节点';
+
+	/// zh: '文件分析'
+	String get fileParse => '文件分析';
 }
 
 // Path: tableColumn.base
@@ -440,6 +449,15 @@ class Translations$button$radioManager$zh {
 
 	/// zh: '搜索'
 	String get search => '搜索';
+
+	/// zh: '保存'
+	String get save => '保存';
+
+	/// zh: '浏览'
+	String get browse => '浏览';
+
+	/// zh: '分析'
+	String get parse => '分析';
 }
 
 // Path: button.paramsInject

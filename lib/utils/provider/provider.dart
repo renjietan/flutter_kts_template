@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_kts_template/logger/logger.dart';
-import 'package:flutter_kts_template/utils/provider/sidebar_provider.dart';
-import 'package:flutter_kts_template/utils/provider/user_provider.dart';
+import 'package:flutter_kts_template/utils/provider/radios.provider.dart';
+import 'package:flutter_kts_template/utils/provider/user.provider.dart';
 import 'package:provider/provider.dart';
 
-import 'menu_provider.dart';
+import 'menu.provider.dart';
 
 //状态管理
 class ProviderStore {
@@ -18,7 +18,7 @@ class ProviderStore {
       providers: [
         ChangeNotifierProvider.value(value: UserProvider("")),
         ChangeNotifierProvider.value(value: MenuProvider(0)),
-        ChangeNotifierProvider.value(value: SideBarProvider(true)),
+        ChangeNotifierProvider.value(value: RadiosProvider([])),
       ],
       child: child,
     );

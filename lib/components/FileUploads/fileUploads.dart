@@ -4,6 +4,7 @@ import 'package:flutter_kts_template/components/TextField/simple.textfield.dart'
 import 'package:flutter_kts_template/components/button/base.button.dart';
 import 'package:flutter_kts_template/theme/table.theme.dart';
 
+import '../../i18n/handle/translations.g.dart';
 import '../../icons/hy_icons.dart';
 import 'fileUploads.mixin.dart';
 
@@ -17,6 +18,7 @@ class FileUploads extends StatefulWidget {
 class _FileUploadsState extends State<FileUploads> with FileUploadsMixin {
   @override
   Widget build(BuildContext context) {
+    final t = Translations.of(context);
     // 套用
     return TableFilterToolbar(
       mainFilters: [
@@ -27,12 +29,12 @@ class _FileUploadsState extends State<FileUploads> with FileUploadsMixin {
             contentPadding: EdgeInsets.symmetric(horizontal: 10),
             controller: simpleTextController,
             readonly: true,
+            hint: t.TextField.select,
           ),
         ),
         BaseButton(
-          textStyle: TextStyle(fontSize: 12, color: Colors.white),
-          label: "Browse",
-          width: 95,
+          label: t.button.radioManager.browse,
+          width: 100,
           icon: HyIcons.wenjian,
           isLoading: isUploadLoading,
           onPressed: () {
@@ -47,20 +49,22 @@ class _FileUploadsState extends State<FileUploads> with FileUploadsMixin {
             borderRadius: BorderRadius.circular(5),
             border: Border.all(color: Color(0xFF00A2E9), width: 2),
           ),
-          child: BaseButton(
-            label: "Parse",
-            width: 66,
-            height: 30,
-            isLoading: isUploadLoading,
-            colors: const [
-              Color(0xFF0A1D35),
-              Color(0xFF0A1D35),
-              Color(0xFF0A1D35),
-              Color(0xFF0A1D35),
-            ],
-            onPressed: () {
-              parseFile();
-            },
+          child: Center(
+            child: BaseButton(
+              label: t.button.radioManager.parse,
+              width: 66,
+              height: 30,
+              isLoading: isUploadLoading,
+              colors: const [
+                Color(0xFF0A1D35),
+                Color(0xFF0A1D35),
+                Color(0xFF0A1D35),
+                Color(0xFF0A1D35),
+              ],
+              onPressed: () {
+                parseFile();
+              },
+            ),
           ),
         ),
       ],

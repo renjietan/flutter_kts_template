@@ -10,7 +10,8 @@ class RadiosManagerRoutes extends BaseRouteGroup {
   @override
   Router register(Router router) {
     router.post('/', RadioManagerController.create);
-    router.get('/', RadioManagerController.getList);
+    router.get('/pager', RadioManagerController.getList);
+    router.get('/all', RadioManagerController.getAll);
     router.put('/<id>', RadioManagerController.update);
     router.delete('/<id>', RadioManagerController.delete);
     return router;

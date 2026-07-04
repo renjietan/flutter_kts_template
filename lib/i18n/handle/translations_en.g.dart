@@ -188,6 +188,7 @@ class _Translations$TextField$en extends Translations$TextField$zh {
 
 	// Translations
 	@override String get search => 'Search......';
+	@override String get select => 'Select......';
 }
 
 // Path: Form
@@ -266,6 +267,8 @@ class _Translations$pager$radioManager$en extends Translations$pager$radioManage
 
 	// Translations
 	@override String get title => 'Radio manager';
+	@override String get netNode => 'Net Node';
+	@override String get fileParse => 'File Parse';
 }
 
 // Path: tableColumn.base
@@ -309,6 +312,9 @@ class _Translations$button$radioManager$en extends Translations$button$radioMana
 	@override String get delete => 'Delete';
 	@override String get clear => 'Clear';
 	@override String get search => 'Search';
+	@override String get save => 'Save';
+	@override String get browse => 'Browse';
+	@override String get parse => 'Parse';
 }
 
 // Path: button.paramsInject

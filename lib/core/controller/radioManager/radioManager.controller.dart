@@ -10,6 +10,19 @@ import '../../utils/time.dart';
 import '../../utils/url.dart';
 
 class RadioManagerController {
+  static Response getAll(Request request) {
+    final db = DatabaseManager.instance;
+    // List<RadiosEntity> res =
+    var query = db
+        .box<RadiosEntity>()
+        .query()
+        .order(RadiosEntity_.id, flags: Order.descending)
+        .build();
+    List<RadiosEntity> res = query.find();
+    var count = query.count();
+    return ApiResponse.success(data: {'list': res.toList(), 'total': count});
+  }
+
   static Response getList(Request request) {
     final db = DatabaseManager.instance;
     final RadioManagerDto params = RadioManagerDto.fromJson(

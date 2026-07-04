@@ -7,13 +7,24 @@ class RadiosManagerApi {
   static final DioClient _instance = DioClient();
   static final String url = "/radiosManager";
 
+  static Future getAll() async {
+    final res = await _instance.get(
+      "$url/all",
+      fromJson: (json) => BaseListResponse.fromJson(
+        json as Map<String, dynamic>,
+        (item) => RadiosEntity.fromJson(item),
+      ),
+    );
+    return res;
+  }
+
   static Future getList({
     required String page,
     required String pageSize,
     required String keyword,
   }) async {
     final res = await _instance.get(
-      url,
+      "$url/pager",
       queryParameters: {"page": page, "pageSize": pageSize, "keyword": keyword},
       fromJson: (json) => BaseListResponse.fromJson(
         json as Map<String, dynamic>,

@@ -4,7 +4,6 @@ import 'package:flutter_kts_template/components/loading/simple.loading.dart';
 import 'package:flutter_kts_template/core/entities/radios/radiosEntity.dart';
 import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 import 'package:flutter_kts_template/pages/radioManager/radioManager.mixin.dart';
-import 'package:unified_popups/unified_popups.dart';
 
 import '../../theme/table.theme.dart';
 

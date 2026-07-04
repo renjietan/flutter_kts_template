@@ -129,7 +129,7 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
         ),
         BaseButton(
           label: t.button.radioManager.createRadio,
-          width: 100,
+          width: 110,
           onPressed: () {
             aliasTextEditController.text = "";
             consumerTextEditController.text = "";
@@ -207,6 +207,7 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
           padding: EdgeInsets.zero,
           constraints: const BoxConstraints(),
         ),
+        SizedBox(width: 10),
         IconButton(
           icon: Icon(
             Icons.delete_outline,
