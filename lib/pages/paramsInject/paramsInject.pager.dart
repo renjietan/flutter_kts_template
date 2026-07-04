@@ -26,7 +26,7 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
   UserStatus? _statusFilter;
   late TreeType<SimpleTreeNode> _tree;
   late TreeType<SimpleTreeNode> _detailTree;
-  bool detailLoading = false;
+  bool detailVisiable = true;
   @override
   void initState() {
     // TODO: implement initState
@@ -46,9 +46,6 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
       },
       leafActionWidgetSize: Size(60, 30),
     );
-    setState(() {
-      detailLoading = true;
-    });
     super.initState();
   }
 
@@ -131,27 +128,29 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
                       child: SimpleTreeView(
                         _tree,
                         onNodeDataChanged: (v) async {
-                          GlobalLogger.logInfo(v.toString());
-                          //! 重点：可以什么都不干 但是必须 调用setState 否则 选中行颜色变化后，其他颜色无法恢复
                           setState(() {
-                            detailLoading = false;
+                            detailVisiable = false;
                           });
-                          mockData1["name"] =
-                              mockData1["name"] +
-                              DateTime.now().second.toString();
-                          mockData2["name"] =
-                              mockData2["name"] +
-                              DateTime.now().second.toString();
-                          _detailTree = buildTree(
-                            v.data.title == "张小明" ? mockData1 : mockData2,
+                          Map<String, dynamic> data = v.data.title == "张小明"
+                              ? mockData1
+                              : mockData2;
+                          data["name"] =
+                              data["name"] + DateTime.now().second.toString();
+                          TreeType<SimpleTreeNode> temp = buildTree(
+                            data,
                             leafActionWidgetLabel: "inject",
                             leafActionWidgetOnPressed: (v) {
-                              GlobalLogger.logInfo(v.toString());
+                              GlobalLogger.logInfo(
+                                "inject value: ${v.toString()}",
+                              );
                             },
                             leafActionWidgetSize: Size(60, 30),
                           );
-                          setState(() {
-                            detailLoading = true;
+                          _detailTree = temp;
+                          Future.delayed(Duration(milliseconds: 100)).then((_) {
+                            setState(() {
+                              detailVisiable = true;
+                            });
                           });
                         },
                       ),
@@ -196,14 +195,22 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
               ),
               child: SingleChildScrollView(
                 child: Visibility(
-                  visible: detailLoading,
+                  visible: detailVisiable,
                   child: SimpleTreeView(
                     _detailTree,
                     onNodeDataChanged: (v) {
                       GlobalLogger.logInfo(v.toString());
+                      // 什么都不干，也必须 setState，否则无法实时更新 tree
+                      setState(() {});
                     },
                   ),
                 ),
+                // child: SimpleTreeView(
+                //   _detailTree,
+                //   onNodeDataChanged: (v) {
+                //     GlobalLogger.logInfo(v.toString());
+                //   },
+                // ),
               ),
             ),
           ),

@@ -33,8 +33,6 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
           index: currentIndex,
           nodeBgColor: nodeBgColor,
           padding: padding,
-          isShowCheckbox: false,
-          isChosen: false,
         ),
         children: [],
         parent: parent,
@@ -57,10 +55,11 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
       node.children = childNodes;
       if (node.children.isEmpty) {
         node.data.isInner = false;
-        // node.data.isShowCheckbox = true;
+        node.data.isShowCheckbox = true;
         node.data.padding = node.data.padding + 10;
         node.data.titleIcon = HyIcons.wenjian;
-
+        node.data.isShowCheckbox = data["isShowCheckbox"] ?? false;
+        node.data.isChosen = data["isChosen"] ?? false;
         if (leafActionWidgetLabel != null) {
           node.data.leafActionWidgetLabel = leafActionWidgetLabel;
         }

@@ -65,10 +65,10 @@ class _SimpleTreeViewState<T extends AbsNodeType> extends State<SimpleTreeView>
       onTap: () {
         if (tree.isLeaf && (tree.data.activeSelection ?? false)) {
           updateTreeSingleChoiceDms4(tree, true);
+          widget.onNodeDataChanged(tree);
         } else if (!tree.isLeaf) {
           updateStateToggleExpansion();
         }
-        widget.onNodeDataChanged(tree);
       },
       child: Container(
         decoration: BoxDecoration(color: bgColor),
@@ -84,6 +84,8 @@ class _SimpleTreeViewState<T extends AbsNodeType> extends State<SimpleTreeView>
                   ? buildRotationIcon()
                   : const SizedBox.shrink(),
             ),
+            // if (tree.isLeaf && tree.data.isShowCheckbox) buildTrailing(),
+            buildTrailing(),
             if (tree.data.titleIcon != null)
               Icon(tree.data.titleIcon, color: Colors.white, size: 16),
             SizedBox(width: 10),
@@ -98,8 +100,6 @@ class _SimpleTreeViewState<T extends AbsNodeType> extends State<SimpleTreeView>
                   }
                 },
               ),
-            if (tree.isLeaf && tree.data.isShowCheckbox) buildTrailing(),
-            // buildTrailing(),
             SizedBox(width: 30),
           ],
         ),
@@ -153,11 +153,14 @@ class _SimpleTreeViewState<T extends AbsNodeType> extends State<SimpleTreeView>
     if (tree.data.isUnavailable) {
       return const Icon(Icons.close_rounded, color: Colors.red);
     }
-    if (tree.isLeaf) {
+    if (tree.isLeaf && tree.data.isShowCheckbox) {
       return Checkbox(
         value: tree.data.isChosen!,
         onChanged: (value) {
-          updateTreeSingleChoice(tree, !tree.data.isChosen!);
+          // 单选
+          // updateTreeSingleChoice(tree, !tree.data.isChosen!);
+          // 多选
+          updateTreeMultipleChoice(tree, !tree.data.isChosen!);
           widget.onNodeDataChanged(tree);
         },
       );
