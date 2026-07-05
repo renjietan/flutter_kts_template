@@ -23,12 +23,12 @@ mixin SplashMixin<T extends StatefulWidget> on State<T> {
     init().then((_) {
       String userInfo = Shared.getUserInfo() ?? '';
       userProvider.userInfo = userInfo;
-      if (mounted) {
-        RadiosManagerApi.getAll().then((res) {
+      RadiosManagerApi.getAll().then((res) {
+        if (mounted) {
           context.read<RadiosProvider>().setRadios = res.data.list;
           goHomePage();
-        });
-      }
+        }
+      });
     });
   }
 
