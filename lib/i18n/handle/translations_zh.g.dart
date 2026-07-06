@@ -49,7 +49,6 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 	late final Translations$Form$zh Form = Translations$Form$zh.internal(_root);
 	late final Translations$errorMiddle$zh errorMiddle = Translations$errorMiddle$zh.internal(_root);
 	late final Translations$platform$zh platform = Translations$platform$zh.internal(_root);
-	late final Translations$home$zh home = Translations$home$zh.internal(_root);
 	late final Translations$settings$zh settings = Translations$settings$zh.internal(_root);
 }
 
@@ -272,6 +271,7 @@ class Translations$Form$zh {
 
 	// Translations
 	late final Translations$Form$radioManager$zh radioManager = Translations$Form$radioManager$zh.internal(_root);
+	late final Translations$Form$injectEncrypt$zh injectEncrypt = Translations$Form$injectEncrypt$zh.internal(_root);
 }
 
 // Path: errorMiddle
@@ -301,24 +301,6 @@ class Translations$platform$zh {
 	String get webNotReadFile => 'The current page isn’t set up for file handling';
 }
 
-// Path: home
-class Translations$home$zh {
-	Translations$home$zh.internal(this._root);
-
-	final Translations _root; // ignore: unused_field
-
-	// Translations
-
-	/// zh: '首页'
-	String get title => '首页';
-
-	/// zh: '欢迎回来，{name}！'
-	String greeting({required Object name}) => '欢迎回来，${name}！';
-
-	/// zh: '上次登录时间：{date}'
-	String lastLogin({required Object date}) => '上次登录时间：${date}';
-}
-
 // Path: settings
 class Translations$settings$zh {
 	Translations$settings$zh.internal(this._root);
@@ -326,12 +308,6 @@ class Translations$settings$zh {
 	final Translations _root; // ignore: unused_field
 
 	// Translations
-
-	/// zh: '设置'
-	String get title => '设置';
-
-	/// zh: '语言'
-	String get language => '语言';
 
 	/// zh: '中文'
 	String get zh => '中文';
@@ -485,6 +461,16 @@ class Translations$Form$radioManager$zh {
 	late final Translations$Form$radioManager$consumer$zh consumer = Translations$Form$radioManager$consumer$zh.internal(_root);
 }
 
+// Path: Form.injectEncrypt
+class Translations$Form$injectEncrypt$zh {
+	Translations$Form$injectEncrypt$zh.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+	late final Translations$Form$injectEncrypt$name$zh name = Translations$Form$injectEncrypt$name$zh.internal(_root);
+}
+
 // Path: Form.radioManager.alias
 class Translations$Form$radioManager$alias$zh {
 	Translations$Form$radioManager$alias$zh.internal(this._root);
@@ -543,4 +529,22 @@ class Translations$Form$radioManager$consumer$zh {
 
 	/// zh: '电台使用人不可为空'
 	String get validate => '电台使用人不可为空';
+}
+
+// Path: Form.injectEncrypt.name
+class Translations$Form$injectEncrypt$name$zh {
+	Translations$Form$injectEncrypt$name$zh.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// zh: '名称'
+	String get label => '名称';
+
+	/// zh: '请输入注钥名称'
+	String get placeholder => '请输入注钥名称';
+
+	/// zh: '请输入注钥名称'
+	String get validate => '请输入注钥名称';
 }

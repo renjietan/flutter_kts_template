@@ -84,7 +84,6 @@ class RadioManagerController {
     if (radiosEntity == null) {
       return ApiResponse.error(message: t.common.noData);
     }
-    params["createdAt"] = parseDateTime(radiosEntity.createdAt);
     radiosEntity = RadiosEntity.fromJson(params);
     int id = radiosBox.put(radiosEntity);
     return ApiResponse.success(data: id, message: t.common.OperationSuccess);

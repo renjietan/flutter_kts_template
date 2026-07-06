@@ -1,5 +1,5 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter_kts_template/pages/InjectEncryptionStick/InjectEncryptionStick.dart';
+import 'package:flutter_kts_template/pages/InjectEncryptionStick/InjectEncryptionStick.pager.dart';
 import 'package:flutter_kts_template/pages/layout/layout.pager.dart';
 import 'package:flutter_kts_template/pages/radioManager/radioManager.pager.dart';
 import 'package:flutter_kts_template/pages/splash/splash.dart';

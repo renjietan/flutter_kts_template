@@ -47,7 +47,6 @@ class TranslationsEn extends Translations with BaseTranslations<AppLocale, Trans
 	@override late final _Translations$Form$en Form = _Translations$Form$en._(_root);
 	@override late final _Translations$errorMiddle$en errorMiddle = _Translations$errorMiddle$en._(_root);
 	@override late final _Translations$platform$en platform = _Translations$platform$en._(_root);
-	@override late final _Translations$home$en home = _Translations$home$en._(_root);
 	@override late final _Translations$settings$en settings = _Translations$settings$en._(_root);
 }
 
@@ -199,6 +198,7 @@ class _Translations$Form$en extends Translations$Form$zh {
 
 	// Translations
 	@override late final _Translations$Form$radioManager$en radioManager = _Translations$Form$radioManager$en._(_root);
+	@override late final _Translations$Form$injectEncrypt$en injectEncrypt = _Translations$Form$injectEncrypt$en._(_root);
 }
 
 // Path: errorMiddle
@@ -222,18 +222,6 @@ class _Translations$platform$en extends Translations$platform$zh {
 	@override String get webNotReadFile => 'web 平台无法根据路径处理文件';
 }
 
-// Path: home
-class _Translations$home$en extends Translations$home$zh {
-	_Translations$home$en._(TranslationsEn root) : this._root = root, super.internal(root);
-
-	final TranslationsEn _root; // ignore: unused_field
-
-	// Translations
-	@override String get title => 'Home';
-	@override String greeting({required Object name}) => 'Welcome back, ${name}!';
-	@override String lastLogin({required Object date}) => 'Last login: ${date}';
-}
-
 // Path: settings
 class _Translations$settings$en extends Translations$settings$zh {
 	_Translations$settings$en._(TranslationsEn root) : this._root = root, super.internal(root);
@@ -241,8 +229,6 @@ class _Translations$settings$en extends Translations$settings$zh {
 	final TranslationsEn _root; // ignore: unused_field
 
 	// Translations
-	@override String get title => 'Settings';
-	@override String get language => 'Language';
 	@override String get zh => 'Chinese';
 	@override String get en => 'English';
 }
@@ -340,6 +326,16 @@ class _Translations$Form$radioManager$en extends Translations$Form$radioManager$
 	@override late final _Translations$Form$radioManager$consumer$en consumer = _Translations$Form$radioManager$consumer$en._(_root);
 }
 
+// Path: Form.injectEncrypt
+class _Translations$Form$injectEncrypt$en extends Translations$Form$injectEncrypt$zh {
+	_Translations$Form$injectEncrypt$en._(TranslationsEn root) : this._root = root, super.internal(root);
+
+	final TranslationsEn _root; // ignore: unused_field
+
+	// Translations
+	@override late final _Translations$Form$injectEncrypt$name$en name = _Translations$Form$injectEncrypt$name$en._(_root);
+}
+
 // Path: Form.radioManager.alias
 class _Translations$Form$radioManager$alias$en extends Translations$Form$radioManager$alias$zh {
 	_Translations$Form$radioManager$alias$en._(TranslationsEn root) : this._root = root, super.internal(root);
@@ -348,7 +344,7 @@ class _Translations$Form$radioManager$alias$en extends Translations$Form$radioMa
 
 	// Translations
 	@override String get placeholder => 'Please enter radio alias';
-	@override String get validate => 'Radio alias cannot be empty';
+	@override String get validate => 'Radio alias cannot be empty!';
 }
 
 // Path: Form.radioManager.sn
@@ -359,7 +355,7 @@ class _Translations$Form$radioManager$sn$en extends Translations$Form$radioManag
 
 	// Translations
 	@override String get placeholder => 'Please enter radio sn';
-	@override String get validate => 'Radio sn cannot be empty';
+	@override String get validate => 'Radio sn cannot be empty!';
 }
 
 // Path: Form.radioManager.location
@@ -370,7 +366,7 @@ class _Translations$Form$radioManager$location$en extends Translations$Form$radi
 
 	// Translations
 	@override String get placeholder => 'Please enter radio location';
-	@override String get validate => 'Radio location cannot be empty';
+	@override String get validate => 'Radio location cannot be empty!';
 }
 
 // Path: Form.radioManager.consumer
@@ -381,5 +377,17 @@ class _Translations$Form$radioManager$consumer$en extends Translations$Form$radi
 
 	// Translations
 	@override String get placeholder => 'Please enter radio consumer';
-	@override String get validate => 'Radio consumer cannot be empty';
+	@override String get validate => 'Radio consumer cannot be empty!';
+}
+
+// Path: Form.injectEncrypt.name
+class _Translations$Form$injectEncrypt$name$en extends Translations$Form$injectEncrypt$name$zh {
+	_Translations$Form$injectEncrypt$name$en._(TranslationsEn root) : this._root = root, super.internal(root);
+
+	final TranslationsEn _root; // ignore: unused_field
+
+	// Translations
+	@override String get label => 'Key Loader';
+	@override String get placeholder => 'Please enter name';
+	@override String get validate => 'Please enter name!';
 }

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 
 class SimpleFormTextField extends StatefulWidget {
@@ -12,7 +11,7 @@ class SimpleFormTextField extends StatefulWidget {
     super.key,
     required this.field,
     this.fillColor = const Color(0x9921262C),
-    this.labelFontSize = 12,
+    this.labelFontSize = 14,
   });
 
   @override
@@ -33,14 +32,14 @@ class _SimpleFormTextFieldState extends State<SimpleFormTextField> {
       decoration: InputDecoration(
         labelText: widget.field.hintText ?? widget.field.label,
         isDense: true,
-        contentPadding: EdgeInsets.symmetric(vertical: 36.h, horizontal: 12.w),
+        contentPadding: EdgeInsets.symmetric(vertical: 14, horizontal: 14),
         labelStyle: TextStyle(
           color: Colors.white,
-          fontSize: (widget.labelFontSize ?? 12).sp,
+          fontSize: (widget.labelFontSize ?? 13),
         ),
         hintStyle: TextStyle(
           color: Colors.white,
-          fontSize: (widget.labelFontSize ?? 12).sp,
+          fontSize: (widget.labelFontSize ?? 13),
         ),
         filled: true,
         fillColor: widget.fillColor,

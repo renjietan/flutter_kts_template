@@ -15,6 +15,7 @@ import 'package:objectbox/objectbox.dart' as obx;
 import 'package:objectbox_flutter_libs/objectbox_flutter_libs.dart';
 
 import 'core/entities/book/bookEntity.dart';
+import 'core/entities/keyLoaders/keyLoadersEntity.dart';
 import 'core/entities/radios/radiosEntity.dart';
 import 'core/entities/user/userEntity.dart';
 
@@ -156,6 +157,40 @@ final _entities = <obx_int.ModelEntity>[
     relations: <obx_int.ModelRelation>[],
     backlinks: <obx_int.ModelBacklink>[],
   ),
+  obx_int.ModelEntity(
+    id: const obx_int.IdUid(5, 3582610162093702077),
+    name: 'KeyLoadersEntity',
+    lastPropertyId: const obx_int.IdUid(4, 5368222792800701576),
+    flags: 0,
+    properties: <obx_int.ModelProperty>[
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(1, 4300435149840873),
+        name: 'id',
+        type: 6,
+        flags: 1,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(2, 759719742253764922),
+        name: 'name',
+        type: 9,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(3, 7851453332233287696),
+        name: 'createdAt',
+        type: 10,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(4, 5368222792800701576),
+        name: 'updatedAt',
+        type: 10,
+        flags: 0,
+      ),
+    ],
+    relations: <obx_int.ModelRelation>[],
+    backlinks: <obx_int.ModelBacklink>[],
+  ),
 ];
 
 /// Shortcut for [obx.Store.new] that passes [getObjectBoxModel] and for Flutter
@@ -201,7 +236,7 @@ obx_int.ModelDefinition getObjectBoxModel() {
     // Typically, this is done with `dart run build_runner build`.
     generatorVersion: obx_int.GeneratorVersion.v2025_12_16,
     entities: _entities,
-    lastEntityId: const obx_int.IdUid(4, 3041742923072573707),
+    lastEntityId: const obx_int.IdUid(5, 3582610162093702077),
     lastIndexId: const obx_int.IdUid(1, 7435491961108656421),
     lastRelationId: const obx_int.IdUid(0, 0),
     lastSequenceId: const obx_int.IdUid(0, 0),
@@ -397,6 +432,52 @@ obx_int.ModelDefinition getObjectBoxModel() {
         return object;
       },
     ),
+    KeyLoadersEntity: obx_int.EntityDefinition<KeyLoadersEntity>(
+      model: _entities[3],
+      toOneRelations: (KeyLoadersEntity object) => [],
+      toManyRelations: (KeyLoadersEntity object) => {},
+      getId: (KeyLoadersEntity object) => object.id,
+      setId: (KeyLoadersEntity object, int id) {
+        object.id = id;
+      },
+      objectToFB: (KeyLoadersEntity object, fb.Builder fbb) {
+        final nameOffset = fbb.writeString(object.name);
+        fbb.startTable(5);
+        fbb.addInt64(0, object.id);
+        fbb.addOffset(1, nameOffset);
+        fbb.addInt64(2, object.createdAt.millisecondsSinceEpoch);
+        fbb.addInt64(3, object.updatedAt.millisecondsSinceEpoch);
+        fbb.finish(fbb.endTable());
+        return object.id;
+      },
+      objectFromFB: (obx.Store store, ByteData fbData) {
+        final buffer = fb.BufferContext(fbData);
+        final rootOffset = buffer.derefObject(0);
+        final idParam = const fb.Int64Reader().vTableGet(
+          buffer,
+          rootOffset,
+          4,
+          0,
+        );
+        final nameParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGet(buffer, rootOffset, 6, '');
+        final createdAtParam = DateTime.fromMillisecondsSinceEpoch(
+          const fb.Int64Reader().vTableGet(buffer, rootOffset, 8, 0),
+        );
+        final updatedAtParam = DateTime.fromMillisecondsSinceEpoch(
+          const fb.Int64Reader().vTableGet(buffer, rootOffset, 10, 0),
+        );
+        final object = KeyLoadersEntity(
+          id: idParam,
+          name: nameParam,
+          createdAt: createdAtParam,
+          updatedAt: updatedAtParam,
+        );
+
+        return object;
+      },
+    ),
   };
 
   return obx_int.ModelDefinition(model, bindings);
@@ -493,5 +574,28 @@ class RadiosEntity_ {
   /// See [RadiosEntity.alias].
   static final alias = obx.QueryStringProperty<RadiosEntity>(
     _entities[2].properties[6],
+  );
+}
+
+/// [KeyLoadersEntity] entity fields to define ObjectBox queries.
+class KeyLoadersEntity_ {
+  /// See [KeyLoadersEntity.id].
+  static final id = obx.QueryIntegerProperty<KeyLoadersEntity>(
+    _entities[3].properties[0],
+  );
+
+  /// See [KeyLoadersEntity.name].
+  static final name = obx.QueryStringProperty<KeyLoadersEntity>(
+    _entities[3].properties[1],
+  );
+
+  /// See [KeyLoadersEntity.createdAt].
+  static final createdAt = obx.QueryDateProperty<KeyLoadersEntity>(
+    _entities[3].properties[2],
+  );
+
+  /// See [KeyLoadersEntity.updatedAt].
+  static final updatedAt = obx.QueryDateProperty<KeyLoadersEntity>(
+    _entities[3].properties[3],
   );
 }

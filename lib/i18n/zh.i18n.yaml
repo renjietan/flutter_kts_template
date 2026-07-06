@@ -90,6 +90,11 @@ Form:
     consumer:
       placeholder: 请输入电台使用人
       validate: 电台使用人不可为空
+  injectEncrypt:
+    name:
+      label: 名称
+      placeholder: 请输入注钥名称
+      validate: 请输入注钥名称
 errorMiddle:
   error500: 发生意外错误，请稍后再试
   errorArg: 无效参数,{error}

@@ -43,10 +43,10 @@ Future<void> SimpleFormDialog({
       //   30,
       //   MediaQuery.of(context).viewInsets.bottom > 0 ? 20 : 90,
       // ),
-      contentPadding: EdgeInsets.fromLTRB(5, 10, 0, 0),
+      contentPadding: EdgeInsets.fromLTRB(5, 15, 0, 0),
       titleTextStyle: TextStyle(fontSize: 16, color: titleColor),
       title: Container(
-        padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
+        padding: EdgeInsets.fromLTRB(5, 5, 5, 5),
         decoration: BoxDecoration(
           color: Colors.transparent,
           border: Border(bottom: BorderSide(color: Colors.white38, width: 1)),
@@ -118,7 +118,7 @@ List<Widget> _buildFormFields(
     widgets.add(
       Container(
         alignment: Alignment.centerLeft,
-        margin: EdgeInsetsGeometry.only(top: i == 0 ? 0 : 15, bottom: 15),
+        margin: EdgeInsetsGeometry.only(top: i == 0 ? 0 : 20, bottom: 20),
         child: Text(
           field.label,
           textAlign: TextAlign.left,
@@ -136,6 +136,6 @@ List<Widget> _buildFormFields(
     );
   }
   // 最后加一个底部间距
-  widgets.add(SizedBox(height: 60.h));
+  widgets.add(SizedBox(height: 60));
   return widgets;
 }

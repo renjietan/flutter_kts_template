@@ -1,3 +1,4 @@
+import 'package:flutter_kts_template/core/router/module/keyLoaders/keyLoaders.router.dart';
 import 'package:shelf_router/shelf_router.dart';
 import 'package:shelf_static/shelf_static.dart';
 
@@ -28,9 +29,9 @@ class RouterRegistry {
       UserRoutes(),
       UploadRoutes(),
       RadiosManagerRoutes(),
+      KeyLoadersRoutes(),
     ];
 
-    // 遍历每个分组，调用 register 方法并挂载到根路由
     for (final group in routeGroups) {
       final groupRouter = Router();
       group.register(groupRouter);

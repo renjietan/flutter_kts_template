@@ -80,27 +80,26 @@ Form:
   radioManager:
     alias:
       placeholder: Please enter radio alias
-      validate: Radio alias cannot be empty
+      validate: Radio alias cannot be empty!
     sn:
       placeholder: Please enter radio sn
-      validate: Radio sn cannot be empty
+      validate: Radio sn cannot be empty!
     location:
       placeholder: Please enter radio location
-      validate: Radio location cannot be empty
+      validate: Radio location cannot be empty!
     consumer:
       placeholder: Please enter radio consumer
-      validate: Radio consumer cannot be empty
+      validate: Radio consumer cannot be empty!
+  injectEncrypt:
+    name:
+      label: Key Loader
+      placeholder: Please enter name
+      validate: Please enter name!
 errorMiddle:
   error500: An unexpected error occurred. Please try again later
   errorArg: Invalid argument,{error}
 platform:
   webNotReadFile: web 平台无法根据路径处理文件
-home:
-  title: Home
-  greeting: Welcome back, {name}!
-  lastLogin: "Last login: {date}"
 settings:
-  title: Settings
-  language: Language
   zh: Chinese
   en: English
