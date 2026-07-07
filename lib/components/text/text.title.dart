@@ -21,7 +21,7 @@ class TextTitle extends StatelessWidget {
       overflow: TextOverflow.ellipsis,
       style: TextStyle(
         color: color ?? Colors.white,
-        fontSize: fontSize ?? 18,
+        fontSize: fontSize ?? 16,
         fontWeight: fontWeight ?? FontWeight.w500,
       ),
     );

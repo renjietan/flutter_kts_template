@@ -206,6 +206,7 @@ class Translations$pager$zh {
 
 	// Translations
 	late final Translations$pager$radioManager$zh radioManager = Translations$pager$radioManager$zh.internal(_root);
+	late final Translations$pager$injectEncrypt$zh injectEncrypt = Translations$pager$injectEncrypt$zh.internal(_root);
 }
 
 // Path: tableColumn
@@ -217,6 +218,7 @@ class Translations$tableColumn$zh {
 	// Translations
 	late final Translations$tableColumn$base$zh base = Translations$tableColumn$base$zh.internal(_root);
 	late final Translations$tableColumn$radioManager$zh radioManager = Translations$tableColumn$radioManager$zh.internal(_root);
+	late final Translations$tableColumn$injectEncrypt$zh injectEncrypt = Translations$tableColumn$injectEncrypt$zh.internal(_root);
 }
 
 // Path: button
@@ -228,6 +230,7 @@ class Translations$button$zh {
 	// Translations
 	late final Translations$button$radioManager$zh radioManager = Translations$button$radioManager$zh.internal(_root);
 	late final Translations$button$paramsInject$zh paramsInject = Translations$button$paramsInject$zh.internal(_root);
+	late final Translations$button$injectEncrypt$zh injectEncrypt = Translations$button$injectEncrypt$zh.internal(_root);
 }
 
 // Path: checkbox
@@ -352,6 +355,21 @@ class Translations$pager$radioManager$zh {
 	String get fileParse => '文件分析';
 }
 
+// Path: pager.injectEncrypt
+class Translations$pager$injectEncrypt$zh {
+	Translations$pager$injectEncrypt$zh.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// zh: '参数配对'
+	String get paramPairing => '参数配对';
+
+	/// zh: '注钥枪管理'
+	String get keyLoaderManager => '注钥枪管理';
+}
+
 // Path: tableColumn.base
 class Translations$tableColumn$base$zh {
 	Translations$tableColumn$base$zh.internal(this._root);
@@ -400,6 +418,30 @@ class Translations$tableColumn$radioManager$zh {
 	String get columnInfo => '展示列信息';
 }
 
+// Path: tableColumn.injectEncrypt
+class Translations$tableColumn$injectEncrypt$zh {
+	Translations$tableColumn$injectEncrypt$zh.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// zh: '通信参数包'
+	String get parameterPacket => '通信参数包';
+
+	/// zh: '配对电台'
+	String get radio => '配对电台';
+
+	/// zh: '使用人'
+	String get consumer => '使用人';
+
+	/// zh: '位置'
+	String get location => '位置';
+
+	/// zh: 'SN'
+	String get SN => 'SN';
+}
+
 // Path: button.radioManager
 class Translations$button$radioManager$zh {
 	Translations$button$radioManager$zh.internal(this._root);
@@ -446,6 +488,18 @@ class Translations$button$paramsInject$zh {
 
 	/// zh: '注入'
 	String get inject => '注入';
+}
+
+// Path: button.injectEncrypt
+class Translations$button$injectEncrypt$zh {
+	Translations$button$injectEncrypt$zh.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// zh: '导出'
+	String get export => '导出';
 }
 
 // Path: Form.radioManager

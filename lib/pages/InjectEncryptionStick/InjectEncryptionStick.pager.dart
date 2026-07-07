@@ -1,5 +1,6 @@
 import 'package:composable_data_table/composable_data_table.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 
 import '../../components/text/text.title.dart';
 import '../../theme/table.theme.dart';
@@ -58,7 +59,10 @@ class _InjectEncryptStickPagerState extends State<InjectEncryptionStickPager>
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    TextTitle(text: "注钥枪管理"),
+                    TextTitle(
+                      text: t.pager.injectEncrypt.keyLoaderManager,
+                      fontSize: 14,
+                    ),
                     IconButton(
                       onPressed: () {
                         showCustomDialog(DialogTypeEnum.create, null);
@@ -75,6 +79,17 @@ class _InjectEncryptStickPagerState extends State<InjectEncryptionStickPager>
                         itemCount: data.length,
                         itemBuilder: (BuildContext context, int index) {
                           return ListTile(
+                            contentPadding: EdgeInsetsGeometry.only(
+                              left: 10,
+                              right: 0,
+                            ),
+                            shape: Border(
+                              bottom: BorderSide(
+                                color: Colors.grey.shade300,
+                                width: 0.2,
+                              ),
+                            ),
+                            minVerticalPadding: 0,
                             title: Row(
                               children: [
                                 Expanded(
@@ -82,13 +97,11 @@ class _InjectEncryptStickPagerState extends State<InjectEncryptionStickPager>
                                     data[index].name,
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
+                                    style: TextStyle(fontSize: 14),
                                   ),
                                 ),
                                 PopupMenuButton<String>(
-                                  icon: const Icon(Icons.more_vert),
+                                  icon: const Icon(Icons.more_vert, size: 17),
                                   onSelected: (value) {
                                     if (value == "edit") {
                                       showCustomDialog(

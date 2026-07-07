@@ -143,6 +143,7 @@ class _Translations$pager$en extends Translations$pager$zh {
 
 	// Translations
 	@override late final _Translations$pager$radioManager$en radioManager = _Translations$pager$radioManager$en._(_root);
+	@override late final _Translations$pager$injectEncrypt$en injectEncrypt = _Translations$pager$injectEncrypt$en._(_root);
 }
 
 // Path: tableColumn
@@ -154,6 +155,7 @@ class _Translations$tableColumn$en extends Translations$tableColumn$zh {
 	// Translations
 	@override late final _Translations$tableColumn$base$en base = _Translations$tableColumn$base$en._(_root);
 	@override late final _Translations$tableColumn$radioManager$en radioManager = _Translations$tableColumn$radioManager$en._(_root);
+	@override late final _Translations$tableColumn$injectEncrypt$en injectEncrypt = _Translations$tableColumn$injectEncrypt$en._(_root);
 }
 
 // Path: button
@@ -165,6 +167,7 @@ class _Translations$button$en extends Translations$button$zh {
 	// Translations
 	@override late final _Translations$button$radioManager$en radioManager = _Translations$button$radioManager$en._(_root);
 	@override late final _Translations$button$paramsInject$en paramsInject = _Translations$button$paramsInject$en._(_root);
+	@override late final _Translations$button$injectEncrypt$en injectEncrypt = _Translations$button$injectEncrypt$en._(_root);
 }
 
 // Path: checkbox
@@ -257,6 +260,17 @@ class _Translations$pager$radioManager$en extends Translations$pager$radioManage
 	@override String get fileParse => 'File Parse';
 }
 
+// Path: pager.injectEncrypt
+class _Translations$pager$injectEncrypt$en extends Translations$pager$injectEncrypt$zh {
+	_Translations$pager$injectEncrypt$en._(TranslationsEn root) : this._root = root, super.internal(root);
+
+	final TranslationsEn _root; // ignore: unused_field
+
+	// Translations
+	@override String get paramPairing => 'Parameter pairing';
+	@override String get keyLoaderManager => 'Key loader Manager';
+}
+
 // Path: tableColumn.base
 class _Translations$tableColumn$base$en extends Translations$tableColumn$base$zh {
 	_Translations$tableColumn$base$en._(TranslationsEn root) : this._root = root, super.internal(root);
@@ -285,6 +299,20 @@ class _Translations$tableColumn$radioManager$en extends Translations$tableColumn
 	@override String get columnInfo => 'Show column info';
 }
 
+// Path: tableColumn.injectEncrypt
+class _Translations$tableColumn$injectEncrypt$en extends Translations$tableColumn$injectEncrypt$zh {
+	_Translations$tableColumn$injectEncrypt$en._(TranslationsEn root) : this._root = root, super.internal(root);
+
+	final TranslationsEn _root; // ignore: unused_field
+
+	// Translations
+	@override String get parameterPacket => 'Parameter Packet';
+	@override String get radio => 'Matching Radio';
+	@override String get consumer => 'Consumer';
+	@override String get location => 'Location';
+	@override String get SN => 'SN';
+}
+
 // Path: button.radioManager
 class _Translations$button$radioManager$en extends Translations$button$radioManager$zh {
 	_Translations$button$radioManager$en._(TranslationsEn root) : this._root = root, super.internal(root);
@@ -311,6 +339,16 @@ class _Translations$button$paramsInject$en extends Translations$button$paramsInj
 
 	// Translations
 	@override String get inject => 'inject';
+}
+
+// Path: button.injectEncrypt
+class _Translations$button$injectEncrypt$en extends Translations$button$injectEncrypt$zh {
+	_Translations$button$injectEncrypt$en._(TranslationsEn root) : this._root = root, super.internal(root);
+
+	final TranslationsEn _root; // ignore: unused_field
+
+	// Translations
+	@override String get export => 'export';
 }
 
 // Path: Form.radioManager

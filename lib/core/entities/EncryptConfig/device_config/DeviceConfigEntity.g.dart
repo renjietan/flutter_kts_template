@@ -20,16 +20,7 @@ DeviceConfigEntity _$DeviceConfigEntityFromJson(Map<String, dynamic> json) =>
             ),
       dap: json['dap'] == null
           ? null
-          : GenericResult<List<DapResultEntity?>?>.fromJson(
-              json['dap'] as Map<String, dynamic>,
-              (value) => (value as List<dynamic>?)
-                  ?.map(
-                    (e) => e == null
-                        ? null
-                        : DapResultEntity.fromJson(e as Map<String, dynamic>),
-                  )
-                  .toList(),
-            ),
+          : DapEntity.fromJson(json['dap'] as Map<String, dynamic>),
       hfRadio: json['hfRadio'] == null
           ? null
           : GenericResult<List<dynamic>?>.fromJson(
@@ -46,12 +37,7 @@ DeviceConfigEntity _$DeviceConfigEntityFromJson(Map<String, dynamic> json) =>
             ),
       mmrParam: json['mmrParam'] == null
           ? null
-          : GenericResult<MmrParamEntity?>.fromJson(
-              json['mmrParam'] as Map<String, dynamic>,
-              (value) => value == null
-                  ? null
-                  : MmrParamEntity.fromJson(value as Map<String, dynamic>),
-            ),
+          : MmrParamEntity.fromJson(json['mmrParam'] as Map<String, dynamic>),
       ntpTimeSync: json['ntpTimeSync'] == null
           ? null
           : GenericResult<NtpTimeSyncResult?>.fromJson(
@@ -72,10 +58,10 @@ Map<String, dynamic> _$DeviceConfigEntityToJson(
 ) => <String, dynamic>{
   'audioBoardIpConfig': ?instance.audioBoardIpConfig,
   'controlBoardIpConfig': ?instance.controlBoardIpConfig,
-  'dap': ?instance.dap?.toJson((value) => value),
+  'dap': ?instance.dap,
   'hfRadio': ?instance.hfRadio?.toJson((value) => value),
   'mediaBoardIpConfig': ?instance.mediaBoardIpConfig?.toJson((value) => value),
-  'mmrParam': ?instance.mmrParam?.toJson((value) => value),
+  'mmrParam': ?instance.mmrParam,
   'ntpTimeSync': ?instance.ntpTimeSync?.toJson((value) => value),
   'transTable': ?instance.transTable,
 };

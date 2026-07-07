@@ -43,6 +43,11 @@ pager:
     title: 电台管理
     netNode: 网络节点
     fileParse: 文件分析
+  injectEncrypt:
+    paramPairing: 参数配对
+    keyLoaderManager: 注钥枪管理
+#tablePagination:
+#  itemRangeTemplate: 'Showing {start}-{end} of {total} data',
 tableColumn:
   base:
     actions: 操作
@@ -56,6 +61,12 @@ tableColumn:
     sn: SN
     sn_desc: 电台SN号
     columnInfo: 展示列信息
+  injectEncrypt:
+    parameterPacket: 通信参数包
+    radio: 配对电台
+    consumer: 使用人
+    location: 位置
+    SN: SN
 button:
   radioManager:
     createRadio: 添加电台
@@ -69,6 +80,8 @@ button:
     parse: 分析
   paramsInject:
     inject: 注入
+  injectEncrypt:
+    export: 导出
 checkbox:
   DeselectAll: 取消全选
   SelectAll: 全选 ({count})

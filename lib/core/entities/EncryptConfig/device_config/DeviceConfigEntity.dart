@@ -1,13 +1,13 @@
 import 'package:flutter_kts_template/core/entities/EncryptConfig/device_config/ControlBoardIpConfig/ControlBoardIpConfigEntity.dart';
-import 'package:flutter_kts_template/core/entities/EncryptConfig/device_config/IPMask/IPMaskEntity.dart';
-import 'package:flutter_kts_template/core/entities/EncryptConfig/device_config/mmrParam/MmrParamEntity.dart';
-import 'package:flutter_kts_template/core/entities/EncryptConfig/device_config/ntpTimeSyncResult/NtpTimeSyncResult.dart';
-import 'package:flutter_kts_template/core/entities/EncryptConfig/device_config/transTableResult/TransTableResultEntity.dart';
+import 'package:flutter_kts_template/core/entities/EncryptConfig/device_config/Dap/DapEntity.dart';
+import 'package:flutter_kts_template/core/entities/EncryptConfig/device_config/MmrParam/MmrParamEntity.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 import 'AudioBoardIpConfig/AudioBoardIpConfigEntity.dart';
 import 'GenericResult/GenericResult.dart';
-import 'dapResult/DapResultEntity.dart';
+import 'IPMask/IPMaskEntity.dart';
+import 'NtpTimeSyncResult/NtpTimeSyncResult.dart';
+import 'TransTableResult/TransTableResultEntity.dart';
 
 part "DeviceConfigEntity.g.dart";
 
@@ -19,7 +19,8 @@ class DeviceConfigEntity {
   @JsonKey(name: 'controlBoardIpConfig')
   final ControlBoardIpConfigEntity? controlBoardIpConfig;
 
-  final GenericResult<List<DapResultEntity?>?>? dap;
+  @JsonKey(name: 'dap')
+  final DapEntity? dap;
 
   @JsonKey(name: 'hfRadio')
   final GenericResult<List<dynamic>?>? hfRadio;
@@ -28,7 +29,7 @@ class DeviceConfigEntity {
   final GenericResult<IPMaskEntity?>? mediaBoardIpConfig;
 
   @JsonKey(name: 'mmrParam')
-  final GenericResult<MmrParamEntity?>? mmrParam;
+  final MmrParamEntity? mmrParam;
 
   @JsonKey(name: 'ntpTimeSync')
   final GenericResult<NtpTimeSyncResult?>? ntpTimeSync;

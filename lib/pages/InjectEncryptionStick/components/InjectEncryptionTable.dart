@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_kts_template/components/DropDown/simple.dropdown.dart';
 import 'package:flutter_kts_template/components/button/base.button.dart';
 import 'package:flutter_kts_template/components/text/text.title.dart';
+import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 
 import '../../../theme/table.theme.dart';
 import '../../radioManager/radio.model.dart';
@@ -55,8 +56,12 @@ class _InjectEncryptionTableState extends State<InjectEncryptionTable> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              TextTitle(text: "参数配对"),
-              BaseButton(label: "导出", onPressed: () {}, width: 70),
+              TextTitle(text: t.pager.injectEncrypt.paramPairing),
+              BaseButton(
+                label: t.button.injectEncrypt.export,
+                onPressed: () {},
+                width: 70,
+              ),
             ],
           ),
         ),
@@ -87,7 +92,8 @@ class _InjectEncryptionTableState extends State<InjectEncryptionTable> {
               currentPage = 1;
             }),
             onPageChanged: (page) => setState(() => currentPage = page),
-            itemRangeTemplate: 'Showing {start}-{end} of {total} data',
+            // itemRangeTemplate: 'Showing {start}-{end} of {total} data',
+            itemRangeTemplate: "",
           ),
         ),
       ],
@@ -138,32 +144,32 @@ class _InjectEncryptionTableState extends State<InjectEncryptionTable> {
   List<ColumnDefinition<User>> buildColumns() {
     return [
       ColumnDefinition<User>(
-        label: '通信参数包',
+        label: t.tableColumn.injectEncrypt.parameterPacket,
         size: const ColumnSize.auto(),
         cellBuilder: TextCellBuilder.text<User>((u) => u.field1),
       ),
       ColumnDefinition<User>(
-        label: '配对电台',
+        label: t.tableColumn.injectEncrypt.radio,
         flex: 2,
         cellBuilder: (user) => SimpleDropdown(
-          hint: "电台别名",
+          hint: t.tableColumn.injectEncrypt.radio,
           value: "",
           items: [],
           onChanged: (v) {},
         ),
       ),
       ColumnDefinition<User>(
-        label: '使用人',
+        label: t.tableColumn.injectEncrypt.consumer,
         flex: 3,
         cellBuilder: TextCellBuilder.text<User>((u) => u.field3),
       ),
       ColumnDefinition<User>(
-        label: '位置',
+        label: t.tableColumn.injectEncrypt.location,
         size: const ColumnSize.auto(),
         cellBuilder: TextCellBuilder.text<User>((u) => u.field4),
       ),
       ColumnDefinition<User>(
-        label: 'SN',
+        label: t.tableColumn.injectEncrypt.SN,
         size: const ColumnSize.auto(),
         cellBuilder: TextCellBuilder.text<User>((u) => u.field4),
       ),

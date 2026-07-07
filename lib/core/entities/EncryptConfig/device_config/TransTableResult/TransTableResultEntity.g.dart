@@ -9,15 +9,11 @@ part of 'TransTableResultEntity.dart';
 TransTableResultEntity _$TransTableResultEntityFromJson(
   Map<String, dynamic> json,
 ) => TransTableResultEntity(
-  result: (json['result'] as List<dynamic>?)
-      ?.map(
-        (e) => e == null
-            ? null
-            : TransTableGroupEntity.fromJson(e as Map<String, dynamic>),
-      )
-      .toList(),
+  result: TransTableResultEntity._resultFromJson(json['result']),
 );
 
 Map<String, dynamic> _$TransTableResultEntityToJson(
   TransTableResultEntity instance,
-) => <String, dynamic>{'result': ?instance.result};
+) => <String, dynamic>{
+  'result': ?TransTableResultEntity._resultToJson(instance.result),
+};

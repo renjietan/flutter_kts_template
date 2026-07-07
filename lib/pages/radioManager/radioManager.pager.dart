@@ -181,7 +181,8 @@ class _RadioManagerPagerState extends State<RadioManagerPager>
                 SimplePopup.loading();
                 getList();
               },
-              itemRangeTemplate: 'Showing {start}-{end} of {total} data',
+              // itemRangeTemplate: 'Showing {start}-{end} of {total} data',
+              itemRangeTemplate: "",
             ),
           ),
         ],

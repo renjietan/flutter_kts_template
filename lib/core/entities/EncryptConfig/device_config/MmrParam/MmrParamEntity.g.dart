@@ -8,14 +8,11 @@ part of 'MmrParamEntity.dart';
 
 MmrParamEntity _$MmrParamEntityFromJson(Map<String, dynamic> json) =>
     MmrParamEntity(
-      mmrArray: (json['mmrArray'] as List<dynamic>?)
-          ?.map(
-            (e) => e == null
-                ? null
-                : MmrArrayItemEntity.fromJson(e as Map<String, dynamic>),
-          )
-          .toList(),
+      name: json['name'] as String?,
+      result: json['result'] == null
+          ? null
+          : MmrResultEntity.fromJson(json['result'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$MmrParamEntityToJson(MmrParamEntity instance) =>
-    <String, dynamic>{'mmrArray': ?instance.mmrArray};
+    <String, dynamic>{'name': ?instance.name, 'result': ?instance.result};

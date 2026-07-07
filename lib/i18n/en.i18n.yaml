@@ -43,6 +43,11 @@ pager:
     title: Radio manager
     netNode: Net Node
     fileParse: File Parse
+  injectEncrypt:
+    paramPairing: Parameter pairing
+    keyLoaderManager: Key loader Manager
+#tablePagination:
+#  itemRangeTemplate: '显示 {start}-{end} 条, 共 {total} 条',
 tableColumn:
   base:
     actions: Actions
@@ -56,6 +61,12 @@ tableColumn:
     sn: SN
     sn_desc: Radio SN
     columnInfo: Show column info
+  injectEncrypt:
+    parameterPacket: Parameter Packet
+    radio: Matching Radio
+    consumer: Consumer
+    location: Location
+    SN: SN
 button:
   radioManager:
     createRadio: Create Radio
@@ -69,6 +80,8 @@ button:
     parse: Parse
   paramsInject:
     inject: inject
+  injectEncrypt:
+    export: export
 checkbox:
   DeselectAll: Deselect All
   SelectAll: Select All ({count})

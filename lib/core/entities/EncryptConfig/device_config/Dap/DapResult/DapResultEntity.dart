@@ -6,6 +6,7 @@ part "DapResultEntity.g.dart";
 class DapResultEntity {
   @JsonKey(name: 'dapUid')
   final String? dapUid;
+  @JsonKey(name: 'name')
   final String? name;
 
   DapResultEntity({this.dapUid, this.name});
