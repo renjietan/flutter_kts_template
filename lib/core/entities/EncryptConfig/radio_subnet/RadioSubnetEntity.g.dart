@@ -17,7 +17,7 @@ RadioSubnetEntity _$RadioSubnetEntityFromJson(
   file: json['File'] == null
       ? null
       : RadioSubnetFileEntity.fromJson(json['File'] as Map<String, dynamic>),
-  freqNum: (json['FreqNum'] as num?)?.toInt(),
+  freqNum: RadioSubnetEntity._toIntList(json['FreqNum']),
   masterMac: (json['MasterMac'] as num?)?.toInt(),
   multicastAddress: json['MulticastAddress'] as String?,
   networkID: (json['NetworkID'] as num?)?.toInt(),
@@ -40,7 +40,7 @@ Map<String, dynamic> _$RadioSubnetEntityToJson(RadioSubnetEntity instance) =>
       'ContactInfo': ?instance.contactInfo,
       'EncryptFlag': ?instance.encryptFlag,
       'File': ?instance.file,
-      'FreqNum': ?instance.freqNum,
+      'FreqNum': ?RadioSubnetEntity._toJson(instance.freqNum),
       'MasterMac': ?instance.masterMac,
       'MulticastAddress': ?instance.multicastAddress,
       'NetworkID': ?instance.networkID,

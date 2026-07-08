@@ -183,9 +183,9 @@ mixin FileUploadsMixin on State<FileUploads> {
             return cur;
           },
         );
-
+        print(temp);
         EncryptConfigEntity ee = EncryptConfigEntity.fromJson(temp);
-
+        print(ee);
         setState(() {
           isUploadLoading = false;
         });

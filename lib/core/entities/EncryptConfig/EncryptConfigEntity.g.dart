@@ -25,6 +25,18 @@ EncryptConfigEntity _$EncryptConfigEntityFromJson(Map<String, dynamic> json) =>
         (k, e) =>
             MapEntry(k, DeviceConfigEntity.fromJson(e as Map<String, dynamic>)),
       ),
+      users: (json['users'] as Map<String, dynamic>?)?.map(
+        (k, e) => MapEntry(
+          k,
+          e == null ? null : UsersEntity.fromJson(e as Map<String, dynamic>),
+        ),
+      ),
+      contacts: (json['contacts'] as Map<String, dynamic>?)?.map(
+        (k, e) => MapEntry(
+          k,
+          e == null ? null : ContactsEntity.fromJson(e as Map<String, dynamic>),
+        ),
+      ),
     );
 
 Map<String, dynamic> _$EncryptConfigEntityToJson(
@@ -34,4 +46,6 @@ Map<String, dynamic> _$EncryptConfigEntityToJson(
   'radio_subnet': ?instance.radioSubnets,
   'device_config': ?instance.deviceConfig,
   'net_node': ?instance.NetNodes,
+  'users': ?instance.users,
+  'contacts': ?instance.contacts,
 };
