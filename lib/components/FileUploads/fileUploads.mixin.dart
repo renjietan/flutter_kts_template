@@ -153,7 +153,14 @@ mixin FileUploadsMixin on State<FileUploads> {
           .toList();
       await Future.wait(futures).then((res) {
         var temp = res.fold(
-          {"key": {}, "radio_subnet": {}, "device_config": {}, "net_node": {}},
+          {
+            "key": {},
+            "radio_subnet": {},
+            "device_config": {},
+            "net_node": {},
+            "users": {},
+            "contacts": {},
+          },
           (cur, pre) {
             if (pre.isEmpty) {
               return cur;
@@ -165,15 +172,20 @@ mixin FileUploadsMixin on State<FileUploads> {
               cur["device_config"] = pre;
             } else if (keys.every((item) => item.indexOf("nn_") == 0)) {
               cur["net_node"] = pre;
+            } else if (keys.every((item) => item.indexOf("user_") == 0)) {
+              cur["users"] = pre;
+            } else if (keys.every((item) => item.indexOf("contacts_") == 0)) {
+              cur["contacts"] = pre;
             } else {
-              cur["key"] = pre;
+              Map<String, dynamic> data = getKeys(pre);
+              cur["key"] = data;
             }
             return cur;
           },
         );
+
         EncryptConfigEntity ee = EncryptConfigEntity.fromJson(temp);
-        print(temp);
-        print(ee);
+
         setState(() {
           isUploadLoading = false;
         });
@@ -189,5 +201,23 @@ mixin FileUploadsMixin on State<FileUploads> {
       });
       SimplePopup.error(e.toString());
     }
+  }
+
+  Map<String, dynamic> getKeys(Map<String, dynamic> data) {
+    Map<String, dynamic> res = {};
+    data.forEach((key, value) {
+      Map<String, dynamic> temp = {};
+      temp["File"] = value["File"];
+      Map<String, String> keys = {};
+      value.forEach((k, v) {
+        int? r = int.tryParse(k as String);
+        if (r != null) {
+          keys[k] = v;
+        }
+      });
+      temp["keys"] = keys;
+      res[key] = temp;
+    });
+    return res;
   }
 }

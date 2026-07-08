@@ -8,16 +8,16 @@ part of 'KeyFileEntity.dart';
 
 KeyFileEntity _$KeyFileEntityFromJson(Map<String, dynamic> json) =>
     KeyFileEntity(
-      layer: json['layer'] as String?,
-      type: json['type'] as String?,
-      guid: (json['guid'] as num?)?.toInt(),
-      description: (json['description'] as num?)?.toInt(),
+      Layer: json['Layer'] as String?,
+      Type: json['Type'] as String?,
+      Guid: json['Guid'] as String?,
+      Description: json['Description'] as String?,
     );
 
 Map<String, dynamic> _$KeyFileEntityToJson(KeyFileEntity instance) =>
     <String, dynamic>{
-      'layer': ?instance.layer,
-      'type': ?instance.type,
-      'guid': ?instance.guid,
-      'description': ?instance.description,
+      'Layer': ?instance.Layer,
+      'Type': ?instance.Type,
+      'Guid': ?instance.Guid,
+      'Description': ?instance.Description,
     };

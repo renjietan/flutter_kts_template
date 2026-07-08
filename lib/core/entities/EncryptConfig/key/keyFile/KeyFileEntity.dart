@@ -4,12 +4,12 @@ part "KeyFileEntity.g.dart";
 
 @JsonSerializable(includeIfNull: false)
 class KeyFileEntity {
-  final String? layer;
-  final String? type;
-  final int? guid;
-  final int? description;
+  final String? Layer;
+  final String? Type;
+  final String? Guid;
+  final String? Description;
 
-  KeyFileEntity({this.layer, this.type, this.guid, this.description});
+  KeyFileEntity({this.Layer, this.Type, this.Guid, this.Description});
 
   factory KeyFileEntity.fromJson(Map<String, dynamic> json) =>
       _$KeyFileEntityFromJson(json);
