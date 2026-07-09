@@ -4,7 +4,6 @@ import 'package:archive/archive_io.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_kts_template/components/loading/simple.loading.dart';
-import 'package:flutter_kts_template/core/entities/EncryptConfig/EncryptConfigEntity.dart';
 import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 import 'package:flutter_kts_template/logger/logger.dart';
 import 'package:flutter_kts_template/utils/files/FileTools.dart';
@@ -147,48 +146,10 @@ mixin FileUploadsMixin on State<FileUploads> {
         SimplePopup.error(t.uploads.selectedAllow);
         return;
       }
-      List<Directory> subFolders = await FileTools.getDirectSubFolders(outPath);
-      List<Future<Map<String, dynamic>>> futures = subFolders
-          .map((item) => FileTools.readAllJsonFiles(item))
-          .toList();
-      await Future.wait(futures).then((res) {
-        var temp = res.fold(
-          {
-            "key": {},
-            "radio_subnet": {},
-            "device_config": {},
-            "net_node": {},
-            "users": {},
-            "contacts": {},
-          },
-          (cur, pre) {
-            if (pre.isEmpty) {
-              return cur;
-            }
-            List<String> keys = pre.keys.toList();
-            if (keys.every((item) => item.indexOf("rs_") == 0)) {
-              cur["radio_subnet"] = pre;
-            } else if (keys.every((item) => item.indexOf("dc_") == 0)) {
-              cur["device_config"] = pre;
-            } else if (keys.every((item) => item.indexOf("nn_") == 0)) {
-              cur["net_node"] = pre;
-            } else if (keys.every((item) => item.indexOf("user_") == 0)) {
-              cur["users"] = pre;
-            } else if (keys.every((item) => item.indexOf("contacts_") == 0)) {
-              cur["contacts"] = pre;
-            } else {
-              Map<String, dynamic> data = getKeys(pre);
-              cur["key"] = data;
-            }
-            return cur;
-          },
-        );
-        print(temp);
-        EncryptConfigEntity ee = EncryptConfigEntity.fromJson(temp);
-        print(ee);
-        setState(() {
-          isUploadLoading = false;
-        });
+      widget.onUpdate.call(outPath);
+      // await parseData(outPath);
+      setState(() {
+        isUploadLoading = false;
       });
     } on FileException catch (e) {
       setState(() {
@@ -202,22 +163,118 @@ mixin FileUploadsMixin on State<FileUploads> {
       SimplePopup.error(e.toString());
     }
   }
+}
 
-  Map<String, dynamic> getKeys(Map<String, dynamic> data) {
-    Map<String, dynamic> res = {};
-    data.forEach((key, value) {
-      Map<String, dynamic> temp = {};
-      temp["File"] = value["File"];
-      Map<String, String> keys = {};
-      value.forEach((k, v) {
-        int? r = int.tryParse(k as String);
-        if (r != null) {
-          keys[k] = v;
+Future<Map<String, dynamic>> parseData(String filePath) async {
+  List<Directory> subFolders = await FileTools.getDirectSubFolders(filePath);
+  List<Future<Map<String, dynamic>>> futures = subFolders
+      .map((item) => FileTools.readAllJsonFiles(item))
+      .toList();
+  return await Future.wait(futures).then((res) {
+    var temp = res.fold(
+      {
+        "key": {},
+        "radio_subnet": {},
+        "device_config": {},
+        "net_node": {},
+        "users": {},
+        "contacts": {},
+      },
+      (cur, pre) {
+        if (pre.isEmpty) {
+          return cur;
         }
-      });
-      temp["keys"] = keys;
-      res[key] = temp;
+        List<String> keys = pre.keys.toList();
+        if (keys.every((item) => item.indexOf("rs_") == 0)) {
+          cur["radio_subnet"] = pre;
+        } else if (keys.every((item) => item.indexOf("dc_") == 0)) {
+          cur["device_config"] = pre;
+        } else if (keys.every((item) => item.indexOf("nn_") == 0)) {
+          cur["net_node"] = pre;
+        } else if (keys.every((item) => item.indexOf("user_") == 0)) {
+          cur["users"] = pre;
+        } else if (keys.every((item) => item.indexOf("contacts_") == 0)) {
+          cur["contacts"] = pre;
+        } else {
+          Map<String, dynamic> data = parseKeys(pre);
+          cur["key"] = data;
+        }
+        return cur;
+      },
+    );
+    // EncryptConfigEntity ee = EncryptConfigEntity.fromJson(temp);
+    return temp;
+  });
+}
+
+Map<String, dynamic> parseKeys(Map<String, dynamic> data) {
+  Map<String, dynamic> res = {};
+  data.forEach((key, value) {
+    Map<String, dynamic> temp = {};
+    temp["File"] = value["File"];
+    Map<String, String> keys = {};
+    value.forEach((k, v) {
+      int? r = int.tryParse(k as String);
+      if (r != null) {
+        keys[k] = v;
+      }
     });
-    return res;
+    temp["keys"] = keys;
+    res[key] = temp;
+  });
+  return res;
+}
+
+/// 递归转换节点树
+/// 输入：包含 'Unit', 'NetNodes', 'SubUnits' 的节点 Map
+/// 输出：包含 'id', 'title', 'NetNodes', 'chldren' 的新 Map
+Map<String, dynamic> transformUnitTree(
+  Map<String, dynamic> node, {
+  required bool fillNode,
+}) {
+  var unit = node['Unit'] as Map<String, dynamic>;
+
+  // 构建新节点
+  final result = <String, dynamic>{
+    'id': unit['UnitId'],
+    'title': unit['CodeName'],
+    "isleaf": unit["isleaf"] ?? false,
+    "type": unit["NodeType"] ?? -1,
+    "users": unit["Users"] ?? [],
+  };
+
+  // 递归处理子单位
+  var subUnits = (node['SubUnits'] as List? ?? []);
+  final netNodes = node['NetNodes'] as List? ?? [];
+  final newNetNodes = netNodes.map((n) => transformNetNode(n)).toList();
+  subUnits = [...newNetNodes, ...subUnits];
+  if (!result["isleaf"] && subUnits.isEmpty && fillNode) {
+    int randomNum = DateTime.now().millisecond;
+    subUnits = [
+      {
+        "Unit": {
+          "UnitId": randomNum + 1,
+          "CodeName": t.tree.empty,
+          "isleaf": true,
+        },
+      },
+    ];
   }
+  result['children'] = subUnits
+      .map((child) => transformUnitTree(child, fillNode: fillNode))
+      .toList();
+  return result;
+}
+
+Map<String, dynamic> transformNetNode(Map<String, dynamic> netNode) {
+  final result = Map<String, dynamic>.from(netNode);
+  result["Unit"] = <String, dynamic>{};
+  result["Unit"]['UnitId'] = result.remove('NodeId');
+  result["Unit"]['CodeName'] = result.remove('CodeName');
+  result["Unit"]["isleaf"] = true;
+  result["Unit"]["NodeType"] = result.remove('NodeType');
+  result["Unit"]["Users"] = result.remove('Users');
+  result["NetNodes"] = [];
+  result["SubUnits"] = [];
+  return result;
 }

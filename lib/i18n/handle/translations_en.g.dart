@@ -37,6 +37,7 @@ class TranslationsEn extends Translations with BaseTranslations<AppLocale, Trans
 	@override late final _Translations$common$en common = _Translations$common$en._(_root);
 	@override late final _Translations$permission$en permission = _Translations$permission$en._(_root);
 	@override late final _Translations$uploads$en uploads = _Translations$uploads$en._(_root);
+	@override late final _Translations$tree$en tree = _Translations$tree$en._(_root);
 	@override late final _Translations$json$en json = _Translations$json$en._(_root);
 	@override late final _Translations$pageable$en pageable = _Translations$pageable$en._(_root);
 	@override late final _Translations$pager$en pager = _Translations$pager$en._(_root);
@@ -109,6 +110,16 @@ class _Translations$uploads$en extends Translations$uploads$zh {
 	@override String get existPath => 'The file path is not exist';
 	@override String get selectedFolderDialogTitle => 'Please select a folder';
 	@override String get selectedAllow => 'Only ZIP and folders are supported';
+}
+
+// Path: tree
+class _Translations$tree$en extends Translations$tree$zh {
+	_Translations$tree$en._(TranslationsEn root) : this._root = root, super.internal(root);
+
+	final TranslationsEn _root; // ignore: unused_field
+
+	// Translations
+	@override String get empty => '<null>';
 }
 
 // Path: json

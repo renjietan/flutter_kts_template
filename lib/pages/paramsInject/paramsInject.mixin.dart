@@ -26,7 +26,7 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
       var node = TreeType<SimpleTreeNode>(
         data: SimpleTreeNode(
           id: data["id"],
-          title: data["name"],
+          title: data["title"],
           level: level,
           index: currentIndex,
           nodeBgColor: nodeBgColor,
@@ -52,7 +52,7 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
       }
       node.children = childNodes;
       if (node.children.isEmpty) {
-        node.data.isInner = false;
+        node.data.isInner = !data["isleaf"];
         node.data.isShowCheckbox = true;
         node.data.padding = node.data.padding + 10;
         node.data.titleIcon = getTreeNodeIcon(data["type"]);
@@ -79,19 +79,26 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
     return rootNode;
   }
 
-  IconData getTreeNodeIcon(String type) {
+  IconData getTreeNodeIcon(int type) {
     IconData res;
     switch (type) {
-      case "post":
+      case 1: // 指挥所
         res = HyIcons.zhihuisuo;
-      case "vehicle":
+        break;
+      case 2: // 车
         res = HyIcons.che;
-      case "soldiers":
+        break;
+      case 4: // 未来战士
         res = HyIcons.ren;
+        break;
       default:
         res = HyIcons.wenjian;
     }
     return res;
+  }
+
+  Future<void> initDict() async {
+    // print(res);
   }
 
   @override

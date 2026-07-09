@@ -1,5 +1,3 @@
-/// 缓存目录对象，避免重复调用 getApplicationDocumentsDirectory
-
 String sanitizeFileName(String originalName) {
   final illegalChars = RegExp(r'[<>:"/\\|?*]');
   String sanitized = originalName.replaceAll(illegalChars, '_');

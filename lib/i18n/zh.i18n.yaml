@@ -30,6 +30,8 @@ uploads:
   existPath: 文件路径不存在
   selectedFolderDialogTitle: 请选择一个文件夹
   selectedAllow: 当前仅支持 ZIP 和文件夹
+tree:
+  empty: "<空>"
 json:
   serialization: 收到的信息格式有点陌生
 pageable:

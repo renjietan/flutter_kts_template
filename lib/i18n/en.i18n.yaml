@@ -30,6 +30,8 @@ uploads:
   existPath: The file path is not exist
   selectedFolderDialogTitle: Please select a folder
   selectedAllow: Only ZIP and folders are supported
+tree:
+  empty: "<null>"
 json:
   serialization: The received information seems unfamiliar
 pageable:

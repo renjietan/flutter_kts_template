@@ -39,6 +39,7 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 	late final Translations$common$zh common = Translations$common$zh.internal(_root);
 	late final Translations$permission$zh permission = Translations$permission$zh.internal(_root);
 	late final Translations$uploads$zh uploads = Translations$uploads$zh.internal(_root);
+	late final Translations$tree$zh tree = Translations$tree$zh.internal(_root);
 	late final Translations$json$zh json = Translations$json$zh.internal(_root);
 	late final Translations$pageable$zh pageable = Translations$pageable$zh.internal(_root);
 	late final Translations$pager$zh pager = Translations$pager$zh.internal(_root);
@@ -160,6 +161,18 @@ class Translations$uploads$zh {
 
 	/// zh: '当前仅支持 ZIP 和文件夹'
 	String get selectedAllow => '当前仅支持 ZIP 和文件夹';
+}
+
+// Path: tree
+class Translations$tree$zh {
+	Translations$tree$zh.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// zh: '<空>'
+	String get empty => '<空>';
 }
 
 // Path: json

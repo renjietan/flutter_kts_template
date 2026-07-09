@@ -8,8 +8,12 @@ import '../../i18n/handle/translations.g.dart';
 import '../../icons/hy_icons.dart';
 import 'fileUploads.mixin.dart';
 
+typedef OnFilePathChange = void Function(String path);
+
 class FileUploads extends StatefulWidget {
-  const FileUploads({super.key});
+  final OnFilePathChange onUpdate;
+
+  const FileUploads({super.key, required this.onUpdate});
 
   @override
   State<FileUploads> createState() => _FileUploadsState();
@@ -19,7 +23,6 @@ class _FileUploadsState extends State<FileUploads> with FileUploadsMixin {
   @override
   Widget build(BuildContext context) {
     final t = Translations.of(context);
-    // 套用
     return TableFilterToolbar(
       mainFilters: [
         DataTablePlusThemeProvider(
