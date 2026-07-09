@@ -45,8 +45,9 @@ class FileTools {
       followLinks: false,
     )) {
       if (entity is File && p.extension(entity.path).toLowerCase() == '.json') {
+        var content = "";
         try {
-          final content = await entity.readAsString(encoding: utf8);
+          content = await entity.readAsString(encoding: utf8);
           final jsonData = jsonDecode(content);
           final key = includeExtension
               ? p.basename(entity.path)

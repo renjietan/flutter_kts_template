@@ -173,12 +173,12 @@ Future<Map<String, dynamic>> parseData(String filePath) async {
   return await Future.wait(futures).then((res) {
     var temp = res.fold(
       {
-        "key": {},
-        "radio_subnet": {},
-        "device_config": {},
-        "net_node": {},
-        "users": {},
-        "contacts": {},
+        "key": <String, dynamic>{},
+        "radio_subnet": <String, dynamic>{},
+        "device_config": <String, dynamic>{},
+        "net_node": <String, dynamic>{},
+        "users": <String, dynamic>{},
+        "contacts": <String, dynamic>{},
       },
       (cur, pre) {
         if (pre.isEmpty) {

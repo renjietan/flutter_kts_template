@@ -1,7 +1,10 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:composable_data_table/composable_data_table.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_kts_template/components/DropDown/simple.dropdown.dart';
 import 'package:flutter_kts_template/components/FileUploads/fileUploads.dart';
+import 'package:flutter_kts_template/components/TextField/simple.filter.search.textField.dart';
 import 'package:flutter_kts_template/components/TreeView/simple-tree/simple.tree.model.dart';
 import 'package:flutter_kts_template/components/TreeView/simple-tree/simple.treeview.dart';
 import 'package:flutter_kts_template/components/button/base.button.dart';
@@ -11,11 +14,12 @@ import 'package:flutter_kts_template/logger/logger.dart';
 import 'package:flutter_kts_template/pages/paramsInject/paramsInject.mixin.dart';
 import 'package:flutter_kts_template/pages/paramsInject/paramsInject.tools.dart';
 import 'package:flutter_kts_template/theme/table.theme.dart';
+import 'package:path/path.dart' as p;
+import 'package:recursive_tree_flutter/functions/tree_update_functions.dart';
 import 'package:recursive_tree_flutter/models/tree_type.dart';
 
 import '../../components/FileUploads/fileUploads.mixin.dart';
 import '../../icons/hy_icons.dart';
-import '../radioManager/radio.model.dart';
 
 class ParamsInjectPager extends StatefulWidget {
   const ParamsInjectPager({super.key});
@@ -27,11 +31,16 @@ class ParamsInjectPager extends StatefulWidget {
 class _ParamsInjectPagerState extends State<ParamsInjectPager>
     with ParamsInjectMixin {
   Map<String, dynamic> allData = {};
-  UserStatus? _statusFilter;
+  String dataPath = "";
+  String searchValue = "";
+  bool masterVisible = false;
+  TextEditingController searchTextFieldController = TextEditingController();
   late TreeType<SimpleTreeNode> _tree;
+
   late List<TreeType<SimpleTreeNode>> _detailTree;
   bool detailVisible = false;
-  bool masterVisible = false;
+  String _detailTitle = "";
+
   dynamic selectMasterId = -1;
 
   @override
@@ -45,7 +54,7 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
 
   void resetMasterTree() {
     _tree = TreeType(
-      data: SimpleTreeNode(id: 1, title: "<>"),
+      data: SimpleTreeNode(id: "1", title: "<>"),
       children: [],
       parent: null,
     );
@@ -54,7 +63,7 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
   void resetDetailTree() {
     _detailTree = [
       TreeType(
-        data: SimpleTreeNode(id: 1, title: "<>"),
+        data: SimpleTreeNode(id: "1", title: "<>"),
         children: [],
         parent: null,
       ),
@@ -65,7 +74,9 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
     setState(() {
       masterVisible = false;
     });
-    allData = await readAllDataFiles(filePath);
+    final (data, path) = await readAllDataFiles(filePath);
+    allData = data;
+    dataPath = path;
     if (allData.isEmpty) {
       setState(() {
         masterVisible = true;
@@ -97,7 +108,7 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
         children: [
           Expanded(flex: 4, child: _buildMasterTree(context)),
           const VerticalDivider(thickness: 1, width: 1),
-          Expanded(flex: 3, child: _buildDetailTree("SCC-Command Vehicle-1")),
+          Expanded(flex: 3, child: _buildDetailTree()),
         ],
       ),
     );
@@ -135,12 +146,6 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  BaseButton(
-                    label: "test",
-                    onPressed: () {
-                      initLeftTree(null);
-                    },
-                  ),
                   Padding(
                     padding: EdgeInsetsGeometry.fromLTRB(16, 5, 0, 10),
                     child: Row(
@@ -159,24 +164,13 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
                         horizontal: 12,
                         vertical: 3,
                       ),
-                      child: SimpleDropdown(
-                        value: _statusFilter,
-                        hint: '',
-                        items: UserStatus.values
-                            .map(
-                              (s) => DropdownMenuItem(
-                                value: s,
-                                child: Text(
-                                  s.name[0].toUpperCase() + s.name.substring(1),
-                                ),
-                              ),
-                            )
-                            .toList(),
-                        onChanged: (value) {
-                          setState(() {
-                            _statusFilter = value;
-                          });
+                      child: SimpleFilterSearchField(
+                        value: searchValue,
+                        onChanged: (v) {
+                          updateTreeWithSearchingTitle(_tree, v);
+                          setState(() {});
                         },
+                        controller: searchTextFieldController,
                       ),
                     ),
                   ),
@@ -188,6 +182,7 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
                           _tree,
                           onNodeDataChanged: (v) async {
                             var id = v.data.id;
+                            _detailTitle = v.data.title;
                             setState(() {
                               detailVisible = false;
                             });
@@ -239,7 +234,17 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
                                     leafActionWidgetOnPressed:
                                         v.data.titleIcon == HyIcons.ren
                                         ? null
-                                        : (v) {
+                                        : (v) async {
+                                            String dcPath = p.join(
+                                              dataPath,
+                                              "3_device_config",
+                                              v.title + ".json",
+                                            );
+                                            File DcFile = File(dcPath);
+                                            String dcJsonStr =
+                                                DcFile.readAsStringSync();
+                                            var dcJson = jsonDecode(dcJsonStr);
+                                            print(dcJson);
                                             GlobalLogger.logInfo(
                                               "inject value: ${v.toString()}",
                                             );
@@ -247,7 +252,6 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
                                     leafActionWidgetSize: Size(70, 30),
                                   );
                                 }).toList();
-                            print(_detailTree);
                             Future.delayed(Duration(milliseconds: 100)).then((
                               _,
                             ) {
@@ -270,7 +274,7 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
   }
 
   /// detail tree
-  Widget _buildDetailTree(String title) {
+  Widget _buildDetailTree() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisAlignment: MainAxisAlignment.start,
@@ -286,7 +290,7 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              TextTitle(text: title),
+              TextTitle(text: _detailTitle),
               BaseButton(label: t.button.radioManager.save, width: 65),
             ],
           ),
@@ -303,19 +307,6 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
                   style: BorderStyle.solid,
                 ),
               ),
-              // child: SingleChildScrollView(
-              //   child: Visibility(
-              //     visible: detailVisible,
-              //     child: SimpleTreeView(
-              //       _detailTree,
-              //       onNodeDataChanged: (v) {
-              //         GlobalLogger.logInfo(v.toString());
-              //         // 什么都不干，也必须 setState，否则无法实时更新 tree
-              //         setState(() {});
-              //       },
-              //     ),
-              //   ),
-              // ),
               child: Visibility(
                 visible: detailVisible,
                 child: ListView.builder(

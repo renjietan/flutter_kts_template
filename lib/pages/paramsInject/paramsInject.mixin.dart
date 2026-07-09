@@ -16,8 +16,9 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
       Map<String, dynamic> data,
       TreeType<SimpleTreeNode>? parent,
       int level,
-      int currentIndex,
-    ) {
+      int currentIndex, [
+      List<int> path = const [],
+    ]) {
       int nextIndex = currentIndex + 1;
       double padding = level * 16;
       Color nodeBgColor = currentIndex % 2 == 0
@@ -95,15 +96,5 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
         res = HyIcons.wenjian;
     }
     return res;
-  }
-
-  Future<void> initDict() async {
-    // print(res);
-  }
-
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
   }
 }
