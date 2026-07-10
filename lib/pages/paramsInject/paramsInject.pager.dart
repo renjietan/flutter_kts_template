@@ -1,6 +1,3 @@
-import 'dart:convert';
-import 'dart:io';
-
 import 'package:composable_data_table/composable_data_table.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_kts_template/components/FileUploads/fileUploads.dart';
@@ -14,11 +11,13 @@ import 'package:flutter_kts_template/logger/logger.dart';
 import 'package:flutter_kts_template/pages/paramsInject/paramsInject.mixin.dart';
 import 'package:flutter_kts_template/pages/paramsInject/paramsInject.tools.dart';
 import 'package:flutter_kts_template/theme/table.theme.dart';
+import 'package:flutter_kts_template/utils/files/FileTools.dart';
 import 'package:path/path.dart' as p;
 import 'package:recursive_tree_flutter/functions/tree_update_functions.dart';
 import 'package:recursive_tree_flutter/models/tree_type.dart';
 
 import '../../components/FileUploads/fileUploads.mixin.dart';
+import '../../core/utils/director.dart';
 import '../../icons/hy_icons.dart';
 
 class ParamsInjectPager extends StatefulWidget {
@@ -38,10 +37,9 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
   late TreeType<SimpleTreeNode> _tree;
 
   late List<TreeType<SimpleTreeNode>> _detailTree;
-  bool detailVisible = false;
+  bool _detailVisible = false;
   String _detailTitle = "";
-
-  dynamic selectMasterId = -1;
+  String _selectMasterId = "";
 
   @override
   void initState() {
@@ -80,7 +78,7 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
     if (allData.isEmpty) {
       setState(() {
         masterVisible = true;
-        detailVisible = true;
+        _detailVisible = true;
         resetMasterTree();
         resetDetailTree();
       });
@@ -182,9 +180,10 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
                           _tree,
                           onNodeDataChanged: (v) async {
                             var id = v.data.id;
+                            _selectMasterId = id;
                             _detailTitle = v.data.title;
                             setState(() {
-                              detailVisible = false;
+                              _detailVisible = false;
                             });
                             if (v.data.title == t.tree.empty) {
                               resetDetailTree();
@@ -235,19 +234,42 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
                                         v.data.titleIcon == HyIcons.ren
                                         ? null
                                         : (v) async {
+                                            String netNOdePath = p.join(
+                                              dataPath,
+                                              "4_net_node",
+                                              "$_selectMasterId.json",
+                                            );
                                             String dcPath = p.join(
                                               dataPath,
                                               "3_device_config",
-                                              v.title + ".json",
+                                              "${v.title}.json",
                                             );
-                                            File DcFile = File(dcPath);
-                                            String dcJsonStr =
-                                                DcFile.readAsStringSync();
-                                            var dcJson = jsonDecode(dcJsonStr);
-                                            print(dcJson);
-                                            GlobalLogger.logInfo(
-                                              "inject value: ${v.toString()}",
+                                            String savePath =
+                                                await DirectoryManager.instance
+                                                    .getZipCache();
+                                            FileTools.extractZipToDisk(
+                                              entries: [
+                                                ArchiveEntry(
+                                                  sourcePath: netNOdePath,
+                                                  innerDir: "4_net_node",
+                                                ),
+                                                ArchiveEntry(
+                                                  sourcePath: dcPath,
+                                                  innerDir: "3_device_config",
+                                                ),
+                                              ],
+                                              outputPath: savePath,
+                                              zipName: "ccu",
+                                              type: ArchiveEncoderType.tar,
                                             );
+                                            // File DcFile = File(dcPath);
+                                            // String dcJsonStr =
+                                            //     DcFile.readAsStringSync();
+                                            // var dcJson = jsonDecode(dcJsonStr);
+                                            // print(dcJson);
+                                            // GlobalLogger.logInfo(
+                                            //   "inject value: ${v.toString()}",
+                                            // );
                                           },
                                     leafActionWidgetSize: Size(70, 30),
                                   );
@@ -256,7 +278,7 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
                               _,
                             ) {
                               setState(() {
-                                detailVisible = true;
+                                _detailVisible = true;
                               });
                             });
                           },
@@ -308,7 +330,7 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
                 ),
               ),
               child: Visibility(
-                visible: detailVisible,
+                visible: _detailVisible,
                 child: ListView.builder(
                   itemCount: _detailTree.length,
                   itemBuilder: (context, index) {

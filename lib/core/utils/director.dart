@@ -38,6 +38,11 @@ class DirectoryManager {
     return dir.path;
   }
 
+  Future<String> getZipCache() async {
+    final dir = await getUploadsDirectory(subDir: "zipCache");
+    return dir.path;
+  }
+
   Future<String> getDataBasePath() async {
     final dir = await getUploadsDirectory(
       subDir: AppConfig.dataBaseConfig.name,

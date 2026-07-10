@@ -1,9 +1,19 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:archive/archive.dart';
 import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 import 'package:flutter_kts_template/utils/files/exception/FileException.dart';
 import 'package:path/path.dart' as p;
+
+class ArchiveEntry {
+  final String sourcePath; // 磁盘上的真实文件路径
+  final String innerDir; // 希望它在归档里的文件夹路径，例如 "3_device_config"
+
+  ArchiveEntry({required this.sourcePath, required this.innerDir});
+}
+
+enum ArchiveEncoderType { zip, tar, tarGz }
 
 class FileTools {
   static Future<List<Directory>> getDirectSubFolders(String parentPath) async {
@@ -59,5 +69,47 @@ class FileTools {
       }
     }
     return result;
+  }
+
+  static Future<void> extractZipToDisk({
+    required List<ArchiveEntry> entries,
+    required String outputPath,
+    required String zipName,
+    ArchiveEncoderType type = ArchiveEncoderType.zip,
+  }) async {
+    final archive = Archive();
+
+    for (final entry in entries) {
+      final file = File(entry.sourcePath);
+      if (!await file.exists()) continue;
+
+      final bytes = await file.readAsBytes();
+      final fileName = file.uri.pathSegments.last;
+      final innerPath = entry.innerDir.isEmpty
+          ? fileName
+          : '${entry.innerDir}/$fileName';
+
+      archive.addFile(ArchiveFile(innerPath, bytes.length, bytes));
+    }
+
+    List<int>? data;
+    String extension = "";
+    switch (type) {
+      case ArchiveEncoderType.zip:
+        data = ZipEncoder().encode(archive);
+        extension = ".zip";
+        break;
+      case ArchiveEncoderType.tar:
+        data = TarEncoder().encode(archive);
+        extension = ".tar";
+        break;
+      case ArchiveEncoderType.tarGz:
+        final tarData = TarEncoder().encode(archive);
+        data = GZipEncoder().encode(tarData);
+        extension = ".tar.gz";
+        break;
+    }
+    String savePath = p.join(outputPath, "$zipName$extension");
+    await File(savePath).writeAsBytes(data);
   }
 }
