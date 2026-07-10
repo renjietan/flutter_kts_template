@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_kts_template/components/TreeView/simple-tree/simple.tree.model.dart';
+import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 import 'package:recursive_tree_flutter/functions/tree_update_functions.dart';
 import 'package:recursive_tree_flutter/models/abstract_node_type.dart';
 import 'package:recursive_tree_flutter/models/tree_type.dart';
@@ -56,7 +57,9 @@ class _SimpleTreeViewState<T extends AbsNodeType> extends State<SimpleTreeView>
 
   @override
   Widget buildNode() {
-    if (!tree.data.isShowedInSearching) return const SizedBox.shrink();
+    if (!tree.data.isShowedInSearching || tree.data.title == t.tree.empty) {
+      return const SizedBox.shrink();
+    }
     // if (widget.tree.isRoot) return const SizedBox.shrink();
     Color? bgColor = tree.data.isChosen == true
         ? Color(0xFF004098)
@@ -138,10 +141,15 @@ class _SimpleTreeViewState<T extends AbsNodeType> extends State<SimpleTreeView>
   }
 
   Widget buildTitle() {
+    String count =
+        tree.isLeaf ||
+            tree.children.every((item) => item.data.title == t.tree.empty)
+        ? ""
+        : " (${tree.children.length})";
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 0),
       child: Text(
-        tree.data.title + (tree.isLeaf ? "" : " (${tree.children.length})"),
+        tree.data.title + count,
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
         style: TextStyle(color: Colors.white),

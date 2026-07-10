@@ -71,11 +71,11 @@ class FileTools {
     return result;
   }
 
-  static Future<void> extractZipToDisk({
+  static Future<String> filesToZipFormPath({
     required List<ArchiveEntry> entries,
     required String outputPath,
     required String zipName,
-    ArchiveEncoderType type = ArchiveEncoderType.zip,
+    ArchiveEncoderType type = ArchiveEncoderType.tar,
   }) async {
     final archive = Archive();
 
@@ -111,5 +111,34 @@ class FileTools {
     }
     String savePath = p.join(outputPath, "$zipName$extension");
     await File(savePath).writeAsBytes(data);
+    return savePath;
+  }
+
+  static Future<String> filesToZipFormListDirectory(
+    List<Directory> folderDirectories, {
+    required String outputPath,
+    required String zipName,
+    ArchiveEncoderType type = ArchiveEncoderType.tar,
+  }) async {
+    // List<ArchiveEntry> fileList
+    var test = folderDirectories.map((item) {
+      List<FileSystemEntity> entities = item.listSync().toList();
+      String folderName = getFolderName(item.path);
+      print("=============================================");
+      print(folderName);
+      print(entities);
+      // var temp = entities.map((item) => ArchiveEntry{
+      // sourcePath: p.join(part1)
+      // });
+      return item;
+    });
+    return "";
+  }
+
+  static String getFolderName(String path) {
+    if (path.endsWith('/') || path.endsWith('\\')) {
+      path = path.substring(0, path.length - 1);
+    }
+    return path.split(RegExp(r'[/\\]')).last;
   }
 }
