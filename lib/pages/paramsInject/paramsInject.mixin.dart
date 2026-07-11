@@ -26,6 +26,9 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
     children: [],
     parent: null,
   );
+  String get netNOdePath =>
+      p.join(dataPath, "4_net_node", "$selectMasterId.json");
+  String get resourcePath => p.join(dataPath, "1_resource");
 
   late List<TreeType<SimpleTreeNode>> detailTreeData = [
     TreeType(
@@ -275,53 +278,108 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
   }
 
   Future<void> detailsTreeOnTap(v) async {
-    String netNOdePath = p.join(dataPath, "4_net_node", "$selectMasterId.json");
-    String dcPath = p.join(dataPath, "3_device_config", "${v.title}.json");
+    SimplePopup.loading();
+    String dcJsonFilePath = p.join(
+      dataPath,
+      "3_device_config",
+      "${v.title}.json",
+    );
     String savePath = await DirectoryManager.instance.getZipCache();
+    String resPath = "";
+    List<String> resourceFileNames = await FileTools.getJsonFileNameByFPath(
+      resourcePath,
+    );
+    List<ArchiveEntry> resourceEntries = resourceFileNames
+        .fold<List<ArchiveEntry>>([], (cur, pre) {
+          ArchiveEntry temp = ArchiveEntry(
+            sourcePath: pre,
+            innerDir: "1_resource",
+          );
+          cur.add(temp);
+          return cur;
+        });
     try {
-      SimplePopup.loading();
       if (v.title.startsWith("dc_ccu_")) {
+        // 构建 ccu 打包的文件列表: 1_resource、3_device_config、4_net_node
         String ccuTarPath = await FileTools.filesToZipFormPath(
           entries: [
+            ...resourceEntries,
+            ArchiveEntry(
+              sourcePath: dcJsonFilePath,
+              innerDir: "3_device_config",
+            ),
             ArchiveEntry(sourcePath: netNOdePath, innerDir: "4_net_node"),
-            ArchiveEntry(sourcePath: dcPath, innerDir: "3_device_config"),
           ],
           outputPath: savePath,
           zipName: "ccu",
-          type: ArchiveEncoderType.tar,
         );
-        print(ccuTarPath);
+        resPath = ccuTarPath;
       } else if (v.title.startsWith("dc_server")) {
+        // 构建 server 打包的文件列表: 1_resource、2_radio_subnet、3_device_config、4_net_node、5_user、6_contacts
         List<Directory> subFolds = await FileTools.getDirectSubFolders(
           dataPath,
         );
-        subFolds = subFolds
-            .where(
-              (v) => [
-                "1_resource",
-                "2_radio_subnet",
-                "3_device_config",
-                "4_net_node",
-              ].any((item) => v.path.contains(item)),
-            )
-            .toList();
         String serviceTarPath = await FileTools.filesToZipFormListDirectory(
           subFolds,
           outputPath: savePath,
           zipName: "server",
         );
-        print(dataPath);
-        print(subFolds);
-        print(serviceTarPath);
+        resPath = serviceTarPath;
+      } else {
+        // 构建 radio 打包的文件列表: 1_resource、2_radio_subnet、3_device_config、4_net_node
+        // 读取文件内容
+        Map<String, dynamic> dcContent = FileTools.readFileContentAsMap(
+          dcJsonFilePath,
+        );
+        Map<String, dynamic>? dcChannels = dcContent["Channels"] ?? {};
+        // 根据 3_device_config 中的 Channels 字段 获取 Subnets 列表，后续 将 根据 Subnets 字段 查找 2_radio_subnet 问价
+        List<String> dcChannelsValues = (dcChannels?.values.toList() ?? [])
+            .fold<List<String>>([], (cur, pre) {
+              String subnet = pre["Subnet"] ?? '';
+              if (subnet.isNotEmpty) {
+                cur.add("$subnet.json");
+              }
+              return cur;
+            })
+            .toList();
+        // 汇总 4_net_node + 3_device_config + 2_radio_subnet + 1_resource
+        List<ArchiveEntry> entries = dcChannelsValues.fold<List<ArchiveEntry>>(
+          [
+            ...resourceEntries,
+            ArchiveEntry(
+              sourcePath: dcJsonFilePath,
+              innerDir: "3_device_config",
+            ),
+            ArchiveEntry(sourcePath: netNOdePath, innerDir: "4_net_node"),
+          ],
+          (cur, pre) {
+            String sourcePath = p.join(dataPath, "2_radio_subnet", pre);
+            ArchiveEntry temp = ArchiveEntry(
+              sourcePath: sourcePath,
+              innerDir: "2_radio_subnet",
+            );
+            cur.add(temp);
+            return cur;
+          },
+        );
+        String serviceTarPath = await FileTools.filesToZipFormPath(
+          entries: entries,
+          outputPath: savePath,
+          zipName: "radios",
+        );
+        resPath = serviceTarPath;
       }
-      SimplePopup.hideLoading();
-      SimpleAsyncPopup.success(t.common.OperationSuccess);
+      await SimpleAsyncPopup.hideLoading(Duration(milliseconds: 500));
+      SimpleAsyncPopup.success(
+        t.common.OperationSuccess,
+        duration: Duration(milliseconds: 700),
+      );
     } catch (e) {
-      SimplePopup.hideLoading();
       GlobalLogger.logError("paramsInject.mixin: ${e.toString()}");
+      await SimpleAsyncPopup.hideLoading(Duration(milliseconds: 500));
       SimpleAsyncPopup.error(
         t.common.OperationError,
-        timeout: Duration(milliseconds: 200),
+        timeout: Duration(milliseconds: 700),
       );
     }
 

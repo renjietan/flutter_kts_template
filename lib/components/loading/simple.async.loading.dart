@@ -64,7 +64,9 @@ class SimpleAsyncPopup {
     ToastType? toastType,
     Duration? timeout,
   }) async {
-    if (timeout != null) await Future.delayed(timeout);
+    if (timeout != null) {
+      await Future.delayed(timeout);
+    }
     Pop.toast(
       message,
       duration: duration ?? Duration(milliseconds: 1500),

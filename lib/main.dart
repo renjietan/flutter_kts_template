@@ -12,11 +12,11 @@ final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
 void main() {
   AppInit.run();
   ProcessSignal.sigint.watch().listen((_) async {
-    GlobalLogger.logWTF("关闭数据库...");
+    GlobalLogger.logWTF("1、准备关闭数据库...");
     DatabaseManager.instance.close();
-    GlobalLogger.logWTF("数据库已关闭，开始停止服务");
+    GlobalLogger.logWTF("2、数据库已关闭，开始停止服务");
     await Express.stop();
-    GlobalLogger.logWTF("服务已停止");
+    GlobalLogger.logWTF("3、服务已停止");
     exit(0);
   });
 }

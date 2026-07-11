@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:archive/archive.dart';
 import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
+import 'package:flutter_kts_template/logger/logger.dart';
 import 'package:flutter_kts_template/utils/files/exception/FileException.dart';
 import 'package:path/path.dart' as p;
 
@@ -31,6 +32,12 @@ class FileTools {
         .toList();
 
     return subDirs;
+  }
+
+  static Map<String, dynamic> readFileContentAsMap(String filePath) {
+    String jsonString = File(filePath).readAsStringSync();
+    Map<String, dynamic> res = jsonDecode(jsonString);
+    return res;
   }
 
   /// [directoryPath] 读取路径下的所有 JSON 文件。
@@ -71,6 +78,24 @@ class FileTools {
     return result;
   }
 
+  static Future<List<String>> getJsonFileNameByFPath(String folderPath) async {
+    var directory = Directory(folderPath);
+    List<FileSystemEntity> entities = directory.listSync(recursive: true);
+    List<String> jsonFileNames = entities
+        .where(
+          (entity) =>
+              // 是文件(File)且路径以 '.json' 结尾
+              entity is File && entity.path.endsWith('.json'),
+        )
+        .map(
+          (entity) =>
+              // 提取文件的全名 (包含扩展名)
+              entity.path.split('/').last,
+        )
+        .toList();
+    return jsonFileNames;
+  }
+
   static Future<String> filesToZipFormPath({
     required List<ArchiveEntry> entries,
     required String outputPath,
@@ -81,8 +106,10 @@ class FileTools {
 
     for (final entry in entries) {
       final file = File(entry.sourcePath);
-      if (!await file.exists()) continue;
-
+      if (!await file.exists()) {
+        GlobalLogger.logWarn("${file.path} 不存在");
+        continue;
+      }
       final bytes = await file.readAsBytes();
       final fileName = file.uri.pathSegments.last;
       final innerPath = entry.innerDir.isEmpty
@@ -120,19 +147,24 @@ class FileTools {
     required String zipName,
     ArchiveEncoderType type = ArchiveEncoderType.tar,
   }) async {
-    // List<ArchiveEntry> fileList
-    var test = folderDirectories.map((item) {
-      List<FileSystemEntity> entities = item.listSync().toList();
-      String folderName = getFolderName(item.path);
-      print("=============================================");
-      print(folderName);
-      print(entities);
-      // var temp = entities.map((item) => ArchiveEntry{
-      // sourcePath: p.join(part1)
-      // });
-      return item;
-    });
-    return "";
+    List<ArchiveEntry> entries = folderDirectories.fold<List<ArchiveEntry>>(
+      [],
+      (cur, pre) {
+        List<FileSystemEntity> entities = pre.listSync().toList();
+        String folderName = getFolderName(pre.path);
+        var temp = entities.map((item) {
+          return ArchiveEntry(sourcePath: item.path, innerDir: folderName);
+        }).toList();
+        cur.addAll(temp);
+        return cur;
+      },
+    ).toList();
+    String savePath = await filesToZipFormPath(
+      entries: entries,
+      outputPath: outputPath,
+      zipName: zipName,
+    );
+    return savePath;
   }
 
   static String getFolderName(String path) {
