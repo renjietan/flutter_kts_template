@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_kts_template/components/FileUploads/fileUploads.dart';
 import 'package:flutter_kts_template/components/TextField/simple.filter.search.textField.dart';
 import 'package:flutter_kts_template/components/TreeView/simple-tree/simple.treeview.dart';
-import 'package:flutter_kts_template/components/button/base.button.dart';
 import 'package:flutter_kts_template/components/text/text.title.dart';
 import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 import 'package:flutter_kts_template/logger/logger.dart';
@@ -130,20 +129,21 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
-        Container(
-          margin: const EdgeInsetsGeometry.fromLTRB(12, 10, 10, 10),
-          padding: const EdgeInsetsGeometry.only(left: 10),
-          decoration: BoxDecoration(
-            border: Border(
-              left: BorderSide(width: 5, color: Color(0xFF00A2E9)),
+        Padding(
+          padding: const EdgeInsetsGeometry.fromLTRB(12, 15, 10, 15),
+          child: Container(
+            decoration: BoxDecoration(
+              border: Border(
+                left: BorderSide(width: 5, color: Color(0xFF00A2E9)),
+              ),
             ),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              TextTitle(text: detailTitle),
-              BaseButton(label: t.button.radioManager.save, width: 65),
-            ],
+            child: Row(
+              children: [
+                SizedBox(width: 15),
+                TextTitle(text: detailTitle),
+                // BaseButton(label: t.button.radioManager.save, width: 65),
+              ],
+            ),
           ),
         ),
         Expanded(

@@ -12,7 +12,6 @@ import '../../utils/url.dart';
 class RadioManagerController {
   static Response getAll(Request request) {
     final db = DatabaseManager.instance;
-    // List<RadiosEntity> res =
     var query = db
         .box<RadiosEntity>()
         .query()
@@ -65,6 +64,13 @@ class RadioManagerController {
     params["createdAt"] = parseDateTime(DateTime.now());
     // 通过 异步 的方式 运行在后台，防止阻塞UI
     final radiosBox = db.box<RadiosEntity>();
+    final query = radiosBox
+        .query(RadiosEntity_.alias.equals(params["alias"]))
+        .build()
+        .findFirst();
+    if (query != null) {
+      return ApiResponse.error(message: t.entity.sameName);
+    }
     RadiosEntity radio = RadiosEntity.fromJson(params);
     int id = radiosBox.put(radio);
     return ApiResponse.success(data: id, message: t.common.OperationSuccess);
@@ -77,12 +83,23 @@ class RadioManagerController {
     int uId = getId(request.context["path"] as List<String>?);
     params["id"] = uId;
     params["updatedAt"] = parseDateTime(DateTime.now());
-    // 通过 异步 的方式 运行在后台，防止阻塞UI
     final radiosBox = db.box<RadiosEntity>();
 
     RadiosEntity? radiosEntity = radiosBox.get(uId);
     if (radiosEntity == null) {
       return ApiResponse.error(message: t.common.noData);
+    }
+    params["createdAt"] = parseDateTime(radiosEntity.createdAt);
+    RadiosEntity? tempEntity = radiosBox
+        .query(
+          RadiosEntity_.alias
+              .equals(params["alias"]) // 或 equalsCaseInsensitive
+              .and(RadiosEntity_.id.notEquals(params["id"])),
+        )
+        .build()
+        .findFirst();
+    if (tempEntity != null) {
+      return ApiResponse.error(message: t.entity.sameName);
     }
     radiosEntity = RadiosEntity.fromJson(params);
     int id = radiosBox.put(radiosEntity);

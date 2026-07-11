@@ -85,8 +85,10 @@ class _InjectEncryptStickPagerState extends State<InjectEncryptionStickPager>
                             ),
                             shape: Border(
                               bottom: BorderSide(
-                                color: Colors.grey.shade300,
-                                width: 0.2,
+                                color: index == selectIndex
+                                    ? Color(0xFF004098)
+                                    : Colors.grey.shade700,
+                                width: 1,
                               ),
                             ),
                             minVerticalPadding: 0,

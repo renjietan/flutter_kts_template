@@ -87,7 +87,7 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
   void update(RadiosEntity? data, Map<String, dynamic> v) {
     RadiosManagerApi.update(data!.id, data: v).then((res) {
       getList();
-      SimplePopup.toast(t.common.OperationSuccess);
+      SimplePopup.success(t.common.OperationSuccess);
     });
   }
 

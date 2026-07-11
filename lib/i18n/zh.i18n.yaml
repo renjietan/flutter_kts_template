@@ -110,6 +110,8 @@ Form:
       label: 名称
       placeholder: 请输入注钥名称
       validate: 请输入注钥名称
+entity:
+  sameName: 名称不可重复
 errorMiddle:
   error500: 发生意外错误，请稍后再试
   errorArg: 无效参数,{error}

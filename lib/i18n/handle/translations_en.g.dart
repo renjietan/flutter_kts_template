@@ -46,6 +46,7 @@ class TranslationsEn extends Translations with BaseTranslations<AppLocale, Trans
 	@override late final _Translations$checkbox$en checkbox = _Translations$checkbox$en._(_root);
 	@override late final _Translations$TextField$en TextField = _Translations$TextField$en._(_root);
 	@override late final _Translations$Form$en Form = _Translations$Form$en._(_root);
+	@override late final _Translations$entity$en entity = _Translations$entity$en._(_root);
 	@override late final _Translations$errorMiddle$en errorMiddle = _Translations$errorMiddle$en._(_root);
 	@override late final _Translations$platform$en platform = _Translations$platform$en._(_root);
 	@override late final _Translations$settings$en settings = _Translations$settings$en._(_root);
@@ -213,6 +214,16 @@ class _Translations$Form$en extends Translations$Form$zh {
 	// Translations
 	@override late final _Translations$Form$radioManager$en radioManager = _Translations$Form$radioManager$en._(_root);
 	@override late final _Translations$Form$injectEncrypt$en injectEncrypt = _Translations$Form$injectEncrypt$en._(_root);
+}
+
+// Path: entity
+class _Translations$entity$en extends Translations$entity$zh {
+	_Translations$entity$en._(TranslationsEn root) : this._root = root, super.internal(root);
+
+	final TranslationsEn _root; // ignore: unused_field
+
+	// Translations
+	@override String get sameName => 'Name must be unique';
 }
 
 // Path: errorMiddle

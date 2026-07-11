@@ -8,7 +8,7 @@ class ErrorInterceptor extends Interceptor {
       switch (statusCode) {
         case 401:
           // print('⚠️ Token 已过期，跳转登录');
-          // // 示例：globalNavigatorKey.currentState?.pushNamed('/login');
+          // globalNavigatorKey.currentState?.pushNamed('/login');
           break;
         case 403:
           print('⚠️ 无权限访问');

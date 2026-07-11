@@ -16,8 +16,8 @@ class ApiResponse {
   static Response error({
     String message = 'error',
     dynamic data,
-    int code = 400,
-    int httpStatus = 400,
+    int code = 500,
+    int httpStatus = 500,
   }) {
     return _response(
       code: code,

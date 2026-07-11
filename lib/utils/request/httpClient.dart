@@ -190,7 +190,10 @@ class DioClient {
           tipException = ConnectionTimeoutException(t.common.connectionTimeout);
         case DioExceptionType.badResponse:
           final code = error.response?.statusCode ?? -1;
-          final msg = error.response?.statusMessage ?? t.common.serverError;
+          final msg =
+              (error.response?.data ?? {})["message"] ??
+              error.response?.statusMessage ??
+              t.common.serverError;
           tipException = HttpException(code, msg);
         default:
           tipException = UnknownException(

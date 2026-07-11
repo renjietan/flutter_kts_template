@@ -48,6 +48,7 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 	late final Translations$checkbox$zh checkbox = Translations$checkbox$zh.internal(_root);
 	late final Translations$TextField$zh TextField = Translations$TextField$zh.internal(_root);
 	late final Translations$Form$zh Form = Translations$Form$zh.internal(_root);
+	late final Translations$entity$zh entity = Translations$entity$zh.internal(_root);
 	late final Translations$errorMiddle$zh errorMiddle = Translations$errorMiddle$zh.internal(_root);
 	late final Translations$platform$zh platform = Translations$platform$zh.internal(_root);
 	late final Translations$settings$zh settings = Translations$settings$zh.internal(_root);
@@ -288,6 +289,18 @@ class Translations$Form$zh {
 	// Translations
 	late final Translations$Form$radioManager$zh radioManager = Translations$Form$radioManager$zh.internal(_root);
 	late final Translations$Form$injectEncrypt$zh injectEncrypt = Translations$Form$injectEncrypt$zh.internal(_root);
+}
+
+// Path: entity
+class Translations$entity$zh {
+	Translations$entity$zh.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// zh: '名称不可重复'
+	String get sameName => '名称不可重复';
 }
 
 // Path: errorMiddle

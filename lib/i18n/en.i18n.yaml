@@ -110,6 +110,8 @@ Form:
       label: Key Loader
       placeholder: Please enter name
       validate: Please enter name!
+entity:
+  sameName: Name must be unique
 errorMiddle:
   error500: An unexpected error occurred. Please try again later
   errorArg: Invalid argument,{error}

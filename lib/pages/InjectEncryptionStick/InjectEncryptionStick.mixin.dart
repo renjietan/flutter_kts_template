@@ -50,7 +50,7 @@ mixin InjectEncryptionStickMixin on State<InjectEncryptionStickPager> {
   void update(KeyLoadersEntity? data, Map<String, dynamic> v) {
     KeyLoadersApi.update(data!.id, data: v).then((res) {
       getList();
-      SimplePopup.toast(t.common.OperationSuccess);
+      SimplePopup.success(t.common.OperationSuccess);
     });
   }
 
@@ -69,6 +69,7 @@ mixin InjectEncryptionStickMixin on State<InjectEncryptionStickPager> {
     SimpleFormDialog(
       title: t.button.radioManager.createRadio,
       confirmText: t.button.radioManager.createRadio,
+      confirmBtnWidth: 160,
       fields: [
         FormFieldConfig(
           name: 'name',

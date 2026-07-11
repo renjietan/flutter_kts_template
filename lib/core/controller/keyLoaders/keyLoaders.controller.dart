@@ -26,9 +26,16 @@ class KeyLoadersController {
     final Map<String, dynamic> params =
         request.context["params"] as Map<String, dynamic>;
     params["createdAt"] = parseDateTime(DateTime.now());
-    final radiosBox = db.box<KeyLoadersEntity>();
-    KeyLoadersEntity radio = KeyLoadersEntity.fromJson(params);
-    int id = radiosBox.put(radio);
+    final box = db.box<KeyLoadersEntity>();
+    KeyLoadersEntity? tempEntries = box
+        .query(KeyLoadersEntity_.name.equals(params["name"]))
+        .build()
+        .findFirst();
+    if (tempEntries != null) {
+      return ApiResponse.error(message: t.entity.sameName);
+    }
+    KeyLoadersEntity data = KeyLoadersEntity.fromJson(params);
+    int id = box.put(data);
     return ApiResponse.success(data: id, message: t.common.OperationSuccess);
   }
 
@@ -40,15 +47,26 @@ class KeyLoadersController {
     params["id"] = uId;
     params["updatedAt"] = parseDateTime(DateTime.now());
     // 通过 异步 的方式 运行在后台，防止阻塞UI
-    final radiosBox = db.box<KeyLoadersEntity>();
+    final box = db.box<KeyLoadersEntity>();
 
-    KeyLoadersEntity? radiosEntity = radiosBox.get(uId);
-    if (radiosEntity == null) {
+    KeyLoadersEntity? entities = box.get(uId);
+    if (entities == null) {
       return ApiResponse.error(message: t.common.noData);
     }
-    params["createdAt"] = parseDateTime(radiosEntity.createdAt);
-    radiosEntity = KeyLoadersEntity.fromJson(params);
-    int id = radiosBox.put(radiosEntity);
+    KeyLoadersEntity? tempEntries = box
+        .query(
+          KeyLoadersEntity_.id
+              .notEquals(params["id"])
+              .and(KeyLoadersEntity_.name.equals(params["name"])),
+        )
+        .build()
+        .findFirst();
+    if (tempEntries != null) {
+      return ApiResponse.error(message: t.entity.sameName);
+    }
+    params["createdAt"] = parseDateTime(entities.createdAt);
+    entities = KeyLoadersEntity.fromJson(params);
+    int id = box.put(entities);
     return ApiResponse.success(data: id, message: t.common.OperationSuccess);
   }
 
