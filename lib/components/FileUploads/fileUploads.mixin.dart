@@ -54,6 +54,7 @@ mixin FileUploadsMixin on State<FileUploads> {
         final saveFilePath = path.join(uploadPath, "[$curTime] $safeFileName");
         final fileObject = File(saveFilePath);
         await fileObject.writeAsBytes(bytes);
+        GlobalLogger.logInfo(saveFilePath);
         Pop.toast(
           t.uploads.successWithPath(path: saveFilePath),
           toastType: ToastType.success,

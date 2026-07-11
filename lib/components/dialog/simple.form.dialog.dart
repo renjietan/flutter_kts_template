@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_kts_template/components/text/text.title.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 
 import '../TextField/simple.form.textfield.dart';
@@ -15,6 +14,7 @@ Future<void> SimpleFormDialog({
   required List<FormFieldConfig> fields,
   required void Function(Map<String, dynamic> formData) onConfirm,
   String confirmText = '确认',
+  double? confirmBtnWidth = 150,
   Color? backgroundColor = Colors.black,
   Color? titleColor = Colors.white,
   Color? labelColor = Colors.white,
@@ -29,9 +29,13 @@ Future<void> SimpleFormDialog({
 }) async {
   final formKey = GlobalKey<FormBuilderState>();
   SmartDialog.show(
+    useAnimation: true,
+    keepSingle: true,
+    animationType: SmartAnimationType.scale,
     clickMaskDismiss: clickMaskDismiss,
     maskColor: maskColor,
     builder: (context) => AlertDialog(
+      scrollable: true, // 解决弹窗被键盘挤压问题
       backgroundColor: backgroundColor,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(borderRadius),
@@ -65,22 +69,20 @@ Future<void> SimpleFormDialog({
         ),
       ),
       actionsAlignment: MainAxisAlignment.center,
-      content: SingleChildScrollView(
-        child: SizedBox(
-          width: 320,
-          child: FormBuilder(
-            key: formKey,
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 15),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: _buildFormFields(
-                  fields,
-                  labelColor!,
-                  fieldFillColor!,
-                  fieldBorderColor!,
-                  fieldLabelFontSize,
-                ),
+      content: SizedBox(
+        width: 320,
+        child: FormBuilder(
+          key: formKey,
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 15),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: _buildFormFields(
+                fields,
+                labelColor!,
+                fieldFillColor!,
+                fieldBorderColor!,
+                fieldLabelFontSize,
               ),
             ),
           ),
@@ -88,6 +90,7 @@ Future<void> SimpleFormDialog({
       ),
       actions: [
         BaseButton(
+          width: confirmBtnWidth,
           label: confirmText,
           onPressed: () {
             // 验证通过，获取表单数据

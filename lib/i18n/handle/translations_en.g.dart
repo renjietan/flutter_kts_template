@@ -102,7 +102,7 @@ class _Translations$uploads$en extends Translations$uploads$zh {
 
 	// Translations
 	@override String get success => 'Upload successful';
-	@override String successWithPath({required Object path}) => 'Upload successful; 路径：${path}!';
+	@override String successWithPath({required Object path}) => 'Upload successful; path：${path}!';
 	@override String get cancel => 'Operation cancelled';
 	@override String get failed => 'Upload failed';
 	@override String get emptyPath => 'The file path is empty';

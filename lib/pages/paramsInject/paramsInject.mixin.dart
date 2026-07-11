@@ -292,7 +292,7 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
     List<ArchiveEntry> resourceEntries = resourceFileNames
         .fold<List<ArchiveEntry>>([], (cur, pre) {
           ArchiveEntry temp = ArchiveEntry(
-            sourcePath: pre,
+            sourcePath: p.join(dataPath, "1_resource", pre),
             innerDir: "1_resource",
           );
           cur.add(temp);
@@ -301,15 +301,13 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
     try {
       if (v.title.startsWith("dc_ccu_")) {
         // 构建 ccu 打包的文件列表: 1_resource、3_device_config、4_net_node
+        List<ArchiveEntry> entries = [
+          ...resourceEntries,
+          ArchiveEntry(sourcePath: dcJsonFilePath, innerDir: "3_device_config"),
+          ArchiveEntry(sourcePath: netNOdePath, innerDir: "4_net_node"),
+        ];
         String ccuTarPath = await FileTools.filesToZipFormPath(
-          entries: [
-            ...resourceEntries,
-            ArchiveEntry(
-              sourcePath: dcJsonFilePath,
-              innerDir: "3_device_config",
-            ),
-            ArchiveEntry(sourcePath: netNOdePath, innerDir: "4_net_node"),
-          ],
+          entries: entries,
           outputPath: savePath,
           zipName: "ccu",
         );

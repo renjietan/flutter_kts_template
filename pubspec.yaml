@@ -51,7 +51,7 @@ dependencies:
   provider: ^6.1.5+1
   ## 内存管理
   shared_preferences: ^2.5.5
-  ## 用于 适配
+  ## 响应式
   flutter_screenutil: ^5.9.3
   ## 接管 android studio 自带的 闪屏 页面
   flutter_native_splash: ^2.4.7
@@ -110,7 +110,8 @@ dev_dependencies:
   go_router_builder: ^4.3.0
   # 重命名应用名称
   rename_app: ^1.6.6
-  flutter_launcher_icons: ^0.14.4
+  ###################### 废弃: 使用全局包 rebrand_cli 实现 ###################
+  # flutter_launcher_icons: ^0.14.4
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

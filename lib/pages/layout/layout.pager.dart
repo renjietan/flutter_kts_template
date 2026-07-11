@@ -24,6 +24,8 @@ class MainLayout extends StatelessWidget {
   Widget build(BuildContext context) {
     return PopScopeWidget(
       child: Scaffold(
+        // 键盘弹起时，页面重新调整大小以适应键盘
+        resizeToAvoidBottomInset: false,
         appBar: PreferredSize(
           preferredSize: const Size.fromHeight(48),
           child: AppBar(

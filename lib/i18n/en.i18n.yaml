@@ -22,7 +22,7 @@ permission:
   cancel: Operation has been cancelled
 uploads:
   success: Upload successful
-  successWithPath: Upload successful; 路径：{path}!
+  successWithPath: Upload successful; path：{path}!
   cancel: Operation cancelled
   failed: Upload failed
   emptyPath: The file path is empty
