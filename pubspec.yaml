@@ -86,6 +86,7 @@ dependencies:
   mime: ^2.0.0
   ## 解压压缩包
   archive: ^4.0.9
+  udp: ^5.0.3
 
 dev_dependencies:
   flutter_test:

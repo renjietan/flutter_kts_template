@@ -21,4 +21,9 @@ mixin LayoutMixin<T extends StatefulWidget> on State<T> {
         ) ??
         false; // 如果对话框关闭（如点击外部），则默认不允许返回
   }
+
+  @override
+  void initState() {
+    super.initState();
+  }
 }

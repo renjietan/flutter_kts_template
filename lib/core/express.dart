@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter_kts_template/config/config.dart';
 import 'package:flutter_kts_template/core/router/router.dart';
+import 'package:flutter_kts_template/core/rtc/managers/udp/udp.manager.dart';
 import 'package:shelf/shelf.dart';
 import 'package:shelf/shelf_io.dart' as shelf_io;
 
@@ -34,6 +35,8 @@ class Express {
       InternetAddress.anyIPv4,
       int.parse(AppConfig.serverConfig.port),
     );
+    final manager = UdpManager();
+    await manager.connect("0.0.0.0:3344");
     GlobalLogger.logInfo("Server start :${AppConfig.serverConfig.port}");
   }
 

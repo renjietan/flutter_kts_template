@@ -5,6 +5,12 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <!-- 访问本地网络权限。Android 17 (API 37) 起强制要求。局域网通信，此权限是必须动态申请的【危险权限】，例如 UDP/TCP 会因 EPERM 错误而失败 -->
     <uses-permission android:name="android.permission.ACCESS_LOCAL_NETWORK" />
+    <!-- 读取共享存储（如 Download 目录） -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <!-- 写入共享存储 -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <!-- 所有文件访问权限: 必须引导用户跳转到系统设置页面手动开启【允许管理所有文件】 -->
+    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" tools:ignore="ScopedStorage"/>
     <!-- 录音权限。允许 App 通过麦克风采集声音。属于【危险权限】 -->
     <!-- <uses-permission android:name="android.permission.RECORD_AUDIO"/> -->
     <!-- 精确 GPS 定位。允许 App 获取经纬度（精度 10 米内） -->
@@ -17,10 +23,6 @@
     <!-- <uses-permission android:name="android.permission.WRITE_CONTACTS"/> -->
     <!-- 发送通知权限。Android 13 (API 33) 起引入，用于在通知栏弹消息。属于【危险权限】 -->
     <!-- <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/> -->
-    <!-- 读取共享存储（如 Download 目录） -->
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
-    <!-- 写入共享存储 -->
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <!-- 蓝牙访问 -->
     <!-- <uses-permission android:name="android.permission.BLUETOOTH"/> -->
     <!-- 蓝牙信息访问配置文件（Message Access Profile）。用于在车载设备上同步短信/彩信 -->
@@ -28,8 +30,7 @@
     <!-- <uses-permission android:name="android.permission.BLUETOOTH_MAP" tools:ignore="ProtectedPermissions"/> -->
     <!-- 蓝牙连接权限 -->
     <!-- <uses-permission android:name="android.permission.BLUETOOTH_CONNECT"/> -->
-    <!-- 所有文件访问权限: 必须引导用户跳转到系统设置页面手动开启【允许管理所有文件】 -->
-    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" tools:ignore="ScopedStorage"/>
+
 
     <application android:label="CPD" android:name="${applicationName}" android:icon="@mipmap/launcher_icon">
         <activity android:name=".MainActivity" android:exported="true" android:launchMode="singleTop" android:taskAffinity="" android:theme="@style/LaunchTheme" android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode" android:hardwareAccelerated="true" android:windowSoftInputMode="adjustResize">
