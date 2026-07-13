@@ -47,6 +47,7 @@ class TranslationsEn extends Translations with BaseTranslations<AppLocale, Trans
 	@override late final _Translations$TextField$en TextField = _Translations$TextField$en._(_root);
 	@override late final _Translations$Form$en Form = _Translations$Form$en._(_root);
 	@override late final _Translations$entity$en entity = _Translations$entity$en._(_root);
+	@override late final _Translations$udp$en udp = _Translations$udp$en._(_root);
 	@override late final _Translations$errorMiddle$en errorMiddle = _Translations$errorMiddle$en._(_root);
 	@override late final _Translations$platform$en platform = _Translations$platform$en._(_root);
 	@override late final _Translations$settings$en settings = _Translations$settings$en._(_root);
@@ -224,6 +225,20 @@ class _Translations$entity$en extends Translations$entity$zh {
 
 	// Translations
 	@override String get sameName => 'Name must be unique';
+}
+
+// Path: udp
+class _Translations$udp$en extends Translations$udp$zh {
+	_Translations$udp$en._(TranslationsEn root) : this._root = root, super.internal(root);
+
+	final TranslationsEn _root; // ignore: unused_field
+
+	// Translations
+	@override String get loginFail => 'Authentication failed';
+	@override String get loginTimeout => 'Authentication timeout';
+	@override String get closed => 'Local service';
+	@override String get pingFail => 'Heartbeat acknowledgment failed';
+	@override String get pingTimeout => 'Heartbeat request timed out';
 }
 
 // Path: errorMiddle

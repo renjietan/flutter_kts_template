@@ -1,6 +1,9 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_kts_template/core/rtc/rtc.timeout.dart';
+import 'package:flutter_kts_template/core/rtc/tools/proto/pManifest.dart';
 import 'package:flutter_kts_template/icons/hy_icons.dart';
 import 'package:flutter_kts_template/pages/paramsInject/paramsInject.tools.dart';
 import 'package:path/path.dart' as p;
@@ -10,6 +13,10 @@ import '../../components/FileUploads/fileUploads.mixin.dart';
 import '../../components/TreeView/simple-tree/simple.tree.model.dart';
 import '../../components/loading/simple.async.loading.dart';
 import '../../components/loading/simple.loading.dart';
+import '../../config/config.dart';
+import '../../core/rtc/managers/udp/udp.manager.dart';
+import '../../core/rtc/tools/rtc.event.dart';
+import '../../core/rtc/tools/rtc.event.type.dart';
 import '../../core/utils/director.dart';
 import '../../i18n/handle/translations.g.dart';
 import '../../logger/logger.dart';
@@ -20,6 +27,7 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
   String dataPath = "";
   String searchValue = "";
   bool masterVisible = false;
+  late UdpManager manager;
   TextEditingController searchTextFieldController = TextEditingController();
   TreeType<SimpleTreeNode> masterTreeData = TreeType(
     data: SimpleTreeNode(id: "1", title: "<>"),
@@ -29,6 +37,8 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
   String get netNOdePath =>
       p.join(dataPath, "4_net_node", "$selectMasterId.json");
   String get resourcePath => p.join(dataPath, "1_resource");
+
+  late Uint8List injectBytes;
 
   late List<TreeType<SimpleTreeNode>> detailTreeData = [
     TreeType(
@@ -367,11 +377,15 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
         );
         resPath = serviceTarPath;
       }
+      File injectFile = File(resPath);
+      injectBytes = injectFile.readAsBytesSync();
+      print(injectBytes);
       await SimpleAsyncPopup.hideLoading(Duration(milliseconds: 500));
       SimpleAsyncPopup.success(
         t.common.OperationSuccess,
         duration: Duration(milliseconds: 700),
       );
+      GlobalLogger.logInfo(resPath);
     } catch (e) {
       GlobalLogger.logError("paramsInject.mixin: ${e.toString()}");
       await SimpleAsyncPopup.hideLoading(Duration(milliseconds: 500));
@@ -389,5 +403,57 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
     // GlobalLogger.logInfo(
     //   "inject value: ${v.toString()}",
     // );
+  }
+
+  Future<void> initUdp() async {
+    manager = UdpManager();
+    await manager.connect(AppConfig.udpConfig.toString());
+    manager.eventStream.listen((RtcEvent v) {
+      if (v.type == RtcEventType.closed) {
+        SimplePopup.error(t.udp.closed);
+      } else if (v.type == RtcEventType.created) {
+        GlobalLogger.logInfo("Udp start :${AppConfig.udpConfig.port}");
+      }
+    });
+    manager.receiveStream.listen((Uint8List v) {
+      // SrcID(0xee) DstID(0xee) length(0x00 0x00) Version(0x00) UserID(0x00) SAP(0x01) OptCode(0x85) Status(0x00) UserID(0x00)
+      int sap = v[6];
+      int optCode = v[7];
+      // 登录-回复
+      if (sap == 0x01 && optCode == 0x85) {
+        TimeoutManager.clearTimeout("login");
+        int status = v[8];
+        if (status != 0) {
+          SimplePopup.error(t.udp.loginFail);
+        } else {
+          ping();
+        }
+      } else if (sap == 0x01 && optCode == 0x83) {
+        TimeoutManager.clearTimeout("ping");
+        int status = v[8];
+        if (status != 0) {
+          SimplePopup.error(t.udp.pingFail);
+        } else {
+          ping();
+        }
+      }
+    });
+  }
+
+  Future<void> login() async {
+    TimeoutManager.clearAll();
+    Uint8List bytes = ProtoManifest.login("admin");
+    manager.write(bytes, "0.0.0.0:1234");
+    TimeoutManager.setTimeout("login", AppConfig.udpConfig.timeoutDuration, () {
+      SimplePopup.error(t.udp.loginTimeout);
+    });
+  }
+
+  Future<void> ping() async {
+    Uint8List bytes = ProtoManifest.ping();
+    manager.write(bytes, "0.0.0.0:1234");
+    TimeoutManager.setTimeout("ping", AppConfig.udpConfig.timeoutDuration, () {
+      SimplePopup.error(t.udp.pingTimeout);
+    });
   }
 }

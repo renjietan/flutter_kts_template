@@ -30,10 +30,9 @@ class UdpManager implements RtcAbstract {
       UdpAddress udpAddress = UdpAddress.fromString(peerAddress);
       Endpoint endpoint = Endpoint.any(port: Port(udpAddress.port));
       _udp = await UDP.bind(endpoint);
+      // 服务建立失败
       if (_udp.closed) {
-        _onEventController.sink.add(
-          RtcEvent(type: RtcEventType.disConnect, msg: "连接失败"),
-        );
+        _onEventController.sink.add(RtcEvent(type: RtcEventType.closed));
         return;
       }
       _udp.asStream().listen((Datagram? data) {
@@ -41,6 +40,7 @@ class UdpManager implements RtcAbstract {
         print(data);
         print("数据接收 end==========================");
       });
+      _onEventController.sink.add(RtcEvent(type: RtcEventType.closed));
     } catch (e) {
       GlobalLogger.logError(e.toString());
     }
@@ -64,12 +64,10 @@ class UdpManager implements RtcAbstract {
     _remoteEndpoints[addressString] = remoteEndpoint;
     // 返回发送的字节数
     int sentBytesLen = await _udp.send(data, remoteEndpoint);
-    // 发送失败
+    // -1: udp 已关闭，导致发送失败
     if (sentBytesLen == -1) {
       _remoteEndpoints.clear();
-      _onEventController.sink.add(
-        RtcEvent(type: RtcEventType.disConnect, msg: "设备已断开连接"),
-      );
+      _onEventController.sink.add(RtcEvent(type: RtcEventType.closed));
     }
   }
 

@@ -112,6 +112,12 @@ Form:
       validate: Please enter name!
 entity:
   sameName: Name must be unique
+udp:
+  loginFail: Authentication failed
+  loginTimeout: Authentication timeout
+  closed: Local service
+  pingFail: Heartbeat acknowledgment failed
+  pingTimeout: Heartbeat request timed out
 errorMiddle:
   error500: An unexpected error occurred. Please try again later
   errorArg: Invalid argument,{error}

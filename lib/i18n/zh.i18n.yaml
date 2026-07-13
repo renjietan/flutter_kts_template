@@ -112,6 +112,12 @@ Form:
       validate: 请输入注钥名称
 entity:
   sameName: 名称不可重复
+udp:
+  loginFail: 身份认证失败
+  loginTimeout: 身份认证超时
+  closed: 本地服务已关闭
+  pingFail: 心跳应答失败
+  pingTimeout: 心跳请求超时
 errorMiddle:
   error500: 发生意外错误，请稍后再试
   errorArg: 无效参数,{error}

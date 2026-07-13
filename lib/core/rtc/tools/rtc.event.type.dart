@@ -1,1 +1,1 @@
-enum RtcEventType { init, connect, disConnect, error, warn, info }
+enum RtcEventType { init, created, disConnect, error, warn, info, closed }

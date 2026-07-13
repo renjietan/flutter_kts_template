@@ -49,6 +49,7 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 	late final Translations$TextField$zh TextField = Translations$TextField$zh.internal(_root);
 	late final Translations$Form$zh Form = Translations$Form$zh.internal(_root);
 	late final Translations$entity$zh entity = Translations$entity$zh.internal(_root);
+	late final Translations$udp$zh udp = Translations$udp$zh.internal(_root);
 	late final Translations$errorMiddle$zh errorMiddle = Translations$errorMiddle$zh.internal(_root);
 	late final Translations$platform$zh platform = Translations$platform$zh.internal(_root);
 	late final Translations$settings$zh settings = Translations$settings$zh.internal(_root);
@@ -301,6 +302,30 @@ class Translations$entity$zh {
 
 	/// zh: '名称不可重复'
 	String get sameName => '名称不可重复';
+}
+
+// Path: udp
+class Translations$udp$zh {
+	Translations$udp$zh.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// zh: '身份认证失败'
+	String get loginFail => '身份认证失败';
+
+	/// zh: '身份认证超时'
+	String get loginTimeout => '身份认证超时';
+
+	/// zh: '本地服务已关闭'
+	String get closed => '本地服务已关闭';
+
+	/// zh: '心跳应答失败'
+	String get pingFail => '心跳应答失败';
+
+	/// zh: '心跳请求超时'
+	String get pingTimeout => '心跳请求超时';
 }
 
 // Path: errorMiddle

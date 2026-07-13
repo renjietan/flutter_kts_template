@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_kts_template/config/module/database.dart';
 import 'package:flutter_kts_template/config/module/server.dart';
+import 'package:flutter_kts_template/config/module/udp.dart';
 
 class AppConfig {
   static const String appName = String.fromEnvironment(
@@ -34,5 +35,17 @@ class AppConfig {
   );
   static final DataBaseConfig dataBaseConfig = DataBaseConfig(
     name: const String.fromEnvironment("DB_NAME", defaultValue: "app_db"),
+  );
+  static final UdpConfig udpConfig = UdpConfig(
+    address: const String.fromEnvironment(
+      "UDP_ADDRESS",
+      defaultValue: "0.0.0.0",
+    ),
+    port: const String.fromEnvironment("UDP_PORT", defaultValue: "3344"),
+    timeoutDuration: Duration(
+      seconds: int.parse(
+        const String.fromEnvironment("UDP_TIMEOUTDURATION", defaultValue: "3"),
+      ),
+    ),
   );
 }
