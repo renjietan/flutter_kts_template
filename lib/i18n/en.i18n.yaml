@@ -118,6 +118,7 @@ udp:
   closed: Local service
   pingFail: Heartbeat acknowledgment failed
   pingTimeout: Heartbeat request timed out
+  fileFail: File transmission failed
 errorMiddle:
   error500: An unexpected error occurred. Please try again later
   errorArg: Invalid argument,{error}

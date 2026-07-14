@@ -239,6 +239,7 @@ class _Translations$udp$en extends Translations$udp$zh {
 	@override String get closed => 'Local service';
 	@override String get pingFail => 'Heartbeat acknowledgment failed';
 	@override String get pingTimeout => 'Heartbeat request timed out';
+	@override String get fileFail => 'File transmission failed';
 }
 
 // Path: errorMiddle

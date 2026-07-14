@@ -326,6 +326,9 @@ class Translations$udp$zh {
 
 	/// zh: '心跳请求超时'
 	String get pingTimeout => '心跳请求超时';
+
+	/// zh: '文件传输失败'
+	String get fileFail => '文件传输失败';
 }
 
 // Path: errorMiddle

@@ -3,8 +3,10 @@ import 'dart:typed_data';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_kts_template/core/rtc/rtc.timeout.dart';
+import 'package:flutter_kts_template/core/rtc/tools/proto/byteTools.dart';
 import 'package:flutter_kts_template/core/rtc/tools/proto/pManifest.dart';
 import 'package:flutter_kts_template/icons/hy_icons.dart';
+import 'package:flutter_kts_template/pages/paramsInject/paramsInject.model.dart';
 import 'package:flutter_kts_template/pages/paramsInject/paramsInject.tools.dart';
 import 'package:path/path.dart' as p;
 import 'package:recursive_tree_flutter/models/tree_type.dart';
@@ -37,8 +39,11 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
   String get netNOdePath =>
       p.join(dataPath, "4_net_node", "$selectMasterId.json");
   String get resourcePath => p.join(dataPath, "1_resource");
-
-  late Uint8List injectBytes;
+  late RadioModel udpRadiosInfo = RadioModel(
+    packets: [],
+    address: "192.168.7.2:60009",
+    packetHeader: Uint8List.fromList([]),
+  );
 
   late List<TreeType<SimpleTreeNode>> detailTreeData = [
     TreeType(
@@ -377,16 +382,32 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
         );
         resPath = serviceTarPath;
       }
+      // 1、读取路径下的压缩包的字节
       File injectFile = File(resPath);
-      injectBytes = injectFile.readAsBytesSync();
-      print(injectBytes);
-      await SimpleAsyncPopup.hideLoading(Duration(milliseconds: 500));
-      SimpleAsyncPopup.success(
-        t.common.OperationSuccess,
-        duration: Duration(milliseconds: 700),
+      Uint8List bytes = injectFile.readAsBytesSync();
+      // 2、要发送的 包头
+      int packetCont = ByteTools.chunkBytes(bytes, chunkSize: 500).length;
+      Uint8List packetHeader = ProtoManifest.fileHeader(
+        fileName: "/lib/fireware/plan_local.tar",
+        fileSize: bytes.length,
+        packetCnt: packetCont,
       );
-      GlobalLogger.logInfo(resPath);
+      udpRadiosInfo.packetHeader = packetHeader;
+      // 3、分包
+      List<Uint8List> packets = ProtoManifest.fileData(
+        packetSize: 500,
+        data: bytes,
+      );
+      udpRadiosInfo.packets = packets;
+      login();
+      // await SimpleAsyncPopup.hideLoading(Duration(milliseconds: 500));
+      // SimpleAsyncPopup.success(
+      //   t.common.OperationSuccess,
+      //   duration: Duration(milliseconds: 700),
+      // );
+      // GlobalLogger.logInfo(resPath);
     } catch (e) {
+      SimplePopup.hideLoading();
       GlobalLogger.logError("paramsInject.mixin: ${e.toString()}");
       await SimpleAsyncPopup.hideLoading(Duration(milliseconds: 500));
       SimpleAsyncPopup.error(
@@ -394,15 +415,6 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
         timeout: Duration(milliseconds: 700),
       );
     }
-
-    // File DcFile = File(dcPath);
-    // String dcJsonStr =
-    //     DcFile.readAsStringSync();
-    // var dcJson = jsonDecode(dcJsonStr);
-    // print(dcJson);
-    // GlobalLogger.logInfo(
-    //   "inject value: ${v.toString()}",
-    // );
   }
 
   Future<void> initUdp() async {
@@ -417,24 +429,42 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
     });
     manager.receiveStream.listen((Uint8List v) {
       // SrcID(0xee) DstID(0xee) length(0x00 0x00) Version(0x00) UserID(0x00) SAP(0x01) OptCode(0x85) Status(0x00) UserID(0x00)
-      int sap = v[6];
-      int optCode = v[7];
+      int sap = v[8];
+      int optCode = v[9];
+      int status = v[10];
       // 登录-回复
-      if (sap == 0x01 && optCode == 0x85) {
+      if (sap == 0x01 && (optCode == 0x85 || optCode == 0x81)) {
         TimeoutManager.clearTimeout("login");
-        int status = v[8];
-        if (status != 0) {
-          SimplePopup.error(t.udp.loginFail);
+        if (status != 0x00 && status != 0x02) {
+          udpPopError(t.udp.loginFail);
         } else {
-          ping();
+          // ping(); // 暂时不使用心跳
+          fileHeader();
         }
       } else if (sap == 0x01 && optCode == 0x83) {
         TimeoutManager.clearTimeout("ping");
-        int status = v[8];
         if (status != 0) {
-          SimplePopup.error(t.udp.pingFail);
+          udpPopError(t.udp.pingFail);
         } else {
-          ping();
+          TimeoutManager.setTimeout(
+            "ping",
+            AppConfig.udpConfig.timeoutDuration,
+            () {
+              ping();
+            },
+          );
+        }
+      } else if (sap == 0x04 && optCode == 0x83) {
+        if (status != 0) {
+          udpPopError("包头传输失败");
+        } else {
+          filePacket();
+        }
+      } else if (sap == 0x04 && optCode == 0x84) {
+        if (status != 0) {
+          udpPopError(t.udp.fileFail);
+        } else {
+          filePacket();
         }
       }
     });
@@ -442,18 +472,53 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
 
   Future<void> login() async {
     TimeoutManager.clearAll();
-    Uint8List bytes = ProtoManifest.login("admin");
-    manager.write(bytes, "0.0.0.0:1234");
+    Uint8List bytes = ProtoManifest.loginWithPing("admin");
+    manager.write(bytes, udpRadiosInfo.address);
     TimeoutManager.setTimeout("login", AppConfig.udpConfig.timeoutDuration, () {
-      SimplePopup.error(t.udp.loginTimeout);
+      udpPopError(t.udp.loginTimeout);
     });
   }
 
   Future<void> ping() async {
     Uint8List bytes = ProtoManifest.ping();
-    manager.write(bytes, "0.0.0.0:1234");
+    manager.write(bytes, udpRadiosInfo.address);
     TimeoutManager.setTimeout("ping", AppConfig.udpConfig.timeoutDuration, () {
-      SimplePopup.error(t.udp.pingTimeout);
+      udpPopError(t.udp.pingTimeout);
     });
+  }
+
+  Future<void> fileHeader() async {
+    manager.write(udpRadiosInfo.packetHeader, udpRadiosInfo.address);
+    print(ByteTools.uIntList2uIntListStr(udpRadiosInfo.packetHeader));
+    TimeoutManager.setTimeout(
+      "fileHeader",
+      AppConfig.udpConfig.timeoutDuration,
+      () {
+        udpPopError("包头传输超时");
+      },
+    );
+  }
+
+  Future<void> filePacket() async {
+    if (TimeoutManager.hasTimer("fileHeader")) {
+      TimeoutManager.clearTimeout("fileHeader");
+    }
+    TimeoutManager.clearTimeout("filePacket");
+    if (udpRadiosInfo.packets.isNotEmpty) {
+      manager.write(udpRadiosInfo.packets[0], udpRadiosInfo.address);
+      udpRadiosInfo.packets.removeAt(0);
+      TimeoutManager.setTimeout(
+        "filePacket",
+        AppConfig.udpConfig.timeoutDuration,
+        () {
+          udpPopError("文件传输超时");
+        },
+      );
+    }
+  }
+
+  Future<void> udpPopError(String msg) async {
+    SimplePopup.hideLoading();
+    SimpleAsyncPopup.error(msg, timeout: Duration(milliseconds: 700));
   }
 }

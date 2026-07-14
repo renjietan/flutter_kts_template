@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'package:flutter_kts_template/core/rtc/managers/udp/udp.address.dart';
 import 'package:flutter_kts_template/core/rtc/tools/rtc.abstract.dart';
 import 'package:flutter_kts_template/core/rtc/tools/rtc.event.dart';
+import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 import 'package:flutter_kts_template/logger/logger.dart';
 import 'package:udp/udp.dart';
 
@@ -36,11 +37,15 @@ class UdpManager implements RtcAbstract {
         return;
       }
       _udp.asStream().listen((Datagram? data) {
-        print("数据接收 start==========================");
-        print(data);
-        print("数据接收 end==========================");
+        if (data?.data != null) {
+          _onDataStreamController.sink.add(data!.data.buffer.asUint8List());
+        } else {
+          _onEventController.sink.add(
+            RtcEvent(type: RtcEventType.error, msg: t.common.noData),
+          );
+        }
       });
-      _onEventController.sink.add(RtcEvent(type: RtcEventType.closed));
+      _onEventController.sink.add(RtcEvent(type: RtcEventType.created));
     } catch (e) {
       GlobalLogger.logError(e.toString());
     }

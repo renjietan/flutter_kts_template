@@ -18,15 +18,11 @@ class ProtoManifest {
       data: Uint8List.fromList([0x00, 0x00]),
       type: ProtoModelTypeEnum.uInts,
     ),
-    ProtoModel(field: "Version", data: Uint8List.fromList([0x00])),
+    ProtoModel(field: "Version", data: Uint8List.fromList([0x02])),
     ProtoModel(field: "UserID", data: Uint8List.fromList([0x00])),
   ];
 
-  // 登录
   static Uint8List login(String username) {
-    // 登录-心跳
-    Uint8List SuperviseInterval = ByteTools.int2UintList(3000, byteLen: 4);
-    Uint8List SuperviseCnt = ByteTools.int2UintList(3, byteLen: 2);
     Uint8List usernameLen = ByteTools.int2UintList(username.length, byteLen: 1);
     Uint8List usernameByte = ByteTools.str2UintList(username, unitSize: 2);
     ProtoModels models = ProtoModels(
@@ -34,15 +30,44 @@ class ProtoManifest {
       list: [
         ...baseModel,
         ProtoModel(field: "SAP", data: Uint8List.fromList([0x01])),
+        ProtoModel(field: "OptCode", data: Uint8List.fromList([0x01])),
+        ProtoModel(
+          field: "Size",
+          data: usernameLen,
+          type: ProtoModelTypeEnum.int,
+        ),
+        ProtoModel(
+          field: "UserName",
+          data: usernameByte,
+          type: ProtoModelTypeEnum.string2,
+        ),
+      ],
+    );
+    Uint8List res = ProtoTools.models2Uint8List(models);
+    return res;
+  }
+
+  // 登录
+  static Uint8List loginWithPing(String username) {
+    // 登录-心跳
+    Uint8List superviseInterval = ByteTools.int2UintList(3000, byteLen: 4);
+    Uint8List superviseCnt = ByteTools.int2UintList(100, byteLen: 2);
+    Uint8List usernameLen = ByteTools.int2UintList(username.length, byteLen: 1);
+    Uint8List usernameByte = ByteTools.str2UintList(username, unitSize: 2);
+    ProtoModels models = ProtoModels(
+      name: "loginWithPing",
+      list: [
+        ...baseModel,
+        ProtoModel(field: "SAP", data: Uint8List.fromList([0x01])),
         ProtoModel(field: "OptCode", data: Uint8List.fromList([0x05])),
         ProtoModel(
           field: "SuperviseInterval",
-          data: SuperviseInterval,
+          data: superviseInterval,
           type: ProtoModelTypeEnum.int,
         ),
         ProtoModel(
           field: "SuperviseCnt",
-          data: SuperviseCnt,
+          data: superviseCnt,
           type: ProtoModelTypeEnum.int,
         ),
         ProtoModel(
@@ -126,8 +151,7 @@ class ProtoManifest {
   }
 
   // 文件传输: 2、发送文件内容
-  // packetNum: 第 N 包
-  // packetSize 包的大小
+  // packetSize 每一包的大小
   // data: 包数据
   static List<Uint8List> fileData({
     required int packetSize,
@@ -137,7 +161,7 @@ class ProtoManifest {
       data,
       chunkSize: packetSize,
     );
-    int count = 1;
+    int count = 0;
     return packetContents.fold<List<Uint8List>>([], (cur, pre) {
       Uint8List packetNumBytes = ByteTools.int2UintList(count, byteLen: 2);
       Uint8List packetSizeBytes = ByteTools.int2UintList(

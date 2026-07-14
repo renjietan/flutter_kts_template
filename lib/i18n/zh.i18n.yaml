@@ -118,6 +118,7 @@ udp:
   closed: 本地服务已关闭
   pingFail: 心跳应答失败
   pingTimeout: 心跳请求超时
+  fileFail: 文件传输失败
 errorMiddle:
   error500: 发生意外错误，请稍后再试
   errorArg: 无效参数,{error}

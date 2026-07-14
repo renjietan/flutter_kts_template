@@ -26,6 +26,7 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
     resetMasterTree();
     resetDetailTree();
     initLeftTree(null);
+    initUdp();
   }
 
   @override
