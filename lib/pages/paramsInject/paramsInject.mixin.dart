@@ -388,7 +388,8 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
       // 2、要发送的 包头
       int packetCont = ByteTools.chunkBytes(bytes, chunkSize: 500).length;
       Uint8List packetHeader = ProtoManifest.fileHeader(
-        fileName: "/lib/fireware/plan_local.tar",
+        // fileName: "/lib/fireware/plan_local.tar",
+        fileName: "plan_local.tar",
         fileSize: bytes.length,
         packetCnt: packetCont,
       );
