@@ -5,22 +5,27 @@ import 'pModel.dart';
 import 'pTools.dart';
 
 class ProtoManifest {
-  static final List<ProtoModel> baseModel = [
-    ProtoModel(field: "SrcID", data: Uint8List.fromList([0xee])),
-    ProtoModel(field: "DstID", data: Uint8List.fromList([0xee])),
-    ProtoModel(
-      field: "Length",
-      data: Uint8List.fromList([0x00, 0x00]),
-      type: ProtoModelTypeEnum.length,
-    ),
-    ProtoModel(
-      field: "CRC",
-      data: Uint8List.fromList([0x00, 0x00]),
-      type: ProtoModelTypeEnum.uInts,
-    ),
-    ProtoModel(field: "Version", data: Uint8List.fromList([0x02])),
-    ProtoModel(field: "UserID", data: Uint8List.fromList([0x00])),
-  ];
+  static List<ProtoModel> baseModel(int? userId) {
+    Uint8List userIdBytes = userId == null
+        ? Uint8List.fromList([0x00])
+        : ByteTools.int2UintList(userId, byteLen: 1);
+    return [
+      ProtoModel(field: "SrcID", data: Uint8List.fromList([0xee])),
+      ProtoModel(field: "DstID", data: Uint8List.fromList([0xee])),
+      ProtoModel(
+        field: "Length",
+        data: Uint8List.fromList([0x00, 0x00]),
+        type: ProtoModelTypeEnum.length,
+      ),
+      ProtoModel(
+        field: "CRC",
+        data: Uint8List.fromList([0x00, 0x00]),
+        type: ProtoModelTypeEnum.uInts,
+      ),
+      ProtoModel(field: "Version", data: Uint8List.fromList([0x02])),
+      ProtoModel(field: "UserID", data: userIdBytes),
+    ];
+  }
 
   static Uint8List login(String username) {
     Uint8List usernameLen = ByteTools.int2UintList(username.length, byteLen: 1);
@@ -28,7 +33,7 @@ class ProtoManifest {
     ProtoModels models = ProtoModels(
       name: "login",
       list: [
-        ...baseModel,
+        ...baseModel(null),
         ProtoModel(field: "SAP", data: Uint8List.fromList([0x01])),
         ProtoModel(field: "OptCode", data: Uint8List.fromList([0x01])),
         ProtoModel(
@@ -51,13 +56,13 @@ class ProtoManifest {
   static Uint8List loginWithPing(String username) {
     // 登录-心跳
     Uint8List superviseInterval = ByteTools.int2UintList(3000, byteLen: 4);
-    Uint8List superviseCnt = ByteTools.int2UintList(100, byteLen: 2);
+    Uint8List superviseCnt = ByteTools.int2UintList(20, byteLen: 2);
     Uint8List usernameLen = ByteTools.int2UintList(username.length, byteLen: 1);
     Uint8List usernameByte = ByteTools.str2UintList(username, unitSize: 2);
     ProtoModels models = ProtoModels(
       name: "loginWithPing",
       list: [
-        ...baseModel,
+        ...baseModel(null),
         ProtoModel(field: "SAP", data: Uint8List.fromList([0x01])),
         ProtoModel(field: "OptCode", data: Uint8List.fromList([0x05])),
         ProtoModel(
@@ -87,11 +92,11 @@ class ProtoManifest {
   }
 
   // 心跳
-  static Uint8List ping() {
+  static Uint8List ping(int userId) {
     ProtoModels models = ProtoModels(
       name: "ping",
       list: [
-        ...baseModel,
+        ...baseModel(userId),
         ProtoModel(field: "SAP", data: Uint8List.fromList([0x01])),
         ProtoModel(field: "OptCode", data: Uint8List.fromList([0x03])),
         ProtoModel(field: "Status", data: Uint8List.fromList([0x00])),
@@ -109,6 +114,7 @@ class ProtoManifest {
     required String fileName,
     required int fileSize,
     required int packetCnt,
+    required int userId,
   }) {
     Uint8List packetCntByte = ByteTools.int2UintList(packetCnt, byteLen: 2);
     Uint8List fileSizeBytes = ByteTools.int2UintList(fileSize, byteLen: 4);
@@ -120,7 +126,7 @@ class ProtoManifest {
     ProtoModels models = ProtoModels(
       name: "fileHeader",
       list: [
-        ...baseModel,
+        ...baseModel(userId),
         ProtoModel(field: "SAP", data: Uint8List.fromList([0x04])),
         ProtoModel(field: "OptCode", data: Uint8List.fromList([0x03])),
         ProtoModel(field: "FileCRC", data: Uint8List.fromList([0x00])),
@@ -156,6 +162,7 @@ class ProtoManifest {
   static List<Uint8List> fileData({
     required int packetSize,
     required Uint8List data,
+    required userId,
   }) {
     List<Uint8List> packetContents = ByteTools.chunkBytes(
       data,
@@ -171,9 +178,9 @@ class ProtoManifest {
       ProtoModels models = ProtoModels(
         name: "fileData",
         list: [
-          ...baseModel,
+          ...baseModel(userId),
           ProtoModel(field: "SAP", data: Uint8List.fromList([0x04])),
-          ProtoModel(field: "OptCode", data: Uint8List.fromList([0x03])),
+          ProtoModel(field: "OptCode", data: Uint8List.fromList([0x04])),
           ProtoModel(field: "PacketCrc", data: Uint8List.fromList([0x00])),
           ProtoModel(
             field: "PacketNum",
