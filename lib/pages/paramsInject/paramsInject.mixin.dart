@@ -35,14 +35,15 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
   String selectMasterId = "";
   int selectMasterType = -1;
   TextEditingController searchTextFieldController = TextEditingController();
-
-  late UdpManager manager;
   TreeType<SimpleTreeNode> masterTreeData = TreeType(
     data: SimpleTreeNode(id: "1", title: "<>"),
     children: [],
     parent: null,
   );
 
+  String detailTitle = "";
+
+  late UdpManager manager;
   late RadioModel udpRadiosInfo = RadioModel(
     address: "192.168.7.2:60009",
     packets: [],
@@ -59,7 +60,6 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
     ),
   ];
   bool detailVisible = false;
-  String detailTitle = "";
 
   // leafActionWidgetLabel 叶子节点 右侧 按钮文字
   // leafActionWidgetOnPressed 叶子节点 右侧 点击事件

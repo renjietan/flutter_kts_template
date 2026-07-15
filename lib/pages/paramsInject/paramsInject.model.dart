@@ -1,24 +1,41 @@
 import 'dart:typed_data';
 
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_kts_template/components/TreeView/simple-tree/simple.tree.model.dart'
+    show SimpleTreeNode;
+import 'package:recursive_tree_flutter/models/tree_type.dart';
 
-class MasterConfig {
+class MasterTreeConfig {
   String searchValue;
   bool visible;
-  MasterSelectConfig select;
+  MasterTreeSelectConfig select;
   TextEditingController searchTextFieldController;
-  MasterConfig({
+  TreeType<SimpleTreeNode> data;
+  MasterTreeConfig({
     required this.searchValue,
     required this.visible,
     required this.select,
     required this.searchTextFieldController,
+    required this.data,
   });
 }
 
-class MasterSelectConfig {
+class MasterTreeSelectConfig {
   String id;
   String type;
-  MasterSelectConfig({required this.id, required this.type});
+  String title;
+  MasterTreeSelectConfig({
+    required this.id,
+    required this.type,
+    required this.title,
+  });
+}
+
+class DetailTreeConfig {
+  List<TreeType<SimpleTreeNode>> data;
+  bool visible;
+
+  DetailTreeConfig({required this.data, required this.visible});
 }
 
 class RadioModel {
