@@ -9,7 +9,6 @@ import 'package:flutter_kts_template/pages/paramsInject/paramsInject.tools.dart'
 import 'package:path/path.dart' as p;
 import 'package:recursive_tree_flutter/models/tree_type.dart';
 
-import '../../components/FileUploads/fileUploads.tools.dart';
 import '../../components/TreeView/simple-tree/simple.tree.model.dart';
 import '../../components/loading/simple.async.loading.dart';
 import '../../components/loading/simple.loading.dart';
@@ -27,20 +26,8 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
   // 文件基础路径
   String dataPath = "";
   String get netNOdePath =>
-      p.join(dataPath, "4_net_node", "$selectMasterId.json");
+      p.join(dataPath, "4_net_node", "${mtc.select.id}.json");
   String get resourcePath => p.join(dataPath, "1_resource");
-
-  String searchValue = "";
-  bool masterVisible = false;
-  String selectMasterId = "";
-  int selectMasterType = -1;
-  TextEditingController searchTextFieldController = TextEditingController();
-  TreeType<SimpleTreeNode> masterTreeData = TreeType(
-    data: SimpleTreeNode(id: "1", title: "<>"),
-    children: [],
-    parent: null,
-  );
-  String detailTitle = "";
 
   MasterTreeConfig mtc = MasterTreeConfig(
     searchValue: "",
@@ -54,6 +41,8 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
     ),
   );
 
+  DetailTreeConfig dtc = DetailTreeConfig(data: [], visible: false);
+
   late UdpManager manager;
   late RadioModel udpRadiosInfo = RadioModel(
     address: "192.168.7.2:60009",
@@ -62,15 +51,6 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
     userId: null,
     tarPath: "",
   );
-
-  late List<TreeType<SimpleTreeNode>> detailTreeData = [
-    TreeType(
-      data: SimpleTreeNode(id: "1", title: "<>"),
-      children: [],
-      parent: null,
-    ),
-  ];
-  bool detailVisible = false;
 
   // leafActionWidgetLabel 叶子节点 右侧 按钮文字
   // leafActionWidgetOnPressed 叶子节点 右侧 点击事件
@@ -131,7 +111,6 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
       node.children = childNodes;
       if (node.children.isEmpty) {
         node.data.isInner = !data["isleaf"];
-        node.data.isShowCheckbox = true;
         node.data.padding = node.data.padding + 10;
         node.data.titleIcon = getTreeNodeIcon(data["type"]);
         node.data.isShowCheckbox = data["isShowCheckbox"] ?? false;
@@ -176,7 +155,7 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
   }
 
   void resetMasterTree() {
-    masterTreeData = TreeType(
+    mtc.data = TreeType(
       data: SimpleTreeNode(id: "1", title: "<>"),
       children: [],
       parent: null,
@@ -184,26 +163,20 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
   }
 
   void resetDetailTree() {
-    detailTreeData = [
-      TreeType(
-        data: SimpleTreeNode(id: "1", title: "<>"),
-        children: [],
-        parent: null,
-      ),
-    ];
+    dtc.data = [];
   }
 
   Future<void> initLeftTree(String? filePath) async {
     setState(() {
-      masterVisible = false;
+      mtc.visible = false;
     });
     final (data, path) = await readAllDataFiles(filePath);
     allData = data;
     dataPath = path;
     if (allData.isEmpty) {
       setState(() {
-        masterVisible = true;
-        detailVisible = true;
+        mtc.visible = true;
+        dtc.visible = true;
         resetMasterTree();
         resetDetailTree();
       });
@@ -213,30 +186,25 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
     for (var key in contacts.keys) {
       Map<String, dynamic> unitTree = contacts[key]["UnitTree"] ?? {};
       if (unitTree.isEmpty) continue;
-      Map<String, dynamic> temp = transformUnitTree(
-        unitTree,
-        fillNode: true,
-        enableFutureWarriorGroup: true,
-      );
+      Map<String, dynamic> temp = transformUnitTree(unitTree, fillNode: true);
       setState(() {
         final (data, _) = buildTree(temp, activeSelection: true);
-        masterTreeData = data;
-        GlobalLogger.logInfo(masterTreeData.toString());
-        masterVisible = true;
+        mtc.data = data;
+        mtc.visible = true;
       });
     }
   }
 
   Future<void> masterTreeOnSelect(v) async {
     var id = v.data.id;
-    if (selectMasterId == id) {
+    if (mtc.select.id == id) {
       return;
     }
-    selectMasterId = id;
-    selectMasterType = v.data.type;
-    detailTitle = v.data.title;
+    mtc.select.id = id;
+    mtc.select.type = v.data.type;
+    mtc.select.title = v.data.title;
     setState(() {
-      detailVisible = false;
+      dtc.visible = false;
     });
     Map<String, dynamic> netNodes = allData["net_node"][id] ?? {};
     Map<String, dynamic> netNodesSystemConfig =
@@ -261,7 +229,11 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
     );
     List<TreeType<SimpleTreeNode>> temp = [];
     [lANMemberTreeData, lANPrimaryTreeData, radioTreeData].fold(0, (cur, pre) {
-      pre = transformUnitTree(pre, fillNode: false);
+      pre = transformUnitTree(
+        pre,
+        fillNode: false,
+        isShowCheckbox: mtc.select.type == 4,
+      );
       final (data, nIndex) = buildTree(
         pre,
         leafActionWidgetLabel: v.data.titleIcon == HyIcons.ren
@@ -277,10 +249,10 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
       cur = nIndex;
       return cur;
     });
-    detailTreeData = temp;
+    dtc.data = temp;
     Future.delayed(Duration(milliseconds: 100)).then((_) {
       setState(() {
-        detailVisible = true;
+        dtc.visible = true;
       });
     });
   }

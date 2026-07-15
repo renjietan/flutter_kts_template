@@ -5,7 +5,6 @@ import 'package:flutter_kts_template/components/TextField/simple.filter.search.t
 import 'package:flutter_kts_template/components/TreeView/simple-tree/simple.treeview.dart';
 import 'package:flutter_kts_template/components/text/text.title.dart';
 import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
-import 'package:flutter_kts_template/logger/logger.dart';
 import 'package:flutter_kts_template/pages/paramsInject/paramsInject.mixin.dart';
 import 'package:flutter_kts_template/theme/table.theme.dart';
 import 'package:recursive_tree_flutter/functions/tree_update_functions.dart';
@@ -21,7 +20,6 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
     with ParamsInjectMixin {
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     resetMasterTree();
     resetDetailTree();
@@ -57,6 +55,8 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
         ),
         FileUploads(
           onUpdate: (String path) {
+            resetDetailTree();
+            resetMasterTree();
             initLeftTree(path);
           },
         ),
@@ -95,21 +95,21 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
                         vertical: 3,
                       ),
                       child: SimpleFilterSearchField(
-                        value: searchValue,
+                        value: mtc.searchValue,
                         onChanged: (v) {
-                          updateTreeWithSearchingTitle(masterTreeData, v);
+                          updateTreeWithSearchingTitle(mtc.data, v);
                           setState(() {});
                         },
-                        controller: searchTextFieldController,
+                        controller: mtc.searchTextFieldController,
                       ),
                     ),
                   ),
                   Expanded(
                     child: SingleChildScrollView(
                       child: Visibility(
-                        visible: masterVisible,
+                        visible: mtc.visible,
                         child: SimpleTreeView(
-                          masterTreeData,
+                          mtc.data,
                           onNodeDataChanged: masterTreeOnSelect,
                         ),
                       ),
@@ -141,7 +141,7 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
             child: Row(
               children: [
                 SizedBox(width: 15),
-                TextTitle(text: selectMasterId),
+                TextTitle(text: mtc.select.title),
                 // BaseButton(label: t.button.radioManager.save, width: 65),
               ],
             ),
@@ -160,15 +160,13 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
                 ),
               ),
               child: Visibility(
-                visible: detailVisible,
+                visible: dtc.visible,
                 child: ListView.builder(
-                  itemCount: detailTreeData.length,
+                  itemCount: dtc.data.length,
                   itemBuilder: (context, index) {
                     return SimpleTreeView(
-                      detailTreeData[index],
+                      dtc.data[index],
                       onNodeDataChanged: (v) {
-                        GlobalLogger.logInfo(v.toString());
-                        // 什么都不干，也必须 setState，否则无法实时更新 tree
                         setState(() {});
                       },
                     );

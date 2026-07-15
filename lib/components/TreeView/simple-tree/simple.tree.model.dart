@@ -50,7 +50,7 @@ class SimpleTreeNode extends AbsNodeType {
       // padding: padding,
       // index: index,
       // isExpanded: isExpanded,
-      // isShowCheckbox: isShowCheckbox,
+      isShowCheckbox: isShowCheckbox,
       // titleIcon: titleIcon,
       // leafActionWidgetLabel: leafActionWidgetLabel,
       // leafActionWidgetOnPressed: leafActionWidgetOnPressed,

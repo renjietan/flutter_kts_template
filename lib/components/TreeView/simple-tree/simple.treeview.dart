@@ -89,7 +89,9 @@ class _SimpleTreeViewState<T extends AbsNodeType> extends State<SimpleTreeView>
             ),
             // if (tree.isLeaf && tree.data.isShowCheckbox) buildTrailing(),
             buildTrailing(),
-            if (tree.data.titleIcon != null)
+            // 勾选框 与 左侧 图标值显示一个
+            if (tree.data.titleIcon != null &&
+                !(tree.isLeaf && tree.data.isShowCheckbox))
               Icon(tree.data.titleIcon, color: Colors.white, size: 16),
             SizedBox(width: 10),
             Expanded(child: buildTitle()),
