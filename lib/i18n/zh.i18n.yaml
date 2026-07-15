@@ -32,6 +32,7 @@ uploads:
   selectedAllow: 当前仅支持 ZIP 和文件夹
 tree:
   empty: "<空>"
+  futureWarrior: "未来战士"
 json:
   serialization: 收到的信息格式有点陌生
 pageable:

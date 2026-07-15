@@ -175,6 +175,9 @@ class Translations$tree$zh {
 
 	/// zh: '<空>'
 	String get empty => '<空>';
+
+	/// zh: '未来战士'
+	String get futureWarrior => '未来战士';
 }
 
 // Path: json

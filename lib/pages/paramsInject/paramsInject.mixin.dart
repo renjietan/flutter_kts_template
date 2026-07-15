@@ -9,7 +9,7 @@ import 'package:flutter_kts_template/pages/paramsInject/paramsInject.tools.dart'
 import 'package:path/path.dart' as p;
 import 'package:recursive_tree_flutter/models/tree_type.dart';
 
-import '../../components/FileUploads/fileUploads.mixin.dart';
+import '../../components/FileUploads/fileUploads.tools.dart';
 import '../../components/TreeView/simple-tree/simple.tree.model.dart';
 import '../../components/loading/simple.async.loading.dart';
 import '../../components/loading/simple.loading.dart';
@@ -19,14 +19,16 @@ import '../../core/rtc/rtc.timeout.dart';
 import '../../core/rtc/tools/proto/byteTools.dart';
 import '../../core/rtc/tools/rtc.event.dart';
 import '../../core/rtc/tools/rtc.event.type.dart';
-import '../../core/utils/director.dart';
 import '../../i18n/handle/translations.g.dart';
 import '../../logger/logger.dart';
-import '../../utils/files/FileTools.dart';
 
 mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
   Map<String, dynamic> allData = {};
+  // 文件基础路径
   String dataPath = "";
+  String get netNOdePath =>
+      p.join(dataPath, "4_net_node", "$selectMasterId.json");
+
   String searchValue = "";
   bool masterVisible = false;
   late UdpManager manager;
@@ -36,8 +38,7 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
     children: [],
     parent: null,
   );
-  String get netNOdePath =>
-      p.join(dataPath, "4_net_node", "$selectMasterId.json");
+
   String get resourcePath => p.join(dataPath, "1_resource");
   late RadioModel udpRadiosInfo = RadioModel(
     address: "192.168.7.2:60009",
@@ -57,7 +58,14 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
   bool detailVisible = false;
   String detailTitle = "";
   String selectMasterId = "";
+  int selectMasterType = -1;
 
+  // leafActionWidgetLabel 叶子节点 右侧 按钮文字
+  // leafActionWidgetOnPressed 叶子节点 右侧 点击事件
+  // leafActionWidgetSize 叶子节点 右侧组件宽度
+  // activeSelection 是否启用 勾选框
+  // 下标从 几 开始，主要用于斑马线
+  // 返回 树状列表 AND 节点总数量，用于将节点数量 传入到 下一颗树中，让多棵树的斑马线显得比较连贯
   (TreeType<SimpleTreeNode>, int) buildTree(
     Map<String, dynamic> rootData, {
     String? leafActionWidgetLabel,
@@ -75,7 +83,9 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
       int nextIndex = data["title"] == t.tree.empty
           ? currentIndex
           : currentIndex + 1;
-      double padding = level * 16;
+      double padding =
+          level * 16 +
+          (data["type"] == 4 && data["children"].length != 0 ? 24 : 0);
       Color nodeBgColor = currentIndex % 2 == 0
           ? Color(0xFF171C22)
           : Color(0xFF23282D);
@@ -87,11 +97,11 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
           index: currentIndex,
           nodeBgColor: nodeBgColor,
           padding: padding,
+          type: data["type"],
         ),
         children: [],
         parent: parent,
       );
-
       final rawChildren = (data['children'] ?? []) as List<dynamic>;
       List<TreeType<SimpleTreeNode>> childNodes = [];
       for (var childData in rawChildren) {
@@ -191,7 +201,11 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
     for (var key in contacts.keys) {
       Map<String, dynamic> unitTree = contacts[key]["UnitTree"] ?? {};
       if (unitTree.isEmpty) continue;
-      Map<String, dynamic> temp = transformUnitTree(unitTree, fillNode: true);
+      Map<String, dynamic> temp = transformUnitTree(
+        unitTree,
+        fillNode: true,
+        enableFutureWarriorGroup: true,
+      );
       setState(() {
         final (data, _) = buildTree(temp, activeSelection: true);
         masterTreeData = data;
@@ -207,6 +221,7 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
       return;
     }
     selectMasterId = id;
+    selectMasterType = v.data.type;
     detailTitle = v.data.title;
     setState(() {
       detailVisible = false;
@@ -295,113 +310,120 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
   }
 
   Future<void> detailsTreeOnTap(v) async {
-    SimplePopup.loading();
-    String dcJsonFilePath = p.join(
-      dataPath,
-      "3_device_config",
-      "${v.title}.json",
-    );
-    String savePath = await DirectoryManager.instance.getZipCache();
-    String resPath = "";
-    List<String> resourceFileNames = await FileTools.getJsonFileNameByFPath(
-      resourcePath,
-    );
-    List<ArchiveEntry> resourceEntries = resourceFileNames
-        .fold<List<ArchiveEntry>>([], (cur, pre) {
-          ArchiveEntry temp = ArchiveEntry(
-            sourcePath: p.join(dataPath, "1_resource", pre),
-            innerDir: "1_resource",
-          );
-          cur.add(temp);
-          return cur;
-        });
-    try {
-      if (v.title.startsWith("dc_ccu_")) {
-        // 构建 ccu 打包的文件列表: 1_resource、3_device_config、4_net_node
-        List<ArchiveEntry> entries = [
-          ...resourceEntries,
-          ArchiveEntry(sourcePath: dcJsonFilePath, innerDir: "3_device_config"),
-          ArchiveEntry(sourcePath: netNOdePath, innerDir: "4_net_node"),
-        ];
-        String ccuTarPath = await FileTools.filesToZipFormPath(
-          entries: entries,
-          outputPath: savePath,
-          zipName: "ccu",
-        );
-        resPath = ccuTarPath;
-      } else if (v.title.startsWith("dc_server")) {
-        // 构建 server 打包的文件列表: 1_resource、2_radio_subnet、3_device_config、4_net_node、5_user、6_contacts
-        List<Directory> subFolds = await FileTools.getDirectSubFolders(
-          dataPath,
-        );
-        String serviceTarPath = await FileTools.filesToZipFormListDirectory(
-          subFolds,
-          outputPath: savePath,
-          zipName: "server",
-        );
-        resPath = serviceTarPath;
-      } else {
-        // 构建 radio 打包的文件列表: 1_resource、2_radio_subnet、3_device_config、4_net_node
-        // 读取文件内容
-        Map<String, dynamic> dcContent = FileTools.readFileContentAsMap(
-          dcJsonFilePath,
-        );
-        Map<String, dynamic>? dcChannels = dcContent["Channels"] ?? {};
-        // 根据 3_device_config 中的 Channels 字段 获取 Subnets 列表，后续 将 根据 Subnets 字段 查找 2_radio_subnet 问价
-        List<String> dcChannelsValues = (dcChannels?.values.toList() ?? [])
-            .fold<List<String>>([], (cur, pre) {
-              String subnet = pre["Subnet"] ?? '';
-              if (subnet.isNotEmpty) {
-                cur.add("$subnet.json");
-              }
-              return cur;
-            })
-            .toList();
-        // 汇总 4_net_node + 3_device_config + 2_radio_subnet + 1_resource
-        List<ArchiveEntry> entries = dcChannelsValues.fold<List<ArchiveEntry>>(
-          [
-            ...resourceEntries,
-            ArchiveEntry(
-              sourcePath: dcJsonFilePath,
-              innerDir: "3_device_config",
-            ),
-            ArchiveEntry(sourcePath: netNOdePath, innerDir: "4_net_node"),
-          ],
-          (cur, pre) {
-            String sourcePath = p.join(dataPath, "2_radio_subnet", pre);
-            ArchiveEntry temp = ArchiveEntry(
-              sourcePath: sourcePath,
-              innerDir: "2_radio_subnet",
-            );
-            cur.add(temp);
-            return cur;
-          },
-        );
-        String serviceTarPath = await FileTools.filesToZipFormPath(
-          entries: entries,
-          outputPath: savePath,
-          zipName: "radios",
-        );
-        resPath = serviceTarPath;
-      }
-      udpRadiosInfo.tarPath = resPath;
-      login();
-      // await SimpleAsyncPopup.hideLoading(Duration(milliseconds: 500));
-      // SimpleAsyncPopup.success(
-      //   t.common.OperationSuccess,
-      //   duration: Duration(milliseconds: 700),
-      // );
-      // GlobalLogger.logInfo(resPath);
-    } catch (e) {
-      SimplePopup.hideLoading();
-      GlobalLogger.logError("paramsInject.mixin: ${e.toString()}");
-      await SimpleAsyncPopup.hideLoading(Duration(milliseconds: 500));
-      SimpleAsyncPopup.error(
-        t.common.OperationError,
-        timeout: Duration(milliseconds: 700),
-      );
-    }
+    var title = v.title;
+    var deviceType = title.split("_")[1];
+    print(v);
+    print(deviceType);
   }
+
+  // Future<void> detailsTreeOnTap(v) async {
+  //   SimplePopup.loading();
+  //   String dcJsonFilePath = p.join(
+  //     dataPath,
+  //     "3_device_config",
+  //     "${v.title}.json",
+  //   );
+  //   String savePath = await DirectoryManager.instance.getZipCache();
+  //   String resPath = "";
+  //   List<String> resourceFileNames = await FileTools.getJsonFileNameByFPath(
+  //     resourcePath,
+  //   );
+  //   List<ArchiveEntry> resourceEntries = resourceFileNames
+  //       .fold<List<ArchiveEntry>>([], (cur, pre) {
+  //         ArchiveEntry temp = ArchiveEntry(
+  //           sourcePath: p.join(dataPath, "1_resource", pre),
+  //           innerDir: "1_resource",
+  //         );
+  //         cur.add(temp);
+  //         return cur;
+  //       });
+  //   try {
+  //     if (v.title.startsWith("dc_ccu_")) {
+  //       // 构建 ccu 打包的文件列表: 1_resource、3_device_config、4_net_node
+  //       List<ArchiveEntry> entries = [
+  //         ...resourceEntries,
+  //         ArchiveEntry(sourcePath: dcJsonFilePath, innerDir: "3_device_config"),
+  //         ArchiveEntry(sourcePath: netNOdePath, innerDir: "4_net_node"),
+  //       ];
+  //       String ccuTarPath = await FileTools.filesToZipFormPath(
+  //         entries: entries,
+  //         outputPath: savePath,
+  //         zipName: "ccu",
+  //       );
+  //       resPath = ccuTarPath;
+  //     } else if (v.title.startsWith("dc_server")) {
+  //       // 构建 server 打包的文件列表: 1_resource、2_radio_subnet、3_device_config、4_net_node、5_user、6_contacts
+  //       List<Directory> subFolds = await FileTools.getDirectSubFolders(
+  //         dataPath,
+  //       );
+  //       String serviceTarPath = await FileTools.filesToZipFormListDirectory(
+  //         subFolds,
+  //         outputPath: savePath,
+  //         zipName: "server",
+  //       );
+  //       resPath = serviceTarPath;
+  //     } else {
+  //       // 构建 radio 打包的文件列表: 1_resource、2_radio_subnet、3_device_config、4_net_node
+  //       // 读取文件内容
+  //       Map<String, dynamic> dcContent = FileTools.readFileContentAsMap(
+  //         dcJsonFilePath,
+  //       );
+  //       Map<String, dynamic>? dcChannels = dcContent["Channels"] ?? {};
+  //       // 根据 3_device_config 中的 Channels 字段 获取 Subnets 列表，后续 将 根据 Subnets 字段 查找 2_radio_subnet 问价
+  //       List<String> dcChannelsValues = (dcChannels?.values.toList() ?? [])
+  //           .fold<List<String>>([], (cur, pre) {
+  //             String subnet = pre["Subnet"] ?? '';
+  //             if (subnet.isNotEmpty) {
+  //               cur.add("$subnet.json");
+  //             }
+  //             return cur;
+  //           })
+  //           .toList();
+  //       // 汇总 4_net_node + 3_device_config + 2_radio_subnet + 1_resource
+  //       List<ArchiveEntry> entries = dcChannelsValues.fold<List<ArchiveEntry>>(
+  //         [
+  //           ...resourceEntries,
+  //           ArchiveEntry(
+  //             sourcePath: dcJsonFilePath,
+  //             innerDir: "3_device_config",
+  //           ),
+  //           ArchiveEntry(sourcePath: netNOdePath, innerDir: "4_net_node"),
+  //         ],
+  //         (cur, pre) {
+  //           String sourcePath = p.join(dataPath, "2_radio_subnet", pre);
+  //           ArchiveEntry temp = ArchiveEntry(
+  //             sourcePath: sourcePath,
+  //             innerDir: "2_radio_subnet",
+  //           );
+  //           cur.add(temp);
+  //           return cur;
+  //         },
+  //       );
+  //       String serviceTarPath = await FileTools.filesToZipFormPath(
+  //         entries: entries,
+  //         outputPath: savePath,
+  //         zipName: "radios",
+  //       );
+  //       resPath = serviceTarPath;
+  //     }
+  //     udpRadiosInfo.tarPath = resPath;
+  //     login();
+  //     // await SimpleAsyncPopup.hideLoading(Duration(milliseconds: 500));
+  //     // SimpleAsyncPopup.success(
+  //     //   t.common.OperationSuccess,
+  //     //   duration: Duration(milliseconds: 700),
+  //     // );
+  //     // GlobalLogger.logInfo(resPath);
+  //   } catch (e) {
+  //     SimplePopup.hideLoading();
+  //     GlobalLogger.logError("paramsInject.mixin: ${e.toString()}");
+  //     await SimpleAsyncPopup.hideLoading(Duration(milliseconds: 500));
+  //     SimpleAsyncPopup.error(
+  //       t.common.OperationError,
+  //       timeout: Duration(milliseconds: 700),
+  //     );
+  //   }
+  // }
 
   Future<void> initUdp() async {
     manager = UdpManager();
@@ -452,7 +474,6 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
       } else if (sap == 0x01 && optCode == 0x83) {
         TimeoutManager.clearTimeout("ping");
         if (status != 0) {
-          print("心态哦失败==================================");
           udpPopError(t.udp.pingFail);
         } else {
           TimeoutManager.setTimeout(
@@ -515,7 +536,6 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
     TimeoutManager.clearTimeout("filePacket");
     if (udpRadiosInfo.packets.isNotEmpty) {
       manager.write(udpRadiosInfo.packets[0], udpRadiosInfo.address);
-      print(ByteTools.uIntList2uIntListStr(udpRadiosInfo.packets[0]));
       udpRadiosInfo.packets.removeAt(0);
       TimeoutManager.setTimeout(
         "filePacket",

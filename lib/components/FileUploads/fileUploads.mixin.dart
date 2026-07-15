@@ -226,56 +226,79 @@ Map<String, dynamic> parseKeys(Map<String, dynamic> data) {
   return res;
 }
 
-/// 递归转换节点树
-/// 输入：包含 'Unit', 'NetNodes', 'SubUnits' 的节点 Map
-/// 输出：包含 'id', 'title', 'NetNodes', 'chldren' 的新 Map
-Map<String, dynamic> transformUnitTree(
-  Map<String, dynamic> node, {
-  required bool fillNode,
-}) {
-  var unit = node['Unit'] as Map<String, dynamic>;
-
-  // 构建新节点
-  final result = <String, dynamic>{
-    'id': unit['UnitId'],
-    'title': unit['CodeName'],
-    "isleaf": unit["isleaf"] ?? false,
-    "type": unit["NodeType"] ?? -1,
-    "users": unit["Users"] ?? [],
-  };
-
-  // 递归处理子单位
-  var subUnits = (node['SubUnits'] as List? ?? []);
-  final netNodes = node['NetNodes'] as List? ?? [];
-  final newNetNodes = netNodes.map((n) => transformNetNode(n)).toList();
-  subUnits = [...newNetNodes, ...subUnits];
-  if (!result["isleaf"] && subUnits.isEmpty && fillNode) {
-    int randomNum = DateTime.now().millisecond;
-    subUnits = [
-      {
-        "Unit": {
-          "UnitId": randomNum + 1,
-          "CodeName": t.tree.empty,
-          "isleaf": true,
-        },
-      },
-    ];
-  }
-  result['children'] = subUnits
-      .map((child) => transformUnitTree(child, fillNode: fillNode))
-      .toList();
-  return result;
-}
-
-Map<String, dynamic> transformNetNode(Map<String, dynamic> netNode) {
-  final result = Map<String, dynamic>.from(netNode);
-  result["Unit"] = <String, dynamic>{};
-  result["Unit"]['UnitId'] = result.remove('NodeId');
-  result["Unit"]['CodeName'] = result.remove('CodeName');
-  result["Unit"]["isleaf"] = true;
-  result["Unit"]["NodeType"] = result.remove('NodeType');
-  result["Unit"]["Users"] = result.remove('Users');
-  result["NetNodes"] = [];
-  result["SubUnits"] = [];
-  return result;
-}
+// Map<String, dynamic> transformUnitTree(
+//   Map<String, dynamic> node, {
+//   required bool fillNode,
+// }) {
+//   var unit = node['Unit'] as Map<String, dynamic>;
+//   // print(node);
+//   final result = <String, dynamic>{
+//     'id': unit['UnitId'],
+//     'title': unit['CodeName'],
+//     "isleaf": unit["isleaf"] ?? false,
+//     "type": unit["NodeType"] ?? -1,
+//     "users": unit["Users"] ?? [],
+//   };
+//
+//   var subUnits = (node['SubUnits'] as List? ?? []);
+//   final netNodes = node['NetNodes'] as List? ?? [];
+//   // final newNetNodes = netNodes
+//   //     .where((item) => item["NodeType"] != 4)
+//   //     .map((n) => transformNetNode(n))
+//   //     .toList();
+//   // final futureWarriorNodes = netNodes
+//   //     .where((item) => item["NodeType"] == 4)
+//   //     .map((n) => transformNetNode(n))
+//   //     .toList();
+//   // // 将节点中的 netNodes 字段作为 子节点 丢到 subUnits
+//   // // 将 netNodes 中 NodeType 为 4 的节点，收集起来 给与它们一个 父级节点，然后将父节点 重新丢回 netNodes 中，继续递归
+//   // if (futureWarriorNodes.isNotEmpty) {
+//   //   final futureWarriors = transformNetNode({
+//   //     "Unit": {
+//   //       "UnitId": DateTime.now().millisecond * 2,
+//   //       "CodeName": t.tree.futureWarrior,
+//   //       "isleaf": false,
+//   //     },
+//   //     "SubUnits": [],
+//   //     "NetNodes": [],
+//   //   });
+//   //   futureWarriors["NetNodes"] = futureWarriorNodes;
+//   //   newNetNodes.add(futureWarriors);
+//   // }
+//   // print(futureWarriorNodes);
+//
+//   final newNetNodes = netNodes.map((n) => transformNetNode(n)).toList();
+//
+//   print(newNetNodes);
+//   subUnits = [...newNetNodes, ...subUnits];
+//   if (!result["isleaf"] && subUnits.isEmpty && fillNode) {
+//     // 如果节点非子节点，并且 subUnits 未空，则在 subUnits 中添加一个空的节点，但是不做任何展示，主要未了显示【展开】箭头
+//     int randomNum = DateTime.now().millisecond;
+//     subUnits = [
+//       {
+//         "Unit": {
+//           "UnitId": randomNum + 1,
+//           "CodeName": t.tree.empty,
+//           "isleaf": true,
+//         },
+//       },
+//     ];
+//   }
+//   result['children'] = subUnits
+//       .map((child) => transformUnitTree(child, fillNode: fillNode))
+//       .toList();
+//   return result;
+// }
+//
+// Map<String, dynamic> transformNetNode(Map<String, dynamic> netNode) {
+//   final result = Map<String, dynamic>.from(netNode);
+//   result["Unit"] = <String, dynamic>{};
+//   result["Unit"]['UnitId'] = result.remove('NodeId');
+//   result["Unit"]['CodeName'] = result.remove('CodeName');
+//   result["Unit"]["isleaf"] = true;
+//   result["Unit"]["NodeType"] = result.remove('NodeType');
+//   result["Unit"]["Users"] = result.remove('Users');
+//   result["NetNodes"] = [];
+//   result["SubUnits"] = [];
+//   return result;
+// }

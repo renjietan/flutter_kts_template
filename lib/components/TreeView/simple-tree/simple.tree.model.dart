@@ -13,12 +13,14 @@ class SimpleTreeNode extends AbsNodeType {
   Size? leafActionWidgetSize;
   Color? nodeBgColor;
   bool? activeSelection;
+  int? type;
 
   SimpleTreeNode({
     required dynamic id,
     required dynamic title,
     bool isInner = true,
     bool isChosen = false,
+    this.type = -1,
     this.level = 0,
     this.index = 0,
     this.padding = 0,

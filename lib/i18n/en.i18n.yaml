@@ -32,6 +32,7 @@ uploads:
   selectedAllow: Only ZIP and folders are supported
 tree:
   empty: "<null>"
+  futureWarrior: "Future warrior"
 json:
   serialization: The received information seems unfamiliar
 pageable:

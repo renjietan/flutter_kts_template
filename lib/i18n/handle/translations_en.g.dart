@@ -122,6 +122,7 @@ class _Translations$tree$en extends Translations$tree$zh {
 
 	// Translations
 	@override String get empty => '<null>';
+	@override String get futureWarrior => 'Future warrior';
 }
 
 // Path: json

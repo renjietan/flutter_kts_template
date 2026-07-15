@@ -141,7 +141,7 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
             child: Row(
               children: [
                 SizedBox(width: 15),
-                TextTitle(text: detailTitle),
+                TextTitle(text: selectMasterId),
                 // BaseButton(label: t.button.radioManager.save, width: 65),
               ],
             ),
