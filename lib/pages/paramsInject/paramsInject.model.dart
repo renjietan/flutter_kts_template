@@ -22,7 +22,7 @@ class MasterTreeConfig {
 
 class MasterTreeSelectConfig {
   String id;
-  String type;
+  int type;
   String title;
   MasterTreeSelectConfig({
     required this.id,

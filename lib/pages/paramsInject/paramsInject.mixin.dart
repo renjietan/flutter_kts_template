@@ -24,6 +24,17 @@ import '../../logger/logger.dart';
 
 mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
   Map<String, dynamic> allData = {};
+  MasterTreeConfig mtc = MasterTreeConfig(
+    searchValue: "",
+    visible: false,
+    select: MasterTreeSelectConfig(id: "", type: -1, title: ""),
+    searchTextFieldController: TextEditingController(),
+    data: TreeType(
+      data: SimpleTreeNode(id: "1", title: "<>"),
+      children: [],
+      parent: null,
+    ),
+  );
   // 文件基础路径
   String dataPath = "";
   String get netNOdePath =>
