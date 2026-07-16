@@ -158,11 +158,8 @@ class DioClient {
       return BaseResponse<T>(
         code: data["code"],
         message: data["message"],
-        data: fromJson == null
-            ? data["data"]
-            : fromJson(data["data"]), // 👈 用回调解析内部 data
+        data: fromJson == null ? data["data"] : fromJson(data["data"]),
       );
-      ;
     } else {
       // HTTP 状态码错误
       throw HttpException(
