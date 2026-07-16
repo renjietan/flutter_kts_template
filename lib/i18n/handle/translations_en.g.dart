@@ -83,6 +83,7 @@ class _Translations$common$en extends Translations$common$zh {
 	@override String get sendTimeout => 'Send timeout';
 	@override String get serverError => 'Server error';
 	@override String get UnknowError => 'Unknown error';
+	@override String get preview => 'Preview';
 }
 
 // Path: permission
@@ -216,6 +217,7 @@ class _Translations$Form$en extends Translations$Form$zh {
 	// Translations
 	@override late final _Translations$Form$radioManager$en radioManager = _Translations$Form$radioManager$en._(_root);
 	@override late final _Translations$Form$injectEncrypt$en injectEncrypt = _Translations$Form$injectEncrypt$en._(_root);
+	@override late final _Translations$Form$paramsInject$en paramsInject = _Translations$Form$paramsInject$en._(_root);
 }
 
 // Path: entity
@@ -413,6 +415,18 @@ class _Translations$Form$injectEncrypt$en extends Translations$Form$injectEncryp
 	@override late final _Translations$Form$injectEncrypt$name$en name = _Translations$Form$injectEncrypt$name$en._(_root);
 }
 
+// Path: Form.paramsInject
+class _Translations$Form$paramsInject$en extends Translations$Form$paramsInject$zh {
+	_Translations$Form$paramsInject$en._(TranslationsEn root) : this._root = root, super.internal(root);
+
+	final TranslationsEn _root; // ignore: unused_field
+
+	// Translations
+	@override String get text => 'Key loader';
+	@override late final _Translations$Form$paramsInject$deviceType$en deviceType = _Translations$Form$paramsInject$deviceType$en._(_root);
+	@override late final _Translations$Form$paramsInject$deviceIp$en deviceIp = _Translations$Form$paramsInject$deviceIp$en._(_root);
+}
+
 // Path: Form.radioManager.alias
 class _Translations$Form$radioManager$alias$en extends Translations$Form$radioManager$alias$zh {
 	_Translations$Form$radioManager$alias$en._(TranslationsEn root) : this._root = root, super.internal(root);
@@ -464,7 +478,29 @@ class _Translations$Form$injectEncrypt$name$en extends Translations$Form$injectE
 	final TranslationsEn _root; // ignore: unused_field
 
 	// Translations
-	@override String get label => 'Key Loader';
+	@override String get label => 'Key loader';
 	@override String get placeholder => 'Please enter name';
 	@override String get validate => 'Please enter name!';
+}
+
+// Path: Form.paramsInject.deviceType
+class _Translations$Form$paramsInject$deviceType$en extends Translations$Form$paramsInject$deviceType$zh {
+	_Translations$Form$paramsInject$deviceType$en._(TranslationsEn root) : this._root = root, super.internal(root);
+
+	final TranslationsEn _root; // ignore: unused_field
+
+	// Translations
+	@override String get text => 'Device type';
+	@override String get validatorText => 'Please enter device type!';
+}
+
+// Path: Form.paramsInject.deviceIp
+class _Translations$Form$paramsInject$deviceIp$en extends Translations$Form$paramsInject$deviceIp$zh {
+	_Translations$Form$paramsInject$deviceIp$en._(TranslationsEn root) : this._root = root, super.internal(root);
+
+	final TranslationsEn _root; // ignore: unused_field
+
+	// Translations
+	@override String get text => 'Device IP';
+	@override String get validatorText => 'Please enter a valid IP address!';
 }

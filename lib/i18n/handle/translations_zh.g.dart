@@ -112,6 +112,9 @@ class Translations$common$zh {
 
 	/// zh: '未知错误'
 	String get UnknowError => '未知错误';
+
+	/// zh: '预览'
+	String get preview => '预览';
 }
 
 // Path: permission
@@ -293,6 +296,7 @@ class Translations$Form$zh {
 	// Translations
 	late final Translations$Form$radioManager$zh radioManager = Translations$Form$radioManager$zh.internal(_root);
 	late final Translations$Form$injectEncrypt$zh injectEncrypt = Translations$Form$injectEncrypt$zh.internal(_root);
+	late final Translations$Form$paramsInject$zh paramsInject = Translations$Form$paramsInject$zh.internal(_root);
 }
 
 // Path: entity
@@ -582,6 +586,21 @@ class Translations$Form$injectEncrypt$zh {
 	late final Translations$Form$injectEncrypt$name$zh name = Translations$Form$injectEncrypt$name$zh.internal(_root);
 }
 
+// Path: Form.paramsInject
+class Translations$Form$paramsInject$zh {
+	Translations$Form$paramsInject$zh.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// zh: '注钥'
+	String get text => '注钥';
+
+	late final Translations$Form$paramsInject$deviceType$zh deviceType = Translations$Form$paramsInject$deviceType$zh.internal(_root);
+	late final Translations$Form$paramsInject$deviceIp$zh deviceIp = Translations$Form$paramsInject$deviceIp$zh.internal(_root);
+}
+
 // Path: Form.radioManager.alias
 class Translations$Form$radioManager$alias$zh {
 	Translations$Form$radioManager$alias$zh.internal(this._root);
@@ -658,4 +677,34 @@ class Translations$Form$injectEncrypt$name$zh {
 
 	/// zh: '请输入注钥名称'
 	String get validate => '请输入注钥名称';
+}
+
+// Path: Form.paramsInject.deviceType
+class Translations$Form$paramsInject$deviceType$zh {
+	Translations$Form$paramsInject$deviceType$zh.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// zh: '设备类型'
+	String get text => '设备类型';
+
+	/// zh: '请输入设备类型'
+	String get validatorText => '请输入设备类型';
+}
+
+// Path: Form.paramsInject.deviceIp
+class Translations$Form$paramsInject$deviceIp$zh {
+	Translations$Form$paramsInject$deviceIp$zh.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// zh: '设备IP'
+	String get text => '设备IP';
+
+	/// zh: '请输入有效的IP地址'
+	String get validatorText => '请输入有效的IP地址';
 }

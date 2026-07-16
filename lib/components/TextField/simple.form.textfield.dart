@@ -26,6 +26,8 @@ class _SimpleFormTextFieldState extends State<SimpleFormTextField> {
       controller: widget.field.textEditingController,
       obscureText: widget.field.obscureText,
       keyboardType: widget.field.keyboardType,
+      enabled: widget.field.enabled,
+      readOnly: widget.field.readonly,
       validator: widget.field.validators != null
           ? FormBuilderValidators.compose(widget.field.validators!)
           : null,
@@ -76,6 +78,8 @@ class FormFieldConfig {
   final TextInputType? keyboardType;
   final bool obscureText;
   final TextEditingController? textEditingController;
+  final bool readonly;
+  final bool enabled;
 
   FormFieldConfig({
     required this.name,
@@ -85,5 +89,7 @@ class FormFieldConfig {
     this.keyboardType,
     this.obscureText = false,
     this.textEditingController,
+    this.readonly = false,
+    this.enabled = true,
   });
 }

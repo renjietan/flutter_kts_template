@@ -17,6 +17,7 @@ common:
   sendTimeout: 发送超时
   serverError: 服务器异常
   UnknowError: 未知错误
+  preview: 预览
 permission:
   no: 暂无访问权限,是否立即前往【设置】？
   cancel: 操作已取消
@@ -111,6 +112,14 @@ Form:
       label: 名称
       placeholder: 请输入注钥名称
       validate: 请输入注钥名称
+  paramsInject:
+    text: 注钥
+    deviceType:
+      text: 设备类型
+      validatorText: 请输入设备类型
+    deviceIp:
+      text: 设备IP
+      validatorText: 请输入有效的IP地址
 entity:
   sameName: 名称不可重复
 udp:

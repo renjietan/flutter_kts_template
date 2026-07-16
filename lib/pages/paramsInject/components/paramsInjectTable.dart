@@ -58,7 +58,7 @@ class _ParamsInjectTableState extends State<ParamsInjectTable> {
           theme: theme,
           child: SimpleTextfield(
             height: 35,
-            hint: "Select",
+            hint: "",
             contentPadding: EdgeInsets.symmetric(horizontal: 10),
             onChanged: (v) {
               searchQuery = v;

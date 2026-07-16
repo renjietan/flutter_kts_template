@@ -34,8 +34,20 @@ class MasterTreeSelectConfig {
 class DetailTreeConfig {
   List<TreeType<SimpleTreeNode>> data;
   bool visible;
+  DetailTreeDialogConfig dialog;
+  Map<String, TreeType<SimpleTreeNode>> selectRows;
+  DetailTreeConfig({
+    required this.data,
+    required this.visible,
+    required this.dialog,
+    required this.selectRows,
+  });
+}
 
-  DetailTreeConfig({required this.data, required this.visible});
+class DetailTreeDialogConfig {
+  TextEditingController deviceType;
+  TextEditingController deviceIP;
+  DetailTreeDialogConfig({required this.deviceType, required this.deviceIP});
 }
 
 class RadioModel {

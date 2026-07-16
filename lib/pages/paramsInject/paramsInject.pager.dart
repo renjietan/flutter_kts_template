@@ -9,6 +9,8 @@ import 'package:flutter_kts_template/pages/paramsInject/paramsInject.mixin.dart'
 import 'package:flutter_kts_template/theme/table.theme.dart';
 import 'package:recursive_tree_flutter/functions/tree_update_functions.dart';
 
+import '../../components/button/base.button.dart';
+
 class ParamsInjectPager extends StatefulWidget {
   const ParamsInjectPager({super.key});
 
@@ -22,7 +24,6 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
   void initState() {
     super.initState();
     resetMasterTree();
-    resetDetailTree();
     initLeftTree(null);
     initUdp();
   }
@@ -55,7 +56,6 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
         ),
         FileUploads(
           onUpdate: (String path) {
-            resetDetailTree();
             resetMasterTree();
             initLeftTree(path);
           },
@@ -142,7 +142,14 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
               children: [
                 SizedBox(width: 15),
                 TextTitle(text: mtc.select.title),
-                // BaseButton(label: t.button.radioManager.save, width: 65),
+                const Spacer(),
+                mtc.select.type == 4
+                    ? BaseButton(
+                        label: t.common.preview,
+                        width: 65,
+                        onPressed: () {},
+                      )
+                    : SizedBox(),
               ],
             ),
           ),
@@ -168,6 +175,12 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
                       dtc.data[index],
                       onNodeDataChanged: (v) {
                         setState(() {});
+                        String id = "${v.data.id}";
+                        if (dtc.selectRows[id] == null) {
+                          dtc.selectRows[id] = v;
+                        } else {
+                          dtc.selectRows.remove(id);
+                        }
                       },
                     );
                   },

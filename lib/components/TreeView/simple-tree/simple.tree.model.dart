@@ -9,7 +9,8 @@ class SimpleTreeNode extends AbsNodeType {
   bool isShowCheckbox; // 叶子节点是否需要 checkbox
   IconData? titleIcon; // 节点图标
   String? leafActionWidgetLabel; // 叶子节点文字
-  void Function(AbsNodeType)? leafActionWidgetOnPressed; // 叶子节点  右侧widget的点击事件
+  void Function(SimpleTreeNode)?
+  leafActionWidgetOnPressed; // 叶子节点  右侧widget的点击事件
   Size? leafActionWidgetSize;
   Color? nodeBgColor;
   bool? activeSelection;

@@ -17,6 +17,7 @@ common:
   sendTimeout: Send timeout
   serverError: Server error
   UnknowError: Unknown error
+  preview: Preview
 permission:
   no: No permission, Go to settings now？
   cancel: Operation has been cancelled
@@ -108,9 +109,17 @@ Form:
       validate: Radio consumer cannot be empty!
   injectEncrypt:
     name:
-      label: Key Loader
+      label: Key loader
       placeholder: Please enter name
       validate: Please enter name!
+  paramsInject:
+    text: Key loader
+    deviceType:
+      text: Device type
+      validatorText: Please enter device type!
+    deviceIp:
+      text: Device IP
+      validatorText: Please enter a valid IP address!
 entity:
   sameName: Name must be unique
 udp:
