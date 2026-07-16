@@ -2,14 +2,23 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_kts_template/api/BindConfig.api.dart';
+import 'package:flutter_kts_template/api/KeyLoaders.api.dart';
 import 'package:flutter_kts_template/components/TextField/simple.form.textfield.dart';
+import 'package:flutter_kts_template/components/dialog/simple.tips.dialog.dart';
+import 'package:flutter_kts_template/core/entities/keyLoaders/keyLoadersEntity.dart';
 import 'package:flutter_kts_template/core/rtc/tools/proto/pManifest.dart';
 import 'package:flutter_kts_template/core/utils/director.dart';
 import 'package:flutter_kts_template/icons/hy_icons.dart';
 import 'package:flutter_kts_template/pages/paramsInject/paramsInject.model.dart';
 import 'package:flutter_kts_template/pages/paramsInject/paramsInject.tools.dart';
+import 'package:flutter_kts_template/utils/provider/menu.provider.dart';
+import 'package:flutter_kts_template/utils/response/BaseListResponse.dart';
+import 'package:flutter_kts_template/utils/response/BaseResponse.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
+import 'package:go_router/go_router.dart';
 import 'package:path/path.dart' as p;
+import 'package:provider/provider.dart';
 import 'package:recursive_tree_flutter/models/tree_type.dart';
 
 import '../../components/TreeView/simple-tree/simple.tree.model.dart';
@@ -29,11 +38,14 @@ import '../../utils/formValidator/formValidator.dart';
 
 mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
   Map<String, dynamic> allData = {};
+  List<KeyLoadersEntity> keyLoaders = [];
   // 文件基础路径
   String dataPath = "";
   String get netNOdePath =>
       p.join(dataPath, "4_net_node", "${mtc.select.id}.json");
   String get resourcePath => p.join(dataPath, "1_resource");
+  List<String> get keyLoaderOptions =>
+      keyLoaders.map((item) => item.name).toList();
 
   MasterTreeConfig mtc = MasterTreeConfig(
     searchValue: "",
@@ -46,7 +58,7 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
       parent: null,
     ),
   );
-
+  String bindKeyLoaderId = "";
   DetailTreeConfig dtc = DetailTreeConfig(
     data: [],
     visible: false,
@@ -65,108 +77,6 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
     userId: null,
     tarPath: "",
   );
-
-  // leafActionWidgetLabel 叶子节点 右侧 按钮文字
-  // leafActionWidgetOnPressed 叶子节点 右侧 点击事件
-  // leafActionWidgetSize 叶子节点 右侧组件宽度
-  // activeSelection 是否启用 勾选框
-  // 下标从 几 开始，主要用于多颗树的斑马线
-  // 返回 树状列表 AND 节点总数量，用于将节点数量 传入到 下一颗树中，让多棵树的斑马线显得比较连贯
-  (TreeType<SimpleTreeNode>, int) buildTree(
-    Map<String, dynamic> rootData, {
-    String? leafActionWidgetLabel,
-    void Function(SimpleTreeNode)? leafActionWidgetOnPressed,
-    Size? leafActionWidgetSize,
-    bool? activeSelection,
-    int? startIndex,
-  }) {
-    (TreeType<SimpleTreeNode>, int) buildNodes(
-      Map<String, dynamic> data,
-      TreeType<SimpleTreeNode>? parent,
-      int level,
-      int currentIndex,
-    ) {
-      int nextIndex = data["title"] == t.tree.empty
-          ? currentIndex
-          : currentIndex + 1;
-      double padding =
-          level * 16 +
-          (data["type"] == 4 && data["children"].length != 0 ? 24 : 0);
-      Color nodeBgColor = currentIndex % 2 == 0
-          ? Color(0xFF171C22)
-          : Color(0xFF23282D);
-      var node = TreeType<SimpleTreeNode>(
-        data: SimpleTreeNode(
-          id: data["id"],
-          title: data["title"],
-          level: level,
-          index: currentIndex,
-          nodeBgColor: nodeBgColor,
-          padding: padding,
-          type: data["type"],
-        ),
-        children: [],
-        parent: parent,
-      );
-      final rawChildren = (data['children'] ?? []) as List<dynamic>;
-      List<TreeType<SimpleTreeNode>> childNodes = [];
-      for (var childData in rawChildren) {
-        if (childData is Map<String, dynamic>) {
-          var (childNode, newIndex) = buildNodes(
-            childData,
-            node,
-            level + 1,
-            nextIndex,
-          );
-          childNodes.add(childNode);
-          nextIndex = newIndex;
-        }
-      }
-      node.children = childNodes;
-      if (node.children.isEmpty) {
-        node.data.isInner = !data["isleaf"];
-        node.data.padding = node.data.padding + 10;
-        node.data.titleIcon = getTreeNodeIcon(data["type"]);
-        node.data.isShowCheckbox = data["isShowCheckbox"] ?? false;
-        node.data.isChosen = data["isChosen"] ?? false;
-        if (leafActionWidgetLabel != null) {
-          node.data.leafActionWidgetLabel = leafActionWidgetLabel;
-        }
-        if (leafActionWidgetOnPressed != null) {
-          node.data.leafActionWidgetOnPressed = leafActionWidgetOnPressed;
-        }
-        if (leafActionWidgetSize != null) {
-          node.data.leafActionWidgetSize = leafActionWidgetSize;
-        }
-        if (activeSelection != null) {
-          node.data.activeSelection = activeSelection;
-        }
-      }
-      return (node, nextIndex);
-    }
-
-    // 从根节点开始，层级为1，索引从0开始
-    var (rootNode, nIndex) = buildNodes(rootData, null, 0, startIndex ?? 0);
-    return (rootNode, nIndex);
-  }
-
-  IconData getTreeNodeIcon(int type) {
-    IconData res;
-    switch (type) {
-      case 1: // 指挥所
-        res = HyIcons.zhihuisuo;
-        break;
-      case 2: // 车
-        res = HyIcons.che;
-        break;
-      case 4: // 未来战士
-        res = HyIcons.ren;
-        break;
-      default:
-        res = HyIcons.wenjian;
-    }
-    return res;
-  }
 
   void resetMasterTree() {
     mtc.searchValue = "";
@@ -355,7 +265,76 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
     );
   }
 
-  Future<void> preview() async {}
+  Future<void> bind(BuildContext ctx) async {
+    if (dtc.selectRows.keys.isEmpty) {
+      SimplePopup.warn(t.tips.paramsInject.selectRadios);
+      return;
+    }
+    SimplePopup.loading();
+    try {
+      BaseResponse<BaseListResponse<KeyLoadersEntity>> keyLoadersResponse =
+          await KeyLoadersApi.getAll();
+      keyLoaders = keyLoadersResponse.data.list;
+      // SimplePopup.hideLoading();
+      await SimpleAsyncPopup.hideLoading(Duration(milliseconds: 400));
+      if (keyLoaders.isEmpty) {
+        SimpleTipsDialog(
+          ctx,
+          title: t.tips.title,
+          contentText: t.tips.paramsInject.noKeyLoader,
+          func: () {
+            Provider.of<MenuProvider>(ctx, listen: false).selectedIndex = 2;
+            ctx.go("injectEncryptStick");
+          },
+        );
+      } else {
+        bindKeyLoaderId = "${keyLoaders[0].id}";
+        SimpleFormDialog(
+          title: t.button.radioManager.createRadio,
+          confirmText: t.button.paramsInject.bind,
+          fields: [
+            FormFieldConfig(
+              name: 'keyLoader',
+              items: keyLoaders,
+              initialValue: keyLoaders[0],
+              fieldType: FormFieldType.select,
+              labelBuilder: (v) => v.name,
+              label: t.Form.paramsInject.selectKeyLoader.text,
+              hintText: t.Form.paramsInject.selectKeyLoader.placeholder,
+              validators: [
+                FormBuilderValidators.required(errorText: t.TextField.select),
+              ],
+              onChanged: (v) {
+                bindKeyLoaderId = "${v.id}";
+              },
+            ),
+          ],
+          onConfirm: (v) {
+            String selectIdsByDetailTree = dtc.selectRows.keys.join("，");
+            print("${mtc.select.id}-$selectIdsByDetailTree-$bindKeyLoaderId");
+            BindConfigApi.create({
+              "netNodeId": mtc.select.id,
+              "deviceConfigId": selectIdsByDetailTree,
+              "keyLoaderId": bindKeyLoaderId,
+            }).then((item) {
+              SimpleTipsDialog(
+                ctx,
+                title: t.tips.title,
+                contentText: t.tips.paramsInject.gotoConfig,
+                func: () {
+                  Provider.of<MenuProvider>(ctx, listen: false).selectedIndex =
+                      2;
+                  ctx.go("injectEncryptStick");
+                },
+              );
+            });
+          },
+        );
+      }
+    } catch (e) {
+      SimplePopup.hideLoading();
+    }
+  }
 
   Future<void> startKeyLoaders(v) async {
     String dcJsonFilePath = p.join(

@@ -21,26 +21,26 @@ mixin SideMenuMixin<T extends StatefulWidget> on State<T> {
       "font-weight": FontWeight.normal,
     },
   };
-  int _selectedIndex = 0;
+
+  int selectedIndex = 0;
 
   List<Widget> buildMenuItems(BuildContext ctx, void Function(int) onSelected) {
     late final t = Translations.of(ctx);
-    List<MenuItem> _menuItems = [
+    final menuIndex = Provider.of<MenuProvider>(context);
+    List<MenuItem> menuItems = [
       MenuItem(icon: HyIcons.canshujiazhu, label: t.app.appbar.paramsInject),
       MenuItem(icon: HyIcons.diantaiguanli, label: t.app.appbar.radioManager),
       MenuItem(icon: HyIcons.zhuyueqiangguanli, label: t.app.appbar.keyManager),
     ];
-    return List.generate(_menuItems.length, (index) {
-      final item = _menuItems[index];
-      final isSelected = _selectedIndex == index;
-      final _selectedStyle = isSelected
-          ? selectedStyle["1"]
-          : selectedStyle["0"];
+    return List.generate(menuItems.length, (index) {
+      final item = menuItems[index];
+      final isSelected = menuIndex.selectedIndex == index;
+      final style = isSelected ? selectedStyle["1"] : selectedStyle["0"];
       // 手势识别器
       return GestureDetector(
         onTap: () {
           setState(() {
-            _selectedIndex = index;
+            selectedIndex = index;
             ctx.read<MenuProvider>().selectedIndex = index;
             onSelected(index);
           });
@@ -48,9 +48,7 @@ mixin SideMenuMixin<T extends StatefulWidget> on State<T> {
         child: Container(
           width: 70,
           // margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-          decoration: BoxDecoration(
-            color: _selectedStyle!["bg_color"] as Color,
-          ),
+          decoration: BoxDecoration(color: style!["bg_color"] as Color),
           padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 0),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -60,16 +58,16 @@ mixin SideMenuMixin<T extends StatefulWidget> on State<T> {
                 item.icon,
                 size: 28,
                 // color:  Colors.white.withOpacity(0.85),
-                color: _selectedStyle["color"] as Color,
+                color: style["color"] as Color,
               ),
               const SizedBox(height: 8),
               Text(
                 item.label,
                 style: TextStyle(
                   fontSize: 11.5,
-                  fontWeight: _selectedStyle["font-weight"] as FontWeight,
+                  fontWeight: style["font-weight"] as FontWeight,
                   // color: Colors.white.withOpacity(0.9),
-                  color: _selectedStyle["color"] as Color,
+                  color: style["color"] as Color,
                   letterSpacing: 0.3,
                 ),
                 textAlign: TextAlign.center,

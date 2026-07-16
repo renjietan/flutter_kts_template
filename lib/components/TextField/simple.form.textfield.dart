@@ -70,6 +70,8 @@ class _SimpleFormTextFieldState extends State<SimpleFormTextField> {
   }
 }
 
+enum FormFieldType { text, select }
+
 class FormFieldConfig {
   final String name;
   final String label;
@@ -81,6 +83,15 @@ class FormFieldConfig {
   final bool readonly;
   final bool enabled;
 
+  // 新增字段类型
+  final FormFieldType fieldType;
+
+  // 下拉框相关（仅当 fieldType == select 时使用）
+  final List<dynamic>? items; // 选项数据源
+  final String Function(dynamic)? labelBuilder; // 将选项转为显示文本
+  final dynamic initialValue; // 初始选中值
+  final void Function(dynamic)? onChanged; // 值改变回调（可选）
+
   FormFieldConfig({
     required this.name,
     required this.label,
@@ -91,5 +102,10 @@ class FormFieldConfig {
     this.textEditingController,
     this.readonly = false,
     this.enabled = true,
+    this.fieldType = FormFieldType.text, // 默认为文本输入
+    this.items,
+    this.labelBuilder,
+    this.initialValue,
+    this.onChanged,
   });
 }

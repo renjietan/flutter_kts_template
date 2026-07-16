@@ -41,6 +41,7 @@ class TranslationsEn extends Translations with BaseTranslations<AppLocale, Trans
 	@override late final _Translations$json$en json = _Translations$json$en._(_root);
 	@override late final _Translations$pageable$en pageable = _Translations$pageable$en._(_root);
 	@override late final _Translations$pager$en pager = _Translations$pager$en._(_root);
+	@override late final _Translations$tips$en tips = _Translations$tips$en._(_root);
 	@override late final _Translations$tableColumn$en tableColumn = _Translations$tableColumn$en._(_root);
 	@override late final _Translations$button$en button = _Translations$button$en._(_root);
 	@override late final _Translations$checkbox$en checkbox = _Translations$checkbox$en._(_root);
@@ -159,6 +160,19 @@ class _Translations$pager$en extends Translations$pager$zh {
 	// Translations
 	@override late final _Translations$pager$radioManager$en radioManager = _Translations$pager$radioManager$en._(_root);
 	@override late final _Translations$pager$injectEncrypt$en injectEncrypt = _Translations$pager$injectEncrypt$en._(_root);
+}
+
+// Path: tips
+class _Translations$tips$en extends Translations$tips$zh {
+	_Translations$tips$en._(TranslationsEn root) : this._root = root, super.internal(root);
+
+	final TranslationsEn _root; // ignore: unused_field
+
+	// Translations
+	@override String get title => 'Tips';
+	@override String get cancel => 'Cancel';
+	@override String get ok => 'Confirm';
+	@override late final _Translations$tips$paramsInject$en paramsInject = _Translations$tips$paramsInject$en._(_root);
 }
 
 // Path: tableColumn
@@ -312,6 +326,18 @@ class _Translations$pager$injectEncrypt$en extends Translations$pager$injectEncr
 	@override String get keyLoaderManager => 'Key loader Manager';
 }
 
+// Path: tips.paramsInject
+class _Translations$tips$paramsInject$en extends Translations$tips$paramsInject$zh {
+	_Translations$tips$paramsInject$en._(TranslationsEn root) : this._root = root, super.internal(root);
+
+	final TranslationsEn _root; // ignore: unused_field
+
+	// Translations
+	@override String get noKeyLoader => 'No Key Loader is available. Please go and add one';
+	@override String get selectRadios => 'Please select a radio';
+	@override String get gotoConfig => 'Would you like to go to configuration now?';
+}
+
 // Path: tableColumn.base
 class _Translations$tableColumn$base$en extends Translations$tableColumn$base$zh {
 	_Translations$tableColumn$base$en._(TranslationsEn root) : this._root = root, super.internal(root);
@@ -380,6 +406,7 @@ class _Translations$button$paramsInject$en extends Translations$button$paramsInj
 
 	// Translations
 	@override String get inject => 'inject';
+	@override String get bind => 'bind';
 }
 
 // Path: button.injectEncrypt
@@ -425,6 +452,7 @@ class _Translations$Form$paramsInject$en extends Translations$Form$paramsInject$
 	@override String get text => 'Key loader';
 	@override late final _Translations$Form$paramsInject$deviceType$en deviceType = _Translations$Form$paramsInject$deviceType$en._(_root);
 	@override late final _Translations$Form$paramsInject$deviceIp$en deviceIp = _Translations$Form$paramsInject$deviceIp$en._(_root);
+	@override late final _Translations$Form$paramsInject$selectKeyLoader$en selectKeyLoader = _Translations$Form$paramsInject$selectKeyLoader$en._(_root);
 }
 
 // Path: Form.radioManager.alias
@@ -503,4 +531,15 @@ class _Translations$Form$paramsInject$deviceIp$en extends Translations$Form$para
 	// Translations
 	@override String get text => 'Device IP';
 	@override String get validatorText => 'Please enter a valid IP address!';
+}
+
+// Path: Form.paramsInject.selectKeyLoader
+class _Translations$Form$paramsInject$selectKeyLoader$en extends Translations$Form$paramsInject$selectKeyLoader$zh {
+	_Translations$Form$paramsInject$selectKeyLoader$en._(TranslationsEn root) : this._root = root, super.internal(root);
+
+	final TranslationsEn _root; // ignore: unused_field
+
+	// Translations
+	@override String get text => 'Key loader';
+	@override String get placeholder => 'Please select';
 }

@@ -19,30 +19,30 @@ class InjectEncryptionTable extends StatefulWidget {
 
 class _InjectEncryptionTableState extends State<InjectEncryptionTable> {
   late final DataTablePlusTheme theme;
-  List<User> allUsers = [];
-  List<User> filteredUsers = [];
+  List<User> allData = [];
+  List<User> filteredData = [];
   int currentPage = 1;
   int pageSize = 10;
   String? searchQuery = "";
   bool get isDark => widget.themePreset == ThemePreset.dark;
+  final Set<String> selectedIds = {};
 
-  List<User> get paginatedUsers {
+  List<User> get paginatedData {
     final startIndex = (currentPage - 1) * pageSize;
-    if (startIndex >= filteredUsers.length) return [];
-    final endIndex = (startIndex + pageSize).clamp(0, filteredUsers.length);
-    return filteredUsers.sublist(startIndex, endIndex);
+    if (startIndex >= filteredData.length) return [];
+    final endIndex = (startIndex + pageSize).clamp(0, filteredData.length);
+    return filteredData.sublist(startIndex, endIndex);
   }
 
-  int get totalPages => (filteredUsers.length / pageSize).ceil().clamp(1, 999);
+  int get totalPages => (filteredData.length / pageSize).ceil().clamp(1, 999);
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     theme = widget.themePreset == null
         ? getThemePreset(ThemePreset.dark)
         : getThemePreset(widget.themePreset!);
-    allUsers = generateUsers(300);
+    allData = generateUsers(300);
     applyFilters();
   }
 
@@ -70,11 +70,15 @@ class _InjectEncryptionTableState extends State<InjectEncryptionTable> {
             child: DataTablePlusThemeProvider(
               theme: theme,
               child: DataTablePlus<User>(
-                items: paginatedUsers,
-                idGetter: (user) => user.id,
-                columns: buildColumns(),
-                emptyWidget: buildEmptyWidget(),
-                showCheckboxes: false,
+                items: paginatedData,
+                idGetter: (item) => item.id.toString(),
+                selectedIds: selectedIds,
+                allSelected: allSelected,
+                showCheckboxes: true,
+                onSelectionChanged: toggleSelection,
+                onSelectAllChanged: toggleSelectAll,
+                columns: buildColumns(context),
+                emptyWidget: buildEmptyWidget(context),
               ),
             ),
           ),
@@ -84,7 +88,7 @@ class _InjectEncryptionTableState extends State<InjectEncryptionTable> {
           child: TablePagination(
             currentPage: currentPage,
             totalPages: totalPages,
-            totalItems: filteredUsers.length,
+            totalItems: filteredData.length,
             pageSize: pageSize,
             pageSizeOptions: const [10, 20, 50, 100],
             onPageSizeChanged: (size) => setState(() {
@@ -101,7 +105,7 @@ class _InjectEncryptionTableState extends State<InjectEncryptionTable> {
   }
 
   void applyFilters() {
-    filteredUsers = allUsers.where((user) {
+    filteredData = allData.where((user) {
       if (searchQuery?.isNotEmpty ?? false) {
         final query = searchQuery!.toLowerCase();
         if (!user.field1.toLowerCase().contains(query) &&
@@ -116,7 +120,8 @@ class _InjectEncryptionTableState extends State<InjectEncryptionTable> {
     currentPage = 1;
   }
 
-  Widget buildEmptyWidget() {
+  Widget buildEmptyWidget(BuildContext context) {
+    final t = Translations.of(context);
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 48),
       child: Center(
@@ -129,7 +134,7 @@ class _InjectEncryptionTableState extends State<InjectEncryptionTable> {
             ),
             const SizedBox(height: 12),
             Text(
-              'No Data Found',
+              t.common.noData,
               style: TextStyle(
                 fontSize: 14,
                 color: isDark ? Colors.grey[500] : Colors.grey[600],
@@ -141,7 +146,39 @@ class _InjectEncryptionTableState extends State<InjectEncryptionTable> {
     );
   }
 
-  List<ColumnDefinition<User>> buildColumns() {
+  void toggleSelection(String id) {
+    setState(() {
+      if (selectedIds.contains(id.toString())) {
+        selectedIds.remove(id.toString());
+      } else {
+        selectedIds.add(id.toString());
+      }
+    });
+  }
+
+  bool get allSelected {
+    final current = paginatedData;
+    if (current.isEmpty) return false;
+    return current.every((u) => selectedIds.contains(u.id.toString()));
+  }
+
+  void toggleSelectAll() {
+    setState(() {
+      final current = paginatedData;
+      if (allSelected) {
+        for (final item in current) {
+          selectedIds.remove(item.id.toString());
+        }
+      } else {
+        for (final item in current) {
+          selectedIds.add(item.id.toString());
+        }
+      }
+    });
+  }
+
+  List<ColumnDefinition<User>> buildColumns(BuildContext context) {
+    final t = Translations.of(context);
     return [
       ColumnDefinition<User>(
         label: t.tableColumn.injectEncrypt.parameterPacket,

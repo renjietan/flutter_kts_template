@@ -141,9 +141,48 @@
         }
       ],
       "relations": []
+    },
+    {
+      "id": "6:6271279407079570812",
+      "lastPropertyId": "7:7386054865052925963",
+      "name": "BindConfigEntity",
+      "properties": [
+        {
+          "id": "1:6049395943988811899",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:7763530486178484550",
+          "name": "netNodeId",
+          "type": 9
+        },
+        {
+          "id": "3:2065786153626554741",
+          "name": "deviceConfigId",
+          "type": 9
+        },
+        {
+          "id": "5:4137391018581619396",
+          "name": "createdAt",
+          "type": 10
+        },
+        {
+          "id": "6:7643555413760363020",
+          "name": "updatedAt",
+          "type": 10
+        },
+        {
+          "id": "7:7386054865052925963",
+          "name": "keyLoaderId",
+          "type": 9
+        }
+      ],
+      "relations": []
     }
   ],
-  "lastEntityId": "5:3582610162093702077",
+  "lastEntityId": "6:6271279407079570812",
   "lastIndexId": "1:7435491961108656421",
   "lastRelationId": "0:0",
   "lastSequenceId": "0:0",
@@ -156,7 +195,8 @@
   "retiredPropertyUids": [
     812668694605346950,
     7877995074749865462,
-    7919633563325803080
+    7919633563325803080,
+    4008391957519251833
   ],
   "retiredRelationUids": [],
   "version": 1

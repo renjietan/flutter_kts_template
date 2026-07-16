@@ -73,7 +73,7 @@ class _InjectEncryptStickPagerState extends State<InjectEncryptionStickPager>
                 ),
               ),
               Expanded(
-                child: data.length == 0
+                child: data.isEmpty
                     ? Center(child: buildEmptyWidget(context))
                     : ListView.builder(
                         itemCount: data.length,

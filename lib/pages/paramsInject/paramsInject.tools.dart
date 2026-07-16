@@ -1,9 +1,116 @@
 import 'dart:io';
 
+import 'package:flutter/cupertino.dart';
+import 'package:flutter_kts_template/components/TreeView/simple-tree/simple.tree.model.dart';
+import 'package:flutter_kts_template/icons/hy_icons.dart';
+import 'package:recursive_tree_flutter/models/tree_type.dart';
+
 import '../../components/FileUploads/fileUploads.mixin.dart';
 import '../../core/utils/director.dart';
 import '../../i18n/handle/translations.g.dart';
 import '../../utils/files/FileTools.dart';
+
+// leafActionWidgetLabel 叶子节点 右侧 按钮文字
+// leafActionWidgetOnPressed 叶子节点 右侧 点击事件
+// leafActionWidgetSize 叶子节点 右侧组件宽度
+// activeSelection 是否启用 勾选框
+// 下标从 几 开始，主要用于多颗树的斑马线
+// 返回 树状列表 AND 节点总数量，用于将节点数量 传入到 下一颗树中，让多棵树的斑马线显得比较连贯
+(TreeType<SimpleTreeNode>, int) buildTree(
+  Map<String, dynamic> rootData, {
+  String? leafActionWidgetLabel,
+  void Function(SimpleTreeNode)? leafActionWidgetOnPressed,
+  Size? leafActionWidgetSize,
+  bool? activeSelection,
+  int? startIndex,
+}) {
+  (TreeType<SimpleTreeNode>, int) buildNodes(
+    Map<String, dynamic> data,
+    TreeType<SimpleTreeNode>? parent,
+    int level,
+    int currentIndex,
+  ) {
+    int nextIndex = data["title"] == t.tree.empty
+        ? currentIndex
+        : currentIndex + 1;
+    double padding =
+        level * 16 +
+        (data["type"] == 4 && data["children"].length != 0 ? 24 : 0);
+    Color nodeBgColor = currentIndex % 2 == 0
+        ? Color(0xFF171C22)
+        : Color(0xFF23282D);
+    var node = TreeType<SimpleTreeNode>(
+      data: SimpleTreeNode(
+        id: data["id"],
+        title: data["title"],
+        level: level,
+        index: currentIndex,
+        nodeBgColor: nodeBgColor,
+        padding: padding,
+        type: data["type"],
+      ),
+      children: [],
+      parent: parent,
+    );
+    final rawChildren = (data['children'] ?? []) as List<dynamic>;
+    List<TreeType<SimpleTreeNode>> childNodes = [];
+    for (var childData in rawChildren) {
+      if (childData is Map<String, dynamic>) {
+        var (childNode, newIndex) = buildNodes(
+          childData,
+          node,
+          level + 1,
+          nextIndex,
+        );
+        childNodes.add(childNode);
+        nextIndex = newIndex;
+      }
+    }
+    node.children = childNodes;
+    if (node.children.isEmpty) {
+      node.data.isInner = !data["isleaf"];
+      node.data.padding = node.data.padding + 10;
+      node.data.titleIcon = getTreeNodeIcon(data["type"]);
+      node.data.isShowCheckbox = data["isShowCheckbox"] ?? false;
+      node.data.isChosen = data["isChosen"] ?? false;
+      if (leafActionWidgetLabel != null) {
+        node.data.leafActionWidgetLabel = leafActionWidgetLabel;
+      }
+      if (leafActionWidgetOnPressed != null) {
+        node.data.leafActionWidgetOnPressed = leafActionWidgetOnPressed;
+      }
+      if (leafActionWidgetSize != null) {
+        node.data.leafActionWidgetSize = leafActionWidgetSize;
+      }
+      if (activeSelection != null) {
+        node.data.activeSelection = activeSelection;
+      }
+    }
+    return (node, nextIndex);
+  }
+
+  // 从根节点开始，层级为1，索引从0开始
+  var (rootNode, nIndex) = buildNodes(rootData, null, 0, startIndex ?? 0);
+  return (rootNode, nIndex);
+}
+
+IconData getTreeNodeIcon(int type) {
+  IconData res;
+  switch (type) {
+    case 1: // 指挥所
+      res = HyIcons.zhihuisuo;
+      break;
+    case 2: // 车
+      res = HyIcons.che;
+      break;
+    case 4: // 未来战士
+      res = HyIcons.ren;
+      break;
+    default:
+      res = HyIcons.wenjian;
+  }
+  return res;
+}
 
 /// [directoryPath] 获取文件夹下 所有文本内容
 ///

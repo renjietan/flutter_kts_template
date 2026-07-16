@@ -43,6 +43,7 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 	late final Translations$json$zh json = Translations$json$zh.internal(_root);
 	late final Translations$pageable$zh pageable = Translations$pageable$zh.internal(_root);
 	late final Translations$pager$zh pager = Translations$pager$zh.internal(_root);
+	late final Translations$tips$zh tips = Translations$tips$zh.internal(_root);
 	late final Translations$tableColumn$zh tableColumn = Translations$tableColumn$zh.internal(_root);
 	late final Translations$button$zh button = Translations$button$zh.internal(_root);
 	late final Translations$checkbox$zh checkbox = Translations$checkbox$zh.internal(_root);
@@ -228,6 +229,26 @@ class Translations$pager$zh {
 	// Translations
 	late final Translations$pager$radioManager$zh radioManager = Translations$pager$radioManager$zh.internal(_root);
 	late final Translations$pager$injectEncrypt$zh injectEncrypt = Translations$pager$injectEncrypt$zh.internal(_root);
+}
+
+// Path: tips
+class Translations$tips$zh {
+	Translations$tips$zh.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// zh: '提示'
+	String get title => '提示';
+
+	/// zh: '取消'
+	String get cancel => '取消';
+
+	/// zh: '确定'
+	String get ok => '确定';
+
+	late final Translations$tips$paramsInject$zh paramsInject = Translations$tips$paramsInject$zh.internal(_root);
 }
 
 // Path: tableColumn
@@ -431,6 +452,24 @@ class Translations$pager$injectEncrypt$zh {
 	String get keyLoaderManager => '注钥枪管理';
 }
 
+// Path: tips.paramsInject
+class Translations$tips$paramsInject$zh {
+	Translations$tips$paramsInject$zh.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// zh: '当前无可选的密钥枪, 请前往添加后再试'
+	String get noKeyLoader => '当前无可选的密钥枪, 请前往添加后再试';
+
+	/// zh: '请勾选电台'
+	String get selectRadios => '请勾选电台';
+
+	/// zh: '是否立即前往配置？'
+	String get gotoConfig => '是否立即前往配置？';
+}
+
 // Path: tableColumn.base
 class Translations$tableColumn$base$zh {
 	Translations$tableColumn$base$zh.internal(this._root);
@@ -549,6 +588,9 @@ class Translations$button$paramsInject$zh {
 
 	/// zh: '注入'
 	String get inject => '注入';
+
+	/// zh: '绑定'
+	String get bind => '绑定';
 }
 
 // Path: button.injectEncrypt
@@ -599,6 +641,7 @@ class Translations$Form$paramsInject$zh {
 
 	late final Translations$Form$paramsInject$deviceType$zh deviceType = Translations$Form$paramsInject$deviceType$zh.internal(_root);
 	late final Translations$Form$paramsInject$deviceIp$zh deviceIp = Translations$Form$paramsInject$deviceIp$zh.internal(_root);
+	late final Translations$Form$paramsInject$selectKeyLoader$zh selectKeyLoader = Translations$Form$paramsInject$selectKeyLoader$zh.internal(_root);
 }
 
 // Path: Form.radioManager.alias
@@ -707,4 +750,19 @@ class Translations$Form$paramsInject$deviceIp$zh {
 
 	/// zh: '请输入有效的IP地址'
 	String get validatorText => '请输入有效的IP地址';
+}
+
+// Path: Form.paramsInject.selectKeyLoader
+class Translations$Form$paramsInject$selectKeyLoader$zh {
+	Translations$Form$paramsInject$selectKeyLoader$zh.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// zh: '注钥枪'
+	String get text => '注钥枪';
+
+	/// zh: '请选择'
+	String get placeholder => '请选择';
 }

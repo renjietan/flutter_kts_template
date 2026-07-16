@@ -16,13 +16,6 @@ class _SplashPageState extends State<SplashPage> with SplashMixin {
   Widget build(BuildContext context) {
     return Container(
       decoration: const BoxDecoration(color: Colors.white),
-      // child: Center(
-      //   child: Image.asset(
-      //     'assets/appbar/logo.png',
-      //     cacheWidth: int.parse("${600.w}"),
-      //     cacheHeight: int.parse("${600.w}"),
-      //   ),
-      // ),
       child: ResponsiveAssetImage(
         'assets/appbar/logo.png',
         width: 150,

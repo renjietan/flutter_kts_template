@@ -14,6 +14,9 @@ class SideMenu extends StatefulWidget {
 class _SideMenuState extends State<SideMenu> with SideMenuMixin {
   @override
   Widget build(BuildContext context) {
+    // setState(() {
+    //   selectedIndex = menuIndex.selectedIndex;
+    // });
     return SizedBox(
       width: 70,
       child: Container(

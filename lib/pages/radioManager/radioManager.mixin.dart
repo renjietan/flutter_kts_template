@@ -8,7 +8,9 @@ import 'package:flutter_kts_template/components/text/text.title.dart';
 import 'package:flutter_kts_template/logger/logger.dart';
 import 'package:flutter_kts_template/pages/radioManager/radioManager.pager.dart';
 import 'package:flutter_kts_template/utils/enum/dialog_enum.dart';
+import 'package:flutter_kts_template/utils/provider/radios.provider.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
+import 'package:provider/provider.dart';
 
 import '../../api/RadiosManagerApi.dart';
 import '../../components/TextField/simple.filter.search.textField.dart';
@@ -49,14 +51,18 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
       pageSize: pageSize.toString(),
       keyword: searchQuery,
     ).then((res) {
-      Future.delayed(Duration(milliseconds: 70)).then((_) {
-        SimplePopup.hideLoading();
+      Future.delayed(Duration(milliseconds: 70)).then((_) async {
+        var radioResponse = await RadiosManagerApi.getAll();
+        if (mounted) {
+          context.read<RadiosProvider>().setRadios = radioResponse.data.list;
+        }
         setState(() {
           data = res.data.list;
           GlobalLogger.logInfo(data.length.toString());
           totalItems = res.data.total;
           totalPages = (totalItems / pageSize).ceil().clamp(1, 999);
         });
+        SimplePopup.hideLoading();
       });
     });
   }

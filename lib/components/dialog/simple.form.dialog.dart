@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:flutter_kts_template/components/TextField/simple.form.selectField.dart';
 import 'package:flutter_kts_template/components/text/text.title.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 
@@ -35,18 +36,12 @@ Future<void> SimpleFormDialog({
     clickMaskDismiss: clickMaskDismiss,
     maskColor: maskColor,
     builder: (context) => AlertDialog(
-      scrollable: true, // 解决弹窗被键盘挤压问题
+      scrollable: true,
       backgroundColor: backgroundColor,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(borderRadius),
       ),
       titlePadding: EdgeInsets.symmetric(vertical: 7),
-      // actionsPadding: EdgeInsets.fromLTRB(
-      //   30,
-      //   25,
-      //   30,
-      //   MediaQuery.of(context).viewInsets.bottom > 0 ? 20 : 90,
-      // ),
       contentPadding: EdgeInsets.fromLTRB(5, 15, 0, 0),
       titleTextStyle: TextStyle(fontSize: 16, color: titleColor),
       title: Container(
@@ -130,13 +125,63 @@ List<Widget> _buildFormFields(
       ),
     );
     // 添加输入框
-    widgets.add(
-      SimpleFormTextField(
-        field: field,
-        fillColor: fillColor,
-        labelFontSize: labelFontSize,
-      ),
-    );
+    if (field.fieldType == FormFieldType.text) {
+      widgets.add(
+        SimpleFormTextField(
+          field: field,
+          fillColor: fillColor,
+          labelFontSize: labelFontSize,
+        ),
+      );
+    } else {
+      widgets.add(
+        SimpleFormSelectField<dynamic>(
+          items: field.items ?? [],
+          labelBuilder: field.labelBuilder ?? (v) => v,
+          initialValue: field.initialValue,
+          onChanged: field.onChanged,
+          decoration: InputDecoration(
+            labelText: field.hintText ?? field.label,
+            isDense: true,
+            contentPadding: EdgeInsets.symmetric(vertical: 14, horizontal: 12),
+            labelStyle: TextStyle(color: Colors.white, fontSize: labelFontSize),
+            hintStyle: TextStyle(color: Colors.white, fontSize: labelFontSize),
+            filled: true,
+            fillColor: fillColor,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(5),
+              borderSide: BorderSide(color: Color(0xFF404040)),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(5),
+              borderSide: BorderSide(color: Color(0xFF404040)),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(5),
+              borderSide: BorderSide(color: Color(0xFF64B5F6)),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(5),
+              borderSide: const BorderSide(color: Colors.red),
+            ),
+            focusedErrorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: Colors.red, width: 2),
+            ),
+          ),
+          validator: field.validators != null
+              ? (value) {
+                  // 将验证器转换为 FormFieldValidator 可用的形式
+                  for (var validator in field.validators!) {
+                    final error = validator(value?.toString() ?? '');
+                    if (error != null) return error;
+                  }
+                  return null;
+                }
+              : null,
+        ),
+      );
+    }
   }
   // 最后加一个底部间距
   widgets.add(SizedBox(height: 60));

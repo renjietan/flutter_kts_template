@@ -16,16 +16,17 @@ mixin SplashMixin<T extends StatefulWidget> on State<T> {
   void initState() {
     super.initState();
     // 提前声明，放在异步中，会出现警告，不够安全
-    UserProvider userProvider = Provider.of<UserProvider>(
-      context,
-      listen: false,
-    );
-    init().then((_) {
-      String userInfo = Shared.getUserInfo() ?? '';
-      userProvider.userInfo = userInfo;
-      RadiosManagerApi.getAll().then((res) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      UserProvider userProvider = Provider.of<UserProvider>(
+        context,
+        listen: false,
+      );
+      init().then((_) async {
+        String userInfo = Shared.getUserInfo() ?? '';
+        userProvider.userInfo = userInfo;
+        var radioResponse = await RadiosManagerApi.getAll();
         if (mounted) {
-          context.read<RadiosProvider>().setRadios = res.data.list;
+          context.read<RadiosProvider>().setRadios = radioResponse.data.list;
           goHomePage();
         }
       });
@@ -45,10 +46,8 @@ mixin SplashMixin<T extends StatefulWidget> on State<T> {
   void goHomePage() {
     String? userinfo = Shared.getUserInfo();
     // 确保 MaterialApp 构建完毕
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.go("paramsInject");
-      PopupManager.initialize(navigatorKey: rootNavigatorKey);
-    });
+    context.go("paramsInject");
+    PopupManager.initialize(navigatorKey: rootNavigatorKey);
     if (userinfo != null && userinfo.isNotEmpty) {
       // Navigator.of(context).pushReplacementNamed('/home');
     } else {

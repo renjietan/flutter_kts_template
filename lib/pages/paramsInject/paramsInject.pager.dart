@@ -37,7 +37,7 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
         children: [
           Expanded(flex: 4, child: _buildMasterTree(context)),
           const VerticalDivider(thickness: 1, width: 1),
-          Expanded(flex: 3, child: _buildDetailTree()),
+          Expanded(flex: 3, child: _buildDetailTree(context)),
         ],
       ),
     );
@@ -125,7 +125,7 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
   }
 
   /// detail tree
-  Widget _buildDetailTree() {
+  Widget _buildDetailTree(BuildContext ctx) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisAlignment: MainAxisAlignment.start,
@@ -145,9 +145,11 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
                 const Spacer(),
                 mtc.select.type == 4
                     ? BaseButton(
-                        label: t.common.preview,
+                        label: t.button.paramsInject.bind,
                         width: 65,
-                        onPressed: () {},
+                        onPressed: () {
+                          bind(ctx);
+                        },
                       )
                     : SizedBox(),
               ],

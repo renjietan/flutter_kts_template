@@ -50,6 +50,15 @@ pager:
   injectEncrypt:
     paramPairing: Parameter pairing
     keyLoaderManager: Key loader Manager
+tips:
+  title: Tips
+  cancel: Cancel
+  ok: Confirm
+  paramsInject:
+    noKeyLoader: No Key Loader is available. Please go and add one
+    selectRadios: Please select a radio
+    gotoConfig: Binding completed. go to configuration now?
+
 #tablePagination:
 #  itemRangeTemplate: '显示 {start}-{end} 条, 共 {total} 条',
 tableColumn:
@@ -84,6 +93,7 @@ button:
     parse: Parse
   paramsInject:
     inject: inject
+    bind: bind
   injectEncrypt:
     export: export
 checkbox:
@@ -120,6 +130,9 @@ Form:
     deviceIp:
       text: Device IP
       validatorText: Please enter a valid IP address!
+    selectKeyLoader:
+      text: "Key loader"
+      placeholder: "Please select"
 entity:
   sameName: Name must be unique
 udp:

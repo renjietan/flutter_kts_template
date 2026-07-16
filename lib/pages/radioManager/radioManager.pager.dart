@@ -29,7 +29,9 @@ class _RadioManagerPagerState extends State<RadioManagerPager>
   @override
   void initState() {
     super.initState();
-    getList();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      getList();
+    });
   }
 
   @override

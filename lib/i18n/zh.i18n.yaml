@@ -50,6 +50,14 @@ pager:
   injectEncrypt:
     paramPairing: 参数配对
     keyLoaderManager: 注钥枪管理
+tips:
+  title: 提示
+  cancel: 取消
+  ok: 确定
+  paramsInject:
+    noKeyLoader: 当前无可选的密钥枪, 请前往添加后再试
+    selectRadios: 请勾选电台
+    gotoConfig: 绑定已完成，是否现在前往配置？
 #tablePagination:
 #  itemRangeTemplate: 'Showing {start}-{end} of {total} data',
 tableColumn:
@@ -84,6 +92,7 @@ button:
     parse: 分析
   paramsInject:
     inject: 注入
+    bind: 绑定
   injectEncrypt:
     export: 导出
 checkbox:
@@ -120,6 +129,9 @@ Form:
     deviceIp:
       text: 设备IP
       validatorText: 请输入有效的IP地址
+    selectKeyLoader:
+      text: "注钥枪"
+      placeholder: "请选择"
 entity:
   sameName: 名称不可重复
 udp:
