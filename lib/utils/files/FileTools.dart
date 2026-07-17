@@ -9,7 +9,7 @@ import 'package:path/path.dart' as p;
 
 class ArchiveEntry {
   final String sourcePath; // 磁盘上的真实文件路径
-  final String innerDir; // 希望它在归档里的文件夹路径，例如 "3_device_config"
+  final String innerDir; // 它在归档里的文件夹路径，例如 "3_device_config"
 
   ArchiveEntry({required this.sourcePath, required this.innerDir});
 }

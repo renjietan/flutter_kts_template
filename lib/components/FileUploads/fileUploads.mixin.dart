@@ -174,32 +174,35 @@ Future<Map<String, dynamic>> parseData(String filePath) async {
   return await Future.wait(futures).then((res) {
     var temp = res.fold(
       {
-        "key": <String, dynamic>{},
-        "radio_subnet": <String, dynamic>{},
-        "device_config": <String, dynamic>{},
-        "net_node": <String, dynamic>{},
-        "users": <String, dynamic>{},
-        "contacts": <String, dynamic>{},
+        "0_contacts": <String, dynamic>{},
+        "1_resources": <String, dynamic>{},
+        "2_radio_subnet": <String, dynamic>{},
+        "3_device_config": <String, dynamic>{},
+        "4_net_node": <String, dynamic>{},
+        "5_users": <String, dynamic>{},
+        "6_unit": <String, dynamic>{},
       },
       (cur, pre) {
         if (pre.isEmpty) {
           return cur;
         }
         List<String> keys = pre.keys.toList();
-        if (keys.every((item) => item.indexOf("rs_") == 0)) {
-          cur["radio_subnet"] = pre;
-        } else if (keys.every((item) => item.indexOf("dc_") == 0)) {
-          cur["device_config"] = pre;
-        } else if (keys.every((item) => item.indexOf("nn_") == 0)) {
-          cur["net_node"] = pre;
-        } else if (keys.every((item) => item.indexOf("user_") == 0)) {
-          cur["users"] = pre;
-        } else if (keys.every((item) => item.indexOf("contacts_") == 0)) {
-          cur["contacts"] = pre;
-        } else {
+        if (keys.every((item) => item.indexOf("contacts_") == 0)) {
+          cur["0_contacts"] = pre;
+        } else if (keys.every((item) => item.indexOf("key_") == 0)) {
           Map<String, dynamic> data = parseKeys(pre);
-          cur["key"] = data;
-        }
+          cur["1_resources"] = data;
+        } else if (keys.every((item) => item.indexOf("rs_") == 0)) {
+          cur["2_radio_subnet"] = pre;
+        } else if (keys.every((item) => item.indexOf("dc_") == 0)) {
+          cur["3_device_config"] = pre;
+        } else if (keys.every((item) => item.indexOf("nn_") == 0)) {
+          cur["4_net_node"] = pre;
+        } else if (keys.every((item) => item.indexOf("user_") == 0)) {
+          cur["5_users"] = pre;
+        } else if (keys.every((item) => item.indexOf("unit") == 0)) {
+          cur["6_init"] = pre;
+        } else {}
         return cur;
       },
     );
