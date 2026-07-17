@@ -43,6 +43,8 @@ pageable:
   paramsValidateError: "Parameter verification failed: {errors}"
   keywordValidateError: "Key words should not exceed {count} characters"
 pager:
+  injectParams:
+    futureSoldier: Future soldier
   radioManager:
     title: Radio manager
     netNode: Net Node

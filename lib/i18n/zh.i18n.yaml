@@ -43,6 +43,8 @@ pageable:
   paramsValidateError: "参数验证失败: {errors}"
   keywordValidateError: "关键词文字不可超过{count}个字符"
 pager:
+  injectParams:
+    futureSoldier: 未来战士
   radioManager:
     title: 电台管理
     netNode: 网络节点

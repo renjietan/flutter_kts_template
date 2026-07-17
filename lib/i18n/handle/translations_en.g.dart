@@ -158,6 +158,7 @@ class _Translations$pager$en extends Translations$pager$zh {
 	final TranslationsEn _root; // ignore: unused_field
 
 	// Translations
+	@override late final _Translations$pager$injectParams$en injectParams = _Translations$pager$injectParams$en._(_root);
 	@override late final _Translations$pager$radioManager$en radioManager = _Translations$pager$radioManager$en._(_root);
 	@override late final _Translations$pager$injectEncrypt$en injectEncrypt = _Translations$pager$injectEncrypt$en._(_root);
 }
@@ -303,6 +304,16 @@ class _Translations$app$appbar$en extends Translations$app$appbar$zh {
 	@override String get keyManager => 'Key manager';
 }
 
+// Path: pager.injectParams
+class _Translations$pager$injectParams$en extends Translations$pager$injectParams$zh {
+	_Translations$pager$injectParams$en._(TranslationsEn root) : this._root = root, super.internal(root);
+
+	final TranslationsEn _root; // ignore: unused_field
+
+	// Translations
+	@override String get futureSoldier => 'Future soldier';
+}
+
 // Path: pager.radioManager
 class _Translations$pager$radioManager$en extends Translations$pager$radioManager$zh {
 	_Translations$pager$radioManager$en._(TranslationsEn root) : this._root = root, super.internal(root);
@@ -335,7 +346,7 @@ class _Translations$tips$paramsInject$en extends Translations$tips$paramsInject$
 	// Translations
 	@override String get noKeyLoader => 'No Key Loader is available. Please go and add one';
 	@override String get selectRadios => 'Please select a radio';
-	@override String get gotoConfig => 'Would you like to go to configuration now?';
+	@override String get gotoConfig => 'Binding completed. go to configuration now?';
 }
 
 // Path: tableColumn.base

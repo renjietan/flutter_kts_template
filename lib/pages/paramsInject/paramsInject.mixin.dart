@@ -9,7 +9,6 @@ import 'package:flutter_kts_template/components/dialog/simple.tips.dialog.dart';
 import 'package:flutter_kts_template/core/entities/keyLoaders/keyLoadersEntity.dart';
 import 'package:flutter_kts_template/core/rtc/tools/proto/pManifest.dart';
 import 'package:flutter_kts_template/core/utils/director.dart';
-import 'package:flutter_kts_template/icons/hy_icons.dart';
 import 'package:flutter_kts_template/pages/paramsInject/paramsInject.model.dart';
 import 'package:flutter_kts_template/pages/paramsInject/paramsInject.tools.dart';
 import 'package:flutter_kts_template/utils/provider/menu.provider.dart';
@@ -32,6 +31,7 @@ import '../../core/rtc/tools/proto/byteTools.dart';
 import '../../core/rtc/tools/rtc.event.dart';
 import '../../core/rtc/tools/rtc.event.type.dart';
 import '../../i18n/handle/translations.g.dart';
+import '../../icons/hy_icons.dart';
 import '../../logger/logger.dart';
 import '../../utils/files/FileTools.dart';
 import '../../utils/formValidator/formValidator.dart';
@@ -141,96 +141,160 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
     mtc.select.type = v.data.type;
     mtc.select.title = v.data.title;
     setState(() {
+      dtc.data = [];
       dtc.visible = false;
     });
 
-    Map<String, dynamic> netNodes = allData["net_node"][id] ?? {};
+    Map<String, dynamic> netNodes = allData["4_net_node"][id] ?? {};
     Map<String, dynamic> netNodesSystemConfig =
         netNodes["SystemConfiguration"] ?? {};
-    Map<String, dynamic> lANMember = netNodesSystemConfig["LANMember"] ?? {};
-    Map<String, dynamic> lANPrimary = netNodesSystemConfig["LANPrimary"] ?? {};
-    Map<String, dynamic> radio = netNodesSystemConfig["Radio"] ?? {};
-    Map<String, dynamic> lANMemberTreeData = {};
-    if (v.data.type != 4) {
-      lANMemberTreeData = detail2TreeNode(allData, lANMember, "LANMember");
+    Map<String, dynamic> members = netNodesSystemConfig["LANMember"] ?? {};
+    Map<String, dynamic> primaries = netNodesSystemConfig["LANPrimary"] ?? {};
+    Map<String, dynamic> radios = netNodesSystemConfig["Radio"] ?? {};
+    List<String> ccus = [
+      ...(members["CCU"] ?? []),
+      ...(primaries["CCU"] ?? []),
+      ...(radios["CCU"] ?? []),
+    ];
+    List<String> servers = [
+      ...(members["Server"] ?? []),
+      ...(primaries["Server"] ?? []),
+      ...(radios["Server"] ?? []),
+    ];
+    if (ccus.isNotEmpty && v.data.type != 1) {
+      Map<String, dynamic> ccuNodes = parseCcuAndServerNodes(
+        ccus,
+        rootTitle: "CCU",
+      );
+      final (ccuTree, _) = buildTree(
+        ccuNodes,
+        leafActionWidgetLabel: v.data.titleIcon == HyIcons.ren
+            ? null
+            : "inject",
+        leafActionWidgetOnPressed: v.data.titleIcon == HyIcons.ren
+            ? null
+            : detailsTreeOnTap,
+        leafActionWidgetSize: Size(70, 30),
+        startIndex: 0,
+      );
+      dtc.data.add(ccuTree);
     }
-
-    Map<String, dynamic> lANPrimaryTreeData = {};
-    if (v.data.type != 4) {
-      lANPrimaryTreeData = detail2TreeNode(allData, lANPrimary, "LANPrimary");
+    if (servers.isNotEmpty && v.data.type != 1) {
+      Map<String, dynamic> serversNodes = parseCcuAndServerNodes(
+        servers,
+        rootTitle: "Server",
+      );
+      final (serverTree, _) = buildTree(
+        serversNodes,
+        leafActionWidgetLabel: v.data.titleIcon == HyIcons.ren
+            ? null
+            : "inject",
+        leafActionWidgetOnPressed: v.data.titleIcon == HyIcons.ren
+            ? null
+            : detailsTreeOnTap,
+        leafActionWidgetSize: Size(70, 30),
+        startIndex: 0,
+      );
+      dtc.data.add(serverTree);
     }
-
-    Map<String, dynamic> radioTreeData = detail2TreeNode(
-      allData,
-      radio,
-      "Radio",
-    );
-    List<TreeType<SimpleTreeNode>> temp = [];
-    [lANMemberTreeData, lANPrimaryTreeData, radioTreeData].fold(0, (cur, pre) {
-      if (pre.keys.isNotEmpty) {
-        pre = transformUnitTree(
-          pre,
-          fullData: allData,
-          isShowCheckbox: mtc.select.type == 4,
-        );
-        final (data, nIndex) = buildTree(
-          pre,
-          leafActionWidgetLabel: v.data.titleIcon == HyIcons.ren
-              ? null
-              : "inject",
-          leafActionWidgetOnPressed: v.data.titleIcon == HyIcons.ren
-              ? null
-              : detailsTreeOnTap,
-          leafActionWidgetSize: Size(70, 30),
-          startIndex: cur,
-        );
-        temp.add(data);
-        cur = nIndex;
-      }
-      return cur;
-    });
-    dtc.data = temp;
-    Future.delayed(Duration(milliseconds: 100)).then((_) {
+    if (radios.keys.isNotEmpty) {
+      radios = parseRadioNodes(radios, rootTitle: "Radio", type: v.data.type);
+      final (radioTree, _) = buildTree(
+        radios,
+        // 由于未来战士是多选 不显示 inject 按钮
+        leafActionWidgetLabel: v.data.titleIcon == HyIcons.ren
+            ? null
+            : "inject",
+        leafActionWidgetOnPressed: v.data.titleIcon == HyIcons.ren
+            ? null
+            : detailsTreeOnTap,
+        leafActionWidgetSize: Size(70, 30),
+        startIndex: 0,
+      );
+      dtc.data.add(radioTree);
+    }
+    Future.delayed(Duration(milliseconds: 500)).then((_) {
       setState(() {
         dtc.visible = true;
       });
     });
   }
 
-  Map<String, dynamic> detail2TreeNode(
-    Map<String, dynamic> data,
-    Map<String, dynamic> radioFileNames,
-    String rootCodeName,
-  ) {
-    Iterable<String> keys = radioFileNames.keys;
-    var randomId = DateTime.now().millisecond;
-    var res = keys.fold(
-      {
-        "Unit": {"UnitId": randomId, "CodeName": rootCodeName},
-        "SubUnits": [],
-      },
-      (cur, pre) {
-        randomId = randomId + 1;
-        var temp = {
-          "Unit": {"UnitId": randomId, "CodeName": pre},
-          "SubUnits": [],
-        };
-        for (var i = 0; i < radioFileNames[pre].length; i++) {
-          randomId = randomId + 1;
-          (temp["SubUnits"] as List).add({
-            "Unit": {
-              "UnitId": randomId,
-              "CodeName": radioFileNames[pre][i],
-              "isleaf": true,
-            },
-            "SubUnits": [],
-          });
-        }
-        (cur["SubUnits"] as List).add(temp);
-        return cur;
-      },
-    );
-    return res;
+  Map<String, dynamic> parseCcuAndServerNodes(
+    List<String> nodes, {
+    required String rootTitle,
+  }) {
+    Map<String, dynamic> root = {
+      "id": 0,
+      "title": rootTitle,
+      "NetNodes": [],
+      "UserIds": [],
+      "children": [],
+      "isleaf": false,
+      "isShowCheckbox": false,
+      "type": 999,
+    };
+    root["children"] = nodes.fold([], (cur, pre) {
+      Map<String, dynamic> temp = {
+        "id": 0,
+        "title": pre,
+        "NetNodes": [],
+        "UserIds": [],
+        "children": [],
+        "isleaf": true,
+        "isShowCheckbox": false,
+        "type": 999,
+      };
+      cur.add(temp);
+      return cur;
+    });
+    return root;
+  }
+
+  Map<String, dynamic> parseRadioNodes(
+    Map<String, dynamic> nodes, {
+    required String rootTitle,
+    required int type,
+  }) {
+    Map<String, dynamic> root = {
+      "id": 0,
+      "title": rootTitle,
+      "NetNodes": [],
+      "UserIds": [],
+      "children": [],
+      "isleaf": false,
+      "isShowCheckbox": false,
+      "type": 999,
+    };
+    int id = DateTime.now().millisecondsSinceEpoch;
+    nodes.forEach((key, value) {
+      id++;
+      Map<String, dynamic> sonNode = {
+        "id": "key-$id",
+        "title": key,
+        "NetNodes": [],
+        "UserIds": [],
+        "children": [],
+        "isleaf": false,
+        "isShowCheckbox": false,
+        "type": 999,
+      };
+      value.forEach((item) {
+        id++;
+        sonNode["children"].add({
+          "id": "key-$id",
+          "title": item,
+          "NetNodes": [],
+          "UserIds": [],
+          "children": [],
+          "isleaf": true,
+          "isShowCheckbox": type == 1,
+          "type": 999,
+        });
+      });
+      root["children"].add(sonNode);
+    });
+    return root;
   }
 
   Future<void> detailsTreeOnTap(SimpleTreeNode v) async {
@@ -349,6 +413,7 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
     );
     String savePath = await DirectoryManager.instance.getZipCache();
     String resPath = "";
+    print("resourcePath${resourcePath}");
     List<String> resourceFileNames = await FileTools.getJsonFileNameByFPath(
       resourcePath,
     );

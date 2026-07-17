@@ -143,7 +143,7 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
                 SizedBox(width: 15),
                 TextTitle(text: mtc.select.title),
                 const Spacer(),
-                mtc.select.type == 4
+                mtc.select.type == 1
                     ? BaseButton(
                         label: t.button.paramsInject.bind,
                         width: 65,

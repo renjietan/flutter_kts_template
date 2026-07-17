@@ -227,6 +227,7 @@ class Translations$pager$zh {
 	final Translations _root; // ignore: unused_field
 
 	// Translations
+	late final Translations$pager$injectParams$zh injectParams = Translations$pager$injectParams$zh.internal(_root);
 	late final Translations$pager$radioManager$zh radioManager = Translations$pager$radioManager$zh.internal(_root);
 	late final Translations$pager$injectEncrypt$zh injectEncrypt = Translations$pager$injectEncrypt$zh.internal(_root);
 }
@@ -419,6 +420,18 @@ class Translations$app$appbar$zh {
 	String get keyManager => '注钥管理';
 }
 
+// Path: pager.injectParams
+class Translations$pager$injectParams$zh {
+	Translations$pager$injectParams$zh.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// zh: '未来战士'
+	String get futureSoldier => '未来战士';
+}
+
 // Path: pager.radioManager
 class Translations$pager$radioManager$zh {
 	Translations$pager$radioManager$zh.internal(this._root);
@@ -466,8 +479,8 @@ class Translations$tips$paramsInject$zh {
 	/// zh: '请勾选电台'
 	String get selectRadios => '请勾选电台';
 
-	/// zh: '是否立即前往配置？'
-	String get gotoConfig => '是否立即前往配置？';
+	/// zh: '绑定已完成，是否现在前往配置？'
+	String get gotoConfig => '绑定已完成，是否现在前往配置？';
 }
 
 // Path: tableColumn.base
