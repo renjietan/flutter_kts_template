@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -105,7 +104,6 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
       mtc.visible = false;
     });
     final (data, path) = await readAllDataFiles(filePath);
-    print(json.encode(data));
     allData = data;
     dataPath = path;
     if (allData.isEmpty) {
@@ -118,8 +116,13 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
     Map<String, dynamic> contacts = allData["0_contacts"] ?? {};
     for (var key in contacts.keys) {
       Map<String, dynamic> unitTree = contacts[key]["UnitTree"] ?? {};
+
       if (unitTree.isEmpty) continue;
-      Map<String, dynamic> temp = transformUnitTree(unitTree, fillNode: true);
+      Map<String, dynamic> temp = transformUnitTree(
+        unitTree,
+        fullData: allData,
+      );
+
       setState(() {
         final (data, _) = buildTree(temp, activeSelection: true);
         mtc.data = data;
@@ -167,7 +170,7 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
       if (pre.keys.isNotEmpty) {
         pre = transformUnitTree(
           pre,
-          fillNode: false,
+          fullData: allData,
           isShowCheckbox: mtc.select.type == 4,
         );
         final (data, nIndex) = buildTree(

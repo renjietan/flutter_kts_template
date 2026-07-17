@@ -136,142 +136,231 @@ Future<(Map<String, dynamic>, String)> readAllDataFiles(
   return (res, subFolders[0].path);
 }
 
+/// 递归将 unit 中的 NetNodes 转为 SubUnits 里的子单元
 Map<String, dynamic> transformUnitTree(
-  Map<String, dynamic> node, {
-  required bool fillNode,
-  bool enableFutureWarriorGroup = false,
+  Map<String, dynamic> unit, {
   bool isShowCheckbox = false,
+  bool isRoot = true, // 这个参数不用传，函数内部作为标记使用
+  required Map<String, dynamic> fullData,
 }) {
-  // 虚拟分组节点特殊处理
-  if (node['isFutureWarriorGroup'] == true) {
-    final unit = node['Unit'] as Map<String, dynamic>;
-    final result = <String, dynamic>{
-      'id': unit['UnitId'],
-      'title': unit['CodeName'],
-      'isleaf': false,
-      'type': unit['NodeType'] ?? 4,
-      'users': [],
+  if (isRoot) {
+    String unitId = unit["UnitId"] ?? "";
+    String unitName = fullData["6_unit"]?[unitId]?["UnitName"] ?? "未找到";
+    unit = {
+      "id": unitId,
+      "title": unitName,
+      "NetNodes": unit["NetNodes"],
+      "UserIds": unit["UserIds"],
+      "children": unit["SubUnits"],
+      "isleaf": false,
+      "isShowCheckbox": isShowCheckbox,
+      "type": 999,
     };
-    final subUnits = (node['SubUnits'] as List? ?? [])
-        .cast<Map<String, dynamic>>();
-    result['children'] = subUnits
-        .map(
-          (child) => transformUnitTree(
-            child,
-            fillNode: fillNode,
-            isShowCheckbox: isShowCheckbox,
-            enableFutureWarriorGroup: enableFutureWarriorGroup,
-          ),
-        )
-        .toList();
-    return result;
   }
+  List<dynamic> netNodes = List<dynamic>.from(unit['NetNodes'] ?? []);
+  List<dynamic> subUnits = List<dynamic>.from(unit['children'] ?? []);
 
-  var unit = node['Unit'] as Map<String, dynamic>;
-  final isLeaf = (unit['isleaf'] as bool?) ?? false;
-
-  final result = <String, dynamic>{
-    'id': unit['UnitId'],
-    'title': unit['CodeName'],
-    'isleaf': isLeaf,
-    'type': unit['NodeType'] ?? -1,
-    'users': unit['Users'] ?? [],
-  };
-
-  if (isLeaf) {
-    result['isShowCheckbox'] = isShowCheckbox;
-  }
-
-  var subUnits = (node['SubUnits'] as List? ?? []).cast<Map<String, dynamic>>();
-  final netNodes = (node['NetNodes'] as List? ?? [])
-      .cast<Map<String, dynamic>>();
-
-  // 处理 NetNodes
-  if (!isLeaf && netNodes.isNotEmpty) {
-    final allConverted = netNodes.map((n) => transformNetNode(n)).toList();
-
-    if (enableFutureWarriorGroup) {
-      final normalNodes = allConverted
-          .where((item) => item['NodeType'] != 4)
-          .toList();
-      final futureWarriorNodes = allConverted
-          .where((item) => item['NodeType'] == 4)
-          .toList();
-
-      final List<Map<String, dynamic>> groupChildren = [];
-      if (futureWarriorNodes.isNotEmpty) {
-        groupChildren.addAll(futureWarriorNodes);
-      } else {
-        // 无未来战士时填入占位叶子
-        groupChildren.add({
-          'Unit': {
-            'UnitId': DateTime.now().millisecondsSinceEpoch + 999,
-            'CodeName': t.tree.empty,
-            'isleaf': true,
-            'NodeType': -1,
-          },
-          'NetNodes': [],
-          'SubUnits': [],
-        });
-      }
-
-      final futureWarriorsGroup = <String, dynamic>{
-        'isFutureWarriorGroup': true,
-        'Unit': {
-          'UnitId': DateTime.now().millisecondsSinceEpoch,
-          'CodeName': t.tree.futureWarrior,
-          'isleaf': false,
-          'NodeType': 4, // 父节点类型设为4
-        },
-        'NetNodes': [],
-        'SubUnits': groupChildren,
-      };
-
-      subUnits = [...normalNodes, futureWarriorsGroup, ...subUnits];
-    } else {
-      // 不启用分组：所有节点直接作为子节点
-      subUnits = [...allConverted, ...subUnits];
-    }
-  }
-
-  // 是否需要填充节点
-  if (!isLeaf && subUnits.isEmpty && fillNode) {
-    int randomNum = DateTime.now().millisecondsSinceEpoch;
-    subUnits = [
-      {
-        "Unit": {
-          "UnitId": randomNum + 1,
-          "CodeName": t.tree.empty,
-          "isleaf": true,
-        },
+  List<Map<String, dynamic>> nSubUnits = subUnits.map((sub) {
+    String unitId = sub["UnitId"] ?? "";
+    String unitName = fullData["6_unit"]?[unitId]?["UnitName"] ?? "未找到";
+    Map<String, dynamic> nSub = {
+      "id": unitId,
+      "title": unitName,
+      "NetNodes": sub["NetNodes"],
+      "UserIds": sub["UserIds"],
+      "children": sub["SubUnits"],
+      "isleaf": false,
+      "isShowCheckbox": isShowCheckbox,
+      "type": sub["type"] ?? 999,
+    };
+    return transformUnitTree(
+      Map<String, dynamic>.from(nSub),
+      fullData: fullData,
+      isShowCheckbox: isShowCheckbox,
+      isRoot: false,
+    );
+  }).toList();
+  int randomId = DateTime.now().millisecondsSinceEpoch;
+  List<Map<String, dynamic>> nNetNodes = netNodes.fold(
+    [
+      <String, dynamic>{
+        'id': "nfs_$randomId",
+        "title": "未来战士",
+        'UserIds': <Map<String, dynamic>>[],
+        'children': <Map<String, dynamic>>[],
+        "isleaf": false,
+        "isShowCheckbox": isShowCheckbox,
+        "type": 999,
       },
-    ];
-  }
-
-  result['children'] = subUnits
-      .map(
-        (child) => transformUnitTree(
-          child,
-          fillNode: fillNode,
-          isShowCheckbox: isShowCheckbox,
-          enableFutureWarriorGroup: enableFutureWarriorGroup,
-        ),
-      )
-      .toList();
-  return result;
-}
-
-Map<String, dynamic> transformNetNode(Map<String, dynamic> netNode) {
-  return {
-    'NodeType': netNode['NodeType'], // 保留原始类型（如4）
-    'Unit': {
-      'UnitId': netNode['NodeId'],
-      'CodeName': netNode['CodeName'],
-      'isleaf': true,
-      'NodeType': netNode['NodeType'], // 保留原始类型
-      'Users': netNode['Users'] ?? [],
+    ],
+    (cur, pre) {
+      Map<String, dynamic> nn_fileInfo = fullData["4_net_node"]?[pre] ?? {};
+      Map<String, dynamic> nn_baseInfo = nn_fileInfo["BasicInfo"] ?? {};
+      var items = <String, dynamic>{
+        'id': pre,
+        "title": nn_baseInfo["NodeName"] ?? "未找到",
+        'UserIds': <String>[],
+        'children': <Map>[],
+        "isleaf": true,
+        "isShowCheckbox": isShowCheckbox,
+        "type": nn_baseInfo["NodeType"] ?? -1,
+      };
+      if (pre.startsWith("nn_futureSoldier")) {
+        cur[cur.length - 1]["children"].add(items);
+      } else {
+        cur = [items, ...cur];
+      }
+      return cur;
     },
-    'NetNodes': [],
-    'SubUnits': [],
-  };
+  ).toList();
+  if (nNetNodes[netNodes.length - 1]["children"].length == 0) {
+    nNetNodes.removeLast();
+  }
+  unit['children'] = [...nNetNodes, ...nSubUnits];
+  return unit;
 }
+
+// Map<String, dynamic> transformUnitTree(
+//   Map<String, dynamic> node, {
+//   required Map<String, dynamic> fullData,
+//   required bool fillNode,
+//   bool enableFutureWarriorGroup = false,
+//   bool isShowCheckbox = false,
+// }) {
+//   final unitId = node["UnitId"];
+//   final unitMap = fullData["6_unit"][unitId] ?? {};
+//   final unitName = unitMap["name"] ?? unitId;
+//   // 虚拟分组节点特殊处理
+//   if (node['isFutureWarriorGroup'] == true) {
+//     final result = <String, dynamic>{
+//       'id': unitId,
+//       'title': unitName,
+//       'isleaf': false,
+//       'type': unitId ?? 999,
+//       'users': [],
+//     };
+//     final subUnits = (node['SubUnits'] as List? ?? [])
+//         .cast<Map<String, dynamic>>();
+//     result['children'] = subUnits
+//         .map(
+//           (child) => transformUnitTree(
+//             child,
+//             fillNode: fillNode,
+//             isShowCheckbox: isShowCheckbox,
+//             enableFutureWarriorGroup: enableFutureWarriorGroup,
+//             fullData: fullData,
+//           ),
+//         )
+//         .toList();
+//     return result;
+//   }
+//
+//   var unit = node['Unit'] as Map<String, dynamic>;
+//   final isLeaf = (unit['isleaf'] as bool?) ?? false;
+//
+//   final result = <String, dynamic>{
+//     'id': unit['UnitId'],
+//     'title': unit['CodeName'],
+//     'isleaf': isLeaf,
+//     'type': unit['NodeType'] ?? 999,
+//     'users': unit['Users'] ?? [],
+//   };
+//
+//   if (isLeaf) {
+//     result['isShowCheckbox'] = isShowCheckbox;
+//   }
+//
+//   var subUnits = (node['SubUnits'] as List? ?? []).cast<Map<String, dynamic>>();
+//   final netNodes = (node['NetNodes'] as List? ?? [])
+//       .cast<Map<String, dynamic>>();
+//
+//   // 处理 NetNodes
+//   if (!isLeaf && netNodes.isNotEmpty) {
+//     final allConverted = netNodes.map((n) => transformNetNode(n)).toList();
+//
+//     if (enableFutureWarriorGroup) {
+//       final normalNodes = allConverted
+//           .where((item) => item['NodeType'] != 4)
+//           .toList();
+//       final futureWarriorNodes = allConverted
+//           .where((item) => item['NodeType'] == 4)
+//           .toList();
+//
+//       final List<Map<String, dynamic>> groupChildren = [];
+//       if (futureWarriorNodes.isNotEmpty) {
+//         groupChildren.addAll(futureWarriorNodes);
+//       } else {
+//         // 无未来战士时填入占位叶子
+//         groupChildren.add({
+//           'Unit': {
+//             'UnitId': DateTime.now().millisecondsSinceEpoch + 999,
+//             'CodeName': t.tree.empty,
+//             'isleaf': true,
+//             'NodeType': -1,
+//           },
+//           'NetNodes': [],
+//           'SubUnits': [],
+//         });
+//       }
+//
+//       final futureWarriorsGroup = <String, dynamic>{
+//         'isFutureWarriorGroup': true,
+//         'Unit': {
+//           'UnitId': DateTime.now().millisecondsSinceEpoch,
+//           'CodeName': t.tree.futureWarrior,
+//           'isleaf': false,
+//           'NodeType': 4, // 父节点类型设为4
+//         },
+//         'NetNodes': [],
+//         'SubUnits': groupChildren,
+//       };
+//
+//       subUnits = [...normalNodes, futureWarriorsGroup, ...subUnits];
+//     } else {
+//       // 不启用分组：所有节点直接作为子节点
+//       subUnits = [...allConverted, ...subUnits];
+//     }
+//   }
+//
+//   // 是否需要填充节点
+//   if (!isLeaf && subUnits.isEmpty && fillNode) {
+//     int randomNum = DateTime.now().millisecondsSinceEpoch;
+//     subUnits = [
+//       {
+//         "Unit": {
+//           "UnitId": randomNum + 1,
+//           "CodeName": t.tree.empty,
+//           "isleaf": true,
+//         },
+//       },
+//     ];
+//   }
+//
+//   result['children'] = subUnits
+//       .map(
+//         (child) => transformUnitTree(
+//           child,
+//           fillNode: fillNode,
+//           fullData: fullData,
+//           isShowCheckbox: isShowCheckbox,
+//           enableFutureWarriorGroup: enableFutureWarriorGroup,
+//         ),
+//       )
+//       .toList();
+//   return result;
+// }
+//
+// Map<String, dynamic> transformNetNode(Map<String, dynamic> netNode) {
+//   return {
+//     'NodeType': netNode['NodeType'], // 保留原始类型（如4）
+//     'Unit': {
+//       'UnitId': netNode['NodeId'],
+//       'CodeName': netNode['CodeName'],
+//       'isleaf': true,
+//       'NodeType': netNode['NodeType'], // 保留原始类型
+//       'Users': netNode['Users'] ?? [],
+//     },
+//     'NetNodes': [],
+//     'SubUnits': [],
+//   };
+// }

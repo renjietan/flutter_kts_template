@@ -201,7 +201,7 @@ Future<Map<String, dynamic>> parseData(String filePath) async {
         } else if (keys.every((item) => item.indexOf("user_") == 0)) {
           cur["5_users"] = pre;
         } else if (keys.every((item) => item.indexOf("unit") == 0)) {
-          cur["6_init"] = pre;
+          cur["6_unit"] = pre;
         } else {}
         return cur;
       },
