@@ -23,6 +23,13 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
   @override
   void initState() {
     super.initState();
+    LocaleSettings.getLocaleStream().listen((event) {
+      resetMasterTree();
+      initLeftTree(null);
+      initUdp();
+      // 在这里执行语言变化后的额外逻辑
+    });
+
     resetMasterTree();
     initLeftTree(null);
     initUdp();

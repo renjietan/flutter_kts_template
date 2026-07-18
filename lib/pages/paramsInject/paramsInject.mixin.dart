@@ -170,7 +170,7 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
         ccuNodes,
         leafActionWidgetLabel: v.data.titleIcon == HyIcons.ren
             ? null
-            : "inject",
+            : t.button.paramsInject.inject,
         leafActionWidgetOnPressed: v.data.titleIcon == HyIcons.ren
             ? null
             : detailsTreeOnTap,
@@ -188,7 +188,7 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
         serversNodes,
         leafActionWidgetLabel: v.data.titleIcon == HyIcons.ren
             ? null
-            : "inject",
+            : t.button.paramsInject.inject,
         leafActionWidgetOnPressed: v.data.titleIcon == HyIcons.ren
             ? null
             : detailsTreeOnTap,
@@ -204,7 +204,7 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
         // 由于未来战士是多选 不显示 inject 按钮
         leafActionWidgetLabel: v.data.titleIcon == HyIcons.ren
             ? null
-            : "inject",
+            : t.button.paramsInject.inject,
         leafActionWidgetOnPressed: v.data.titleIcon == HyIcons.ren
             ? null
             : detailsTreeOnTap,

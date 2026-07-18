@@ -17,7 +17,7 @@ class FileSelector {
     // 打开文件选择器
     result = await FilePicker.pickFiles(
       type: FileType.custom,
-      allowedExtensions: extensions ?? ['json', 'zip'],
+      allowedExtensions: extensions ?? ['zip'],
       allowMultiple: false,
       withData: true,
     );

@@ -173,4 +173,15 @@ class FileTools {
     }
     return path.split(RegExp(r'[/\\]')).last;
   }
+
+  static bool exists(String path) {
+    try {
+      FileStat stat = FileStat.statSync(path);
+      // 只要类型不是 notFound，即表示存在
+      return stat.type != FileSystemEntityType.notFound;
+    } catch (e) {
+      // 捕获所有异常（如权限不足、路径格式错误等）并视为不存在
+      return false;
+    }
+  }
 }
