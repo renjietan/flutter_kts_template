@@ -1,0 +1,43 @@
+{
+  // ========== Ctrl+P 文件搜索索引排除 ==========
+  "search.exclude": {
+    "**/build/**": true,
+    "**/.dart_tool/**": true,
+    "**/.fvm/**": true,
+    "**/flutter_assets/**": true,
+    "**/node_modules/**": true,
+    "**/.git/**": true,
+    "**/ios/Pods/**": true,
+    "**/android/.gradle/**": true,
+    "**/coverage/**": true,
+    "**/tmp/**": true
+  },
+
+  // ========== 文件监听排除（降低 CPU 占用） ==========
+  "files.watcherExclude": {
+    "**/build/**": true,
+    "**/.dart_tool/**": true,
+    "**/.fvm/**": true,
+    "**/flutter_assets/**": true,
+    "**/node_modules/**": true,
+    "**/.git/**": true,
+    // "**/ios/Pods/**": true,
+    // "**/android/.gradle/**": true,
+    // "**/coverage/**": true,
+    // "**/tmp/**": true
+  },
+
+  // ========== (可选) 侧边栏资源管理器隐藏 ==========
+  "files.exclude": {
+    "**/build/**": true,
+    "**/.dart_tool/**": true,
+    "**/.fvm/**": true,
+    "**/flutter_assets/**": true,
+    "**/node_modules/**": true,
+    // "**/.git/**": true,
+  //   "**/ios/Pods/**": true,
+  //   "**/android/.gradle/**": true,
+  //   "**/coverage/**": true,
+  //   "**/tmp/**": true
+  // }
+}

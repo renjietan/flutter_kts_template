@@ -2,8 +2,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_kts_template/pages/InjectEncryptionStick/InjectEncryptionStick.pager.dart';
 import 'package:flutter_kts_template/pages/layout/layout.pager.dart';
 import 'package:flutter_kts_template/pages/radioManager/radioManager.pager.dart';
-import 'package:flutter_kts_template/pages/splash/splash.dart';
+import 'package:flutter_kts_template/utils/provider/user.provider.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 
 import '../main.dart';
 import '../pages/paramsInject/paramsInject.pager.dart';
@@ -19,27 +20,27 @@ final GlobalKey<NavigatorState> _injectEncryptStickKey =
 
 final GoRouter router = GoRouter(
   navigatorKey: rootNavigatorKey,
-  initialLocation: '/splash',
+  initialLocation: '/paramsInject',
   redirect: (context, state) {
-    // final currentPath = state.uri.path;
-
-    // // 如果不在启动页，且未登录，则重定向到登录页
-    // if (!_isLoggedIn && currentPath != '/login' && currentPath != '/splash') {
-    //   return '/login';
-    // }
-    // // 如果已登录，且当前在登录页或启动页，则重定向到主页
-    // if (_isLoggedIn && (currentPath == '/login' || currentPath == '/splash')) {
-    //   return '/radioManager';
-    // }
-    // 其他情况不重定向
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final userInfo = userProvider.userInfo;
+    final bool isLoggingIn = state.matchedLocation == '/login';
+    if (userInfo.isEmpty) {
+      // 登录页面无需 重定向
+      return isLoggingIn ? null : '/login';
+    }
+    if (isLoggingIn) {
+      return '/paramsInject';
+    }
+    // 无需重定向时，需要返回 null
     return null;
   },
   routes: [
-    GoRoute(
-      path: '/splash',
-      name: 'splash',
-      builder: (context, state) => const SplashPage(),
-    ),
+    // GoRoute(
+    //   path: '/splash',
+    //   name: 'splash',
+    //   builder: (context, state) => const SplashPage(),
+    // ),
     StatefulShellRoute.indexedStack(
       key: _layoutKey,
       builder: (context, state, navigationShell) {

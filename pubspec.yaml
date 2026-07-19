@@ -10,6 +10,13 @@ version: 1.0.0+1
 environment:
   sdk: ^3.10.9
 
+flutter_native_splash:
+  # ... 其他配置
+  android: false  # 禁用 Android 平台的启动页生成[reference:2][reference:3]
+  ios: false      # 禁用 iOS 平台的启动页生成[reference:4][reference:5]
+  web: false      # 禁用 Web 平台的启动页生成[reference:6][reference:7]
+
+
 ## APP 运行时，所用的包
 dependencies:
   flutter:
@@ -86,6 +93,7 @@ dependencies:
   mime: ^2.0.0
   ## 解压压缩包
   archive: ^4.0.9
+  ## udp 包
   udp: ^5.0.3
 
 dev_dependencies:
@@ -111,8 +119,9 @@ dev_dependencies:
   go_router_builder: ^4.3.0
   # 重命名应用名称
   rename_app: ^1.6.6
-  ###################### 废弃: 使用全局包 rebrand_cli 实现 ###################
-  # flutter_launcher_icons: ^0.14.4
+  # 可单独使用，也可使用全局包 rebrand_cli 实现, 
+  # 即便不使用 flutter_launcher_icons 包，也不可删除它，因为 rebrand_cli 依赖它
+  flutter_launcher_icons: ^0.14.4
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

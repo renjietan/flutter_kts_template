@@ -4,23 +4,21 @@ import 'package:flutter/services.dart';
 import 'package:flutter_kts_template/config/config.dart';
 import 'package:flutter_kts_template/router/router.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:unified_popups/unified_popups.dart';
 
 import '../i18n/handle/translations.g.dart';
+import '../main.dart';
 import '../utils/provider/provider.dart';
+import '../utils/shared.dart';
 
 class DefaultApp {
   //运行app
   static void run() async {
-    WidgetsFlutterBinding.ensureInitialized();
+    WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+    FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
     LocaleSettings.useDeviceLocale();
-    // LocaleSettings.setPluralResolver(
-    //   locale: AppLocale.zh,
-    //   cardinalResolver: (n, {zero, one, two, few, many, other}) {
-    //     // 返回 'other' 表示总是使用翻译中定义的 'other' 键
-    //     return other ?? 'other';
-    //   },
-    // );
     SystemChrome.setSystemUIOverlayStyle(
       const SystemUiOverlayStyle(
         systemNavigationBarColor: Color(0xFF5AA6FD),
@@ -31,19 +29,54 @@ class DefaultApp {
         statusBarBrightness: Brightness.light,
       ),
     );
+    // 初始化缓存
+    await Shared.init();
 
-    runApp(ProviderStore.init(TranslationProvider(child: MyApp())));
+    String userInfo = Shared.getUserInfo() ?? '';
+    userInfo = "123";
+    runApp(
+      ProviderStore.init(
+        child: TranslationProvider(child: MyApp()),
+        userInfo: userInfo,
+        radios: [],
+      ),
+    );
   }
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  // 添加 一个标记位，防止popup重复初始化
+  bool isInitialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // 关键：在第一帧绘制完成后移除原生启动页
+    // 保证 Flutter 已经准备好显示内容了，不会闪烁
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!isInitialized) {
+        // 移除启动页
+        FlutterNativeSplash.remove();
+        isInitialized = true;
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return ScreenUtilInit(
       designSize: const Size(1200, 1980),
+      minTextAdapt: true, // 确保字体在小屏幕上不会缩得太小
+      splitScreenMode: true, // 确保分屏、旋转屏幕或多窗口下布局正常
       builder: (context, child) {
+        PopupManager.initialize(navigatorKey: rootNavigatorKey);
         return MaterialApp.router(
           // 任务管理器中应用名称，主要影响外部系统显示
           title: AppConfig.appName,
@@ -59,6 +92,5 @@ class MyApp extends StatelessWidget {
       },
       // child: SplashPage(),
     );
-    // return material_app();
   }
 }

@@ -7,7 +7,8 @@
 ### 运行
 - 使用 Android Studio 单独打开 Android 文件夹，此时软件将自动构建 Grade
 - 构建完成后，重新打开项目即可
-
+### 打包
+- flutter build apk --release --split-per-abi
 ### adb
 - 文件拷贝: 通过ADB将本机文件拷贝到【模拟器】
   - adb push "C:\Users\Administrator\Documents\CPD\uploads\[2026-07-09 21-16-07] txbz_json_UAE_20260709144632.zip"  /sdcard

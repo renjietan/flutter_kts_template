@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_kts_template/core/entities/radios/radiosEntity.dart';
 import 'package:flutter_kts_template/logger/logger.dart';
 import 'package:flutter_kts_template/utils/provider/radios.provider.dart';
 import 'package:flutter_kts_template/utils/provider/user.provider.dart';
@@ -11,14 +12,18 @@ class ProviderStore {
   ProviderStore._internal();
 
   //全局初始化
-  static MultiProvider init(Widget child) {
+  static MultiProvider init({
+    required List<RadiosEntity> radios,
+    required String userInfo,
+    required Widget child,
+  }) {
     GlobalLogger.logInfo("Provider start");
     //多个Provider
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider.value(value: UserProvider("")),
+        ChangeNotifierProvider.value(value: UserProvider(userInfo)),
         ChangeNotifierProvider.value(value: MenuProvider(0)),
-        ChangeNotifierProvider.value(value: RadiosProvider([])),
+        ChangeNotifierProvider.value(value: RadiosProvider(radios)),
       ],
       child: child,
     );

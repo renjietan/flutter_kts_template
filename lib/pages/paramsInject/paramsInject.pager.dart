@@ -1,12 +1,20 @@
 import 'package:composable_data_table/composable_data_table.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_kts_template/api/RadiosManagerApi.dart';
 import 'package:flutter_kts_template/components/FileUploads/fileUploads.dart';
 import 'package:flutter_kts_template/components/TextField/simple.filter.search.textField.dart';
 import 'package:flutter_kts_template/components/TreeView/simple-tree/simple.treeview.dart';
+import 'package:flutter_kts_template/components/loading/simple.async.loading.dart';
+import 'package:flutter_kts_template/components/loading/simple.loading.dart';
 import 'package:flutter_kts_template/components/text/text.title.dart';
+import 'package:flutter_kts_template/core/databaseManager/databaseManager.dart';
+import 'package:flutter_kts_template/core/entities/radios/radiosEntity.dart';
+import 'package:flutter_kts_template/core/express.dart';
 import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 import 'package:flutter_kts_template/pages/paramsInject/paramsInject.mixin.dart';
 import 'package:flutter_kts_template/theme/table.theme.dart';
+import 'package:flutter_kts_template/utils/provider/radios.provider.dart';
+import 'package:provider/provider.dart';
 import 'package:recursive_tree_flutter/functions/tree_update_functions.dart';
 
 import '../../components/button/base.button.dart';
@@ -26,13 +34,27 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
     LocaleSettings.getLocaleStream().listen((event) {
       resetMasterTree();
       initLeftTree(null);
-      initUdp();
-      // 在这里执行语言变化后的额外逻辑
     });
-
-    resetMasterTree();
-    initLeftTree(null);
-    initUdp();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      SimplePopup.loading();
+      // 在这个页面进行初始化，减轻【启动页】负担
+      Future.wait([DatabaseManager.init(), Express.start(), initUdp()]).then((
+        res,
+      ) async {
+        var radioResponse = await RadiosManagerApi.getAll();
+        List<RadiosEntity> radios = radioResponse.data.list;
+        if (mounted) {
+          RadiosProvider radiosProvider = Provider.of<RadiosProvider>(
+            context,
+            listen: false,
+          );
+          radiosProvider.setRadios = radios;
+        }
+        resetMasterTree();
+        initLeftTree(null);
+        SimpleAsyncPopup.hideLoading(Duration(milliseconds: 300));
+      });
+    });
   }
 
   @override
