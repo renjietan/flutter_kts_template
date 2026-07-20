@@ -10,6 +10,7 @@ import 'package:flutter_kts_template/components/text/text.title.dart';
 import 'package:flutter_kts_template/core/databaseManager/databaseManager.dart';
 import 'package:flutter_kts_template/core/entities/radios/radiosEntity.dart';
 import 'package:flutter_kts_template/core/express.dart';
+import 'package:flutter_kts_template/core/rtc/managers/socketIO/socket.io.manager.dart';
 import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 import 'package:flutter_kts_template/pages/paramsInject/paramsInject.mixin.dart';
 import 'package:flutter_kts_template/theme/table.theme.dart';
@@ -31,6 +32,7 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
   @override
   void initState() {
     super.initState();
+    SocketIOManager.init();
     LocaleSettings.getLocaleStream().listen((event) {
       resetMasterTree();
       initLeftTree(null);
@@ -79,6 +81,12 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
+        BaseButton(
+          label: "测试 套接字 广播",
+          onPressed: () {
+            SocketIOManager.send();
+          },
+        ),
         Padding(
           padding: EdgeInsetsGeometry.fromLTRB(16, 10, 0, 0),
           child: TextTitle(text: t.pager.radioManager.fileParse),

@@ -380,7 +380,6 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
           ],
           onConfirm: (v) {
             String selectIdsByDetailTree = dtc.selectRows.keys.join("，");
-            print("${mtc.select.id}-$selectIdsByDetailTree-$bindKeyLoaderId");
             BindConfigApi.create({
               "netNodeId": mtc.select.id,
               "deviceConfigId": selectIdsByDetailTree,
@@ -413,7 +412,6 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
     );
     String savePath = await DirectoryManager.instance.getZipCache();
     String resPath = "";
-    print("resourcePath${resourcePath}");
     List<String> resourceFileNames = await FileTools.getJsonFileNameByFPath(
       resourcePath,
     );

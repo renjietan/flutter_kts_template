@@ -206,6 +206,7 @@ Map<String, dynamic> transformUnitTree(
         "type": nn_baseInfo["NodeType"] ?? -1,
       };
       if (pre.startsWith("nn_futureSoldier")) {
+        print(cur[cur.length - 1]["children"]);
         cur[cur.length - 1]["children"].add(items);
       } else {
         cur = [items, ...cur];
@@ -213,7 +214,7 @@ Map<String, dynamic> transformUnitTree(
       return cur;
     },
   ).toList();
-  if (nNetNodes[netNodes.length - 1]["children"].length == 0) {
+  if (nNetNodes[nNetNodes.length - 1]["children"].length == 0) {
     nNetNodes.removeLast();
   }
   unit['children'] = [...nNetNodes, ...nSubUnits];
