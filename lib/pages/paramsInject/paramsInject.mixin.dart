@@ -7,6 +7,7 @@ import 'package:flutter_kts_template/api/KeyLoaders.api.dart';
 import 'package:flutter_kts_template/components/TextField/simple.form.textfield.dart';
 import 'package:flutter_kts_template/components/dialog/simple.tips.dialog.dart';
 import 'package:flutter_kts_template/core/entities/keyLoaders/keyLoadersEntity.dart';
+import 'package:flutter_kts_template/core/rtc/managers/socketIO/socket.io.manager.dart';
 import 'package:flutter_kts_template/core/rtc/tools/proto/pManifest.dart';
 import 'package:flutter_kts_template/core/utils/director.dart';
 import 'package:flutter_kts_template/pages/paramsInject/paramsInject.model.dart';
@@ -34,7 +35,6 @@ import '../../i18n/handle/translations.g.dart';
 import '../../icons/hy_icons.dart';
 import '../../logger/logger.dart';
 import '../../utils/files/FileTools.dart';
-import '../../utils/formValidator/formValidator.dart';
 
 mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
   Map<String, dynamic> allData = {};
@@ -46,6 +46,7 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
   String get resourcePath => p.join(dataPath, "1_resource");
   List<String> get keyLoaderOptions =>
       keyLoaders.map((item) => item.name).toList();
+  String get deviceAddress => "${dtc.dialog.deviceIP.text}:60009";
 
   MasterTreeConfig mtc = MasterTreeConfig(
     searchValue: "",
@@ -70,13 +71,14 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
   );
 
   late UdpManager manager;
-  late RadioModel udpRadiosInfo = RadioModel(
-    address: "192.168.7.2:60009",
+  late DeviceFileModel deviceFileModel = DeviceFileModel(
     packets: [],
     packetHeader: Uint8List.fromList([]),
     userId: null,
     tarPath: "",
   );
+
+  late SocketIOManager socketIOManager;
 
   void resetMasterTree() {
     mtc.searchValue = "";
@@ -321,7 +323,7 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
             FormBuilderValidators.required(
               errorText: t.Form.paramsInject.deviceIp.validatorText,
             ),
-            FormValidator.ipPortValidator(
+            FormBuilderValidators.ip(
               errorText: t.Form.paramsInject.deviceIp.validatorText,
             ),
           ],
@@ -439,7 +441,7 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
           zipName: "ccu",
         );
         resPath = ccuTarPath;
-      } else if (v.title.startsWith("dc_server")) {
+      } else if (v.title.startsWith("dc_server_")) {
         // 构建 server 打包的文件列表: 1_resource、2_radio_subnet、3_device_config、4_net_node、5_user、6_contacts
         List<Directory> subFolds = await FileTools.getDirectSubFolders(
           dataPath,
@@ -494,7 +496,10 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
         );
         resPath = serviceTarPath;
       }
-      udpRadiosInfo.tarPath = resPath;
+      deviceFileModel.tarPath = resPath;
+      // var temp_test = ByteTools.str2UintList("./plan_local.tar");
+      // print("===========================================");
+      // print(ByteTools.uIntList2uIntListStr(temp_test));
       login();
     } catch (e) {
       SimplePopup.hideLoading();
@@ -509,7 +514,7 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
 
   Future<void> initUdp() async {
     manager = UdpManager();
-    await manager.connect(AppConfig.udpConfig.toString());
+    await manager.init(AppConfig.udpConfig.toString());
     manager.eventStream.listen((RtcEvent v) {
       if (v.type == RtcEventType.closed) {
         SimplePopup.error(t.udp.closed);
@@ -528,43 +533,28 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
         if (status != 0x00 && status != 0x02) {
           udpPopError(t.udp.loginFail);
         } else {
-          udpRadiosInfo.userId = v[11];
-          // 1、读取路径下的压缩包的字节
-          File injectFile = File(udpRadiosInfo.tarPath!);
-          Uint8List bytes = injectFile.readAsBytesSync();
-          // 2、要发送的 包头
-          int packetCont = ByteTools.chunkBytes(bytes, chunkSize: 500).length;
-          Uint8List packetHeader = ProtoManifest.fileHeader(
-            // fileName: "/lib/fireware/plan_local.tar",
-            fileName: "./plan_local.tar",
-            // fileName: "plan_local.tar",
-            fileSize: bytes.length,
-            packetCnt: packetCont,
-            userId: udpRadiosInfo.userId!,
-          );
-          udpRadiosInfo.packetHeader = packetHeader;
-          // 3、分包
-          List<Uint8List> packets = ProtoManifest.fileData(
-            packetSize: 500,
-            data: bytes,
-            userId: udpRadiosInfo.userId,
-          );
-          udpRadiosInfo.packets = packets;
-          // ping(); // 暂时不使用心跳
-          fileHeader();
+          deviceFileModel.userId = v[11];
+          // 只能在登录成功后，开始 分包，因为需要userId
+          readyPayload();
+          ping();
         }
       } else if (sap == 0x01 && optCode == 0x83) {
+        if (TimeoutManager.hasTimer("login")) {
+          TimeoutManager.clearTimeout("login");
+        }
         TimeoutManager.clearTimeout("ping");
+        // fileHeader();
         if (status != 0) {
           udpPopError(t.udp.pingFail);
         } else {
-          TimeoutManager.setTimeout(
-            "ping",
-            AppConfig.udpConfig.timeoutDuration,
-            () {
-              ping();
-            },
-          );
+          fileHeader();
+          // TimeoutManager.setTimeout(
+          //   "ping",
+          //   AppConfig.udpConfig.timeoutDuration,
+          //   () {
+          //     ping();
+          //   },
+          // );
         }
       } else if (sap == 0x04 && optCode == 0x83) {
         if (status != 0) {
@@ -582,10 +572,40 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
     });
   }
 
+  void readyPayload() {
+    // 1、读取路径下的压缩包的字节
+    File injectFile = File(deviceFileModel.tarPath!);
+    Uint8List bytes = injectFile.readAsBytesSync();
+    // 2、要发送的 包头
+    int packetCont = ByteTools.chunkBytes(bytes, chunkSize: 500).length;
+    String filename = "";
+    if (dtc.dialog.deviceType.text == "ccu") {
+      filename = "/home/update/plan_local.tar";
+    } else if (dtc.dialog.deviceType.text == "server") {
+      filename = "plan_local.tar";
+    } else {
+      filename = "plan_local.tar";
+    }
+    Uint8List packetHeader = ProtoManifest.fileHeader(
+      fileName: filename,
+      fileSize: bytes.length,
+      packetCnt: packetCont,
+      userId: deviceFileModel.userId!,
+    );
+    deviceFileModel.packetHeader = packetHeader;
+    // 3、分包
+    List<Uint8List> packets = ProtoManifest.fileData(
+      packetSize: 500,
+      data: bytes,
+      userId: deviceFileModel.userId,
+    );
+    deviceFileModel.packets = packets;
+  }
+
   Future<void> login() async {
     TimeoutManager.clearAll();
     Uint8List bytes = ProtoManifest.loginWithPing("admin");
-    manager.write(bytes, dtc.dialog.deviceIP.text);
+    manager.write(bytes, deviceAddress);
     TimeoutManager.setTimeout("login", AppConfig.udpConfig.timeoutDuration, () {
       udpPopError(t.udp.loginTimeout);
     });
@@ -593,15 +613,15 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
 
   Future<void> ping() async {
     TimeoutManager.clearTimeout("ping");
-    Uint8List bytes = ProtoManifest.ping(udpRadiosInfo.userId!);
-    manager.write(bytes, dtc.dialog.deviceIP.text);
+    Uint8List bytes = ProtoManifest.ping(deviceFileModel.userId!);
+    manager.write(bytes, deviceAddress);
     TimeoutManager.setTimeout("ping", AppConfig.udpConfig.timeoutDuration, () {
       udpPopError(t.udp.pingTimeout);
     });
   }
 
   Future<void> fileHeader() async {
-    manager.write(udpRadiosInfo.packetHeader, dtc.dialog.deviceIP.text);
+    manager.write(deviceFileModel.packetHeader, deviceAddress);
     TimeoutManager.setTimeout(
       "fileHeader",
       AppConfig.udpConfig.timeoutDuration,
@@ -616,9 +636,9 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
       TimeoutManager.clearTimeout("fileHeader");
     }
     TimeoutManager.clearTimeout("filePacket");
-    if (udpRadiosInfo.packets.isNotEmpty) {
-      manager.write(udpRadiosInfo.packets[0], dtc.dialog.deviceIP.text);
-      udpRadiosInfo.packets.removeAt(0);
+    if (deviceFileModel.packets.isNotEmpty) {
+      manager.write(deviceFileModel.packets[0], deviceAddress);
+      deviceFileModel.packets.removeAt(0);
       TimeoutManager.setTimeout(
         "filePacket",
         AppConfig.udpConfig.timeoutDuration,

@@ -50,18 +50,16 @@ class DetailTreeDialogConfig {
   DetailTreeDialogConfig({required this.deviceType, required this.deviceIP});
 }
 
-class RadioModel {
-  List<Uint8List> packets; // 包
-  final String address; // 电台地址
-  Uint8List packetHeader; // 总共的字节
+class DeviceFileModel {
   int? userId;
   String? tarPath;
+  List<Uint8List> packets; // 包
+  Uint8List packetHeader; // 总共的字节
 
-  RadioModel({
-    required this.packets,
-    required this.address,
-    required this.packetHeader,
+  DeviceFileModel({
     this.userId,
     this.tarPath,
+    required this.packets,
+    required this.packetHeader,
   });
 }

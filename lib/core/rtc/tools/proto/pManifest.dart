@@ -171,10 +171,12 @@ class ProtoManifest {
     int count = 0;
     return packetContents.fold<List<Uint8List>>([], (cur, pre) {
       Uint8List packetNumBytes = ByteTools.int2UintList(count, byteLen: 2);
+
       Uint8List packetSizeBytes = ByteTools.int2UintList(
-        packetSize,
+        pre.length,
         byteLen: 2,
       );
+
       ProtoModels models = ProtoModels(
         name: "fileData",
         list: [

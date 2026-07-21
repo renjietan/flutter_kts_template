@@ -122,6 +122,8 @@ dev_dependencies:
   # 可单独使用，也可使用全局包 rebrand_cli 实现, 
   # 即便不使用 flutter_launcher_icons 包，也不可删除它，因为 rebrand_cli 依赖它
   flutter_launcher_icons: ^0.14.4
+  # 打包
+  inno_bundle: ^0.11.2
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -178,3 +180,12 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+inno_bundle:
+  id: 95067000-843b-11f1-851e-e92e0c69ab82
+  publisher: Cc
+  name: "CPD"
+  version: "1.0.0"
+  exe_name: "CPD.exe"
+  languages:
+    - english

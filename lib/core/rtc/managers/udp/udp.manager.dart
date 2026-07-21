@@ -26,9 +26,9 @@ class UdpManager implements RtcAbstract {
       StreamController<RtcEvent>.broadcast();
 
   @override
-  Future<void> connect(String peerAddress) async {
+  Future<void> init(String localPeerAddress) async {
     try {
-      UdpAddress udpAddress = UdpAddress.fromString(peerAddress);
+      UdpAddress udpAddress = UdpAddress.fromString(localPeerAddress);
       Endpoint endpoint = Endpoint.any(port: Port(udpAddress.port));
       _udp = await UDP.bind(endpoint);
       // 服务建立失败
@@ -52,14 +52,17 @@ class UdpManager implements RtcAbstract {
   }
 
   @override
+  Future<void> connect(String remotePeerAddress) async {}
+
+  @override
   Future<void> disconnect() async {
     _udp.close();
     _remoteEndpoints.clear();
   }
 
   @override
-  Future<void> write(Uint8List data, String rPeer) async {
-    UdpAddress address = UdpAddress.fromString(rPeer);
+  Future<void> write(Uint8List data, String remotePeerAddress) async {
+    UdpAddress address = UdpAddress.fromString(remotePeerAddress);
     // 远端地址
     Endpoint remoteEndpoint = Endpoint.multicast(
       address.address,

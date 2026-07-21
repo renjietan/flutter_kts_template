@@ -32,7 +32,8 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
   @override
   void initState() {
     super.initState();
-    SocketIOManager.init();
+    socketIOManager = SocketIOManager();
+    socketIOManager.init("");
     LocaleSettings.getLocaleStream().listen((event) {
       resetMasterTree();
       initLeftTree(null);
@@ -81,12 +82,13 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
-        BaseButton(
-          label: "测试 套接字 广播",
-          onPressed: () {
-            SocketIOManager.send();
-          },
-        ),
+        // BaseButton(
+        //   label: "测试 套接字 广播",
+        //   onPressed: () {
+        //     Uint8List data = ByteTools.str2UintList("admin");
+        //     socketIOManager.write(data, "不用传远端地址，默认广播地址为 255.255.255.255");
+        //   },
+        // ),
         Padding(
           padding: EdgeInsetsGeometry.fromLTRB(16, 10, 0, 0),
           child: TextTitle(text: t.pager.radioManager.fileParse),

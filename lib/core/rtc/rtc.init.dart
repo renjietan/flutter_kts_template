@@ -2,7 +2,7 @@ import 'package:flutter_kts_template/core/rtc/tools/rtc.abstract.dart';
 
 RtcAbstract? _managerSingleton;
 
-RtcAbstract getHidManager() {
+RtcAbstract getUsbManager() {
   if (_managerSingleton != null) return _managerSingleton!;
   // if (Platform.isAndroid) {
   //   _hidManagerSingleton = AndroidSerialManager();

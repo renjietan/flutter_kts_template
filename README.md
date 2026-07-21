@@ -125,7 +125,12 @@
   - dart pub global activate rebrand_cli
   - 配置环境变量 PATH 添加一行：D:\work\flutter\template\3-38-10\PUB_CACHE\bin
   - rebrand
-  
+- inno_bundle
+  - winget install -e --id JRSoftware.InnoSetup
+  - dart pub add dev:inno_bundle
+  - dart run inno_bundle: 首次运行：该命令会在项目根目录生成一个 inno_bundle.yaml 配置文件，你可以通过编辑它来定制安装程序的细节，例如应用名称、版本、图标等
+
+
 - TODO:
   - shelf_limiter 
   - shelf_rate_limiter

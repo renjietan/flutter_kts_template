@@ -18,7 +18,6 @@ class FormValidator {
       final ipAddress = segments[0];
       final portNumber = segments[1];
 
-      // 校验 IP（不传 errorText，由我们统一控制）
       final ipError = FormBuilderValidators.ip()(ipAddress);
       if (ipError != null) {
         return errorText ?? '';
