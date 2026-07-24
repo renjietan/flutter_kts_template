@@ -45,6 +45,12 @@ pageable:
 pager:
   injectParams:
     futureSoldier: 未来战士
+    steps:
+      discovery: 发现
+      authentication: 认证
+      transfer: 传输
+      parse: 解析
+      finish: 完成
   radioManager:
     title: 电台管理
     netNode: 网络节点

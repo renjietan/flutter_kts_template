@@ -45,6 +45,12 @@ pageable:
 pager:
   injectParams:
     futureSoldier: Future soldier
+    steps:
+      discovery: discovery
+      authentication: authentication
+      transfer: transfer
+      parse: parse
+      finish: finish
   radioManager:
     title: Radio manager
     netNode: Net Node

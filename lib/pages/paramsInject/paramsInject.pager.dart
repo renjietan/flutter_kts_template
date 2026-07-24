@@ -6,6 +6,7 @@ import 'package:flutter_kts_template/components/TextField/simple.filter.search.t
 import 'package:flutter_kts_template/components/TreeView/simple-tree/simple.treeview.dart';
 import 'package:flutter_kts_template/components/loading/simple.async.loading.dart';
 import 'package:flutter_kts_template/components/loading/simple.loading.dart';
+import 'package:flutter_kts_template/components/step/simple.number.step.dart';
 import 'package:flutter_kts_template/components/text/text.title.dart';
 import 'package:flutter_kts_template/core/databaseManager/databaseManager.dart';
 import 'package:flutter_kts_template/core/entities/radios/radiosEntity.dart';
@@ -41,6 +42,7 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
     });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       SimplePopup.loading();
+      initSteps(context);
       // 在这个页面进行初始化，减轻【启动页】负担
       Future.wait([DatabaseManager.init(), Express.start(), initUdp()]).then((
         res,
@@ -68,9 +70,9 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Expanded(flex: 4, child: _buildMasterTree(context)),
+          Expanded(flex: 6, child: _buildMasterTree(context)),
           const VerticalDivider(thickness: 1, width: 1),
-          Expanded(flex: 3, child: _buildDetailTree(context)),
+          Expanded(flex: 5, child: _buildDetailTree(context)),
         ],
       ),
     );
@@ -188,6 +190,7 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
                     ? BaseButton(
                         label: t.button.paramsInject.bind,
                         width: 65,
+                        height: 30,
                         onPressed: () {
                           bind(ctx);
                         },
@@ -197,30 +200,13 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
             ),
           ),
         ),
-        EasyStepper(
-          activeStep: activeStep,
-          stepRadius: 28,
-          showLoadingAnimation: false,
-          stepBorderRadius: 15,
-          finishedStepBackgroundColor: const Color(0xFF7C3AED),
-          activeStepBackgroundColor: const Color(0xFF7C3AED),
-          finishedStepTextColor: const Color(0xFF7C3AED),
-          lineStyle: const LineStyle(
-            lineLength: 60,
-            lineType: LineType.normal,
-            lineThickness: 3,
-            unreachedLineType: LineType.dashed,
-            defaultLineColor: Color(0xFFDCD7E8),
-            finishedLineColor: Color(0xFF7C3AED),
+        Padding(
+          padding: EdgeInsetsGeometry.only(left: 30, right: 30, bottom: 20),
+          child: SimpleNumberStep(
+            steps: steps,
+            lineWidth: 20,
+            activeStep: activeStep,
           ),
-          steps: const [
-            EasyStep(icon: Icon(Icons.shopping_cart), title: 'Cart'),
-            EasyStep(icon: Icon(Icons.person), title: 'Address'),
-            EasyStep(icon: Icon(Icons.receipt_long), title: 'Checkout'),
-            EasyStep(icon: Icon(Icons.star), title: 'Review'),
-            EasyStep(icon: Icon(Icons.check_circle), title: 'Done'),
-          ],
-          onStepReached: (index) => setState(() => activeStep = index),
         ),
         Expanded(
           child: Padding(

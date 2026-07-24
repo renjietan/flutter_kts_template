@@ -430,6 +430,8 @@ class Translations$pager$injectParams$zh {
 
 	/// zh: '未来战士'
 	String get futureSoldier => '未来战士';
+
+	late final Translations$pager$injectParams$steps$zh steps = Translations$pager$injectParams$steps$zh.internal(_root);
 }
 
 // Path: pager.radioManager
@@ -655,6 +657,30 @@ class Translations$Form$paramsInject$zh {
 	late final Translations$Form$paramsInject$deviceType$zh deviceType = Translations$Form$paramsInject$deviceType$zh.internal(_root);
 	late final Translations$Form$paramsInject$deviceIp$zh deviceIp = Translations$Form$paramsInject$deviceIp$zh.internal(_root);
 	late final Translations$Form$paramsInject$selectKeyLoader$zh selectKeyLoader = Translations$Form$paramsInject$selectKeyLoader$zh.internal(_root);
+}
+
+// Path: pager.injectParams.steps
+class Translations$pager$injectParams$steps$zh {
+	Translations$pager$injectParams$steps$zh.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// zh: '发现'
+	String get discovery => '发现';
+
+	/// zh: '认证'
+	String get authentication => '认证';
+
+	/// zh: '传输'
+	String get transfer => '传输';
+
+	/// zh: '解析'
+	String get parse => '解析';
+
+	/// zh: '完成'
+	String get finish => '完成';
 }
 
 // Path: Form.radioManager.alias

@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_kts_template/pages/InjectEncryptionStick/InjectEncryptionStick.pager.dart';
 import 'package:flutter_kts_template/pages/layout/layout.pager.dart';
 import 'package:flutter_kts_template/pages/radioManager/radioManager.pager.dart';
+import 'package:flutter_kts_template/pages/test/test.dart';
 import 'package:flutter_kts_template/utils/provider/user.provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -15,6 +16,7 @@ final GlobalKey<StatefulNavigationShellState> _layoutKey =
     GlobalKey<StatefulNavigationShellState>();
 final GlobalKey<NavigatorState> _radioManagerKey = GlobalKey<NavigatorState>();
 final GlobalKey<NavigatorState> _paramsInjectKey = GlobalKey<NavigatorState>();
+final GlobalKey<NavigatorState> _testKey = GlobalKey<NavigatorState>();
 final GlobalKey<NavigatorState> _injectEncryptStickKey =
     GlobalKey<NavigatorState>();
 
@@ -83,6 +85,17 @@ final GoRouter router = GoRouter(
                 theme: getThemePreset(ThemePreset.dark),
                 themePreset: ThemePreset.dark,
               ),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          navigatorKey: _testKey,
+          routes: [
+            GoRoute(
+              parentNavigatorKey: _testKey,
+              path: '/test',
+              name: 'test',
+              builder: (context, state) => TestPager(),
             ),
           ],
         ),

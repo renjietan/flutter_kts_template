@@ -312,6 +312,7 @@ class _Translations$pager$injectParams$en extends Translations$pager$injectParam
 
 	// Translations
 	@override String get futureSoldier => 'Future soldier';
+	@override late final _Translations$pager$injectParams$steps$en steps = _Translations$pager$injectParams$steps$en._(_root);
 }
 
 // Path: pager.radioManager
@@ -464,6 +465,20 @@ class _Translations$Form$paramsInject$en extends Translations$Form$paramsInject$
 	@override late final _Translations$Form$paramsInject$deviceType$en deviceType = _Translations$Form$paramsInject$deviceType$en._(_root);
 	@override late final _Translations$Form$paramsInject$deviceIp$en deviceIp = _Translations$Form$paramsInject$deviceIp$en._(_root);
 	@override late final _Translations$Form$paramsInject$selectKeyLoader$en selectKeyLoader = _Translations$Form$paramsInject$selectKeyLoader$en._(_root);
+}
+
+// Path: pager.injectParams.steps
+class _Translations$pager$injectParams$steps$en extends Translations$pager$injectParams$steps$zh {
+	_Translations$pager$injectParams$steps$en._(TranslationsEn root) : this._root = root, super.internal(root);
+
+	final TranslationsEn _root; // ignore: unused_field
+
+	// Translations
+	@override String get discovery => 'discovery';
+	@override String get authentication => 'authentication';
+	@override String get transfer => 'transfer';
+	@override String get parse => 'parse';
+	@override String get finish => 'finish';
 }
 
 // Path: Form.radioManager.alias

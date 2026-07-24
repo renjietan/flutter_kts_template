@@ -31,6 +31,7 @@ mixin SideMenuMixin<T extends StatefulWidget> on State<T> {
       MenuItem(icon: HyIcons.canshujiazhu, label: t.app.appbar.paramsInject),
       MenuItem(icon: HyIcons.diantaiguanli, label: t.app.appbar.radioManager),
       MenuItem(icon: HyIcons.zhuyueqiangguanli, label: t.app.appbar.keyManager),
+      MenuItem(icon: Icons.thirteen_mp_outlined, label: "测试"),
     ];
     return List.generate(menuItems.length, (index) {
       final item = menuItems[index];

@@ -1,11 +1,12 @@
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_kts_template/api/BindConfig.api.dart';
 import 'package:flutter_kts_template/api/KeyLoaders.api.dart';
 import 'package:flutter_kts_template/components/TextField/simple.form.textfield.dart';
 import 'package:flutter_kts_template/components/dialog/simple.tips.dialog.dart';
+import 'package:flutter_kts_template/components/step/simple.number.step.model.dart';
 import 'package:flutter_kts_template/core/entities/keyLoaders/keyLoadersEntity.dart';
 import 'package:flutter_kts_template/core/rtc/managers/socketIO/socket.io.manager.dart';
 import 'package:flutter_kts_template/core/rtc/tools/proto/pManifest.dart';
@@ -60,6 +61,9 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
     ),
   );
   String bindKeyLoaderId = "";
+  List<SimpleNumberStepModel> steps = [];
+  int activeStep = 0;
+
   DetailTreeConfig dtc = DetailTreeConfig(
     data: [],
     visible: false,
@@ -99,6 +103,34 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
     dtc.dialog.deviceIP.text = "";
     dtc.dialog.deviceType.text = "";
     dtc.selectRows = {};
+  }
+
+  void initSteps(BuildContext ctx) {
+    final t = Translations.of(ctx);
+    setState(() {
+      steps = [
+        SimpleNumberStepModel(
+          label: t.pager.injectParams.steps.discovery,
+          isActive: true,
+        ),
+        SimpleNumberStepModel(
+          label: t.pager.injectParams.steps.authentication,
+          isActive: false,
+        ),
+        SimpleNumberStepModel(
+          label: t.pager.injectParams.steps.transfer,
+          isActive: false,
+        ),
+        SimpleNumberStepModel(
+          label: t.pager.injectParams.steps.parse,
+          isActive: false,
+        ),
+        SimpleNumberStepModel(
+          label: t.pager.injectParams.steps.finish,
+          isActive: false,
+        ),
+      ];
+    });
   }
 
   Future<void> initLeftTree(String? filePath) async {
