@@ -52,7 +52,7 @@ class SocketIOManager implements RtcAbstract {
       await connect("不用传");
     }
     try {
-      final broadcastAddress = InternetAddress('255.255.255.255');
+      final broadcastAddress = InternetAddress(remotePeerAddress);
       // 为了获取发送字节数，使用 send 方法
       int? bytesSent = _socket?.send(data, broadcastAddress, 3333);
 

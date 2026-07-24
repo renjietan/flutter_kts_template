@@ -11,6 +11,7 @@ import 'package:flutter_kts_template/core/databaseManager/databaseManager.dart';
 import 'package:flutter_kts_template/core/entities/radios/radiosEntity.dart';
 import 'package:flutter_kts_template/core/express.dart';
 import 'package:flutter_kts_template/core/rtc/managers/socketIO/socket.io.manager.dart';
+import 'package:flutter_kts_template/core/rtc/tools/proto/byteTools.dart';
 import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 import 'package:flutter_kts_template/pages/paramsInject/paramsInject.mixin.dart';
 import 'package:flutter_kts_template/theme/table.theme.dart';
@@ -82,13 +83,14 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
-        // BaseButton(
-        //   label: "测试 套接字 广播",
-        //   onPressed: () {
-        //     Uint8List data = ByteTools.str2UintList("admin");
-        //     socketIOManager.write(data, "不用传远端地址，默认广播地址为 255.255.255.255");
-        //   },
-        // ),
+        BaseButton(
+          label: "测试 套接字 广播",
+          onPressed: () {
+            socketIOManager = SocketIOManager();
+            var bbb = ByteTools.str2UintList("admin");
+            socketIOManager.write(bbb, "255.255.255.255");
+          },
+        ),
         Padding(
           padding: EdgeInsetsGeometry.fromLTRB(16, 10, 0, 0),
           child: TextTitle(text: t.pager.radioManager.fileParse),
@@ -194,6 +196,31 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
               ],
             ),
           ),
+        ),
+        EasyStepper(
+          activeStep: activeStep,
+          stepRadius: 28,
+          showLoadingAnimation: false,
+          stepBorderRadius: 15,
+          finishedStepBackgroundColor: const Color(0xFF7C3AED),
+          activeStepBackgroundColor: const Color(0xFF7C3AED),
+          finishedStepTextColor: const Color(0xFF7C3AED),
+          lineStyle: const LineStyle(
+            lineLength: 60,
+            lineType: LineType.normal,
+            lineThickness: 3,
+            unreachedLineType: LineType.dashed,
+            defaultLineColor: Color(0xFFDCD7E8),
+            finishedLineColor: Color(0xFF7C3AED),
+          ),
+          steps: const [
+            EasyStep(icon: Icon(Icons.shopping_cart), title: 'Cart'),
+            EasyStep(icon: Icon(Icons.person), title: 'Address'),
+            EasyStep(icon: Icon(Icons.receipt_long), title: 'Checkout'),
+            EasyStep(icon: Icon(Icons.star), title: 'Review'),
+            EasyStep(icon: Icon(Icons.check_circle), title: 'Done'),
+          ],
+          onStepReached: (index) => setState(() => activeStep = index),
         ),
         Expanded(
           child: Padding(
