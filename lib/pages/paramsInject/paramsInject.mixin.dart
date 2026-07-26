@@ -62,7 +62,6 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
   );
   String bindKeyLoaderId = "";
   List<SimpleNumberStepModel> steps = [];
-  int activeStep = 0;
 
   DetailTreeConfig dtc = DetailTreeConfig(
     data: [],
@@ -72,6 +71,8 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
       deviceIP: TextEditingController(),
     ),
     selectRows: {},
+    activeStep: 1,
+    selectWifi: 1,
   );
 
   late UdpManager manager;
@@ -98,11 +99,19 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
   }
 
   void resetDetailTree() {
-    dtc.data = [];
-    dtc.visible = false;
-    dtc.dialog.deviceIP.text = "";
-    dtc.dialog.deviceType.text = "";
-    dtc.selectRows = {};
+    setState(() {
+      dtc = DetailTreeConfig(
+        data: [],
+        visible: false,
+        dialog: DetailTreeDialogConfig(
+          deviceType: TextEditingController(),
+          deviceIP: TextEditingController(),
+        ),
+        selectRows: {},
+        activeStep: 1,
+        selectWifi: 1,
+      );
+    });
   }
 
   void initSteps(BuildContext ctx) {

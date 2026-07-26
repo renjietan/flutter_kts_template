@@ -45,6 +45,7 @@ pageable:
 pager:
   injectParams:
     futureSoldier: Future soldier
+    networkCard: NIC
     steps:
       discovery: discovery
       authentication: authentication
@@ -102,6 +103,8 @@ button:
   paramsInject:
     inject: inject
     bind: bind
+    refresh: refresh
+    issue: issue
   injectEncrypt:
     export: export
 checkbox:

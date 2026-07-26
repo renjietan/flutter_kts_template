@@ -45,6 +45,7 @@ pageable:
 pager:
   injectParams:
     futureSoldier: 未来战士
+    networkCard: 业务网卡
     steps:
       discovery: 发现
       authentication: 认证
@@ -101,6 +102,8 @@ button:
   paramsInject:
     inject: 注入
     bind: 绑定
+    refresh: 刷新
+    issue: 下发
   injectEncrypt:
     export: 导出
 checkbox:

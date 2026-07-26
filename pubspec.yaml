@@ -95,7 +95,8 @@ dependencies:
   archive: ^4.0.9
   ## udp 包
   udp: ^5.0.3
-  easy_stepper: ^1.2.0
+  ## 谷歌 字体
+  google_fonts: ^8.2.0
 
 dev_dependencies:
   flutter_test:

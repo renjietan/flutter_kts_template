@@ -312,6 +312,7 @@ class _Translations$pager$injectParams$en extends Translations$pager$injectParam
 
 	// Translations
 	@override String get futureSoldier => 'Future soldier';
+	@override String get networkCard => 'NIC';
 	@override late final _Translations$pager$injectParams$steps$en steps = _Translations$pager$injectParams$steps$en._(_root);
 }
 
@@ -419,6 +420,8 @@ class _Translations$button$paramsInject$en extends Translations$button$paramsInj
 	// Translations
 	@override String get inject => 'inject';
 	@override String get bind => 'bind';
+	@override String get refresh => 'refresh';
+	@override String get issue => 'issue';
 }
 
 // Path: button.injectEncrypt

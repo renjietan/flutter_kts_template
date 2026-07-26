@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_kts_template/config/config.dart';
 import 'package:flutter_kts_template/router/router.dart';
+import 'package:flutter_kts_template/theme/app_theme.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -86,7 +87,7 @@ class _MyAppState extends State<MyApp> {
           locale: TranslationProvider.of(context).flutterLocale,
           supportedLocales: AppLocaleUtils.supportedLocales,
           localizationsDelegates: [...GlobalMaterialLocalizations.delegates],
-          theme: ThemeData.dark(),
+          theme: AppTheme.dark,
           routerConfig: router,
         );
       },

@@ -26,6 +26,7 @@ class _SimpleNumberStepState extends State<SimpleNumberStep> {
   }
 
   List<Widget> _buildSteps() {
+    int count = 1;
     List<Widget> res = widget.steps.fold([], (cur, pre) {
       if (cur.isNotEmpty) {
         cur.add(_buildStepLine());
@@ -34,9 +35,10 @@ class _SimpleNumberStepState extends State<SimpleNumberStep> {
         _buildStepItem(
           cur.length + 1,
           pre.label,
-          isActive: widget.activeStep == cur.length + 1,
+          isActive: widget.activeStep >= count,
         ),
       );
+      count++;
       return cur;
     });
     return res;

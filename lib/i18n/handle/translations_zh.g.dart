@@ -431,6 +431,9 @@ class Translations$pager$injectParams$zh {
 	/// zh: '未来战士'
 	String get futureSoldier => '未来战士';
 
+	/// zh: '业务网卡'
+	String get networkCard => '业务网卡';
+
 	late final Translations$pager$injectParams$steps$zh steps = Translations$pager$injectParams$steps$zh.internal(_root);
 }
 
@@ -606,6 +609,12 @@ class Translations$button$paramsInject$zh {
 
 	/// zh: '绑定'
 	String get bind => '绑定';
+
+	/// zh: '刷新'
+	String get refresh => '刷新';
+
+	/// zh: '下发'
+	String get issue => '下发';
 }
 
 // Path: button.injectEncrypt

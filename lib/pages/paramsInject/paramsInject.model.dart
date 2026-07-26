@@ -36,11 +36,15 @@ class DetailTreeConfig {
   bool visible;
   DetailTreeDialogConfig dialog;
   Map<String, TreeType<SimpleTreeNode>> selectRows;
+  int activeStep;
+  int selectWifi;
   DetailTreeConfig({
     required this.data,
     required this.visible,
     required this.dialog,
     required this.selectRows,
+    required this.activeStep,
+    required this.selectWifi,
   });
 }
 

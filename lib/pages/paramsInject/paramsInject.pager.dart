@@ -1,6 +1,8 @@
 import 'package:composable_data_table/composable_data_table.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_kts_template/api/RadiosManagerApi.dart';
+import 'package:flutter_kts_template/components/DropDown/SimpleDarkDropdown/simple.dark.dropdown.dart';
+import 'package:flutter_kts_template/components/DropDown/SimpleDarkDropdown/simple.dark.dropdown.item.dart';
 import 'package:flutter_kts_template/components/FileUploads/fileUploads.dart';
 import 'package:flutter_kts_template/components/TextField/simple.filter.search.textField.dart';
 import 'package:flutter_kts_template/components/TreeView/simple-tree/simple.treeview.dart';
@@ -169,49 +171,107 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
 
   /// detail tree
   Widget _buildDetailTree(BuildContext ctx) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      mainAxisAlignment: MainAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsetsGeometry.fromLTRB(12, 15, 10, 15),
-          child: Container(
-            decoration: BoxDecoration(
-              border: Border(
-                left: BorderSide(width: 5, color: Color(0xFF00A2E9)),
+    return Visibility(
+      visible: dtc.visible,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          // 标题
+          Padding(
+            padding: const EdgeInsetsGeometry.fromLTRB(12, 15, 10, 15),
+            child: Container(
+              decoration: BoxDecoration(
+                border: Border(
+                  left: BorderSide(width: 5, color: Color(0xFF00A2E9)),
+                ),
+              ),
+              child: Row(
+                children: [
+                  SizedBox(width: 15),
+                  TextTitle(text: mtc.select.title),
+                  const Spacer(),
+                  // mtc.select.type == 1
+                  //     ? BaseButton(
+                  //         label: t.button.paramsInject.bind,
+                  //         width: 65,
+                  //         height: 30,
+                  //         onPressed: () {
+                  //           bind(ctx);
+                  //         },
+                  //       )
+                  //     : SizedBox(),
+                ],
               ),
             ),
+          ),
+          // 业务网卡
+          Padding(
+            padding: EdgeInsetsGeometry.fromLTRB(12, 0, 10, 0),
             child: Row(
               children: [
-                SizedBox(width: 15),
-                TextTitle(text: mtc.select.title),
+                Text(
+                  "${t.pager.injectParams.networkCard}:",
+                  style: TextStyle(textBaseline: TextBaseline.alphabetic),
+                ),
+                const SizedBox(width: 15),
+                // 业务网卡
+                SimpleDarkDropdown<int>(
+                  width: 260,
+                  height: 36,
+                  hintText: '请选择业务网卡',
+                  prefixIcon: Icons.network_check_rounded,
+                  value: dtc.selectWifi,
+                  items: const [
+                    SimpleDarkDropdownItem(value: 1, label: 'eth0 - 主网卡'),
+                    SimpleDarkDropdownItem(value: 2, label: 'eth1 - 备网卡'),
+                    SimpleDarkDropdownItem(value: 3, label: 'wlan0 - 无线网卡'),
+                  ],
+                  onChanged: (value) {
+                    setState(() => dtc.selectWifi = value!);
+                  },
+                ),
                 const Spacer(),
-                mtc.select.type == 1
-                    ? BaseButton(
-                        label: t.button.paramsInject.bind,
-                        width: 65,
-                        height: 30,
-                        onPressed: () {
-                          bind(ctx);
-                        },
-                      )
-                    : SizedBox(),
+                // 刷新
+                Container(
+                  // FlareButton 没有边框可供配置,所以在 FlareButton  外围套了一层 container,此 container 只作边框使用
+                  width: 74,
+                  height: 36,
+                  margin: EdgeInsets.only(right: 15),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(5),
+                    border: Border.all(color: Color(0xFF00A2E9), width: 2),
+                  ),
+                  child: Center(
+                    child: BaseButton(
+                      label: t.button.paramsInject.refresh,
+                      width: 70,
+                      height: 30,
+                      colors: const [
+                        Color(0xFF0A1D35),
+                        Color(0xFF0A1D35),
+                        Color(0xFF0A1D35),
+                        Color(0xFF0A1D35),
+                      ],
+                      onPressed: () {},
+                    ),
+                  ),
+                ),
+                // 下发
+                BaseButton(
+                  label: t.button.paramsInject.issue,
+                  width: 74,
+                  height: 36,
+                  onPressed: () {},
+                ),
               ],
             ),
           ),
-        ),
-        Padding(
-          padding: EdgeInsetsGeometry.only(left: 30, right: 30, bottom: 20),
-          child: SimpleNumberStep(
-            steps: steps,
-            lineWidth: 20,
-            activeStep: activeStep,
-          ),
-        ),
-        Expanded(
-          child: Padding(
-            padding: EdgeInsets.fromLTRB(10, 0, 10, 10),
+          // 步骤条
+          Padding(
+            padding: const EdgeInsetsGeometry.fromLTRB(12, 15, 10, 15),
             child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
                 color: Color(0xFF171C22),
                 border: Border.all(
@@ -220,8 +280,25 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
                   style: BorderStyle.solid,
                 ),
               ),
-              child: Visibility(
-                visible: dtc.visible,
+              child: SimpleNumberStep(
+                steps: steps,
+                lineWidth: 20,
+                activeStep: dtc.activeStep,
+              ),
+            ),
+          ),
+          Expanded(
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(12, 0, 10, 10),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Color(0xFF171C22),
+                  border: Border.all(
+                    width: 1,
+                    color: Color(0x8A00A2E9),
+                    style: BorderStyle.solid,
+                  ),
+                ),
                 child: ListView.builder(
                   itemCount: dtc.data.length,
                   itemBuilder: (context, index) {
@@ -242,8 +319,8 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
               ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
