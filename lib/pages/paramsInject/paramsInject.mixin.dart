@@ -11,6 +11,7 @@ import 'package:flutter_kts_template/components/step/simple.number.step.model.da
 import 'package:flutter_kts_template/core/entities/keyLoaders/keyLoadersEntity.dart';
 import 'package:flutter_kts_template/core/rtc/managers/socketIO/socket.io.manager.dart';
 import 'package:flutter_kts_template/core/rtc/tools/proto/pManifest.dart';
+import 'package:flutter_kts_template/core/rtc/tools/rtc.receive.dart';
 import 'package:flutter_kts_template/core/utils/director.dart';
 import 'package:flutter_kts_template/pages/paramsInject/paramsInject.model.dart';
 import 'package:flutter_kts_template/pages/paramsInject/paramsInject.tools.dart';
@@ -77,6 +78,7 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
     selectRows: {},
     activeStep: 1,
     selectWifi: 0,
+    socketIOManager: null,
   );
 
   late UdpManager manager;
@@ -86,8 +88,6 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
     userId: null,
     tarPath: "",
   );
-
-  late SocketIOManager socketIOManager;
 
   void resetMasterTree() {
     mtc.searchValue = "";
@@ -114,6 +114,7 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
         selectRows: {},
         activeStep: 1,
         selectWifi: 0,
+        socketIOManager: null,
       );
     });
   }
@@ -584,7 +585,8 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
         GlobalLogger.logInfo("Udp start :${AppConfig.udpConfig.port}");
       }
     });
-    manager.receiveStream.listen((Uint8List v) {
+    manager.receiveStream.listen((RtcReceive data) {
+      Uint8List v = data.data;
       // SrcID(0xee) DstID(0xee) length(0x00 0x00) Version(0x00) UserID(0x00) SAP(0x01) OptCode(0x85) Status(0x00) UserID(0x00)
       int sap = v[8];
       int optCode = v[9];
@@ -631,6 +633,19 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
         }
       }
     });
+  }
+
+  Future<void> initSocket() async {
+    dtc.socketIOManager = SocketIOManager();
+    if (dtc.socketIOManager?.isConnected == false) {
+      dtc.socketIOManager!.init("");
+      dtc.socketIOManager!.eventStream.listen((RtcEvent e) {
+        print("socketmanager:" + e.toString());
+      });
+      dtc.socketIOManager!.receiveStream.listen((e) {
+        print("socketmanager:" + e.toString());
+      });
+    }
   }
 
   void readTarPackage() {

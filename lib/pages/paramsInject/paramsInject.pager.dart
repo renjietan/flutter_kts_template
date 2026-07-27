@@ -12,8 +12,6 @@ import 'package:flutter_kts_template/components/text/text.title.dart';
 import 'package:flutter_kts_template/core/databaseManager/databaseManager.dart';
 import 'package:flutter_kts_template/core/entities/radios/radiosEntity.dart';
 import 'package:flutter_kts_template/core/express.dart';
-import 'package:flutter_kts_template/core/rtc/managers/socketIO/socket.io.manager.dart';
-import 'package:flutter_kts_template/core/rtc/tools/proto/byteTools.dart';
 import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 import 'package:flutter_kts_template/pages/paramsInject/paramsInject.mixin.dart';
 import 'package:flutter_kts_template/theme/table.theme.dart';
@@ -35,7 +33,7 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
   @override
   void initState() {
     super.initState();
-    socketIOManager = SocketIOManager();
+
     LocaleSettings.getLocaleStream().listen((event) {
       resetMasterTree();
       initLeftTree(null);
@@ -87,9 +85,13 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
         BaseButton(
           label: "测试 套接字 广播",
           onPressed: () {
-            socketIOManager = SocketIOManager();
-            var bbb = ByteTools.str2UintList("admin");
-            socketIOManager.write(bbb, "255.255.255.255");
+            initSocket();
+          },
+        ),
+        BaseButton(
+          label: "关闭",
+          onPressed: () {
+            dtc.socketIOManager?.disconnect();
           },
         ),
         Padding(

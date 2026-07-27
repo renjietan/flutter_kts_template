@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'package:flutter_kts_template/core/rtc/managers/udp/udp.address.dart';
 import 'package:flutter_kts_template/core/rtc/tools/rtc.abstract.dart';
 import 'package:flutter_kts_template/core/rtc/tools/rtc.event.dart';
+import 'package:flutter_kts_template/core/rtc/tools/rtc.receive.dart';
 import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 import 'package:flutter_kts_template/logger/logger.dart';
 import 'package:udp/udp.dart';
@@ -20,8 +21,8 @@ class UdpManager implements RtcAbstract {
 
   late UDP _udp;
   final Map<String, Endpoint> _remoteEndpoints = {};
-  final StreamController<Uint8List> _onDataStreamController =
-      StreamController<Uint8List>.broadcast();
+  final StreamController<RtcReceive> _onDataStreamController =
+      StreamController<RtcReceive>.broadcast();
   final StreamController<RtcEvent> _onEventController =
       StreamController<RtcEvent>.broadcast();
 
@@ -38,7 +39,13 @@ class UdpManager implements RtcAbstract {
       }
       _udp.asStream().listen((Datagram? data) {
         if (data?.data != null) {
-          _onDataStreamController.sink.add(data!.data.buffer.asUint8List());
+          _onDataStreamController.sink.add(
+            RtcReceive(
+              address: data!.address.address,
+              data: data.data.buffer.asUint8List(),
+              port: data.port,
+            ),
+          );
         } else {
           _onEventController.sink.add(
             RtcEvent(type: RtcEventType.error, msg: t.common.noData),
@@ -90,5 +97,5 @@ class UdpManager implements RtcAbstract {
 
   @override
   // TODO: implement receiveStream
-  Stream<Uint8List> get receiveStream => _onDataStreamController.stream;
+  Stream<RtcReceive> get receiveStream => _onDataStreamController.stream;
 }

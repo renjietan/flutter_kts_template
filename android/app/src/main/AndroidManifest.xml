@@ -35,9 +35,26 @@
     <!-- <uses-permission android:name="android.permission.BLUETOOTH_CONNECT"/> -->
 
     <!--  新增： android:enableOnBackInvokedCallback="true"-->
-    <application android:label="CPD" android:name="${applicationName}" android:icon="@mipmap/launcher_icon" android:enableOnBackInvokedCallback="true"
+    <!--  新增： android:usesCleartextTraffic="true"  允许 shelf 本地服务请求, 否则，只允许请求 https-->
+    <application android:label="CPD" android:name="${applicationName}" android:icon="@mipmap/launcher_icon" android:enableOnBackInvokedCallback="true" android:usesCleartextTraffic="true"
         >
-        <!-- 旧的配置： android:theme="@style/NormalTheme"-->
+        <!--
+            1、极其重要。表示该 Activity 可以被其他应用或系统组件（如手机桌面 Launcher）启动。
+            由于你的 <intent-filter> 中包含 LAUNCHER（桌面图标），必须设为 true，否则安装后图标无法打开应用
+            android:exported="true"
+
+            2、栈顶复用模式。如果你正在应用内（Activity 已在栈顶），再次点击桌面图标或收到外部链接跳转时，
+            系统不会创建新的 Activity 实例，而是复用现有的实例并回调 onNewIntent()。
+            android:launchMode="singleTop"
+
+            3、必须用 adjustResize，否则输入框会被键盘挡住
+            android:windowSoftInputMode="adjustResize"
+
+            4、任务亲和性。它决定了 Activity 属于哪个“任务栈（Task）”。设置为空字符串 ""，
+            通常意味着强制独立于默认包名，或者在某些特殊启动模式下（如 singleTask）将其置于新任务栈。
+            结合你的 singleTop，这里留空主要是为了兼容性，防止从外部链接（如网页）跳转时被误放入其他应用的任务栈中。
+            android:taskAffinity=""
+        -->
         <activity
             android:name=".MainActivity"
             android:exported="true"

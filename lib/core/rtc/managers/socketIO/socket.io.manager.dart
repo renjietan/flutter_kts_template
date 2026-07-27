@@ -1,11 +1,11 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter_kts_template/components/loading/simple.loading.dart';
 import 'package:flutter_kts_template/core/rtc/tools/rtc.abstract.dart';
 import 'package:flutter_kts_template/core/rtc/tools/rtc.event.dart';
+import 'package:flutter_kts_template/core/rtc/tools/rtc.receive.dart';
 import 'package:flutter_kts_template/logger/logger.dart';
 
 class SocketIOManager implements RtcAbstract {
@@ -15,8 +15,8 @@ class SocketIOManager implements RtcAbstract {
 
   RawDatagramSocket? _socket;
 
-  final StreamController<Uint8List> _onDataStreamController =
-      StreamController<Uint8List>.broadcast();
+  final StreamController<RtcReceive> _onDataStreamController =
+      StreamController<RtcReceive>.broadcast();
   final StreamController<RtcEvent> _onEventStreamController =
       StreamController<RtcEvent>.broadcast();
 
@@ -38,7 +38,18 @@ class SocketIOManager implements RtcAbstract {
         case RawSocketEvent.read:
           // 核心：循环耗尽内核缓冲区
           Datagram? datagram;
-          while ((datagram = _socket!.receive()) != null) {}
+          while ((datagram = _socket!.receive()) != null) {
+            Uint8List data = datagram?.data ?? Uint8List(0);
+            if (data.isNotEmpty) {
+              _onDataStreamController.sink.add(
+                RtcReceive(
+                  address: datagram!.address.address,
+                  data: data,
+                  port: datagram.port,
+                ),
+              );
+            }
+          }
           break;
 
         case RawSocketEvent.write:
@@ -49,7 +60,6 @@ class SocketIOManager implements RtcAbstract {
           // 例如： _socket!.send(data, address, port);
           // _socket!.writeEventsEnabled = false; // 关闭写监听
           break;
-
         case RawSocketEvent.readClosed:
           // ❌ 错误提示：UDP 下不应收到此事件
           GlobalLogger.logError("错误：收到 readClosed 事件，UDP 无连接特性下此事件不合理");
@@ -68,24 +78,8 @@ class SocketIOManager implements RtcAbstract {
     });
   }
 
+  @override
   Future<void> connect(String remotePeerAddress) async {}
-
-  void handleData(Datagram datagram) {
-    // 1. 获取原始字节数据 (Uint8List)
-    Uint8List rawData = datagram.data;
-
-    // 2. 解析数据（假设对端传的是 UTF-8 字符串）
-    String message = utf8.decode(rawData);
-
-    // 3. 获取对端的 IP 和端口（用于回复或识别来源）
-    InternetAddress senderAddress = datagram.address;
-    int senderPort = datagram.port;
-
-    // 4. 打印或处理业务逻辑
-    print('收到来自 $senderAddress:$senderPort 的数据: $message');
-
-    // 5. 如果需要，在这里调用 _socket!.send() 进行回复
-  }
 
   @override
   Future<void> disconnect() async {
@@ -105,8 +99,6 @@ class SocketIOManager implements RtcAbstract {
       final broadcastAddress = InternetAddress(remotePeerAddress);
       // 为了获取发送字节数，使用 send 方法
       int? bytesSent = _socket?.send(data, broadcastAddress, 3333);
-
-      SimplePopup.toast('已成功向 $broadcastAddress: 发送 $bytesSent 字节数据');
       GlobalLogger.logInfo('已成功向 $broadcastAddress: 发送 $bytesSent 字节数据');
     } catch (e) {
       SimplePopup.toast(e.toString());
@@ -117,7 +109,7 @@ class SocketIOManager implements RtcAbstract {
   Stream<RtcEvent> get eventStream => _onEventStreamController.stream;
 
   @override
-  Stream<Uint8List> get receiveStream => _onDataStreamController.stream;
+  Stream<RtcReceive> get receiveStream => _onDataStreamController.stream;
 
   @override
   Future<List<String>> getRemotePeers() {

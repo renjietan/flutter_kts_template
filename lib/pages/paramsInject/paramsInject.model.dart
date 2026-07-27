@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_kts_template/components/TreeView/simple-tree/simple.tree.model.dart'
     show SimpleTreeNode;
+import 'package:flutter_kts_template/core/rtc/managers/socketIO/socket.io.manager.dart';
 import 'package:recursive_tree_flutter/models/tree_type.dart';
 
 class MasterTreeConfig {
@@ -38,6 +39,7 @@ class DetailTreeConfig {
   Map<String, TreeType<SimpleTreeNode>> selectRows;
   int activeStep;
   int selectWifi;
+  SocketIOManager? socketIOManager;
   DetailTreeConfig({
     required this.data,
     required this.visible,
@@ -45,6 +47,7 @@ class DetailTreeConfig {
     required this.selectRows,
     required this.activeStep,
     required this.selectWifi,
+    required this.socketIOManager,
   });
 }
 

@@ -52,7 +52,7 @@ dependencies:
   path: ^1.9.1
   ## 转 json
   json_annotation: ^4.12.0
-  ## 路由-暂未使用
+  ## 路由
   go_router: ^17.3.0
   ## 状态管理器: Provider.of<UserInfoStore>(context, listen: false);
   provider: ^6.1.5+1
@@ -97,6 +97,7 @@ dependencies:
   udp: ^5.0.3
   ## 谷歌 字体
   google_fonts: ^8.2.0
+  ## 获取网卡信息
   network_info_plus: ^7.0.0
 
 dev_dependencies:
