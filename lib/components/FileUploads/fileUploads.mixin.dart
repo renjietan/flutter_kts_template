@@ -42,7 +42,7 @@ mixin FileUploadsMixin on State<FileUploads> {
         setState(() {
           isUploadLoading = false;
         });
-        Pop.toast(t.uploads.cancel, toastType: ToastType.warn);
+        SimplePopup.warn(t.uploads.cancel);
         return;
       }
       var bytes = file.bytes;
@@ -55,17 +55,14 @@ mixin FileUploadsMixin on State<FileUploads> {
         final fileObject = File(saveFilePath);
         await fileObject.writeAsBytes(bytes);
         GlobalLogger.logInfo(saveFilePath);
-        Pop.toast(
-          t.uploads.successWithPath(path: saveFilePath),
-          toastType: ToastType.success,
-        );
+        SimplePopup.success(t.uploads.successWithPath(path: saveFilePath));
         setState(() {
           remoteFilePath = saveFilePath;
           simpleTextController.text = file.path!;
           isUploadLoading = false;
         });
       } else {
-        Pop.toast(t.uploads.failed, toastType: ToastType.error);
+        SimplePopup.error(t.uploads.failed);
         setState(() {
           remoteFilePath = "";
           simpleTextController.text = "";
@@ -73,7 +70,7 @@ mixin FileUploadsMixin on State<FileUploads> {
         });
       }
     } on PermissionException catch (e) {
-      Pop.toast(e.toString(), toastType: ToastType.error);
+      SimplePopup.error(e.toString());
       setState(() {
         simpleTextController.text = "";
         isUploadLoading = false;
@@ -92,7 +89,7 @@ mixin FileUploadsMixin on State<FileUploads> {
         },
       );
     } catch (e) {
-      Pop.toast(e.toString(), toastType: ToastType.error);
+      SimplePopup.error(e.toString());
       setState(() {
         simpleTextController.text = "";
         isUploadLoading = false;

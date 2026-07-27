@@ -48,7 +48,7 @@ pager:
     networkCard: NIC
     steps:
       discovery: discovery
-      authentication: authentication
+      authentication: auth
       transfer: transfer
       parse: parse
       finish: finish

@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_kts_template/api/BindConfig.api.dart';
 import 'package:flutter_kts_template/api/KeyLoaders.api.dart';
+import 'package:flutter_kts_template/components/DropDown/SimpleDarkDropdown/simple.dark.dropdown.item.dart';
 import 'package:flutter_kts_template/components/TextField/simple.form.textfield.dart';
 import 'package:flutter_kts_template/components/dialog/simple.tips.dialog.dart';
 import 'package:flutter_kts_template/components/step/simple.number.step.model.dart';
@@ -13,6 +14,8 @@ import 'package:flutter_kts_template/core/rtc/tools/proto/pManifest.dart';
 import 'package:flutter_kts_template/core/utils/director.dart';
 import 'package:flutter_kts_template/pages/paramsInject/paramsInject.model.dart';
 import 'package:flutter_kts_template/pages/paramsInject/paramsInject.tools.dart';
+import 'package:flutter_kts_template/utils/devicePermission/requestPermissions.dart';
+import 'package:flutter_kts_template/utils/networkUtils/network.utils.dart';
 import 'package:flutter_kts_template/utils/provider/menu.provider.dart';
 import 'package:flutter_kts_template/utils/response/BaseListResponse.dart';
 import 'package:flutter_kts_template/utils/response/BaseResponse.dart';
@@ -21,6 +24,7 @@ import 'package:go_router/go_router.dart';
 import 'package:path/path.dart' as p;
 import 'package:provider/provider.dart';
 import 'package:recursive_tree_flutter/models/tree_type.dart';
+import 'package:unified_popups/unified_popups.dart';
 
 import '../../components/TreeView/simple-tree/simple.tree.model.dart';
 import '../../components/dialog/simple.form.dialog.dart';
@@ -33,7 +37,6 @@ import '../../core/rtc/tools/proto/byteTools.dart';
 import '../../core/rtc/tools/rtc.event.dart';
 import '../../core/rtc/tools/rtc.event.type.dart';
 import '../../i18n/handle/translations.g.dart';
-import '../../icons/hy_icons.dart';
 import '../../logger/logger.dart';
 import '../../utils/files/FileTools.dart';
 
@@ -55,13 +58,14 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
     select: MasterTreeSelectConfig(id: "", type: -1, title: ""),
     searchTextFieldController: TextEditingController(),
     data: TreeType(
-      data: SimpleTreeNode(id: "1", title: "<>"),
+      data: SimpleTreeNode(id: "1", title: ""),
       children: [],
       parent: null,
     ),
   );
   String bindKeyLoaderId = "";
   List<SimpleNumberStepModel> steps = [];
+  List<SimpleDarkDropdownItem<int>> networkOptions = [];
 
   DetailTreeConfig dtc = DetailTreeConfig(
     data: [],
@@ -72,7 +76,7 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
     ),
     selectRows: {},
     activeStep: 1,
-    selectWifi: 1,
+    selectWifi: 0,
   );
 
   late UdpManager manager;
@@ -91,7 +95,7 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
     mtc.select = MasterTreeSelectConfig(id: "", type: -1, title: "");
     mtc.searchTextFieldController.text = "";
     mtc.data = TreeType(
-      data: SimpleTreeNode(id: "1", title: "<>"),
+      data: SimpleTreeNode(id: "1", title: ""),
       children: [],
       parent: null,
     );
@@ -109,7 +113,7 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
         ),
         selectRows: {},
         activeStep: 1,
-        selectWifi: 1,
+        selectWifi: 0,
       );
     });
   }
@@ -142,17 +146,37 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
     });
   }
 
+  Future<void> initNetworkInterfaceOptions() async {
+    var a = await NetworkUtil.getIPv4LANInterfaces();
+    networkOptions = [];
+    for (var i = 0; i < a.length; i++) {
+      SimpleDarkDropdownItem<int> temp = SimpleDarkDropdownItem(
+        value: i,
+        label: "${a[i].interfaceName}-${a[i].ip}",
+      );
+      networkOptions.add(temp);
+    }
+  }
+
   Future<void> initLeftTree(String? filePath) async {
     setState(() {
       mtc.visible = false;
     });
+    bool hasPermission = await RequestPermission.requestStoragePermission();
+    if (!hasPermission) {
+      Pop.toast(t.permission.cancel, toastType: ToastType.warn);
+      return;
+    }
+    initMasterTree(filePath);
+  }
+
+  Future<void> initMasterTree(String? filePath) async {
     final (data, path) = await readAllDataFiles(filePath);
     allData = data;
     dataPath = path;
     if (allData.isEmpty) {
       setState(() {
         mtc.visible = true;
-        dtc.visible = true;
       });
       return;
     }
@@ -176,6 +200,8 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
 
   Future<void> masterTreeOnSelect(v) async {
     resetDetailTree();
+    initNetworkInterfaceOptions();
+    initSteps(context);
     var id = v.data.id;
     if (mtc.select.id == id) {
       return;
@@ -211,13 +237,9 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
       );
       final (ccuTree, _) = buildTree(
         ccuNodes,
-        leafActionWidgetLabel: v.data.titleIcon == HyIcons.ren
-            ? null
-            : t.button.paramsInject.inject,
-        leafActionWidgetOnPressed: v.data.titleIcon == HyIcons.ren
-            ? null
-            : detailsTreeOnTap,
-        leafActionWidgetSize: Size(70, 30),
+        leafActionWidgetLabel: null,
+        leafActionWidgetOnPressed: null,
+        leafActionWidgetSize: null,
         startIndex: 0,
       );
       dtc.data.add(ccuTree);
@@ -229,13 +251,9 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
       );
       final (serverTree, _) = buildTree(
         serversNodes,
-        leafActionWidgetLabel: v.data.titleIcon == HyIcons.ren
-            ? null
-            : t.button.paramsInject.inject,
-        leafActionWidgetOnPressed: v.data.titleIcon == HyIcons.ren
-            ? null
-            : detailsTreeOnTap,
-        leafActionWidgetSize: Size(70, 30),
+        leafActionWidgetLabel: null,
+        leafActionWidgetOnPressed: null,
+        leafActionWidgetSize: null,
         startIndex: 0,
       );
       dtc.data.add(serverTree);
@@ -245,13 +263,16 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
       final (radioTree, _) = buildTree(
         radios,
         // 由于未来战士是多选 不显示 inject 按钮
-        leafActionWidgetLabel: v.data.titleIcon == HyIcons.ren
-            ? null
-            : t.button.paramsInject.inject,
-        leafActionWidgetOnPressed: v.data.titleIcon == HyIcons.ren
-            ? null
-            : detailsTreeOnTap,
-        leafActionWidgetSize: Size(70, 30),
+        leafActionWidgetLabel: null,
+        leafActionWidgetOnPressed: null,
+        leafActionWidgetSize: null,
+        // leafActionWidgetLabel: v.data.titleIcon == HyIcons.ren
+        //     ? null
+        //     : t.button.paramsInject.inject,
+        // leafActionWidgetOnPressed: v.data.titleIcon == HyIcons.ren
+        //     ? null
+        //     : detailsTreeOnTap,
+        // leafActionWidgetSize: Size(70, 30),
         startIndex: 0,
       );
       dtc.data.add(radioTree);
@@ -576,7 +597,7 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
         } else {
           deviceFileModel.userId = v[11];
           // 只能在登录成功后，开始 分包，因为需要userId
-          readyPayload();
+          readTarPackage();
           ping();
         }
       } else if (sap == 0x01 && optCode == 0x83) {
@@ -584,7 +605,6 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
           TimeoutManager.clearTimeout("login");
         }
         TimeoutManager.clearTimeout("ping");
-        // fileHeader();
         if (status != 0) {
           udpPopError(t.udp.pingFail);
         } else {
@@ -613,7 +633,7 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
     });
   }
 
-  void readyPayload() {
+  void readTarPackage() {
     // 1、读取路径下的压缩包的字节
     File injectFile = File(deviceFileModel.tarPath!);
     Uint8List bytes = injectFile.readAsBytesSync();

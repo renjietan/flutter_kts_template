@@ -478,7 +478,7 @@ class _Translations$pager$injectParams$steps$en extends Translations$pager$injec
 
 	// Translations
 	@override String get discovery => 'discovery';
-	@override String get authentication => 'authentication';
+	@override String get authentication => 'auth';
 	@override String get transfer => 'transfer';
 	@override String get parse => 'parse';
 	@override String get finish => 'finish';

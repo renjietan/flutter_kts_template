@@ -8,14 +8,17 @@ import 'network.info.dart';
 /// 网络工具类 - 跨平台获取局域网 IPv4 接口信息
 class NetworkUtil {
   NetworkUtil._();
-
-  /// 获取所有 IPv4 局域网（私有）地址及其子网掩码和广播地址。
-  ///
-  /// 优先使用 dart:io 的 [NetworkInterface.list]（支持桌面、iOS 和最新 Android），
-  /// 如果失败（如老旧 Android 系统不支持），则回退到 [network_info_plus] 插件。
-  ///
-  /// 返回 [NetworkInterfaceInfo] 列表，仅包含 A/B/C 类私有地址（RFC 1918）。
-  /// 如果获取失败，返回空列表。
+  /*
+    获取所有 IPv4 局域网（私有）地址及其子网掩码和广播地址。
+    优先使用 dart:io 的 [NetworkInterface.list]（支持桌面、iOS 和最新 Android）
+    如果失败（如老旧 Android 系统不支持），则回退到 [network_info_plus] 插件
+    返回 [NetworkInterfaceInfo] 列表，仅包含 A/B/C 类私有地址（RFC 1918）
+    如果获取失败，返回空列表。
+    Windows / macOS / Linux	有线或 WiFi	✅ 总是成功	dart:io（主方案）	✅ 是（有线或 WiFi 都可枚举）
+    Android（现代版本）	WiFi 或有线（USB 网卡）	✅ 绝大多数成功	dart:io（主方案）	✅ 是（能枚举到）
+    Android（极旧/定制ROM）	WiFi	❌ 可能抛出异常	回退到 network_info_plus	✅ WiFi IP 可获取
+    Android（极旧/定制ROM）	有线（USB 网卡）	❌ 可能抛出异常	回退到 network_info_plus	❌ 无法获取有线 IP（插件只读 WiFi）
+  * */
   static Future<List<NetworkInterfaceInfo>> getIPv4LANInterfaces() async {
     try {
       // 优先使用 dart:io（覆盖桌面、iOS、Android 新版）
@@ -66,8 +69,8 @@ class NetworkUtil {
         return result;
       }
 
-      final addr = InternetAddress(ip);
-      if (!_isPrivateIPv4(addr)) {
+      final adder = InternetAddress(ip);
+      if (!_isPrivateIPv4(adder)) {
         GlobalLogger.logWarn('Wi-Fi IP 不是私有地址，忽略');
         return result;
       }
@@ -87,7 +90,7 @@ class NetworkUtil {
         );
       } else {
         // 插件未返回掩码/广播时，回退到基于 IP 类别的计算
-        final (calcMask, calcBroadcast) = _calculateMaskAndBroadcast(addr);
+        final (calcMask, calcBroadcast) = _calculateMaskAndBroadcast(adder);
         result.add(
           NetworkInterfaceInfo(
             interfaceName: 'wlan0 (Wi-Fi, 计算值)',

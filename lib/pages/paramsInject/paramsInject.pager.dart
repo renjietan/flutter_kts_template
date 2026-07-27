@@ -2,7 +2,6 @@ import 'package:composable_data_table/composable_data_table.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_kts_template/api/RadiosManagerApi.dart';
 import 'package:flutter_kts_template/components/DropDown/SimpleDarkDropdown/simple.dark.dropdown.dart';
-import 'package:flutter_kts_template/components/DropDown/SimpleDarkDropdown/simple.dark.dropdown.item.dart';
 import 'package:flutter_kts_template/components/FileUploads/fileUploads.dart';
 import 'package:flutter_kts_template/components/TextField/simple.filter.search.textField.dart';
 import 'package:flutter_kts_template/components/TreeView/simple-tree/simple.treeview.dart';
@@ -37,14 +36,12 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
   void initState() {
     super.initState();
     socketIOManager = SocketIOManager();
-    socketIOManager.init("");
     LocaleSettings.getLocaleStream().listen((event) {
       resetMasterTree();
       initLeftTree(null);
     });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       SimplePopup.loading();
-      initSteps(context);
       // 在这个页面进行初始化，减轻【启动页】负担
       Future.wait([DatabaseManager.init(), Express.start(), initUdp()]).then((
         res,
@@ -171,6 +168,11 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
 
   /// detail tree
   Widget _buildDetailTree(BuildContext ctx) {
+    final t = Translations.of(ctx);
+    // 获取当前 Locale
+    final currentLocale = Localizations.localeOf(context);
+    // 提取语言代码，如 'en'、'zh'
+    final languageCode = currentLocale.languageCode;
     return Visibility(
       visible: dtc.visible,
       child: Column(
@@ -219,14 +221,10 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
                 SimpleDarkDropdown<int>(
                   width: 260,
                   height: 36,
-                  hintText: '请选择业务网卡',
+                  hintText: t.TextField.select,
                   prefixIcon: Icons.network_check_rounded,
                   value: dtc.selectWifi,
-                  items: const [
-                    SimpleDarkDropdownItem(value: 1, label: 'eth0 - 主网卡'),
-                    SimpleDarkDropdownItem(value: 2, label: 'eth1 - 备网卡'),
-                    SimpleDarkDropdownItem(value: 3, label: 'wlan0 - 无线网卡'),
-                  ],
+                  items: networkOptions,
                   onChanged: (value) {
                     setState(() => dtc.selectWifi = value!);
                   },
@@ -253,7 +251,7 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
                         Color(0xFF0A1D35),
                         Color(0xFF0A1D35),
                       ],
-                      onPressed: () {},
+                      onPressed: initNetworkInterfaceOptions,
                     ),
                   ),
                 ),
@@ -282,7 +280,7 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
               ),
               child: SimpleNumberStep(
                 steps: steps,
-                lineWidth: 20,
+                lineWidth: languageCode == "zh" ? 20 : 13,
                 activeStep: dtc.activeStep,
               ),
             ),

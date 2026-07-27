@@ -3,6 +3,9 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <!-- 检查网络状态。允许 App 调用 API 查看当前是否联网、连接的是 WiFi 还是蜂窝网络。用于在通信前做网络可用性检测 -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <!-- 在 Android 6.0+ 设备上，调用 wifiInfo.getIpAddress() 会直接触发 SecurityException（安全异常），导致应用闪退。-->
+    <!-- network_info_plus 插件将无法获取任何 Wi-Fi 信息，你的备选方案会彻底失效  -->
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <!-- 访问本地网络权限。Android 17 (API 37) 起强制要求。局域网通信，此权限是必须动态申请的【危险权限】，例如 UDP/TCP 会因 EPERM 错误而失败 -->
     <uses-permission android:name="android.permission.ACCESS_LOCAL_NETWORK" />
     <!-- 读取共享存储（如 Download 目录） -->

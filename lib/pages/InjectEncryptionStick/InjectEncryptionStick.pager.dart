@@ -40,7 +40,7 @@ class _InjectEncryptStickPagerState extends State<InjectEncryptionStickPager>
     return Row(
       children: [
         SizedBox(
-          width: 200,
+          width: 210,
           child: Column(
             children: [
               Container(
