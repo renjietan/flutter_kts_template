@@ -39,6 +39,7 @@ import '../../utils/files/FileTools.dart';
     Color nodeBgColor = currentIndex % 2 == 0
         ? Color(0xFF171C22)
         : Color(0xFF23282D);
+    // print("data" + data.toString());
     var node = TreeType<SimpleTreeNode>(
       data: SimpleTreeNode(
         id: data["id"],
@@ -48,6 +49,7 @@ import '../../utils/files/FileTools.dart';
         nodeBgColor: nodeBgColor,
         padding: padding,
         type: data["type"],
+        subTexts: data["subTexts"] ?? [],
       ),
       children: [],
       parent: parent,

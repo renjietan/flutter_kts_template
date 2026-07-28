@@ -75,37 +75,55 @@ class _SimpleTreeViewState<T extends AbsNodeType> extends State<SimpleTreeView>
       },
       child: Container(
         decoration: BoxDecoration(color: bgColor),
-        height: 44,
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
+        padding: EdgeInsets.only(
+          left: tree.isLeaf ? tree.data.padding + 26 : tree.data.padding,
+          right: 20,
+        ),
+        height: tree.data.subTexts!.isNotEmpty ? 65 : 44,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Padding(
-              padding: EdgeInsets.only(
-                left: tree.isLeaf ? tree.data.padding + 26 : tree.data.padding,
-              ),
-              child: tree.children.isNotEmpty
-                  ? buildRotationIcon()
-                  : const SizedBox.shrink(),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                tree.children.isNotEmpty
+                    ? buildRotationIcon()
+                    : const SizedBox.shrink(),
+                // if (tree.isLeaf && tree.data.isShowCheckbox) buildTrailing(),
+                buildTrailing(),
+                // 勾选框 与 左侧 图标值显示一个
+                if (tree.data.titleIcon != null &&
+                    !(tree.isLeaf && tree.data.isShowCheckbox))
+                  Icon(tree.data.titleIcon, color: Colors.white, size: 16),
+                SizedBox(width: 10),
+                Expanded(child: buildTitle()),
+                if (tree.data.leafActionWidgetLabel != null && tree.isLeaf)
+                  BaseButton(
+                    label: tree.data.leafActionWidgetLabel!,
+                    width: tree.data.leafActionWidgetSize?.width ?? 80,
+                    onPressed: () {
+                      if (tree.data.leafActionWidgetOnPressed != null) {
+                        tree.data.leafActionWidgetOnPressed!(tree.data);
+                      }
+                    },
+                  ),
+                SizedBox(width: 30),
+              ],
             ),
-            // if (tree.isLeaf && tree.data.isShowCheckbox) buildTrailing(),
-            buildTrailing(),
-            // 勾选框 与 左侧 图标值显示一个
-            if (tree.data.titleIcon != null &&
-                !(tree.isLeaf && tree.data.isShowCheckbox))
-              Icon(tree.data.titleIcon, color: Colors.white, size: 16),
-            SizedBox(width: 10),
-            Expanded(child: buildTitle()),
-            if (tree.data.leafActionWidgetLabel != null && tree.isLeaf)
-              BaseButton(
-                label: tree.data.leafActionWidgetLabel!,
-                width: tree.data.leafActionWidgetSize?.width ?? 80,
-                onPressed: () {
-                  if (tree.data.leafActionWidgetOnPressed != null) {
-                    tree.data.leafActionWidgetOnPressed!(tree.data);
-                  }
-                },
+            if (tree.data.subTexts!.isNotEmpty) ...[
+              SizedBox(height: 7),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  ...tree.data.subTexts!.map((item) {
+                    return Text(
+                      item,
+                      style: TextStyle(fontSize: 12, color: Colors.white60),
+                    );
+                  }),
+                ],
               ),
-            SizedBox(width: 30),
+            ],
           ],
         ),
       ),

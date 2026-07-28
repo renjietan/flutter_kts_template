@@ -17,6 +17,7 @@ class ArchiveEntry {
 enum ArchiveEncoderType { zip, tar, tarGz }
 
 class FileTools {
+  // 获取子文件夹列表
   static Future<List<Directory>> getDirectSubFolders(String parentPath) async {
     final parentDir = Directory(parentPath);
 
@@ -34,6 +35,7 @@ class FileTools {
     return subDirs;
   }
 
+  // 读取 文件内容 转为 MAP
   static Map<String, dynamic> readFileContentAsMap(String filePath) {
     String jsonString = File(filePath).readAsStringSync();
     Map<String, dynamic> res = jsonDecode(jsonString);
@@ -96,6 +98,7 @@ class FileTools {
     return jsonFileNames;
   }
 
+  // 将多个 文件 合并为 ZIP 文件
   static Future<String> filesToZipFormPath({
     required List<ArchiveEntry> entries,
     required String outputPath,
@@ -141,6 +144,7 @@ class FileTools {
     return savePath;
   }
 
+  // 将多个文件 合并为 ZIP 文件
   static Future<String> filesToZipFormListDirectory(
     List<Directory> folderDirectories, {
     required String outputPath,
@@ -167,6 +171,7 @@ class FileTools {
     return savePath;
   }
 
+  // 根据文件夹路径 获取文件夹名称
   static String getFolderName(String path) {
     if (path.endsWith('/') || path.endsWith('\\')) {
       path = path.substring(0, path.length - 1);
@@ -174,6 +179,7 @@ class FileTools {
     return path.split(RegExp(r'[/\\]')).last;
   }
 
+  // 判断路径是否存在
   static bool exists(String path) {
     try {
       FileStat stat = FileStat.statSync(path);

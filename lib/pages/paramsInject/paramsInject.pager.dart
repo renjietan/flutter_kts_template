@@ -214,11 +214,6 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
             padding: EdgeInsetsGeometry.fromLTRB(12, 0, 10, 0),
             child: Row(
               children: [
-                Text(
-                  "${t.pager.injectParams.networkCard}:",
-                  style: TextStyle(textBaseline: TextBaseline.alphabetic),
-                ),
-                const SizedBox(width: 15),
                 // 业务网卡
                 SimpleDarkDropdown<int>(
                   width: 260,
@@ -253,7 +248,7 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
                         Color(0xFF0A1D35),
                         Color(0xFF0A1D35),
                       ],
-                      onPressed: initNetworkInterfaceOptions,
+                      onPressed: detailRefresh,
                     ),
                   ),
                 ),

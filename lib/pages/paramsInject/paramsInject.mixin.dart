@@ -48,6 +48,7 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
   String dataPath = "";
   String get netNOdePath =>
       p.join(dataPath, "4_net_node", "${mtc.select.id}.json");
+  String get dcJsonFolderPath => p.join(dataPath, "3_device_config");
   String get resourcePath => p.join(dataPath, "1_resource");
   List<String> get keyLoaderOptions =>
       keyLoaders.map((item) => item.name).toList();
@@ -145,6 +146,14 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
         ),
       ];
     });
+  }
+
+  Future<void> detailRefresh() async {
+    await initNetworkInterfaceOptions();
+    dtc.selectWifi = 0;
+    dtc.activeStep = 0;
+    dtc.selectRows = {};
+    setState(() {});
   }
 
   Future<void> initNetworkInterfaceOptions() async {
@@ -289,6 +298,7 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
     List<String> nodes, {
     required String rootTitle,
   }) {
+    print(mtc);
     Map<String, dynamic> root = {
       "id": 0,
       "title": rootTitle,
@@ -300,6 +310,11 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
       "type": 999,
     };
     root["children"] = nodes.fold([], (cur, pre) {
+      String path = p.join(dcJsonFolderPath, "$pre.json");
+      var res = FileTools.readFileContentAsMap(path);
+      String ip =
+          (res['audioBoardIpConfig']?['result']?['ip'] ?? res['Ipv4Subnet']) ??
+          '';
       Map<String, dynamic> temp = {
         "id": 0,
         "title": pre,
@@ -309,6 +324,7 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
         "isleaf": true,
         "isShowCheckbox": false,
         "type": 999,
+        "subTexts": ["ESN: ", "当前IP: $ip"],
       };
       cur.add(temp);
       return cur;
@@ -346,6 +362,9 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
       };
       value.forEach((item) {
         id++;
+        String path = p.join(dcJsonFolderPath, "$item.json");
+        var res = FileTools.readFileContentAsMap(path);
+        String ip = res["IP"] ?? '';
         sonNode["children"].add({
           "id": "key-$id",
           "title": item,
@@ -355,6 +374,7 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
           "isleaf": true,
           "isShowCheckbox": type == 1,
           "type": 999,
+          "subTexts": ["ESN: ", "当前ip: $ip"],
         });
       });
       root["children"].add(sonNode);

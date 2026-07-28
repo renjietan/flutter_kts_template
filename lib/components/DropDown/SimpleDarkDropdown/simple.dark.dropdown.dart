@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_kts_template/components/DropDown/SimpleDarkDropdown/simple.dark.dropdown.item.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 /// 深色主题下拉框，适配桌面端与手机端
 /// - 桌面端：点击后在字段下方弹出菜单
@@ -160,7 +159,7 @@ class _SimpleDarkDropdownState<T> extends State<SimpleDarkDropdown<T>> {
                   child: Text(
                     displayText,
                     overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.notoSans(
+                    style: TextStyle(
                       fontSize: 12,
                       color: hasSelection
                           ? (widget.enabled
@@ -296,7 +295,7 @@ class _MenuItem<T> extends StatelessWidget {
               child: Text(
                 item.label,
                 overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.notoSans(
+                style: TextStyle(
                   fontSize: 12,
                   fontWeight: isSelected ? FontWeight.w500 : FontWeight.w400,
                   color: isSelected
@@ -351,7 +350,7 @@ class _MobileSheet<T> extends StatelessWidget {
               children: [
                 Text(
                   hintText ?? '请选择',
-                  style: GoogleFonts.baiJamjuree(
+                  style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                     color: const Color(0xFFFFFFFF),
@@ -413,7 +412,7 @@ class _MobileSheet<T> extends StatelessWidget {
                         Expanded(
                           child: Text(
                             item.label,
-                            style: GoogleFonts.notoSans(
+                            style: TextStyle(
                               fontSize: 14,
                               fontWeight: isSelected
                                   ? FontWeight.w500

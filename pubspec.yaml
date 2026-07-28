@@ -96,7 +96,6 @@ dependencies:
   ## udp 包
   udp: ^5.0.3
   ## 谷歌 字体
-  google_fonts: ^8.2.0
   ## 获取网卡信息
   network_info_plus: ^7.0.0
 
