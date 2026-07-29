@@ -35,6 +35,7 @@ class MasterTreeSelectConfig {
 class DetailTreeConfig {
   List<TreeType<SimpleTreeNode>> data;
   bool visible;
+  bool treeVisible;
   DetailTreeDialogConfig dialog;
   Map<String, TreeType<SimpleTreeNode>> selectRows;
   int activeStep;
@@ -48,6 +49,7 @@ class DetailTreeConfig {
     required this.activeStep,
     required this.selectWifi,
     required this.socketIOManager,
+    required this.treeVisible,
   });
 }
 

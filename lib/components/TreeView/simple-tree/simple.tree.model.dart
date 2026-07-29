@@ -16,6 +16,8 @@ class SimpleTreeNode extends AbsNodeType {
   bool? activeSelection;
   int? type;
   List<String>? subTexts;
+  bool? isActive;
+  List<String>? activeTexts;
 
   SimpleTreeNode({
     required dynamic id,
@@ -35,6 +37,8 @@ class SimpleTreeNode extends AbsNodeType {
     this.activeSelection,
     this.isShowCheckbox = false,
     this.subTexts = const [],
+    this.isActive = false,
+    this.activeTexts = const [],
   }) : super(
          id: id,
          title: title,

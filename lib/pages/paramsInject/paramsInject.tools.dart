@@ -50,6 +50,8 @@ import '../../utils/files/FileTools.dart';
         padding: padding,
         type: data["type"],
         subTexts: data["subTexts"] ?? [],
+        isActive: data["isActive"] ?? false,
+        activeTexts: data["activeTexts"] ?? [],
       ),
       children: [],
       parent: parent,

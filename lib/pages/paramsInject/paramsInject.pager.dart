@@ -175,40 +175,40 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
     final currentLocale = Localizations.localeOf(context);
     // 提取语言代码，如 'en'、'zh'
     final languageCode = currentLocale.languageCode;
-    return Visibility(
-      visible: dtc.visible,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          // 标题
-          Padding(
-            padding: const EdgeInsetsGeometry.fromLTRB(12, 15, 10, 15),
-            child: Container(
-              decoration: BoxDecoration(
-                border: Border(
-                  left: BorderSide(width: 5, color: Color(0xFF00A2E9)),
-                ),
-              ),
-              child: Row(
-                children: [
-                  SizedBox(width: 15),
-                  TextTitle(text: mtc.select.title),
-                  const Spacer(),
-                  // mtc.select.type == 1
-                  //     ? BaseButton(
-                  //         label: t.button.paramsInject.bind,
-                  //         width: 65,
-                  //         height: 30,
-                  //         onPressed: () {
-                  //           bind(ctx);
-                  //         },
-                  //       )
-                  //     : SizedBox(),
-                ],
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: [
+        // 标题
+        Padding(
+          padding: const EdgeInsetsGeometry.fromLTRB(12, 15, 10, 15),
+          child: Container(
+            decoration: BoxDecoration(
+              border: Border(
+                left: BorderSide(width: 5, color: Color(0xFF00A2E9)),
               ),
             ),
+            child: Row(
+              children: [
+                SizedBox(width: 15),
+                TextTitle(text: mtc.select.title),
+                const Spacer(),
+                mtc.select.type == 1
+                    ? BaseButton(
+                        label: t.button.paramsInject.bind,
+                        width: 65,
+                        height: 30,
+                        onPressed: () {
+                          saveTo(ctx);
+                        },
+                      )
+                    : SizedBox(),
+              ],
+            ),
           ),
+        ),
+
+        if (mtc.select.type != 1) ...[
           // 业务网卡
           Padding(
             padding: EdgeInsetsGeometry.fromLTRB(12, 0, 10, 0),
@@ -248,7 +248,11 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
                         Color(0xFF0A1D35),
                         Color(0xFF0A1D35),
                       ],
-                      onPressed: detailRefresh,
+                      onPressed: () {
+                        detailRefresh();
+                        foundDevice = ["1"];
+                        initDetailTree();
+                      },
                     ),
                   ),
                 ),
@@ -282,9 +286,13 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
               ),
             ),
           ),
-          Expanded(
-            child: Padding(
-              padding: EdgeInsets.fromLTRB(12, 0, 10, 10),
+        ],
+
+        Expanded(
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(12, 0, 10, 10),
+            child: Visibility(
+              visible: dtc.visible,
               child: Container(
                 decoration: BoxDecoration(
                   color: Color(0xFF171C22),
@@ -314,8 +322,8 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
               ),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

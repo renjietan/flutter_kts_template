@@ -79,7 +79,9 @@ class _SimpleTreeViewState<T extends AbsNodeType> extends State<SimpleTreeView>
           left: tree.isLeaf ? tree.data.padding + 26 : tree.data.padding,
           right: 20,
         ),
-        height: tree.data.subTexts!.isNotEmpty ? 65 : 44,
+        height: tree.data.subTexts!.isNotEmpty
+            ? (tree.isLeaf && tree.data.isShowCheckbox ? 85 : 65)
+            : 44,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -89,7 +91,7 @@ class _SimpleTreeViewState<T extends AbsNodeType> extends State<SimpleTreeView>
                 tree.children.isNotEmpty
                     ? buildRotationIcon()
                     : const SizedBox.shrink(),
-                // if (tree.isLeaf && tree.data.isShowCheckbox) buildTrailing(),
+                // 勾选框
                 buildTrailing(),
                 // 勾选框 与 左侧 图标值显示一个
                 if (tree.data.titleIcon != null &&
@@ -107,18 +109,25 @@ class _SimpleTreeViewState<T extends AbsNodeType> extends State<SimpleTreeView>
                       }
                     },
                   ),
+                if ((widget.tree.data.activeTexts?.isNotEmpty) ?? false)
+                  buildActive(),
                 SizedBox(width: 30),
               ],
             ),
             if (tree.data.subTexts!.isNotEmpty) ...[
-              SizedBox(height: 7),
+              SizedBox(height: tree.isLeaf && tree.data.isShowCheckbox ? 0 : 7),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   ...tree.data.subTexts!.map((item) {
-                    return Text(
-                      item,
-                      style: TextStyle(fontSize: 12, color: Colors.white60),
+                    return Padding(
+                      padding: EdgeInsetsGeometry.only(
+                        left: tree.isLeaf && tree.data.isShowCheckbox ? 10 : 0,
+                      ),
+                      child: Text(
+                        item,
+                        style: TextStyle(fontSize: 12, color: Colors.white60),
+                      ),
                     );
                   }),
                 ],
@@ -194,6 +203,33 @@ class _SimpleTreeViewState<T extends AbsNodeType> extends State<SimpleTreeView>
       );
     }
     return const SizedBox.shrink();
+  }
+
+  Widget buildActive() {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 15, vertical: 5),
+      decoration: BoxDecoration(
+        border: Border.all(
+          color: (widget.tree.data.isActive ?? false)
+              ? Color(0xFF00A2E9)
+              : Colors.white24,
+          width: 2,
+        ),
+        borderRadius: BorderRadius.circular(15),
+        color: Colors.transparent, // 可选背景
+      ),
+      child: Text(
+        (widget.tree.data.isActive ?? false)
+            ? widget.tree.data.activeTexts![1]
+            : widget.tree.data.activeTexts![0],
+        style: TextStyle(
+          fontSize: 10,
+          color: (widget.tree.data.isActive ?? false)
+              ? Color(0xFF00A2E9)
+              : Colors.white24,
+        ),
+      ),
+    );
   }
 
   @override

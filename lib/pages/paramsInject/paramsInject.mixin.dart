@@ -68,17 +68,19 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
   String bindKeyLoaderId = "";
   List<SimpleNumberStepModel> steps = [];
   List<SimpleDarkDropdownItem<int>> networkOptions = [];
+  List<String> foundDevice = [];
 
   DetailTreeConfig dtc = DetailTreeConfig(
     data: [],
     visible: false,
+    treeVisible: false,
     dialog: DetailTreeDialogConfig(
       deviceType: TextEditingController(),
       deviceIP: TextEditingController(),
     ),
     selectRows: {},
     activeStep: 1,
-    selectWifi: 0,
+    selectWifi: -1,
     socketIOManager: null,
   );
 
@@ -108,13 +110,14 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
       dtc = DetailTreeConfig(
         data: [],
         visible: false,
+        treeVisible: false,
         dialog: DetailTreeDialogConfig(
           deviceType: TextEditingController(),
           deviceIP: TextEditingController(),
         ),
         selectRows: {},
         activeStep: 1,
-        selectWifi: 0,
+        selectWifi: -1,
         socketIOManager: null,
       );
     });
@@ -149,9 +152,11 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
   }
 
   Future<void> detailRefresh() async {
+    dtc.data = [];
     await initNetworkInterfaceOptions();
-    dtc.selectWifi = 0;
-    dtc.activeStep = 0;
+    foundDevice = [];
+    dtc.selectWifi = -1;
+    dtc.activeStep = 1;
     dtc.selectRows = {};
     setState(() {});
   }
@@ -223,8 +228,15 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
       dtc.data = [];
       dtc.visible = false;
     });
+    foundDevice = ["0"];
+    initDetailTree();
+  }
 
-    Map<String, dynamic> netNodes = allData["4_net_node"][id] ?? {};
+  void initDetailTree() {
+    setState(() {
+      dtc.visible = false;
+    });
+    Map<String, dynamic> netNodes = allData["4_net_node"][mtc.select.id] ?? {};
     Map<String, dynamic> netNodesSystemConfig =
         netNodes["SystemConfiguration"] ?? {};
     Map<String, dynamic> members = netNodesSystemConfig["LANMember"] ?? {};
@@ -240,7 +252,7 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
       ...(primaries["Server"] ?? []),
       ...(radios["Server"] ?? []),
     ];
-    if (ccus.isNotEmpty && v.data.type != 1) {
+    if (ccus.isNotEmpty && mtc.select.type != 1) {
       Map<String, dynamic> ccuNodes = parseCcuAndServerNodes(
         ccus,
         rootTitle: "CCU",
@@ -254,7 +266,7 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
       );
       dtc.data.add(ccuTree);
     }
-    if (servers.isNotEmpty && v.data.type != 1) {
+    if (servers.isNotEmpty && mtc.select.type != 1) {
       Map<String, dynamic> serversNodes = parseCcuAndServerNodes(
         servers,
         rootTitle: "Server",
@@ -269,20 +281,17 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
       dtc.data.add(serverTree);
     }
     if (radios.keys.isNotEmpty) {
-      radios = parseRadioNodes(radios, rootTitle: "Radio", type: v.data.type);
+      radios = parseRadioNodes(
+        radios,
+        rootTitle: "Radio",
+        type: mtc.select.type,
+      );
       final (radioTree, _) = buildTree(
         radios,
         // 由于未来战士是多选 不显示 inject 按钮
         leafActionWidgetLabel: null,
         leafActionWidgetOnPressed: null,
         leafActionWidgetSize: null,
-        // leafActionWidgetLabel: v.data.titleIcon == HyIcons.ren
-        //     ? null
-        //     : t.button.paramsInject.inject,
-        // leafActionWidgetOnPressed: v.data.titleIcon == HyIcons.ren
-        //     ? null
-        //     : detailsTreeOnTap,
-        // leafActionWidgetSize: Size(70, 30),
         startIndex: 0,
       );
       dtc.data.add(radioTree);
@@ -298,7 +307,6 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
     List<String> nodes, {
     required String rootTitle,
   }) {
-    print(mtc);
     Map<String, dynamic> root = {
       "id": 0,
       "title": rootTitle,
@@ -325,6 +333,8 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
         "isShowCheckbox": false,
         "type": 999,
         "subTexts": ["ESN: ", "当前IP: $ip"],
+        "isActive": foundDevice[0] == "1",
+        "activeTexts": foundDevice.isNotEmpty ? ["未连接", "已连接"] : null,
       };
       cur.add(temp);
       return cur;
@@ -375,6 +385,10 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
           "isShowCheckbox": type == 1,
           "type": 999,
           "subTexts": ["ESN: ", "当前ip: $ip"],
+          "isActive": foundDevice[0] == "1" && type != 1,
+          "activeTexts": foundDevice.isNotEmpty && type != 1
+              ? ["未连接", "已连接"]
+              : null,
         });
       });
       root["children"].add(sonNode);
@@ -419,7 +433,7 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
     );
   }
 
-  Future<void> bind(BuildContext ctx) async {
+  Future<void> saveTo(BuildContext ctx) async {
     if (dtc.selectRows.keys.isEmpty) {
       SimplePopup.warn(t.tips.paramsInject.selectRadios);
       return;
@@ -657,7 +671,7 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
 
   Future<void> initSocket() async {
     dtc.socketIOManager = SocketIOManager();
-    if (dtc.socketIOManager?.isConnected == false) {
+    if (dtc.socketIOManager?.isConnected ?? false) {
       dtc.socketIOManager!.init("");
       dtc.socketIOManager!.eventStream.listen((RtcEvent e) {
         print("socketmanager:" + e.toString());
