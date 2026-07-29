@@ -10,7 +10,7 @@ class KeyLoadersEntity {
   @JsonKey(defaultValue: 0)
   int id;
 
-  String name;
+  String name; // 密钥枪名称
 
   @Property(type: PropertyType.date)
   DateTime createdAt;
@@ -27,9 +27,5 @@ class KeyLoadersEntity {
 
   factory KeyLoadersEntity.fromJson(Map<String, dynamic> json) =>
       _$KeyLoadersEntityFromJson(json);
-  // Map<String, dynamic> toJson() => _$UserEntityToJson(this);
-  Map<String, dynamic> toJson() {
-    final json = _$KeyLoadersEntityToJson(this);
-    return json;
-  }
+  Map<String, dynamic> toJson() => _$KeyLoadersEntityToJson(this);
 }

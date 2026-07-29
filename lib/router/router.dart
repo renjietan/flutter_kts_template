@@ -1,5 +1,5 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter_kts_template/pages/InjectEncryptionStick/InjectEncryptionStick.pager.dart';
+import 'package:flutter_kts_template/pages/keyLoader/keyLoader.pager.dart';
 import 'package:flutter_kts_template/pages/layout/layout.pager.dart';
 import 'package:flutter_kts_template/pages/radioManager/radioManager.pager.dart';
 import 'package:flutter_kts_template/pages/test/test.dart';
@@ -81,7 +81,7 @@ final GoRouter router = GoRouter(
               path: '/injectEncryptStick',
               name: 'injectEncryptStick',
               parentNavigatorKey: _injectEncryptStickKey,
-              builder: (context, state) => InjectEncryptionStickPager(
+              builder: (context, state) => KeyLoaderPager(
                 theme: getThemePreset(ThemePreset.dark),
                 themePreset: ThemePreset.dark,
               ),

@@ -2,7 +2,6 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_kts_template/api/BindConfig.api.dart';
 import 'package:flutter_kts_template/api/KeyLoaders.api.dart';
 import 'package:flutter_kts_template/components/DropDown/SimpleDarkDropdown/simple.dark.dropdown.item.dart';
 import 'package:flutter_kts_template/components/TextField/simple.form.textfield.dart';
@@ -458,7 +457,7 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
       } else {
         bindKeyLoaderId = "${keyLoaders[0].id}";
         SimpleFormDialog(
-          title: t.button.radioManager.createRadio,
+          title: t.button.paramsInject.bind,
           confirmText: t.button.paramsInject.bind,
           fields: [
             FormFieldConfig(
@@ -478,22 +477,16 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
             ),
           ],
           onConfirm: (v) {
-            String selectIdsByDetailTree = dtc.selectRows.keys.join("，");
-            BindConfigApi.create({
-              "netNodeId": mtc.select.id,
-              "deviceConfigId": selectIdsByDetailTree,
-              "keyLoaderId": bindKeyLoaderId,
-            }).then((item) {
-              SimpleTipsDialog(
-                ctx,
-                title: t.tips.title,
-                contentText: t.tips.paramsInject.gotoConfig,
-                func: () {
-                  Provider.of<MenuProvider>(ctx, listen: false).selectedIndex =
-                      2;
-                  ctx.go("injectEncryptStick");
-                },
-              );
+            Map<String, dynamic> params = {
+              "id": bindKeyLoaderId,
+              "netNodePackageName": mtc.select.id,
+              "dcPackageNames": dtc.selectRows.keys.join(","),
+              "consumer": mtc.select.title,
+            };
+            KeyLoadersApi.updateDetail(bindKeyLoaderId, data: params).then((
+              res,
+            ) {
+              SimplePopup.success(t.common.OperationSuccess);
             });
           },
         );

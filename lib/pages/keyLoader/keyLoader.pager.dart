@@ -1,31 +1,29 @@
 import 'package:composable_data_table/composable_data_table.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
+import 'package:flutter_kts_template/router/router.dart';
 
 import '../../components/text/text.title.dart';
 import '../../theme/table.theme.dart';
 import '../../utils/enum/dialog_enum.dart';
-import 'InjectEncryptionStick.mixin.dart';
 import 'components/InjectEncryptionTable.dart';
+import 'keyLoader.mixin.dart';
 
-class InjectEncryptionStickPager extends StatefulWidget {
+class KeyLoaderPager extends StatefulWidget {
   final DataTablePlusTheme theme;
   final ThemePreset themePreset;
-  const InjectEncryptionStickPager({
+  const KeyLoaderPager({
     super.key,
     required this.theme,
     required this.themePreset,
   });
 
   @override
-  State<InjectEncryptionStickPager> createState() =>
-      _InjectEncryptStickPagerState();
+  State<KeyLoaderPager> createState() => _InjectEncryptStickPagerState();
 }
 
-class _InjectEncryptStickPagerState extends State<InjectEncryptionStickPager>
-    with InjectEncryptionStickMixin {
-  int selectIndex = 0;
-
+class _InjectEncryptStickPagerState extends State<KeyLoaderPager>
+    with KeyLoaderMixin {
   @override
   void initState() {
     // TODO: implement initState
@@ -33,6 +31,22 @@ class _InjectEncryptStickPagerState extends State<InjectEncryptionStickPager>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       getList();
     });
+    router.routeInformationProvider.addListener(_onRouteChanged);
+  }
+
+  void _onRouteChanged() {
+    final currentLocation = router.routerDelegate.currentConfiguration.uri
+        .toString();
+    // 判断是否是第三个菜单的路径，例如 '/third'
+    if (currentLocation == "/injectEncryptStick") {
+      getList();
+    }
+  }
+
+  @override
+  void dispose() {
+    router.routeInformationProvider.removeListener(_onRouteChanged);
+    super.dispose();
   }
 
   @override
@@ -132,6 +146,7 @@ class _InjectEncryptStickPagerState extends State<InjectEncryptionStickPager>
                             onTap: () {
                               setState(() {
                                 selectIndex = index;
+                                getDetails();
                               });
                             },
                           );
@@ -142,7 +157,7 @@ class _InjectEncryptStickPagerState extends State<InjectEncryptionStickPager>
           ),
         ),
         const VerticalDivider(width: 0),
-        Expanded(child: InjectEncryptionTable()),
+        Expanded(child: InjectEncryptionTable(allData: tableData)),
       ],
     );
   }

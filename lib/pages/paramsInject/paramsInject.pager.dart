@@ -309,7 +309,7 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
                       dtc.data[index],
                       onNodeDataChanged: (v) {
                         setState(() {});
-                        String id = "${v.data.id}";
+                        String id = v.data.title;
                         if (dtc.selectRows[id] == null) {
                           dtc.selectRows[id] = v;
                         } else {

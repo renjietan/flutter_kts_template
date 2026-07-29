@@ -1,4 +1,3 @@
-import 'package:flutter_kts_template/core/router/module/bindConfig/bindConfig.router.dart';
 import 'package:flutter_kts_template/core/router/module/keyLoaders/keyLoaders.router.dart';
 import 'package:shelf_router/shelf_router.dart';
 import 'package:shelf_static/shelf_static.dart';
@@ -31,7 +30,6 @@ class RouterRegistry {
       UploadRoutes(),
       RadiosManagerRoutes(),
       KeyLoadersRoutes(),
-      BindConfigRoutes(),
     ];
 
     for (final group in routeGroups) {

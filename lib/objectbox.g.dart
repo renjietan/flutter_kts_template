@@ -14,8 +14,8 @@ import 'package:objectbox/internal.dart'
 import 'package:objectbox/objectbox.dart' as obx;
 import 'package:objectbox_flutter_libs/objectbox_flutter_libs.dart';
 
-import 'core/entities/bindConfig/bindConfigEntity.dart';
 import 'core/entities/book/bookEntity.dart';
+import 'core/entities/keyLoaderDetails/keyLoaderDetailsEntity.dart';
 import 'core/entities/keyLoaders/keyLoadersEntity.dart';
 import 'core/entities/radios/radiosEntity.dart';
 import 'core/entities/user/userEntity.dart';
@@ -161,7 +161,7 @@ final _entities = <obx_int.ModelEntity>[
   obx_int.ModelEntity(
     id: const obx_int.IdUid(5, 3582610162093702077),
     name: 'KeyLoadersEntity',
-    lastPropertyId: const obx_int.IdUid(4, 5368222792800701576),
+    lastPropertyId: const obx_int.IdUid(8, 1971884064875378411),
     flags: 0,
     properties: <obx_int.ModelProperty>[
       obx_int.ModelProperty(
@@ -193,44 +193,68 @@ final _entities = <obx_int.ModelEntity>[
     backlinks: <obx_int.ModelBacklink>[],
   ),
   obx_int.ModelEntity(
-    id: const obx_int.IdUid(6, 6271279407079570812),
-    name: 'BindConfigEntity',
-    lastPropertyId: const obx_int.IdUid(7, 7386054865052925963),
+    id: const obx_int.IdUid(7, 1813780709103220274),
+    name: 'KeyLoaderDetailsEntity',
+    lastPropertyId: const obx_int.IdUid(12, 1568432106393426332),
     flags: 0,
     properties: <obx_int.ModelProperty>[
       obx_int.ModelProperty(
-        id: const obx_int.IdUid(1, 6049395943988811899),
+        id: const obx_int.IdUid(1, 3947670863590069697),
         name: 'id',
         type: 6,
         flags: 1,
       ),
       obx_int.ModelProperty(
-        id: const obx_int.IdUid(2, 7763530486178484550),
-        name: 'netNodeId',
+        id: const obx_int.IdUid(2, 3710909501779793844),
+        name: 'netNodePackageName',
         type: 9,
         flags: 0,
       ),
       obx_int.ModelProperty(
-        id: const obx_int.IdUid(3, 2065786153626554741),
-        name: 'deviceConfigId',
+        id: const obx_int.IdUid(3, 4846126622957901691),
+        name: 'dcPackageName',
         type: 9,
         flags: 0,
       ),
       obx_int.ModelProperty(
-        id: const obx_int.IdUid(5, 4137391018581619396),
+        id: const obx_int.IdUid(4, 3874646593090869108),
+        name: 'keyLoaderId',
+        type: 6,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(6, 8115624923809510147),
+        name: 'radioId',
+        type: 6,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(7, 7237388031547419600),
+        name: 'consumer',
+        type: 9,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(8, 8445630818835119620),
         name: 'createdAt',
         type: 10,
         flags: 0,
       ),
       obx_int.ModelProperty(
-        id: const obx_int.IdUid(6, 7643555413760363020),
+        id: const obx_int.IdUid(9, 4719075845335563294),
         name: 'updatedAt',
         type: 10,
         flags: 0,
       ),
       obx_int.ModelProperty(
-        id: const obx_int.IdUid(7, 7386054865052925963),
-        name: 'keyLoaderId',
+        id: const obx_int.IdUid(11, 7584349726139528281),
+        name: 'location',
+        type: 9,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(12, 1568432106393426332),
+        name: 'SN',
         type: 9,
         flags: 0,
       ),
@@ -283,17 +307,29 @@ obx_int.ModelDefinition getObjectBoxModel() {
     // Typically, this is done with `dart run build_runner build`.
     generatorVersion: obx_int.GeneratorVersion.v2025_12_16,
     entities: _entities,
-    lastEntityId: const obx_int.IdUid(6, 6271279407079570812),
-    lastIndexId: const obx_int.IdUid(1, 7435491961108656421),
+    lastEntityId: const obx_int.IdUid(7, 1813780709103220274),
+    lastIndexId: const obx_int.IdUid(2, 7248603694203076703),
     lastRelationId: const obx_int.IdUid(0, 0),
     lastSequenceId: const obx_int.IdUid(0, 0),
-    retiredEntityUids: const [2827524875656266667],
-    retiredIndexUids: const [],
+    retiredEntityUids: const [2827524875656266667, 6271279407079570812],
+    retiredIndexUids: const [7248603694203076703],
     retiredPropertyUids: const [
       812668694605346950,
       7877995074749865462,
       7919633563325803080,
       4008391957519251833,
+      6049395943988811899,
+      7763530486178484550,
+      2065786153626554741,
+      4137391018581619396,
+      7643555413760363020,
+      7386054865052925963,
+      1851302253626920133,
+      8095231258585915719,
+      8528062035017541503,
+      1971884064875378411,
+      5319821483848505265,
+      7814641166435052936,
     ],
     retiredRelationUids: const [],
     modelVersion: 5,
@@ -490,7 +526,7 @@ obx_int.ModelDefinition getObjectBoxModel() {
       },
       objectToFB: (KeyLoadersEntity object, fb.Builder fbb) {
         final nameOffset = fbb.writeString(object.name);
-        fbb.startTable(5);
+        fbb.startTable(9);
         fbb.addInt64(0, object.id);
         fbb.addOffset(1, nameOffset);
         fbb.addInt64(2, object.createdAt.millisecondsSinceEpoch);
@@ -526,25 +562,37 @@ obx_int.ModelDefinition getObjectBoxModel() {
         return object;
       },
     ),
-    BindConfigEntity: obx_int.EntityDefinition<BindConfigEntity>(
+    KeyLoaderDetailsEntity: obx_int.EntityDefinition<KeyLoaderDetailsEntity>(
       model: _entities[4],
-      toOneRelations: (BindConfigEntity object) => [],
-      toManyRelations: (BindConfigEntity object) => {},
-      getId: (BindConfigEntity object) => object.id,
-      setId: (BindConfigEntity object, int id) {
+      toOneRelations: (KeyLoaderDetailsEntity object) => [],
+      toManyRelations: (KeyLoaderDetailsEntity object) => {},
+      getId: (KeyLoaderDetailsEntity object) => object.id,
+      setId: (KeyLoaderDetailsEntity object, int id) {
         object.id = id;
       },
-      objectToFB: (BindConfigEntity object, fb.Builder fbb) {
-        final netNodeIdOffset = fbb.writeString(object.netNodeId);
-        final deviceConfigIdOffset = fbb.writeString(object.deviceConfigId);
-        final keyLoaderIdOffset = fbb.writeString(object.keyLoaderId);
-        fbb.startTable(8);
+      objectToFB: (KeyLoaderDetailsEntity object, fb.Builder fbb) {
+        final netNodePackageNameOffset = fbb.writeString(
+          object.netNodePackageName,
+        );
+        final dcPackageNameOffset = fbb.writeString(object.dcPackageName);
+        final consumerOffset = object.consumer == null
+            ? null
+            : fbb.writeString(object.consumer!);
+        final locationOffset = object.location == null
+            ? null
+            : fbb.writeString(object.location!);
+        final SNOffset = object.SN == null ? null : fbb.writeString(object.SN!);
+        fbb.startTable(13);
         fbb.addInt64(0, object.id);
-        fbb.addOffset(1, netNodeIdOffset);
-        fbb.addOffset(2, deviceConfigIdOffset);
-        fbb.addInt64(4, object.createdAt.millisecondsSinceEpoch);
-        fbb.addInt64(5, object.updatedAt.millisecondsSinceEpoch);
-        fbb.addOffset(6, keyLoaderIdOffset);
+        fbb.addOffset(1, netNodePackageNameOffset);
+        fbb.addOffset(2, dcPackageNameOffset);
+        fbb.addInt64(3, object.keyLoaderId);
+        fbb.addInt64(5, object.radioId);
+        fbb.addOffset(6, consumerOffset);
+        fbb.addInt64(7, object.createdAt.millisecondsSinceEpoch);
+        fbb.addInt64(8, object.updatedAt.millisecondsSinceEpoch);
+        fbb.addOffset(10, locationOffset);
+        fbb.addOffset(11, SNOffset);
         fbb.finish(fbb.endTable());
         return object.id;
       },
@@ -557,26 +605,47 @@ obx_int.ModelDefinition getObjectBoxModel() {
           4,
           0,
         );
-        final netNodeIdParam = const fb.StringReader(
+        final netNodePackageNameParam = const fb.StringReader(
           asciiOptimization: true,
         ).vTableGet(buffer, rootOffset, 6, '');
-        final deviceConfigIdParam = const fb.StringReader(
+        final dcPackageNameParam = const fb.StringReader(
           asciiOptimization: true,
         ).vTableGet(buffer, rootOffset, 8, '');
-        final keyLoaderIdParam = const fb.StringReader(
+        final keyLoaderIdParam = const fb.Int64Reader().vTableGet(
+          buffer,
+          rootOffset,
+          10,
+          0,
+        );
+        final radioIdParam = const fb.Int64Reader().vTableGetNullable(
+          buffer,
+          rootOffset,
+          14,
+        );
+        final consumerParam = const fb.StringReader(
           asciiOptimization: true,
-        ).vTableGet(buffer, rootOffset, 16, '');
+        ).vTableGetNullable(buffer, rootOffset, 16);
+        final locationParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGetNullable(buffer, rootOffset, 24);
+        final SNParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGetNullable(buffer, rootOffset, 26);
         final createdAtParam = DateTime.fromMillisecondsSinceEpoch(
-          const fb.Int64Reader().vTableGet(buffer, rootOffset, 12, 0),
+          const fb.Int64Reader().vTableGet(buffer, rootOffset, 18, 0),
         );
         final updatedAtParam = DateTime.fromMillisecondsSinceEpoch(
-          const fb.Int64Reader().vTableGet(buffer, rootOffset, 14, 0),
+          const fb.Int64Reader().vTableGet(buffer, rootOffset, 20, 0),
         );
-        final object = BindConfigEntity(
+        final object = KeyLoaderDetailsEntity(
           id: idParam,
-          netNodeId: netNodeIdParam,
-          deviceConfigId: deviceConfigIdParam,
+          netNodePackageName: netNodePackageNameParam,
+          dcPackageName: dcPackageNameParam,
           keyLoaderId: keyLoaderIdParam,
+          radioId: radioIdParam,
+          consumer: consumerParam,
+          location: locationParam,
+          SN: SNParam,
           createdAt: createdAtParam,
           updatedAt: updatedAtParam,
         );
@@ -706,35 +775,56 @@ class KeyLoadersEntity_ {
   );
 }
 
-/// [BindConfigEntity] entity fields to define ObjectBox queries.
-class BindConfigEntity_ {
-  /// See [BindConfigEntity.id].
-  static final id = obx.QueryIntegerProperty<BindConfigEntity>(
+/// [KeyLoaderDetailsEntity] entity fields to define ObjectBox queries.
+class KeyLoaderDetailsEntity_ {
+  /// See [KeyLoaderDetailsEntity.id].
+  static final id = obx.QueryIntegerProperty<KeyLoaderDetailsEntity>(
     _entities[4].properties[0],
   );
 
-  /// See [BindConfigEntity.netNodeId].
-  static final netNodeId = obx.QueryStringProperty<BindConfigEntity>(
-    _entities[4].properties[1],
-  );
+  /// See [KeyLoaderDetailsEntity.netNodePackageName].
+  static final netNodePackageName =
+      obx.QueryStringProperty<KeyLoaderDetailsEntity>(
+        _entities[4].properties[1],
+      );
 
-  /// See [BindConfigEntity.deviceConfigId].
-  static final deviceConfigId = obx.QueryStringProperty<BindConfigEntity>(
+  /// See [KeyLoaderDetailsEntity.dcPackageName].
+  static final dcPackageName = obx.QueryStringProperty<KeyLoaderDetailsEntity>(
     _entities[4].properties[2],
   );
 
-  /// See [BindConfigEntity.createdAt].
-  static final createdAt = obx.QueryDateProperty<BindConfigEntity>(
+  /// See [KeyLoaderDetailsEntity.keyLoaderId].
+  static final keyLoaderId = obx.QueryIntegerProperty<KeyLoaderDetailsEntity>(
     _entities[4].properties[3],
   );
 
-  /// See [BindConfigEntity.updatedAt].
-  static final updatedAt = obx.QueryDateProperty<BindConfigEntity>(
+  /// See [KeyLoaderDetailsEntity.radioId].
+  static final radioId = obx.QueryIntegerProperty<KeyLoaderDetailsEntity>(
     _entities[4].properties[4],
   );
 
-  /// See [BindConfigEntity.keyLoaderId].
-  static final keyLoaderId = obx.QueryStringProperty<BindConfigEntity>(
+  /// See [KeyLoaderDetailsEntity.consumer].
+  static final consumer = obx.QueryStringProperty<KeyLoaderDetailsEntity>(
     _entities[4].properties[5],
+  );
+
+  /// See [KeyLoaderDetailsEntity.createdAt].
+  static final createdAt = obx.QueryDateProperty<KeyLoaderDetailsEntity>(
+    _entities[4].properties[6],
+  );
+
+  /// See [KeyLoaderDetailsEntity.updatedAt].
+  static final updatedAt = obx.QueryDateProperty<KeyLoaderDetailsEntity>(
+    _entities[4].properties[7],
+  );
+
+  /// See [KeyLoaderDetailsEntity.location].
+  static final location = obx.QueryStringProperty<KeyLoaderDetailsEntity>(
+    _entities[4].properties[8],
+  );
+
+  /// See [KeyLoaderDetailsEntity.SN].
+  static final SN = obx.QueryStringProperty<KeyLoaderDetailsEntity>(
+    _entities[4].properties[9],
   );
 }

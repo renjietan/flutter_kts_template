@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_kts_template/components/loading/simple.async.loading.dart';
+import 'package:flutter_kts_template/core/entities/keyLoaderDetails/keyLoaderDetailsEntity.dart';
+import 'package:flutter_kts_template/utils/provider/keyloader.provider.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
+import 'package:provider/provider.dart';
 import 'package:unified_popups/unified_popups.dart';
 
 import '../../api/KeyLoaders.api.dart';
@@ -9,26 +13,44 @@ import '../../components/loading/simple.loading.dart';
 import '../../core/entities/keyLoaders/keyLoadersEntity.dart';
 import '../../i18n/handle/translations.g.dart';
 import '../../utils/enum/dialog_enum.dart';
-import 'InjectEncryptionStick.pager.dart';
+import 'keyLoader.pager.dart';
 
-mixin InjectEncryptionStickMixin on State<InjectEncryptionStickPager> {
+mixin KeyLoaderMixin on State<KeyLoaderPager> {
   // =============================================================================
   // 2026/7/7  接口
   // =============================================================================
-
+  int selectIndex = 0;
   List<KeyLoadersEntity> data = [];
+  List<KeyLoaderDetailsEntity> tableData = [];
   int totalItems = 0;
   final nameTextEditController = TextEditingController();
 
   void getList() {
     Pop.loading();
     KeyLoadersApi.getAll().then((res) {
-      Future.delayed(Duration(milliseconds: 70)).then((_) {
-        Pop.hideLoading();
-        setState(() {
-          data = res.data.list;
-          totalItems = res.data.total;
-        });
+      if (mounted) {
+        context.read<KeyLoaderProvider>().setKeyLoaders = res.data.list;
+      }
+      SimpleAsyncPopup.hideLoading(Duration(milliseconds: 200));
+      setState(() {
+        data = res.data.list;
+        totalItems = res.data.total;
+        tableData = [];
+      });
+      if (data.isNotEmpty) {
+        getDetails();
+      }
+    });
+  }
+
+  void getDetails() {
+    KeyLoadersEntity selectEntity = data[selectIndex];
+    KeyLoadersApi.getDetails(selectEntity.id).then((res) {
+      final listData = res.data["list"] as List;
+      setState(() {
+        tableData = listData.map((item) {
+          return KeyLoaderDetailsEntity.fromJson(item as Map<String, dynamic>);
+        }).toList();
       });
     });
   }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_kts_template/core/entities/radios/radiosEntity.dart';
 import 'package:flutter_kts_template/logger/logger.dart';
+import 'package:flutter_kts_template/utils/provider/keyloader.provider.dart';
 import 'package:flutter_kts_template/utils/provider/radios.provider.dart';
 import 'package:flutter_kts_template/utils/provider/user.provider.dart';
 import 'package:provider/provider.dart';
@@ -24,6 +25,7 @@ class ProviderStore {
         ChangeNotifierProvider.value(value: UserProvider(userInfo)),
         ChangeNotifierProvider.value(value: MenuProvider(0)),
         ChangeNotifierProvider.value(value: RadiosProvider(radios)),
+        ChangeNotifierProvider.value(value: KeyLoaderProvider([])),
       ],
       child: child,
     );

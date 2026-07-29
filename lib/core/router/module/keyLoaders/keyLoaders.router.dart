@@ -10,8 +10,10 @@ class KeyLoadersRoutes extends BaseRouteGroup {
   @override
   Router register(Router router) {
     router.get('/', KeyLoadersController.getAll);
+    router.get('/detail/<id>', KeyLoadersController.getDetails);
     router.post('/', KeyLoadersController.create);
-    router.put('/<id>', KeyLoadersController.update);
+    router.put('/update/<id>', KeyLoadersController.update);
+    router.put('/updateDetail/<id>', KeyLoadersController.updateDetails);
     router.delete('/<id>', KeyLoadersController.delete);
     return router;
   }
