@@ -18,11 +18,6 @@ class KeyLoadersApi {
     return res;
   }
 
-  static Future getDetails(int id) async {
-    final res = await _instance.get("$url/detail/$id", fromJson: null);
-    return res;
-  }
-
   static Future create(Map<String, dynamic> data) async {
     final res = await _instance.post(url, data: data, fromJson: null);
     return res;
@@ -37,12 +32,29 @@ class KeyLoadersApi {
     return res;
   }
 
+  static Future getDetails(int id) async {
+    final res = await _instance.get("$url/detail/$id", fromJson: null);
+    return res;
+  }
+
   static Future updateDetail(
     String id, {
     required Map<String, dynamic> data,
   }) async {
     final res = await _instance.put(
       "$url/updateDetail/$id",
+      data: data,
+      fromJson: null,
+    );
+    return res;
+  }
+
+  static Future updateOneDetail(
+    int id, {
+    required Map<String, dynamic> data,
+  }) async {
+    final res = await _instance.put(
+      "$url/updateOneDetail/$id",
       data: data,
       fromJson: null,
     );

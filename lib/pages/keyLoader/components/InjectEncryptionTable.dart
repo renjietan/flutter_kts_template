@@ -2,7 +2,6 @@ import 'package:composable_data_table/composable_data_table.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_kts_template/api/KeyLoaders.api.dart';
 import 'package:flutter_kts_template/components/DropDown/simple.dropdown.dart';
-import 'package:flutter_kts_template/components/TextField/simple.textfield.dart';
 import 'package:flutter_kts_template/components/button/base.button.dart';
 import 'package:flutter_kts_template/components/text/text.title.dart';
 import 'package:flutter_kts_template/core/entities/keyLoaderDetails/keyLoaderDetailsEntity.dart';
@@ -79,6 +78,15 @@ class _InjectEncryptionTableState extends State<InjectEncryptionTable> {
     return [];
   }
 
+  Future<void> updateOneDetail(
+    int id, {
+    required Map<String, dynamic> detail,
+  }) async {
+    KeyLoadersApi.updateOneDetail(id, data: detail).then((res) {
+      print(res);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -90,15 +98,6 @@ class _InjectEncryptionTableState extends State<InjectEncryptionTable> {
             children: [
               TextTitle(text: t.pager.injectEncrypt.paramPairing),
               const Spacer(),
-              // 保存
-              BaseButton(
-                label: t.button.radioManager.save,
-                onPressed: () {
-                  print(filteredData);
-                },
-                width: 70,
-              ),
-              SizedBox(width: 15),
               // 导出
               BaseButton(
                 label: t.button.injectEncrypt.export,
@@ -116,7 +115,6 @@ class _InjectEncryptionTableState extends State<InjectEncryptionTable> {
                 allData = [];
                 final p = context.read<RadiosProvider>();
                 radios = p.radios;
-
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
                 } else if (snapshot.hasError) {
@@ -130,7 +128,7 @@ class _InjectEncryptionTableState extends State<InjectEncryptionTable> {
                       idGetter: (item) => item.id.toString(),
                       selectedIds: selectedIds,
                       allSelected: allSelected,
-                      showCheckboxes: false,
+                      showCheckboxes: true,
                       onSelectionChanged: toggleSelection,
                       onSelectAllChanged: toggleSelectAll,
                       columns: buildColumns(context),
@@ -156,6 +154,7 @@ class _InjectEncryptionTableState extends State<InjectEncryptionTable> {
               pageSize = size;
               currentPage = 1;
             }),
+            // pageSizeTemplate: "{size}",
             onPageChanged: (page) => setState(() => currentPage = page),
             // itemRangeTemplate: 'Showing {start}-{end} of {total} data',
             itemRangeTemplate: "",
@@ -229,7 +228,7 @@ class _InjectEncryptionTableState extends State<InjectEncryptionTable> {
     return [
       ColumnDefinition<KeyLoaderDetailsEntity>(
         label: t.tableColumn.injectEncrypt.parameterPacket,
-        size: const ColumnSize.auto(),
+        size: const ColumnSize.fixed(150),
         cellBuilder: TextCellBuilder.text<KeyLoaderDetailsEntity>(
           (u) => u.netNodePackageName,
         ),
@@ -243,10 +242,13 @@ class _InjectEncryptionTableState extends State<InjectEncryptionTable> {
           items: radioOptions,
           onChanged: (v) {
             item.radioId = v;
-            print(radios);
-            RadiosEntity radio = radios.firstWhere((item) => "${item.id}" == v);
+            RadiosEntity radio = radios.firstWhere((item) => item.id == v);
             item.location = radio.location;
             item.SN = radio.sn;
+            item.consumer = radio.consumer;
+            Map<String, dynamic> params = item.toJson();
+            updateOneDetail(item.id, detail: params);
+            setState(() {});
           },
         ),
       ),
@@ -260,25 +262,23 @@ class _InjectEncryptionTableState extends State<InjectEncryptionTable> {
       ColumnDefinition<KeyLoaderDetailsEntity>(
         label: t.tableColumn.injectEncrypt.location,
         size: const ColumnSize.fixed(200),
-        cellBuilder: (item) => SimpleTextfield(
-          hint: "",
-          height: 30,
-          contentPadding: EdgeInsets.symmetric(horizontal: 7),
-          onChanged: (v) {
-            item.location = v;
-          },
+        cellBuilder: TextCellBuilder.text<KeyLoaderDetailsEntity>(
+          (item) => item.location ?? "",
         ),
       ),
       ColumnDefinition<KeyLoaderDetailsEntity>(
         label: t.tableColumn.injectEncrypt.SN,
         size: const ColumnSize.fixed(200),
-        cellBuilder: (item) => SimpleTextfield(
-          hint: "",
-          height: 30,
-          contentPadding: EdgeInsets.symmetric(horizontal: 7),
-          onChanged: (v) {
-            item.SN = v;
-          },
+        // cellBuilder: (item) => SimpleTextfield(
+        //   hint: "",
+        //   height: 30,
+        //   contentPadding: EdgeInsets.symmetric(horizontal: 7),
+        //   onChanged: (v) {
+        //     item.SN = v;
+        //   },
+        // ),
+        cellBuilder: TextCellBuilder.text<KeyLoaderDetailsEntity>(
+          (item) => item.SN ?? "",
         ),
       ),
     ];

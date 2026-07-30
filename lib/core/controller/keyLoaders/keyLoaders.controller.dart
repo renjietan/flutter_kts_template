@@ -101,7 +101,7 @@ class KeyLoadersController {
 
   static Response getDetails(Request request) {
     final db = DatabaseManager.instance;
-    int uId = getId(request.context["path"] as List<String>?);
+    int uId = getId(request.context["path"] as List<String>?); // keyLoaderId
     List<KeyLoaderDetailsEntity> data = db
         .box<KeyLoaderDetailsEntity>()
         .query(KeyLoaderDetailsEntity_.keyLoaderId.equals(uId))
@@ -130,7 +130,7 @@ class KeyLoadersController {
         keyLoaderId: uId,
         netNodePackageName: params["netNodePackageName"],
         dcPackageName: dcPackageName,
-        consumer: params["consumer"],
+        // consumer: params["consumer"],
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
       );
@@ -140,11 +140,43 @@ class KeyLoadersController {
     return ApiResponse.success(data: ids, message: t.common.OperationSuccess);
   }
 
+  static Future<Response> updateDetail(Request request) async {
+    final db = DatabaseManager.instance;
+    final Map<String, dynamic> params =
+        request.context["params"] as Map<String, dynamic>;
+    int uId = getId(request.context["path"] as List<String>?);
+    final box = db.box<KeyLoaderDetailsEntity>();
+    final entity = box
+        .query(KeyLoaderDetailsEntity_.id.equals(uId))
+        .build()
+        .findFirst();
+    if (entity == null) {
+      return ApiResponse.error(message: t.common.noData);
+    }
+    entity.radioId = params["radioId"];
+    entity.consumer = params["consumer"];
+    entity.SN = params["SN"];
+    entity.location = params["location"];
+    entity.dcPackageName = params["dcPackageName"];
+    entity.netNodePackageName = params["netNodePackageName"];
+    entity.updatedAt = DateTime.now();
+    entity.keyLoaderId = params["keyLoaderId"];
+    int id = box.put(entity);
+    return ApiResponse.success(data: id, message: t.common.OperationSuccess);
+  }
+
   static Future<Response> delete(Request request) async {
     final db = DatabaseManager.instance;
     List<int> ids = getIds(request.context["path"] as List<String>?);
-    var box = db.box<KeyLoadersEntity>();
-    int data = box.removeMany(ids);
+    var keyLoaderBox = db.box<KeyLoadersEntity>();
+    int data = keyLoaderBox.removeMany(ids);
+    for (var id in ids) {
+      var keyLoaderDetailBox = db
+          .box<KeyLoaderDetailsEntity>()
+          .query(KeyLoaderDetailsEntity_.keyLoaderId.equals(id))
+          .build();
+      keyLoaderDetailBox.remove();
+    }
     return ApiResponse.success(data: data, message: t.common.OperationSuccess);
   }
 }
