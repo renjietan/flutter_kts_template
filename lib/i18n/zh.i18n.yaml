@@ -67,6 +67,9 @@ tips:
     noKeyLoader: 当前无可选的密钥枪, 请前往添加后再试
     selectRadios: 请勾选电台
     gotoConfig: 绑定已完成，是否现在前往配置？
+  keyLoaders:
+    delete: 删除
+    confirmDelete: 确认删除吗
 #tablePagination:
 #  itemRangeTemplate: 'Showing {start}-{end} of {total} data',
 tableColumn:

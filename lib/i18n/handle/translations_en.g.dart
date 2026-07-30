@@ -174,6 +174,7 @@ class _Translations$tips$en extends Translations$tips$zh {
 	@override String get cancel => 'Cancel';
 	@override String get ok => 'Confirm';
 	@override late final _Translations$tips$paramsInject$en paramsInject = _Translations$tips$paramsInject$en._(_root);
+	@override late final _Translations$tips$keyLoaders$en keyLoaders = _Translations$tips$keyLoaders$en._(_root);
 }
 
 // Path: tableColumn
@@ -349,6 +350,17 @@ class _Translations$tips$paramsInject$en extends Translations$tips$paramsInject$
 	@override String get noKeyLoader => 'No Key Loader is available. Please go and add one';
 	@override String get selectRadios => 'Please select a radio';
 	@override String get gotoConfig => 'Binding completed. go to configuration now?';
+}
+
+// Path: tips.keyLoaders
+class _Translations$tips$keyLoaders$en extends Translations$tips$keyLoaders$zh {
+	_Translations$tips$keyLoaders$en._(TranslationsEn root) : this._root = root, super.internal(root);
+
+	final TranslationsEn _root; // ignore: unused_field
+
+	// Translations
+	@override String get delete => 'delete';
+	@override String get confirmDelete => 'Are you sure you want to delete it?';
 }
 
 // Path: tableColumn.base

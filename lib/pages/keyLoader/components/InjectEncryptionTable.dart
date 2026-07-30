@@ -1,22 +1,26 @@
 import 'package:composable_data_table/composable_data_table.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_kts_template/api/KeyLoaders.api.dart';
 import 'package:flutter_kts_template/components/DropDown/simple.dropdown.dart';
 import 'package:flutter_kts_template/components/TextField/simple.textfield.dart';
 import 'package:flutter_kts_template/components/button/base.button.dart';
 import 'package:flutter_kts_template/components/text/text.title.dart';
 import 'package:flutter_kts_template/core/entities/keyLoaderDetails/keyLoaderDetailsEntity.dart';
+import 'package:flutter_kts_template/core/entities/keyLoaders/keyLoadersEntity.dart';
+import 'package:flutter_kts_template/core/entities/radios/radiosEntity.dart';
 import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
+import 'package:flutter_kts_template/utils/provider/radios.provider.dart';
+import 'package:provider/provider.dart';
 
 import '../../../theme/table.theme.dart';
 
 class InjectEncryptionTable extends StatefulWidget {
   final ThemePreset? themePreset;
-  final List<KeyLoaderDetailsEntity> allData;
-
+  final KeyLoadersEntity? keyLoaderEntity;
   const InjectEncryptionTable({
     super.key,
     this.themePreset = ThemePreset.dark,
-    required this.allData,
+    this.keyLoaderEntity,
   });
 
   @override
@@ -28,9 +32,21 @@ class _InjectEncryptionTableState extends State<InjectEncryptionTable> {
   int currentPage = 1;
   int pageSize = 10;
   String? searchQuery = "";
+  List<KeyLoaderDetailsEntity>? allData;
+
+  List<RadiosEntity> radios = [];
+
+  List<DropdownMenuItem> get radioOptions => radios.fold([], (cur, pre) {
+    DropdownMenuItem temp = DropdownMenuItem(
+      value: pre.id,
+      child: Text(pre.alias),
+    );
+    cur.add(temp);
+    return cur;
+  });
+
   bool get isDark => widget.themePreset == ThemePreset.dark;
   final Set<String> selectedIds = {};
-
   List<KeyLoaderDetailsEntity> get paginatedData {
     final startIndex = (currentPage - 1) * pageSize;
     if (startIndex >= filteredData.length) return [];
@@ -40,13 +56,27 @@ class _InjectEncryptionTableState extends State<InjectEncryptionTable> {
 
   int get totalPages => (filteredData.length / pageSize).ceil().clamp(1, 999);
 
-  List<KeyLoaderDetailsEntity> get filteredData => widget.allData;
+  List<KeyLoaderDetailsEntity> get filteredData => allData ?? [];
   @override
   void initState() {
     super.initState();
     theme = widget.themePreset == null
         ? getThemePreset(ThemePreset.dark)
         : getThemePreset(widget.themePreset!);
+  }
+
+  Future<List<KeyLoaderDetailsEntity>> getDetails(
+    KeyLoadersEntity? entity,
+  ) async {
+    if (entity?.id != null) {
+      return await KeyLoadersApi.getDetails(entity!.id).then((res) {
+        final listData = res.data["list"] as List;
+        return listData.map((item) {
+          return KeyLoaderDetailsEntity.fromJson(item as Map<String, dynamic>);
+        }).toList();
+      });
+    }
+    return [];
   }
 
   @override
@@ -57,9 +87,19 @@ class _InjectEncryptionTableState extends State<InjectEncryptionTable> {
         Padding(
           padding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               TextTitle(text: t.pager.injectEncrypt.paramPairing),
+              const Spacer(),
+              // 保存
+              BaseButton(
+                label: t.button.radioManager.save,
+                onPressed: () {
+                  print(filteredData);
+                },
+                width: 70,
+              ),
+              SizedBox(width: 15),
+              // 导出
               BaseButton(
                 label: t.button.injectEncrypt.export,
                 onPressed: () {},
@@ -70,19 +110,37 @@ class _InjectEncryptionTableState extends State<InjectEncryptionTable> {
         ),
         Expanded(
           child: SingleChildScrollView(
-            child: DataTablePlusThemeProvider(
-              theme: theme,
-              child: DataTablePlus<KeyLoaderDetailsEntity>(
-                items: paginatedData,
-                idGetter: (item) => item.id.toString(),
-                selectedIds: selectedIds,
-                allSelected: allSelected,
-                showCheckboxes: false,
-                onSelectionChanged: toggleSelection,
-                onSelectAllChanged: toggleSelectAll,
-                columns: buildColumns(context),
-                emptyWidget: buildEmptyWidget(context),
-              ),
+            child: FutureBuilder<List<KeyLoaderDetailsEntity>>(
+              future: getDetails(widget.keyLoaderEntity),
+              builder: (context, snapshot) {
+                allData = [];
+                final p = context.read<RadiosProvider>();
+                radios = p.radios;
+
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  return buildEmptyWidget(context);
+                } else if (snapshot.hasData) {
+                  allData = snapshot.data;
+                  return DataTablePlusThemeProvider(
+                    theme: theme,
+                    child: DataTablePlus<KeyLoaderDetailsEntity>(
+                      items: paginatedData,
+                      idGetter: (item) => item.id.toString(),
+                      selectedIds: selectedIds,
+                      allSelected: allSelected,
+                      showCheckboxes: false,
+                      onSelectionChanged: toggleSelection,
+                      onSelectAllChanged: toggleSelectAll,
+                      columns: buildColumns(context),
+                      emptyWidget: buildEmptyWidget(context),
+                    ),
+                  );
+                } else {
+                  return buildEmptyWidget(context);
+                }
+              },
             ),
           ),
         ),
@@ -182,8 +240,14 @@ class _InjectEncryptionTableState extends State<InjectEncryptionTable> {
         cellBuilder: (item) => SimpleDropdown(
           hint: t.tableColumn.injectEncrypt.radio,
           value: item.radioId,
-          items: [],
-          onChanged: (v) {},
+          items: radioOptions,
+          onChanged: (v) {
+            item.radioId = v;
+            print(radios);
+            RadiosEntity radio = radios.firstWhere((item) => "${item.id}" == v);
+            item.location = radio.location;
+            item.SN = radio.sn;
+          },
         ),
       ),
       ColumnDefinition<KeyLoaderDetailsEntity>(

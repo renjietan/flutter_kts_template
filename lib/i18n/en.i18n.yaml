@@ -67,7 +67,9 @@ tips:
     noKeyLoader: No Key Loader is available. Please go and add one
     selectRadios: Please select a radio
     gotoConfig: Binding completed. go to configuration now?
-
+  keyLoaders:
+    delete: delete
+    confirmDelete: Are you sure you want to delete it?
 #tablePagination:
 #  itemRangeTemplate: '显示 {start}-{end} 条, 共 {total} 条',
 tableColumn:

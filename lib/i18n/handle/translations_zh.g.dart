@@ -250,6 +250,7 @@ class Translations$tips$zh {
 	String get ok => '确定';
 
 	late final Translations$tips$paramsInject$zh paramsInject = Translations$tips$paramsInject$zh.internal(_root);
+	late final Translations$tips$keyLoaders$zh keyLoaders = Translations$tips$keyLoaders$zh.internal(_root);
 }
 
 // Path: tableColumn
@@ -486,6 +487,21 @@ class Translations$tips$paramsInject$zh {
 
 	/// zh: '绑定已完成，是否现在前往配置？'
 	String get gotoConfig => '绑定已完成，是否现在前往配置？';
+}
+
+// Path: tips.keyLoaders
+class Translations$tips$keyLoaders$zh {
+	Translations$tips$keyLoaders$zh.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// zh: '删除'
+	String get delete => '删除';
+
+	/// zh: '确认删除吗'
+	String get confirmDelete => '确认删除吗';
 }
 
 // Path: tableColumn.base

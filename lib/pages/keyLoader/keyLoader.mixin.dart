@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_kts_template/components/loading/simple.async.loading.dart';
-import 'package:flutter_kts_template/core/entities/keyLoaderDetails/keyLoaderDetailsEntity.dart';
 import 'package:flutter_kts_template/utils/provider/keyloader.provider.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:provider/provider.dart';
@@ -19,9 +18,8 @@ mixin KeyLoaderMixin on State<KeyLoaderPager> {
   // =============================================================================
   // 2026/7/7  接口
   // =============================================================================
-  int selectIndex = 0;
+  KeyLoadersEntity? selectKeyLoader;
   List<KeyLoadersEntity> data = [];
-  List<KeyLoaderDetailsEntity> tableData = [];
   int totalItems = 0;
   final nameTextEditController = TextEditingController();
 
@@ -35,22 +33,7 @@ mixin KeyLoaderMixin on State<KeyLoaderPager> {
       setState(() {
         data = res.data.list;
         totalItems = res.data.total;
-        tableData = [];
-      });
-      if (data.isNotEmpty) {
-        getDetails();
-      }
-    });
-  }
-
-  void getDetails() {
-    KeyLoadersEntity selectEntity = data[selectIndex];
-    KeyLoadersApi.getDetails(selectEntity.id).then((res) {
-      final listData = res.data["list"] as List;
-      setState(() {
-        tableData = listData.map((item) {
-          return KeyLoaderDetailsEntity.fromJson(item as Map<String, dynamic>);
-        }).toList();
+        selectKeyLoader = data.isNotEmpty ? data[0] : null;
       });
     });
   }

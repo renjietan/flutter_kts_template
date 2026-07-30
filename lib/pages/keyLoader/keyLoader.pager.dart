@@ -1,5 +1,6 @@
 import 'package:composable_data_table/composable_data_table.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_kts_template/components/dialog/simple.tips.dialog.dart';
 import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 import 'package:flutter_kts_template/router/router.dart';
 
@@ -26,7 +27,6 @@ class _InjectEncryptStickPagerState extends State<KeyLoaderPager>
     with KeyLoaderMixin {
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       getList();
@@ -99,7 +99,7 @@ class _InjectEncryptStickPagerState extends State<KeyLoaderPager>
                             ),
                             shape: Border(
                               bottom: BorderSide(
-                                color: index == selectIndex
+                                color: data[index].id == selectKeyLoader?.id
                                     ? Color(0xFF004098)
                                     : Colors.grey.shade700,
                                 width: 1,
@@ -125,7 +125,16 @@ class _InjectEncryptStickPagerState extends State<KeyLoaderPager>
                                         data[index],
                                       );
                                     } else {
-                                      delete(data[index]);
+                                      SimpleTipsDialog(
+                                        context,
+                                        title: t.tips.keyLoaders.delete,
+                                        contentText:
+                                            t.tips.keyLoaders.confirmDelete,
+                                        func: () {
+                                          delete(data[index]);
+                                        },
+                                      );
+                                      // delete(data[index]);
                                     }
                                   },
                                   itemBuilder: (context) => [
@@ -142,11 +151,10 @@ class _InjectEncryptStickPagerState extends State<KeyLoaderPager>
                               ],
                             ),
                             selectedTileColor: Color(0xFF004098),
-                            selected: index == selectIndex,
+                            selected: data[index].id == selectKeyLoader?.id,
                             onTap: () {
                               setState(() {
-                                selectIndex = index;
-                                getDetails();
+                                selectKeyLoader = data[index];
                               });
                             },
                           );
@@ -157,7 +165,9 @@ class _InjectEncryptStickPagerState extends State<KeyLoaderPager>
           ),
         ),
         const VerticalDivider(width: 0),
-        Expanded(child: InjectEncryptionTable(allData: tableData)),
+        Expanded(
+          child: InjectEncryptionTable(keyLoaderEntity: selectKeyLoader),
+        ),
       ],
     );
   }
