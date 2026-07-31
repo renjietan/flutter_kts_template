@@ -638,13 +638,6 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
           udpPopError(t.udp.pingFail);
         } else {
           fileHeader();
-          // TimeoutManager.setTimeout(
-          //   "ping",
-          //   AppConfig.udpConfig.timeoutDuration,
-          //   () {
-          //     ping();
-          //   },
-          // );
         }
       } else if (sap == 0x04 && optCode == 0x83) {
         if (status != 0) {
