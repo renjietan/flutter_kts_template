@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:composable_data_table/composable_data_table.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_kts_template/api/KeyLoaders.api.dart';
@@ -7,8 +9,12 @@ import 'package:flutter_kts_template/components/text/text.title.dart';
 import 'package:flutter_kts_template/core/entities/keyLoaderDetails/keyLoaderDetailsEntity.dart';
 import 'package:flutter_kts_template/core/entities/keyLoaders/keyLoadersEntity.dart';
 import 'package:flutter_kts_template/core/entities/radios/radiosEntity.dart';
+import 'package:flutter_kts_template/core/utils/director.dart';
 import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
+import 'package:flutter_kts_template/logger/logger.dart';
+import 'package:flutter_kts_template/utils/files/FileTools.dart';
 import 'package:flutter_kts_template/utils/provider/radios.provider.dart';
+import 'package:path/path.dart' as p;
 import 'package:provider/provider.dart';
 
 import '../../../theme/table.theme.dart';
@@ -45,6 +51,12 @@ class _InjectEncryptionTableState extends State<InjectEncryptionTable> {
   });
 
   bool get isDark => widget.themePreset == ThemePreset.dark;
+  String rootFilePath = "";
+  String get rFilePath => p.join(rootFilePath, "1_resource");
+  String get rsFilePath => p.join(rootFilePath, "2_radio_subnet");
+  String get dcFilePath => p.join(rootFilePath, "3_device_config");
+  String get nnFilePath => p.join(rootFilePath, "4_net_node");
+
   final Set<String> selectedIds = {};
   List<KeyLoaderDetailsEntity> get paginatedData {
     final startIndex = (currentPage - 1) * pageSize;
@@ -67,6 +79,12 @@ class _InjectEncryptionTableState extends State<InjectEncryptionTable> {
   Future<List<KeyLoaderDetailsEntity>> getDetails(
     KeyLoadersEntity? entity,
   ) async {
+    String defaultUploadPath = await DirectoryManager.instance.getUploadsPath();
+    List<Directory> subFolders = await FileTools.getDirectSubFolders(
+      defaultUploadPath,
+    );
+    rootFilePath = subFolders.first.path;
+
     if (entity?.id != null) {
       return await KeyLoadersApi.getDetails(entity!.id).then((res) {
         final listData = res.data["list"] as List;
@@ -82,9 +100,7 @@ class _InjectEncryptionTableState extends State<InjectEncryptionTable> {
     int id, {
     required Map<String, dynamic> detail,
   }) async {
-    KeyLoadersApi.updateOneDetail(id, data: detail).then((res) {
-      print(res);
-    });
+    KeyLoadersApi.updateOneDetail(id, data: detail).then((res) {});
   }
 
   @override
@@ -101,7 +117,9 @@ class _InjectEncryptionTableState extends State<InjectEncryptionTable> {
               // 导出
               BaseButton(
                 label: t.button.injectEncrypt.export,
-                onPressed: () {},
+                onPressed: () {
+                  buildTar();
+                },
                 width: 70,
               ),
             ],
@@ -154,14 +172,103 @@ class _InjectEncryptionTableState extends State<InjectEncryptionTable> {
               pageSize = size;
               currentPage = 1;
             }),
-            // pageSizeTemplate: "{size}",
             onPageChanged: (page) => setState(() => currentPage = page),
+            // pageSizeTemplate: "{size}",
             // itemRangeTemplate: 'Showing {start}-{end} of {total} data',
             itemRangeTemplate: "",
           ),
         ),
       ],
     );
+  }
+
+  Future<void> buildTar() async {
+    String savePath = await DirectoryManager.instance.getZipCache();
+    List<KeyLoaderDetailsEntity>? entities = allData
+        ?.where((item) => selectedIds.contains("${item.id}"))
+        .toList();
+    // 根据 3_device_config 中的 Channels 字段 获取 Subnets 列表，后续 将 根据 Subnets 字段 查找 2_radio_subnet 问价
+    List<String> dcJsonFilesPath = (entities ?? []).fold<List<String>>([], (
+      cur,
+      pre,
+    ) {
+      cur.add(p.join(dcFilePath, "${pre.dcPackageName}.json"));
+      return cur;
+    });
+    List<ArchiveEntry> dcJsonArchiveEntries = dcJsonFilesPath.fold([], (
+      cur,
+      pre,
+    ) {
+      cur.add(ArchiveEntry(sourcePath: pre, innerDir: "3_device_config"));
+      return cur;
+    });
+    List<String> nnJsonFilesPath = (entities ?? [])
+        .fold<Map<String, dynamic>>({}, (cur, pre) {
+          String keys = p.join(nnFilePath, "${pre.netNodePackageName}.json");
+          cur[keys] = keys;
+          return cur;
+        })
+        .keys
+        .toList();
+    List<ArchiveEntry> nnJsonArchiveEntries = nnJsonFilesPath.fold([], (
+      cur,
+      pre,
+    ) {
+      cur.add(ArchiveEntry(sourcePath: pre, innerDir: "4_net_node"));
+      return cur;
+    });
+
+    List<String> resourceFileNames = await FileTools.getJsonFileNameByFPath(
+      rFilePath,
+    );
+    List<ArchiveEntry> resourceEntries = resourceFileNames
+        .fold<List<ArchiveEntry>>([], (cur, pre) {
+          ArchiveEntry temp = ArchiveEntry(
+            sourcePath: p.join(rFilePath, pre),
+            innerDir: "1_resource",
+          );
+          cur.add(temp);
+          return cur;
+        });
+    List<String> dcChannelsValues = [];
+    for (var dcJsonFilePath in dcJsonFilesPath) {
+      Map<String, dynamic> dcContent = FileTools.readFileContentAsMap(
+        dcJsonFilePath,
+      );
+      Map<String, dynamic>? dcChannels = dcContent["Channels"] ?? {};
+      List<String> dcv = (dcChannels?.values.toList() ?? []).fold<List<String>>(
+        [],
+        (cur, pre) {
+          String subnet = pre["Subnet"] ?? '';
+          if (subnet.isNotEmpty) {
+            cur.add("$subnet.json");
+          }
+          return cur;
+        },
+      ).toList();
+      dcChannelsValues = [...dcChannelsValues, ...dcv];
+    }
+
+    List<ArchiveEntry> entries = dcChannelsValues.fold<List<ArchiveEntry>>(
+      [...resourceEntries, ...dcJsonArchiveEntries, ...nnJsonArchiveEntries],
+      (cur, pre) {
+        String sourcePath = p.join(rootFilePath, "2_radio_subnet", pre);
+        ArchiveEntry temp = ArchiveEntry(
+          sourcePath: sourcePath,
+          innerDir: "2_radio_subnet",
+        );
+        cur.add(temp);
+        return cur;
+      },
+    );
+
+    // // 汇总 4_net_node + 3_device_config + 2_radio_subnet + 1_resource
+    String serviceTarPath = await FileTools.filesToZipFormPath(
+      entries: entries,
+      outputPath: savePath,
+      zipName: "radios",
+    );
+    GlobalLogger.logInfo("保存路径: $serviceTarPath");
   }
 
   Widget buildEmptyWidget(BuildContext context) {
@@ -241,6 +348,7 @@ class _InjectEncryptionTableState extends State<InjectEncryptionTable> {
           value: item.radioId,
           items: radioOptions,
           onChanged: (v) {
+            if (item.radioId == v) return;
             item.radioId = v;
             RadiosEntity radio = radios.firstWhere((item) => item.id == v);
             item.location = radio.location;
@@ -269,14 +377,6 @@ class _InjectEncryptionTableState extends State<InjectEncryptionTable> {
       ColumnDefinition<KeyLoaderDetailsEntity>(
         label: t.tableColumn.injectEncrypt.SN,
         size: const ColumnSize.fixed(200),
-        // cellBuilder: (item) => SimpleTextfield(
-        //   hint: "",
-        //   height: 30,
-        //   contentPadding: EdgeInsets.symmetric(horizontal: 7),
-        //   onChanged: (v) {
-        //     item.SN = v;
-        //   },
-        // ),
         cellBuilder: TextCellBuilder.text<KeyLoaderDetailsEntity>(
           (item) => item.SN ?? "",
         ),
