@@ -335,14 +335,17 @@ class _InjectEncryptionTableState extends State<InjectEncryptionTable> {
     return [
       ColumnDefinition<KeyLoaderDetailsEntity>(
         label: t.tableColumn.injectEncrypt.parameterPacket,
-        size: const ColumnSize.fixed(150),
+        // size: const ColumnSize.fixed(150),
+        flex: 2,
         cellBuilder: TextCellBuilder.text<KeyLoaderDetailsEntity>(
           (u) => u.netNodePackageName,
         ),
+        headerBuilder: TextCellBuilder.text((u) => u),
       ),
       ColumnDefinition<KeyLoaderDetailsEntity>(
         label: t.tableColumn.injectEncrypt.radio,
-        flex: 2,
+        size: const ColumnSize.fixed(150),
+        // flex: 2,
         cellBuilder: (item) => SimpleDropdown(
           hint: t.tableColumn.injectEncrypt.radio,
           value: item.radioId,
@@ -362,21 +365,24 @@ class _InjectEncryptionTableState extends State<InjectEncryptionTable> {
       ),
       ColumnDefinition<KeyLoaderDetailsEntity>(
         label: t.tableColumn.injectEncrypt.consumer,
-        size: const ColumnSize.fixed(200),
+        // size: const ColumnSize.fixed(200),
+        flex: 2,
         cellBuilder: TextCellBuilder.text<KeyLoaderDetailsEntity>(
           (item) => item.consumer ?? "",
         ),
       ),
       ColumnDefinition<KeyLoaderDetailsEntity>(
         label: t.tableColumn.injectEncrypt.location,
-        size: const ColumnSize.fixed(200),
+        // size: const ColumnSize.fixed(200),
+        flex: 2,
         cellBuilder: TextCellBuilder.text<KeyLoaderDetailsEntity>(
           (item) => item.location ?? "",
         ),
       ),
       ColumnDefinition<KeyLoaderDetailsEntity>(
         label: t.tableColumn.injectEncrypt.SN,
-        size: const ColumnSize.fixed(200),
+        // size: const ColumnSize.fixed(200),
+        flex: 1,
         cellBuilder: TextCellBuilder.text<KeyLoaderDetailsEntity>(
           (item) => item.SN ?? "",
         ),

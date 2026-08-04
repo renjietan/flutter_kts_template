@@ -4,6 +4,7 @@ import 'package:flutter_kts_template/api/RadiosManagerApi.dart';
 import 'package:flutter_kts_template/components/DropDown/SimpleDarkDropdown/simple.dark.dropdown.dart';
 import 'package:flutter_kts_template/components/FileUploads/fileUploads.dart';
 import 'package:flutter_kts_template/components/TextField/simple.filter.search.textField.dart';
+import 'package:flutter_kts_template/components/TreeView/simple-tree/simple.tree.model.dart';
 import 'package:flutter_kts_template/components/TreeView/simple-tree/simple.treeview.dart';
 import 'package:flutter_kts_template/components/loading/simple.async.loading.dart';
 import 'package:flutter_kts_template/components/loading/simple.loading.dart';
@@ -18,6 +19,7 @@ import 'package:flutter_kts_template/theme/table.theme.dart';
 import 'package:flutter_kts_template/utils/provider/radios.provider.dart';
 import 'package:provider/provider.dart';
 import 'package:recursive_tree_flutter/functions/tree_update_functions.dart';
+import 'package:recursive_tree_flutter/models/tree_type.dart';
 
 import '../../components/button/base.button.dart';
 
@@ -67,7 +69,7 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Expanded(flex: 6, child: _buildMasterTree(context)),
+          Expanded(flex: 5, child: _buildMasterTree(context)),
           const VerticalDivider(thickness: 1, width: 1),
           Expanded(flex: 5, child: _buildDetailTree(context)),
         ],
@@ -154,7 +156,8 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
                         visible: mtc.visible,
                         child: SimpleTreeView(
                           mtc.data,
-                          onNodeDataChanged: masterTreeOnSelect,
+                          onNodeDataChanged: (TreeType<SimpleTreeNode> v) =>
+                              masterTreeOnSelect(ctx, v),
                         ),
                       ),
                     ),
@@ -211,12 +214,12 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
         if (mtc.select.type != 1) ...[
           // 业务网卡
           Padding(
-            padding: EdgeInsetsGeometry.fromLTRB(12, 0, 10, 0),
+            padding: EdgeInsetsGeometry.fromLTRB(12, 0, 10, 15),
             child: Row(
               children: [
                 // 业务网卡
                 SimpleDarkDropdown<int>(
-                  width: 260,
+                  width: 200,
                   height: 36,
                   hintText: t.TextField.select,
                   prefixIcon: Icons.network_check_rounded,
@@ -267,32 +270,36 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
             ),
           ),
           // 步骤条
-          Padding(
-            padding: const EdgeInsetsGeometry.fromLTRB(12, 15, 10, 15),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                color: Color(0xFF171C22),
-                border: Border.all(
-                  width: 1,
-                  color: Color(0x8A00A2E9),
-                  style: BorderStyle.solid,
+          Visibility(
+            visible: dtc.visible,
+            child: Padding(
+              padding: const EdgeInsetsGeometry.fromLTRB(12, 0, 10, 15),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
                 ),
-              ),
-              child: SimpleNumberStep(
-                steps: steps,
-                lineWidth: languageCode == "zh" ? 20 : 13,
-                activeStep: dtc.activeStep,
+                decoration: BoxDecoration(
+                  color: Color(0xFF171C22),
+                  border: Border.all(
+                    width: 1,
+                    color: Color(0x8A00A2E9),
+                    style: BorderStyle.solid,
+                  ),
+                ),
+                child: SimpleNumberStep(
+                  steps: steps,
+                  lineWidth: languageCode == "zh" ? 20 : 13,
+                  activeStep: dtc.activeStep,
+                ),
               ),
             ),
           ),
         ],
-
         Expanded(
-          child: Padding(
-            padding: EdgeInsets.fromLTRB(12, 0, 10, 10),
-            child: Visibility(
-              visible: dtc.visible,
+          child: Visibility(
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(12, 0, 10, 10),
               child: Container(
                 decoration: BoxDecoration(
                   color: Color(0xFF171C22),

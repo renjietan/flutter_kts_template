@@ -337,7 +337,7 @@ class _Translations$pager$injectEncrypt$en extends Translations$pager$injectEncr
 
 	// Translations
 	@override String get paramPairing => 'Parameter pairing';
-	@override String get keyLoaderManager => 'Key loader Manager';
+	@override String get keyLoaderManager => 'Key loader';
 }
 
 // Path: tips.paramsInject

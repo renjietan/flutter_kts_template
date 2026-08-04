@@ -105,21 +105,15 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
   }
 
   void resetDetailTree() {
-    setState(() {
-      dtc = DetailTreeConfig(
-        data: [],
-        visible: false,
-        treeVisible: false,
-        dialog: DetailTreeDialogConfig(
-          deviceType: TextEditingController(),
-          deviceIP: TextEditingController(),
-        ),
-        selectRows: {},
-        activeStep: 1,
-        selectWifi: -1,
-        socketIOManager: null,
-      );
-    });
+    dtc.data = [];
+    dtc.visible = false;
+    dtc.treeVisible = false;
+    dtc.selectRows.clear();
+    dtc.activeStep = 1;
+    dtc.selectWifi = -1;
+    dtc.socketIOManager?.disconnect();
+    dtc.socketIOManager = null;
+    setState(() {});
   }
 
   void initSteps(BuildContext ctx) {
@@ -212,21 +206,21 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
     }
   }
 
-  Future<void> masterTreeOnSelect(v) async {
+  Future<void> masterTreeOnSelect(
+    BuildContext ctx,
+    TreeType<SimpleTreeNode> v,
+  ) async {
     resetDetailTree();
     initNetworkInterfaceOptions();
-    initSteps(context);
+    initSteps(ctx);
     var id = v.data.id;
     if (mtc.select.id == id) {
       return;
     }
     mtc.select.id = id;
-    mtc.select.type = v.data.type;
+    mtc.select.type = v.data.type ?? 999;
     mtc.select.title = v.data.title;
-    setState(() {
-      dtc.data = [];
-      dtc.visible = false;
-    });
+    setState(() {});
     foundDevice = ["0"];
     initDetailTree();
   }

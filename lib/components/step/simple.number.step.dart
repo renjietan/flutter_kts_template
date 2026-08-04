@@ -19,8 +19,9 @@ class SimpleNumberStep extends StatefulWidget {
 class _SimpleNumberStepState extends State<SimpleNumberStep> {
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
+    return ListView(
+      scrollDirection: Axis.horizontal,
+      // mainAxisAlignment: MainAxisAlignment.center,
       children: _buildSteps(),
     );
   }

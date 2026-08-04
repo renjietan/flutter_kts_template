@@ -58,7 +58,7 @@ pager:
     fileParse: File Parse
   injectEncrypt:
     paramPairing: Parameter pairing
-    keyLoaderManager: Key loader Manager
+    keyLoaderManager: Key loader
 tips:
   title: Tips
   cancel: Cancel

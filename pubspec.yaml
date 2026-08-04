@@ -97,6 +97,8 @@ dependencies:
   udp: ^5.0.3
   ## 获取网卡信息
   network_info_plus: ^7.0.0
+  ## Android USB 串口通信（FTDI / CDC / CH34x / CP210x / PL2303）
+  usb_serial: ^0.5.2
 
 dev_dependencies:
   flutter_test:

@@ -54,12 +54,12 @@ class _InjectEncryptStickPagerState extends State<KeyLoaderPager>
     return Row(
       children: [
         SizedBox(
-          width: 210,
+          width: 140,
           child: Column(
             children: [
               Container(
                 height: 45,
-                padding: EdgeInsets.fromLTRB(16, 0, 0, 0),
+                padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
                 decoration: BoxDecoration(
                   color: Colors.black,
                   border: Border(

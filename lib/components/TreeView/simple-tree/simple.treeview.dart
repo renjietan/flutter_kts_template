@@ -81,7 +81,7 @@ class _SimpleTreeViewState<T extends AbsNodeType> extends State<SimpleTreeView>
         ),
         height: tree.data.subTexts!.isNotEmpty
             ? (tree.isLeaf && tree.data.isShowCheckbox ? 85 : 65)
-            : 44,
+            : 48,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [

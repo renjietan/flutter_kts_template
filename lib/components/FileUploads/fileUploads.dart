@@ -35,6 +35,8 @@ class _FileUploadsState extends State<FileUploads> with FileUploadsMixin {
             hint: t.TextField.select,
           ),
         ),
+      ],
+      trailingActions: [
         BaseButton(
           label: t.button.radioManager.browse,
           width: 100,
@@ -71,7 +73,6 @@ class _FileUploadsState extends State<FileUploads> with FileUploadsMixin {
           ),
         ),
       ],
-      trailingActions: [],
     );
   }
 }
