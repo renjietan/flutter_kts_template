@@ -34,6 +34,10 @@
     <!-- 蓝牙连接权限 -->
     <!-- <uses-permission android:name="android.permission.BLUETOOTH_CONNECT"/> -->
 
+    <!-- 声明使用 USB Host 功能：用于 Android USB 串口通信（usb_serial 插件） -->
+    <!-- android:required="false" 表示非强制，无 USB Host 的设备也能安装 -->
+    <uses-feature android:name="android.hardware.usb.host" android:required="false" />
+
     <!--  新增： android:enableOnBackInvokedCallback="true"-->
     <!--  新增： android:usesCleartextTraffic="true"  允许 shelf 本地服务请求, 否则，只允许请求 https-->
     <application android:label="CPD" android:name="${applicationName}" android:icon="@mipmap/launcher_icon" android:enableOnBackInvokedCallback="true" android:usesCleartextTraffic="true"
@@ -73,6 +77,11 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+            <!-- USB 设备插入时拉起应用（配合 res/xml/device_filter.xml 使用） -->
+            <intent-filter>
+                <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"/>
+            </intent-filter>
+            <meta-data android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" android:resource="@xml/device_filter"/>
         </activity>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->

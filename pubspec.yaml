@@ -99,6 +99,8 @@ dependencies:
   network_info_plus: ^7.0.0
   ## Android USB 串口通信（FTDI / CDC / CH34x / CP210x / PL2303）
   usb_serial: ^0.5.2
+  ## FFI 用于 Windows WinUSB 底层 API 调用
+  ffi: ^2.1.0
 
 dev_dependencies:
   flutter_test:

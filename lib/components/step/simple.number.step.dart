@@ -19,9 +19,9 @@ class SimpleNumberStep extends StatefulWidget {
 class _SimpleNumberStepState extends State<SimpleNumberStep> {
   @override
   Widget build(BuildContext context) {
-    return ListView(
-      scrollDirection: Axis.horizontal,
-      // mainAxisAlignment: MainAxisAlignment.center,
+    return Row(
+      // scrollDirection: Axis.horizontal,
+      mainAxisAlignment: MainAxisAlignment.center,
       children: _buildSteps(),
     );
   }
@@ -79,11 +79,13 @@ class _SimpleNumberStepState extends State<SimpleNumberStep> {
   }
 
   Widget _buildStepLine() {
-    return Container(
-      width: widget.lineWidth,
-      height: 1,
-      color: Colors.white24,
-      margin: const EdgeInsets.symmetric(horizontal: 8),
+    return Center(
+      child: Container(
+        width: widget.lineWidth,
+        height: 1,
+        color: Colors.white24,
+        margin: const EdgeInsets.symmetric(horizontal: 8),
+      ),
     );
   }
 }

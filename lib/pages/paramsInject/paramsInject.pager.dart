@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:composable_data_table/composable_data_table.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_kts_template/api/RadiosManagerApi.dart';
@@ -13,6 +15,7 @@ import 'package:flutter_kts_template/components/text/text.title.dart';
 import 'package:flutter_kts_template/core/databaseManager/databaseManager.dart';
 import 'package:flutter_kts_template/core/entities/radios/radiosEntity.dart';
 import 'package:flutter_kts_template/core/express.dart';
+import 'package:flutter_kts_template/core/rtc/rtc.init.dart';
 import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 import 'package:flutter_kts_template/pages/paramsInject/paramsInject.mixin.dart';
 import 'package:flutter_kts_template/theme/table.theme.dart';
@@ -35,7 +38,6 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
   @override
   void initState() {
     super.initState();
-
     LocaleSettings.getLocaleStream().listen((event) {
       resetMasterTree();
       initLeftTree(null);
@@ -57,9 +59,20 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
         }
         resetMasterTree();
         initLeftTree(null);
+        initUsb();
         SimpleAsyncPopup.hideLoading(Duration(milliseconds: 300));
       });
     });
+  }
+
+  Future<void> initUsb() async {
+    final manager = getUsbManager();
+    manager.eventStream.listen((e) => print(e));
+    manager.receiveStream.listen((d) => print(d.data));
+    await manager.init('');
+    await manager.connect('0x0525:0xA4A1:2');
+    await manager.write(Uint8List.fromList([0x10, 0x00]), '0x0525:0xA4A1:2');
+    await manager.disconnect();
   }
 
   @override
@@ -69,7 +82,8 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Expanded(flex: 5, child: _buildMasterTree(context)),
+          // Expanded(flex: 5, child: _buildMasterTree(context)),
+          SizedBox(width: 450, child: _buildMasterTree(context)),
           const VerticalDivider(thickness: 1, width: 1),
           Expanded(flex: 5, child: _buildDetailTree(context)),
         ],
@@ -178,115 +192,112 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
     final currentLocale = Localizations.localeOf(context);
     // 提取语言代码，如 'en'、'zh'
     final languageCode = currentLocale.languageCode;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      mainAxisAlignment: MainAxisAlignment.start,
-      children: [
-        // 标题
-        Padding(
-          padding: const EdgeInsetsGeometry.fromLTRB(12, 15, 10, 15),
-          child: Container(
-            decoration: BoxDecoration(
-              border: Border(
-                left: BorderSide(width: 5, color: Color(0xFF00A2E9)),
+    return Visibility(
+      visible: dtc.visible,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          // 标题
+          Padding(
+            padding: const EdgeInsetsGeometry.fromLTRB(12, 15, 10, 15),
+            child: Container(
+              decoration: BoxDecoration(
+                border: Border(
+                  left: BorderSide(width: 5, color: Color(0xFF00A2E9)),
+                ),
+              ),
+              child: Row(
+                children: [
+                  SizedBox(width: 15),
+                  TextTitle(text: mtc.select.title),
+                  const Spacer(),
+                  mtc.select.type == 1
+                      ? BaseButton(
+                          label: t.button.paramsInject.bind,
+                          width: 65,
+                          height: 30,
+                          onPressed: () {
+                            saveTo(ctx);
+                          },
+                        )
+                      : SizedBox(),
+                ],
               ),
             ),
-            child: Row(
-              children: [
-                SizedBox(width: 15),
-                TextTitle(text: mtc.select.title),
-                const Spacer(),
-                mtc.select.type == 1
-                    ? BaseButton(
-                        label: t.button.paramsInject.bind,
-                        width: 65,
-                        height: 30,
-                        onPressed: () {
-                          saveTo(ctx);
-                        },
-                      )
-                    : SizedBox(),
-              ],
-            ),
           ),
-        ),
 
-        if (mtc.select.type != 1) ...[
-          // 业务网卡
-          Padding(
-            padding: EdgeInsetsGeometry.fromLTRB(12, 0, 10, 15),
-            child: Row(
-              children: [
-                // 业务网卡
-                SimpleDarkDropdown<int>(
-                  width: 200,
-                  height: 36,
-                  hintText: t.TextField.select,
-                  prefixIcon: Icons.network_check_rounded,
-                  value: dtc.selectWifi,
-                  items: networkOptions,
-                  onChanged: (value) {
-                    setState(() => dtc.selectWifi = value!);
-                  },
-                ),
-                const Spacer(),
-                // 刷新
-                Container(
-                  // FlareButton 没有边框可供配置,所以在 FlareButton  外围套了一层 container,此 container 只作边框使用
-                  width: 74,
-                  height: 36,
-                  margin: EdgeInsets.only(right: 15),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(5),
-                    border: Border.all(color: Color(0xFF00A2E9), width: 2),
+          if (mtc.select.type != 1) ...[
+            // 业务网卡
+            Padding(
+              padding: EdgeInsetsGeometry.fromLTRB(12, 0, 10, 15),
+              child: Row(
+                children: [
+                  // 业务网卡
+                  SimpleDarkDropdown<int>(
+                    width: 200,
+                    height: 36,
+                    hintText: t.TextField.select,
+                    prefixIcon: Icons.network_check_rounded,
+                    value: dtc.selectWifi,
+                    items: networkOptions,
+                    onChanged: (value) {
+                      setState(() => dtc.selectWifi = value!);
+                    },
                   ),
-                  child: Center(
-                    child: BaseButton(
-                      label: t.button.paramsInject.refresh,
-                      width: 70,
-                      height: 30,
-                      colors: const [
-                        Color(0xFF0A1D35),
-                        Color(0xFF0A1D35),
-                        Color(0xFF0A1D35),
-                        Color(0xFF0A1D35),
-                      ],
-                      onPressed: () {
-                        detailRefresh();
-                        foundDevice = ["1"];
-                        initDetailTree();
-                      },
+                  const Spacer(),
+                  // 刷新
+                  Container(
+                    // FlareButton 没有边框可供配置,所以在 FlareButton  外围套了一层 container,此 container 只作边框使用
+                    width: 74,
+                    height: 36,
+                    margin: EdgeInsets.only(right: 15),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(5),
+                      border: Border.all(color: Color(0xFF00A2E9), width: 2),
+                    ),
+                    child: Center(
+                      child: BaseButton(
+                        label: t.button.paramsInject.refresh,
+                        width: 70,
+                        height: 30,
+                        colors: const [
+                          Color(0xFF0A1D35),
+                          Color(0xFF0A1D35),
+                          Color(0xFF0A1D35),
+                          Color(0xFF0A1D35),
+                        ],
+                        onPressed: () {
+                          detailRefresh();
+                          foundDevice = ["1"];
+                          initDetailTree();
+                        },
+                      ),
                     ),
                   ),
-                ),
-                // 下发
-                BaseButton(
-                  label: t.button.paramsInject.issue,
-                  width: 74,
-                  height: 36,
-                  onPressed: () {},
-                ),
-              ],
-            ),
-          ),
-          // 步骤条
-          Visibility(
-            visible: dtc.visible,
-            child: Padding(
-              padding: const EdgeInsetsGeometry.fromLTRB(12, 0, 10, 15),
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
-                decoration: BoxDecoration(
-                  color: Color(0xFF171C22),
-                  border: Border.all(
-                    width: 1,
-                    color: Color(0x8A00A2E9),
-                    style: BorderStyle.solid,
+                  // 下发
+                  BaseButton(
+                    label: t.button.paramsInject.issue,
+                    width: 74,
+                    height: 36,
+                    onPressed: () {},
                   ),
+                ],
+              ),
+            ),
+            Container(
+              height: 50,
+              margin: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: Color(0xFF171C22),
+                border: Border.all(
+                  width: 1,
+                  color: Color(0x8A00A2E9),
+                  style: BorderStyle.solid,
                 ),
+              ),
+              child: Center(
                 child: SimpleNumberStep(
                   steps: steps,
                   lineWidth: languageCode == "zh" ? 20 : 13,
@@ -294,10 +305,8 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
                 ),
               ),
             ),
-          ),
-        ],
-        Expanded(
-          child: Visibility(
+          ],
+          Expanded(
             child: Padding(
               padding: EdgeInsets.fromLTRB(12, 0, 10, 10),
               child: Container(
@@ -329,8 +338,8 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
               ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
