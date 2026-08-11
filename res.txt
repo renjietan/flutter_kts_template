@@ -1,0 +1,126 @@
+CPDS—CPDC UDP 广播协议交互流程
+================================
+
+一、每个 UDP Buffer 的统一封装
+
+每个 UDP 负载必须为：
+
+  EE DD CC BB + Proto3 二进制 Packet
+
+1. 前 4 字节固定 Magic：EE DD CC BB（0xEEDDCCBB，大端）。
+2. 后续必须是一个 Proto3 二进制编码的 Packet，不能使用 JSON 或 gRPC。
+3. 完整 UDP 负载不得超过 1400 字节；因此 proto.Size(Packet) 不得超过 1396 字节。
+4. Packet.session_id 与 Packet.message_id 均为 UUID v4 的 16 字节原始值，长度必须严格等于 16。
+5. Packet 只能设置一种已知 oneof body。
+6. 接收时先检查 UDP 长度不少于 4，再检查 Magic；Magic 不符时直接丢弃，不进行 Proto 解码，也不回复。
+7. Packet 内没有 magic、version、timestamp、message_type 字段；消息类型由 oneof body 决定。
+
+二、CPDS 发送 / CPDC 回复的顺序
+
+CPDS                                      CPDC
+----                                      ----
+DISCOVER_NTY ---------------------------->
+                                          <---------------------------- DISCOVER_RSP
+
+AUTH_NTY × N ---------------------------->
+                                          <---------------------------- AUTH_RSP
+
+TRANSFER_START_NTY × 2 ------------------>
+TRANSFER_CHUNK_NTY × total_chunks ------->
+                                          <---------------------------- TRANSFER_PROGRESS_RSP（约 30/60/100%）
+
+TRANSFER_START_NTY × 2 ------------------>
+TRANSFER_END_NTY ------------------------>
+                                          <---------------------------- TRANSFER_LOSSPACK_REQ × N（有缺包时）
+TRANSFER_CHUNK_NTY（仅缺失块）----------->
+TRANSFER_START_NTY + TRANSFER_END_NTY --->
+                                          <---------------------------- TRANSFER_COMPLETE_RSP
+
+                                          <---------------------------- PARSE_COMPLETE_REQ（成功或失败）
+PARSE_COMPLETE_ACK ---------------------->
+
+三、逐阶段发送规则
+
+1. 发现（DISCOVER_NTY）
+
+- CPDS 创建新的 session_id。
+- 在第 0、1、2、3、4 秒各发送一次空消息体 DISCOVER_NTY。
+- 同一发现窗口的五次发送复用同一个 message_id 和同一消息体。
+- 第 5 秒统一结算发现结果；即使已提前发现全部设备，也不能提前发认证消息。
+- CPDC 的 DISCOVER_RSP 复制触发 DISCOVER_NTY 的 message_id，并携带 ESN、instance_nonce、完整 device_types、current_ip、subnet_mask。
+
+2. 认证（AUTH_NTY / AUTH_RSP）
+
+- AUTH_NTY 的 assignments[] 每项包含 device_type、esn、node_id、device_id。
+- CPDS 在认证窗口第 0 秒发送一整轮认证消息；未完成时在第 1、2、3、4 秒重发完整一轮。
+- 单条 AUTH_NTY 必须满足：4 + proto.Size(Packet) <= 1400。
+- assignments 装不下时，按完整 assignment 记录边界拆为多个独立 AUTH_NTY；每条拥有独立 message_id，不携带分片序号、分片总数或集合 ID。
+- 禁止拆开一条 assignment；若单条 assignment 本身超长，认证失败，禁止发送。
+- 同一条 AUTH_NTY 的广播副本、环回副本和定时重发，必须复用相同 message_id 和完全相同的消息体。
+- CPDC 可从不同 AUTH_NTY 累积本机多种 device_type 的绑定；得到全部唯一绑定后发送成功 AUTH_RSP。
+- 认证窗口最大 5 秒。全部成功 AUTH_RSP 到齐可立即进入传输；任意 AUTH_RSP=FAILED 立即失败。
+
+3. 文件开始（TRANSFER_START_NTY）
+
+- 首轮数据发送前，连续发送 2 次 TRANSFER_START_NTY。
+- START 至少携带：file_name、file_size、file_sha256（32 字节原始 SHA-256）、expanded_size、required_workspace、chunk_size、total_chunks。
+- chunk_size 固定为 1200。
+- file_size 必须大于 0 且不超过 1 MiB（1,048,576 字节）。
+- total_chunks = ceil(file_size / 1200)；1 MiB 文件最多 874 个分包。
+- CPDC 收到 START 后先校验文件名、大小、哈希、分包参数、认证绑定和可用空间；失败时回复失败 TRANSFER_COMPLETE_RSP。
+- 首轮数据发送持续超过 1 秒时，每 1 秒补发一次相同 START。
+
+4. 文件分包（TRANSFER_CHUNK_NTY）
+
+- 每个 Chunk 携带 chunk_index（从 0 开始）、payload、payload_crc32。
+- payload 最大 1200 字节。
+- 除最后一个分包外，payload 必须恰好为 1200 字节。
+- 最后一个分包长度为：file_size - chunk_index * 1200。
+- payload_crc32 使用 CRC-32/IEEE（等价 Go hash/crc32.ChecksumIEEE）。
+- 接收端的顺序：校验 Magic -> 解码 -> 校验 session / 序号 / payload 长度 / CRC -> 按 chunk_index * 1200 偏移写入。
+- 分包乱序和重复不得破坏文件；文件收齐后按 START 的 file_sha256 做整体 SHA-256 校验。
+- CPDS 对文件 payload 做 1 Mbit/s 名义速率限制；不可无节流一次性发送全部分包。
+
+5. 首轮结束及缺包补发
+
+- 首轮全部 Chunk 发送后：连续发送 2 次 START，再发送空消息体 TRANSFER_END_NTY。
+- 无缺包且整体校验成功：CPDC 发送成功 TRANSFER_COMPLETE_RSP。
+- 有缺包：CPDC 发送一个或多个 TRANSFER_LOSSPACK_REQ，missing_ranges[] 是 [start, end] 闭区间。
+- missing_ranges 按 start 升序，不可重叠或相邻；相邻区间必须合并。
+- LOSSPACK 超过上限时按完整区间边界拆多条独立请求；每条都有新 message_id，不携带分片信息。
+- TRANSFER_LOSSPACK_REQ 没有 ACK。
+- CPDS 收到请求后补发缺失的 TRANSFER_CHUNK_NTY；每轮补发完成后发送一次 START + END，触发 CPDC 再次检查。
+- 等待设备结果期间，每 1 秒重发一次 START + END，直至该设备返回有效结果或超时。
+
+6. 解析结果确认
+
+- CPDC 完成解析后发送 PARSE_COMPLETE_REQ，成功和失败共用这一种消息。
+- PARSE_COMPLETE_REQ 至少包含 ESN、完整 device_types、SUCCESS 或 FAILED result、type_results、error_code。
+- CPDS 收到有效 REQ 后立即发送 PARSE_COMPLETE_ACK。
+- ACK 的 session_id 和 message_id 必须复制触发 REQ 的值，并携带 ESN、完整 device_types 与 result。
+- CPDC 未收到 ACK 时每隔 1 秒重发同一 REQ（ID 和消息体不变），最多发送 5 次。
+
+四、端口、重发、广播与超时
+
+- CPDC 固定监听 UDP 39001；CPDS 固定监听 UDP 39002。
+- 每条逻辑消息都要发送广播副本和一个环回副本；同一逻辑消息的两个副本、定时重发使用相同 session_id、message_id、消息体。
+- 新的逻辑消息或业务含义变化时，必须使用新的 message_id。
+- RSP 的 message_id 复制触发 NTY 的 message_id；ACK 的 message_id 复制触发 REQ 的 message_id。
+- 不得转发、反射或复制收到的 UDP 报文，也不得因收到 RSP/ACK 产生额外同类回复。
+- 首轮 Chunk 发送期间不计算静默超时。
+- 第一次发送 END 后，每台 CPDC 独立计时：连续 10 秒没有该设备自身有效回复，记为传输失败。
+- 同一 CPDC 虽持续回复但唯一有效接收分包数连续 30 秒无增长，记为传输无进展失败。
+- 为某 CPDC 补包时，仅暂停该 CPDC 的 10 秒静默计时；其他设备的回复或补包不能重置它的计时。
+- CPDC 解析、正式写入、成功快照写入最长 30 秒；CPDS 对每台已完成传输的 CPDC 最多等待 35 秒最终解析结果。
+
+五、错误码规则
+
+- 成功消息必须使用 ERROR_CODE_UNSPECIFIED。
+- 失败消息必须携带非零 ErrorCode。
+- 协议中不传输自然语言 reason / 错误文本。
+- 无法解码、未知 body、ID 长度不对、字段不合法、Packet 超过 1396 字节的消息均直接丢弃。
+
+说明
+----
+
+当前仓库 Markdown 中未找到文档引用的 proto/cpd.proto。因此以上内容可以精确确定发送顺序、封装、字段语义与长度限制；但无法在本仓库内计算每个 Proto 字段号所对应的完整十六进制 Payload。

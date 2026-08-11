@@ -101,6 +101,8 @@ dependencies:
   usb_serial: ^0.5.2
   ## FFI 用于 Windows WinUSB 底层 API 调用
   ffi: ^2.1.0
+  ## Proto3 编解码
+  protobuf: ^6.0.0
 
 dev_dependencies:
   flutter_test:
