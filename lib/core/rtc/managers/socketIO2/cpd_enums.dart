@@ -133,20 +133,21 @@ enum CpdActiveState {
   const CpdActiveState(this.displayName);
 }
 
-// 消息类型枚举（对应 oneof body 字段号）
+// 消息类型枚举（对应 Packet 中 oneof body 的字段号）
+// Packet 字段: 1=session_id, 2=message_id, 3~14=oneof body
 enum CpdMessageType {
-  discoverNty(1),
-  discoverRsp(2),
-  authNty(3),
-  authRsp(4),
-  transferStartNty(5),
-  transferChunkNty(6),
-  transferProgressRsp(7),
-  transferEndNty(8),
-  transferLosspackReq(9),
-  transferCompleteRsp(10),
-  parseCompleteReq(11),
-  parseCompleteAck(12);
+  discoverNty(3),
+  discoverRsp(4),
+  authNty(5),
+  authRsp(6),
+  transferStartNty(7),
+  transferChunkNty(8),
+  transferProgressRsp(9),
+  transferEndNty(10),
+  transferLosspackReq(11),
+  transferCompleteRsp(12),
+  parseCompleteReq(13),
+  parseCompleteAck(14);
 
   final int fieldNumber;
   const CpdMessageType(this.fieldNumber);

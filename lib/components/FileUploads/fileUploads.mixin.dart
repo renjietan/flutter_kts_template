@@ -4,6 +4,7 @@ import 'package:archive/archive_io.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_kts_template/components/loading/simple.loading.dart';
+import 'package:flutter_kts_template/config/config.dart';
 import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 import 'package:flutter_kts_template/logger/logger.dart';
 import 'package:flutter_kts_template/utils/files/FileTools.dart';
@@ -125,7 +126,11 @@ mixin FileUploadsMixin on State<FileUploads> {
       var archiveExt = getInputExtension(remoteFilePath);
       if (archiveExt == ".zip") {
         outPath = remoteFilePath.split(archiveExt)[0];
-        await extractFileToDisk(remoteFilePath, outPath);
+        await extractFileToDisk(
+          remoteFilePath,
+          outPath,
+          password: AppConfig.zipPassword,
+        );
       } else if (archiveExt == "") {
         outPath = remoteFilePath;
       } else {

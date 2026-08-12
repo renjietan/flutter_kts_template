@@ -8,7 +8,6 @@ import 'package:flutter_kts_template/components/TextField/simple.form.textfield.
 import 'package:flutter_kts_template/components/dialog/simple.tips.dialog.dart';
 import 'package:flutter_kts_template/components/step/simple.number.step.model.dart';
 import 'package:flutter_kts_template/core/entities/keyLoaders/keyLoadersEntity.dart';
-import 'package:flutter_kts_template/core/rtc/managers/socketIO/socket.io.manager.dart';
 import 'package:flutter_kts_template/core/rtc/tools/proto/pManifest.dart';
 import 'package:flutter_kts_template/core/rtc/tools/rtc.receive.dart';
 import 'package:flutter_kts_template/core/utils/director.dart';
@@ -649,18 +648,18 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
     });
   }
 
-  Future<void> initSocket() async {
-    dtc.socketIOManager = SocketIOManager();
-    if (dtc.socketIOManager?.isConnected ?? false) {
-      dtc.socketIOManager!.init("");
-      dtc.socketIOManager!.eventStream.listen((RtcEvent e) {
-        print("socketmanager:" + e.toString());
-      });
-      dtc.socketIOManager!.receiveStream.listen((e) {
-        print("socketmanager:" + e.toString());
-      });
-    }
-  }
+  // Future<void> initSocket() async {
+  //   dtc.socketIOManager = SocketIOManager();
+  //   if (dtc.socketIOManager?.isConnected ?? false) {
+  //     dtc.socketIOManager!.init("");
+  //     dtc.socketIOManager!.eventStream.listen((RtcEvent e) {
+  //       print("socketmanager:" + e.toString());
+  //     });
+  //     dtc.socketIOManager!.receiveStream.listen((e) {
+  //       print("socketmanager:" + e.toString());
+  //     });
+  //   }
+  // }
 
   void readTarPackage() {
     // 1、读取路径下的压缩包的字节

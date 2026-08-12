@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'dart:typed_data';
 
 import 'cpd_config.dart';
@@ -34,16 +35,16 @@ class Crc32 {
 
 // UUID v4 生成
 class UuidV4 {
+  static final Random _secure = Random.secure();
+
   static Uint8List generate() {
     final data = Uint8List(16);
-    // 使用 Dart 的随机数生成器
-    final rand = DateTime.now().millisecondsSinceEpoch;
     for (int i = 0; i < 16; i++) {
-      data[i] = (rand + i * 31 + (i * i)) & 0xFF;
+      data[i] = _secure.nextInt(256);
     }
-    // 设置 UUID v4 版本位 (4)
+    // 设置 UUID v4 版本位 (0x4x)
     data[6] = (data[6] & 0x0F) | 0x40;
-    // 设置 UUID variant 位
+    // 设置 UUID variant 位 (0x8x / 0x9x / 0xAx / 0xBx)
     data[8] = (data[8] & 0x3F) | 0x80;
     return data;
   }
@@ -58,23 +59,31 @@ class CpdMessage {
 
   // DISCOVER_RSP 字段
   String get esn => fields['esn'] as String? ?? '';
-  Uint8List get instanceNonce => fields['instanceNonce'] as Uint8List? ?? Uint8List(0);
-  List<String> get deviceTypes => List<String>.from(fields['deviceTypes'] ?? []);
+  Uint8List get instanceNonce =>
+      fields['instanceNonce'] as Uint8List? ?? Uint8List(0);
+  List<String> get deviceTypes =>
+      List<String>.from(fields['deviceTypes'] ?? []);
   String get currentIp => fields['currentIp'] as String? ?? '';
   String get subnetMask => fields['subnetMask'] as String? ?? '';
 
   // AUTH_NTY / AUTH_RSP 字段
-  List<AuthAssignment> get assignments => (fields['assignments'] as List<AuthAssignment>?) ?? [];
-  List<AuthBinding> get bindings => (fields['bindings'] as List<AuthBinding>?) ?? [];
-  ClientIdentity get client => fields['client'] as ClientIdentity? ?? const ClientIdentity(esn: '', deviceTypes: []);
+  List<AuthAssignment> get assignments =>
+      (fields['assignments'] as List<AuthAssignment>?) ?? [];
+  List<AuthBinding> get bindings =>
+      (fields['bindings'] as List<AuthBinding>?) ?? [];
+  ClientIdentity get client =>
+      fields['client'] as ClientIdentity? ??
+      const ClientIdentity(esn: '', deviceTypes: []);
   Result get result => Result.fromValue(fields['result'] as int? ?? 0);
   String get nodeId => fields['nodeId'] as String? ?? '';
-  ErrorCode get errorCode => ErrorCode.fromValue(fields['errorCode'] as int? ?? 0);
+  ErrorCode get errorCode =>
+      ErrorCode.fromValue(fields['errorCode'] as int? ?? 0);
 
   // TRANSFER_START_NTY 字段
   String get fileName => fields['fileName'] as String? ?? '';
   int get fileSize => fields['fileSize'] as int? ?? 0;
-  Uint8List get fileSha256 => fields['fileSha256'] as Uint8List? ?? Uint8List(0);
+  Uint8List get fileSha256 =>
+      fields['fileSha256'] as Uint8List? ?? Uint8List(0);
   int get expandedSize => fields['expandedSize'] as int? ?? 0;
   int get requiredWorkspace => fields['requiredWorkspace'] as int? ?? 0;
   int get chunkSize => fields['chunkSize'] as int? ?? 0;
@@ -90,17 +99,21 @@ class CpdMessage {
   int get percent => fields['percent'] as int? ?? 0;
 
   // TRANSFER_LOSSPACK_REQ 字段
-  List<MissingRange> get missingRanges => (fields['missingRanges'] as List<MissingRange>?) ?? [];
+  List<MissingRange> get missingRanges =>
+      (fields['missingRanges'] as List<MissingRange>?) ?? [];
 
   // TRANSFER_COMPLETE_RSP 字段
-  TransferStage get transferStage => TransferStage.fromValue(fields['stage'] as int? ?? 0);
+  TransferStage get transferStage =>
+      TransferStage.fromValue(fields['stage'] as int? ?? 0);
 
   // PARSE_COMPLETE_REQ 字段
-  List<ParseTypeResult> get typeResults => (fields['typeResults'] as List<ParseTypeResult>?) ?? [];
+  List<ParseTypeResult> get typeResults =>
+      (fields['typeResults'] as List<ParseTypeResult>?) ?? [];
 
   // PARSE_COMPLETE_ACK 字段
   String get ackEsn => fields['esn'] as String? ?? '';
-  List<String> get ackDeviceTypes => List<String>.from(fields['deviceTypes'] ?? []);
+  List<String> get ackDeviceTypes =>
+      List<String>.from(fields['deviceTypes'] ?? []);
 }
 
 // Packet 模型
@@ -264,44 +277,52 @@ class CpdProtocol {
   }
 
   static void _writeBody(_ProtoWriter writer, CpdMessage msg) {
+    // 空消息体: 写入 tag(field=fn, wire_type=2), length=0
+    if (msg.type == CpdMessageType.discoverNty ||
+        msg.type == CpdMessageType.transferEndNty) {
+      writer.writeTag(msg.type.fieldNumber, 2);
+      writer.writeVarint(0);
+      return;
+    }
+
+    // 非空消息体: 先在子 writer 中写入内容, 再封装 tag + length
+    final bodyWriter = _ProtoWriter();
     switch (msg.type) {
       case CpdMessageType.discoverNty:
-        // 空消息体
+      case CpdMessageType.transferEndNty:
         break;
       case CpdMessageType.discoverRsp:
-        _writeDiscoverRsp(writer, msg);
+        _writeDiscoverRsp(bodyWriter, msg);
         break;
       case CpdMessageType.authNty:
-        _writeAuthNty(writer, msg);
+        _writeAuthNty(bodyWriter, msg);
         break;
       case CpdMessageType.authRsp:
-        _writeAuthRsp(writer, msg);
+        _writeAuthRsp(bodyWriter, msg);
         break;
       case CpdMessageType.transferStartNty:
-        _writeTransferStartNty(writer, msg);
+        _writeTransferStartNty(bodyWriter, msg);
         break;
       case CpdMessageType.transferChunkNty:
-        _writeTransferChunkNty(writer, msg);
+        _writeTransferChunkNty(bodyWriter, msg);
         break;
       case CpdMessageType.transferProgressRsp:
-        _writeTransferProgressRsp(writer, msg);
-        break;
-      case CpdMessageType.transferEndNty:
-        // 空消息体
+        _writeTransferProgressRsp(bodyWriter, msg);
         break;
       case CpdMessageType.transferLosspackReq:
-        _writeTransferLosspackReq(writer, msg);
+        _writeTransferLosspackReq(bodyWriter, msg);
         break;
       case CpdMessageType.transferCompleteRsp:
-        _writeTransferCompleteRsp(writer, msg);
+        _writeTransferCompleteRsp(bodyWriter, msg);
         break;
       case CpdMessageType.parseCompleteReq:
-        _writeParseCompleteReq(writer, msg);
+        _writeParseCompleteReq(bodyWriter, msg);
         break;
       case CpdMessageType.parseCompleteAck:
-        _writeParseCompleteAck(writer, msg);
+        _writeParseCompleteAck(bodyWriter, msg);
         break;
     }
+    writer.writeMessage(msg.type.fieldNumber, bodyWriter);
   }
 
   static void _writeDiscoverRsp(_ProtoWriter w, CpdMessage msg) {
@@ -314,7 +335,11 @@ class CpdProtocol {
     w.writeString(6, msg.subnetMask);
   }
 
-  static void _writeClientIdentity(_ProtoWriter w, int fieldNum, ClientIdentity client) {
+  static void _writeClientIdentity(
+    _ProtoWriter w,
+    int fieldNum,
+    ClientIdentity client,
+  ) {
     final cw = _ProtoWriter();
     cw.writeString(1, client.esn);
     for (final dt in client.deviceTypes) {
@@ -423,7 +448,10 @@ class CpdProtocol {
   // 解码: Uint8List → CpdPacket? (Magic 校验失败返回 null)
   static CpdPacket? decodePacket(Uint8List data) {
     if (data.length < 4) return null;
-    if (data[0] != 0xEE || data[1] != 0xDD || data[2] != 0xCC || data[3] != 0xBB) {
+    if (data[0] != 0xEE ||
+        data[1] != 0xDD ||
+        data[2] != 0xCC ||
+        data[3] != 0xBB) {
       return null;
     }
 
@@ -474,38 +502,50 @@ class CpdProtocol {
     }
   }
 
-  static CpdMessage? _readBody(_ProtoReader reader, int fieldNumber, int wireType) {
+  static CpdMessage? _readBody(
+    _ProtoReader reader,
+    int fieldNumber,
+    int wireType,
+  ) {
     final type = _fieldNumberToMessageType(fieldNumber);
     if (type == null) {
       _skipField(reader, wireType);
       return null;
     }
 
+    // 对于 wire_type 2 (length-delimited), 先读取长度前缀, 再切出子 reader
+    _ProtoReader bodyReader;
+    if (wireType == 2) {
+      bodyReader = reader.readSubMessage();
+    } else {
+      bodyReader = reader;
+    }
+
     switch (type) {
       case CpdMessageType.discoverNty:
         return const CpdMessage(CpdMessageType.discoverNty, {});
       case CpdMessageType.discoverRsp:
-        return _readDiscoverRsp(reader);
+        return _readDiscoverRsp(bodyReader);
       case CpdMessageType.authNty:
-        return _readAuthNty(reader);
+        return _readAuthNty(bodyReader);
       case CpdMessageType.authRsp:
-        return _readAuthRsp(reader);
+        return _readAuthRsp(bodyReader);
       case CpdMessageType.transferStartNty:
-        return _readTransferStartNty(reader);
+        return _readTransferStartNty(bodyReader);
       case CpdMessageType.transferChunkNty:
-        return _readTransferChunkNty(reader);
+        return _readTransferChunkNty(bodyReader);
       case CpdMessageType.transferProgressRsp:
-        return _readTransferProgressRsp(reader);
+        return _readTransferProgressRsp(bodyReader);
       case CpdMessageType.transferEndNty:
         return const CpdMessage(CpdMessageType.transferEndNty, {});
       case CpdMessageType.transferLosspackReq:
-        return _readTransferLosspackReq(reader);
+        return _readTransferLosspackReq(bodyReader);
       case CpdMessageType.transferCompleteRsp:
-        return _readTransferCompleteRsp(reader);
+        return _readTransferCompleteRsp(bodyReader);
       case CpdMessageType.parseCompleteReq:
-        return _readParseCompleteReq(reader);
+        return _readParseCompleteReq(bodyReader);
       case CpdMessageType.parseCompleteAck:
-        return _readParseCompleteAck(reader);
+        return _readParseCompleteAck(bodyReader);
     }
   }
 

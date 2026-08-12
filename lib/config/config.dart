@@ -30,6 +30,8 @@ class AppConfig {
     return 'http://localhost:8080/api';
   }
 
+  static String zipPassword = "UAE@123";
+
   static final ServerConfig serverConfig = ServerConfig(
     port: const String.fromEnvironment('SERVER_PORT', defaultValue: "8080"),
   );

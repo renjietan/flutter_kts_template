@@ -1,5 +1,3 @@
-import 'dart:typed_data';
-
 import 'package:composable_data_table/composable_data_table.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_kts_template/api/RadiosManagerApi.dart';
@@ -15,7 +13,6 @@ import 'package:flutter_kts_template/components/text/text.title.dart';
 import 'package:flutter_kts_template/core/databaseManager/databaseManager.dart';
 import 'package:flutter_kts_template/core/entities/radios/radiosEntity.dart';
 import 'package:flutter_kts_template/core/express.dart';
-import 'package:flutter_kts_template/core/rtc/rtc.init.dart';
 import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 import 'package:flutter_kts_template/pages/paramsInject/paramsInject.mixin.dart';
 import 'package:flutter_kts_template/theme/table.theme.dart';
@@ -59,21 +56,21 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
         }
         resetMasterTree();
         initLeftTree(null);
-        initUsb();
+        // initUsb();
         SimpleAsyncPopup.hideLoading(Duration(milliseconds: 300));
       });
     });
   }
 
-  Future<void> initUsb() async {
-    final manager = getUsbManager();
-    manager.eventStream.listen((e) => print(e));
-    manager.receiveStream.listen((d) => print(d.data));
-    await manager.init('');
-    await manager.connect('0x0525:0xA4A1:2');
-    await manager.write(Uint8List.fromList([0x10, 0x00]), '0x0525:0xA4A1:2');
-    await manager.disconnect();
-  }
+  // Future<void> initUsb() async {
+  //   final manager = getUsbManager();
+  //   manager.eventStream.listen((e) => print(e));
+  //   manager.receiveStream.listen((d) => print(d.data));
+  //   await manager.init('');
+  //   await manager.connect('0x0525:0xA4A1:2');
+  //   await manager.write(Uint8List.fromList([0x10, 0x00]), '0x0525:0xA4A1:2');
+  //   await manager.disconnect();
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -98,18 +95,18 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
-        BaseButton(
-          label: "测试 套接字 广播",
-          onPressed: () {
-            initSocket();
-          },
-        ),
-        BaseButton(
-          label: "关闭",
-          onPressed: () {
-            dtc.socketIOManager?.disconnect();
-          },
-        ),
+        // BaseButton(
+        //   label: "测试 套接字 广播",
+        //   onPressed: () {
+        //     initSocket();
+        //   },
+        // ),
+        // BaseButton(
+        //   label: "关闭",
+        //   onPressed: () {
+        //     dtc.socketIOManager?.disconnect();
+        //   },
+        // ),
         Padding(
           padding: EdgeInsetsGeometry.fromLTRB(16, 10, 0, 0),
           child: TextTitle(text: t.pager.radioManager.fileParse),
