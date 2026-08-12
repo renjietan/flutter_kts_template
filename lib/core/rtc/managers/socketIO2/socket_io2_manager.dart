@@ -12,7 +12,6 @@ import 'package:flutter_kts_template/core/rtc/tools/rtc.event.dart';
 import 'package:flutter_kts_template/core/rtc/tools/rtc.event.type.dart';
 import 'package:flutter_kts_template/core/rtc/tools/rtc.receive.dart';
 import 'package:flutter_kts_template/logger/logger.dart';
-import 'package:udp/udp.dart';
 
 /// CPDS (Communication Plan Distribution Server) 管理器
 ///
@@ -24,7 +23,7 @@ class SocketIO2Manager implements RtcAbstract {
   static final SocketIO2Manager _instance = SocketIO2Manager._internal();
   factory SocketIO2Manager() => _instance;
 
-  late UDP _udp;
+  RawDatagramSocket? _socket;
   bool _initialized = false;
   bool _connected = false;
 
@@ -55,25 +54,24 @@ class SocketIO2Manager implements RtcAbstract {
     }
 
     try {
-      // 绑定 CPDS 接收端口 39002
-      final endpoint = Endpoint.any(port: Port(CpdConfig.cpdsPort));
-      _udp = await UDP.bind(endpoint);
+      // 绑定 CPDS 接收端口 39002，启用广播 + 地址重用
+      _socket = await RawDatagramSocket.bind(
+        InternetAddress.anyIPv4,
+        CpdConfig.cpdsPort,
+        reuseAddress: true,
+      );
+      _socket!.broadcastEnabled = true;
 
-      if (_udp.closed) {
-        _onEventController.sink.add(
-          RtcEvent(type: RtcEventType.error, msg: 'UDP Socket 创建失败'),
-        );
-        return;
-      }
-
-      _udp.asStream().listen((Datagram? datagram) {
-        final dg = datagram;
-        if (dg != null) {
-          _handleIncomingData(
-            dg.data.buffer.asUint8List(),
-            dg.address.address,
-            dg.port,
-          );
+      _socket!.listen((RawSocketEvent event) {
+        if (event == RawSocketEvent.read) {
+          final datagram = _socket!.receive();
+          if (datagram != null) {
+            _handleIncomingData(
+              datagram.data,
+              datagram.address.address,
+              datagram.port,
+            );
+          }
         }
       });
 
@@ -122,23 +120,16 @@ class SocketIO2Manager implements RtcAbstract {
   }
 
   Future<void> _sendPacket(Uint8List data) async {
-    if (!_connected) return;
+    if (!_connected || _socket == null) return;
 
     try {
-      final broadcastAddr = InternetAddress('255.255.255.255');
-      final loopbackAddr = InternetAddress('127.0.0.1');
-
-      final broadcastEndpoint = Endpoint.multicast(
-        broadcastAddr,
-        port: Port(CpdConfig.cpdcPort),
+      // 广播地址 + 环回地址双发，确保同机通信可靠
+      _socket!.send(
+        data,
+        InternetAddress('255.255.255.255'),
+        CpdConfig.cpdcPort,
       );
-      await _udp.send(data, broadcastEndpoint);
-
-      final loopbackEndpoint = Endpoint.multicast(
-        loopbackAddr,
-        port: Port(CpdConfig.cpdcPort),
-      );
-      await _udp.send(data, loopbackEndpoint);
+      _socket!.send(data, InternetAddress('127.0.0.1'), CpdConfig.cpdcPort);
 
       GlobalLogger.logDebug('CPDS 发送 ${data.length} 字节 (广播+环回)');
     } catch (e) {
@@ -154,7 +145,8 @@ class SocketIO2Manager implements RtcAbstract {
     try {
       _stateMachine.stopDistribution();
       if (_connected) {
-        _udp.close();
+        _socket?.close();
+        _socket = null;
         _connected = false;
         _onEventController.sink.add(RtcEvent(type: RtcEventType.disConnect));
       }

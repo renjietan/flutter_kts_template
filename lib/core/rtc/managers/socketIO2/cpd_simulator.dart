@@ -3,8 +3,6 @@ import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 
-import 'package:udp/udp.dart';
-
 import 'cpd_config.dart';
 import 'cpd_enums.dart';
 import 'cpd_models.dart';
@@ -17,7 +15,7 @@ class CpdSimulator {
   CpdSimulator._internal();
   static final CpdSimulator instance = CpdSimulator._internal();
 
-  UDP? _udp;
+  RawDatagramSocket? _socket;
   bool _running = false;
 
   // 模拟的设备列表
@@ -48,14 +46,12 @@ class CpdSimulator {
     _onLog = onLog;
     _log('正在启动 CPDC 模拟器...');
 
-    // 绑定到 CPDC 端口 39001
-    final endpoint = Endpoint.any(port: Port(CpdConfig.cpdcPort));
-    _udp = await UDP.bind(endpoint);
-
-    if (_udp!.closed) {
-      _log('❌ UDP Socket 绑定失败');
-      return;
-    }
+    // 绑定到 CPDC 端口 39001，启用地址重用
+    _socket = await RawDatagramSocket.bind(
+      InternetAddress.anyIPv4,
+      CpdConfig.cpdcPort,
+      reuseAddress: true,
+    );
 
     _running = true;
     _log('✅ CPDC 模拟器已启动 (端口: ${CpdConfig.cpdcPort})');
@@ -78,9 +74,12 @@ class CpdSimulator {
     );
 
     // 监听数据包
-    _udp!.asStream().listen((Datagram? data) {
-      if (data?.data != null) {
-        _handleIncoming(data!.data.buffer.asUint8List());
+    _socket!.listen((RawSocketEvent event) {
+      if (event == RawSocketEvent.read) {
+        final datagram = _socket!.receive();
+        if (datagram != null) {
+          _handleIncoming(datagram.data);
+        }
       }
     });
   }
@@ -90,9 +89,8 @@ class CpdSimulator {
     _parseTimer?.cancel();
     _parseTimer = null;
 
-    if (_udp != null && !_udp!.closed) {
-      _udp!.close();
-    }
+    _socket?.close();
+    _socket = null;
 
     _running = false;
     _devices.clear();
@@ -355,18 +353,14 @@ class CpdSimulator {
   }
 
   /// 发送数据包到 CPDS
-  Future<void> _sendPacket(CpdPacket packet) async {
-    if (_udp == null || _udp!.closed) return;
+  void _sendPacket(CpdPacket packet) {
+    if (_socket == null) return;
 
     final data = CpdProtocol.encodePacket(packet);
 
     try {
-      // 发送到 CPDS 端口 39002
-      final endpoint = Endpoint.multicast(
-        InternetAddress('127.0.0.1'),
-        port: Port(CpdConfig.cpdsPort),
-      );
-      await _udp!.send(data, endpoint);
+      // 发送到 CPDS 端口 39002 (环回地址)
+      _socket!.send(data, InternetAddress('127.0.0.1'), CpdConfig.cpdsPort);
 
       _log('📤 发送 ${packet.body.type.name} (${data.length} bytes)');
     } catch (e) {
