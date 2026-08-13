@@ -187,7 +187,11 @@ class CpdsRightPanel extends StatelessWidget {
       label: t.button.paramsInject.issue,
       width: 74,
       height: 36,
-      onPressed: selectedNetworkIndex < 0 ? null : onIssue,
+      onPressed:
+          (selectedNetworkIndex < 0 && networkOptions.isNotEmpty) ||
+              deviceGroups.isEmpty
+          ? null
+          : onIssue,
     );
 
     if (width < 560) {

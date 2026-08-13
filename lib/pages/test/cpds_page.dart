@@ -28,6 +28,83 @@ class CpdsPage extends StatefulWidget {
   State<CpdsPage> createState() => _CpdsPageState();
 }
 
+class CpdsDistributionProgress {
+  const CpdsDistributionProgress({
+    required this.total,
+    required this.currentIndex,
+    required this.currentLabel,
+    required this.progress,
+  });
+
+  final int total;
+  final int currentIndex;
+  final String currentLabel;
+  final double progress;
+}
+
+class CpdsDistributionProgressDialog extends StatelessWidget {
+  const CpdsDistributionProgressDialog({super.key, required this.progress});
+
+  final ValueNotifier<CpdsDistributionProgress> progress;
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      backgroundColor: const Color(0xFF171C22),
+      title: const Text(
+        '下发进度',
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      content: ValueListenableBuilder<CpdsDistributionProgress>(
+        valueListenable: progress,
+        builder: (context, value, _) {
+          final current = value.currentIndex;
+          final percent = (value.progress.clamp(0.0, 1.0).toDouble() * 100)
+              .round();
+          return SizedBox(
+            width: 360,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  value.currentLabel.isEmpty
+                      ? '准备下发...'
+                      : '正在下发：${value.currentLabel}',
+                  style: const TextStyle(color: Colors.white, fontSize: 13),
+                ),
+                const SizedBox(height: 12),
+                LinearProgressIndicator(
+                  value: value.progress.clamp(0.0, 1.0).toDouble(),
+                  minHeight: 8,
+                  backgroundColor: const Color(0xFF282D33),
+                  valueColor: const AlwaysStoppedAnimation<Color>(
+                    Color(0xFF00A2E9),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  value.total == 0
+                      ? '0/0  $percent%'
+                      : '$current/${value.total}  $percent%',
+                  style: const TextStyle(
+                    color: Color(0xFF8A94A6),
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
 class _CpdsPageState extends State<CpdsPage> with CpdsMessageMixin {
   final MasterTreeConfig mtc = MasterTreeConfig(
     searchValue: '',
@@ -62,6 +139,7 @@ class _CpdsPageState extends State<CpdsPage> with CpdsMessageMixin {
   List<SimpleDarkDropdownItem<int>> networkOptions = [];
   List<SimpleNumberStepModel> steps = [];
   List<String> foundDevice = [];
+  bool _distributing = false;
   @override
   List<CpdsDeviceGroup> deviceGroups = [];
 
@@ -194,6 +272,12 @@ class _CpdsPageState extends State<CpdsPage> with CpdsMessageMixin {
     });
 
     _initDetailTree();
+
+    await Future<void>.delayed(const Duration(milliseconds: 550));
+    if (!mounted) {
+      return;
+    }
+    await _runFakeDiscovery();
   }
 
   void _resetDetailTree() {
@@ -249,6 +333,9 @@ class _CpdsPageState extends State<CpdsPage> with CpdsMessageMixin {
           label: '${interfaces[index].interfaceName}-${interfaces[index].ip}',
         ),
       );
+      if (interfaces.length == 1) {
+        dtc.selectWifi = 0;
+      }
     });
   }
 
@@ -320,6 +407,211 @@ class _CpdsPageState extends State<CpdsPage> with CpdsMessageMixin {
         dtc.visible = true;
       });
     });
+  }
+
+  Future<void> _runFakeDiscovery() async {
+    if (deviceGroups.isEmpty) {
+      return;
+    }
+
+    var discoveredIndex = 0;
+    final discoveredGroups = <CpdsDeviceGroup>[];
+    for (final group in deviceGroups) {
+      final discoveredItems = <CpdsDeviceItem>[];
+      for (final item in group.items) {
+        final esn = _fakeEsn(discoveredIndex);
+        discoveredItems.add(
+          CpdsDeviceItem(
+            typeLabel: item.typeLabel,
+            model: item.model,
+            esnSuffix: esn.substring(esn.length - 6),
+            ip: _fakeIp(discoveredIndex),
+            status: CpdsDeviceStatus.discovered,
+          ),
+        );
+        discoveredIndex++;
+      }
+      discoveredGroups.add(
+        CpdsDeviceGroup(title: group.title, items: discoveredItems),
+      );
+    }
+
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      foundDevice = ['1'];
+      dtc.activeStep = 1;
+      deviceGroups = discoveredGroups;
+      dtc.visible = true;
+    });
+    setOnlineCountForUi(discoveredIndex);
+  }
+
+  String _fakeEsn(int index) {
+    final suffix = index.toString().padLeft(6, '0');
+    return '000000000000000000000000000000000$suffix';
+  }
+
+  String _fakeIp(int index) {
+    return '10.64.0.${20 + index}';
+  }
+
+  Future<void> _handleIssue() async {
+    if (_distributing) {
+      return;
+    }
+    if (deviceGroups.isEmpty) {
+      SimplePopup.warn(Translations.of(context).common.noData);
+      return;
+    }
+
+    _distributing = true;
+    final progressNotifier = ValueNotifier<CpdsDistributionProgress>(
+      const CpdsDistributionProgress(
+        total: 100,
+        currentIndex: 0,
+        currentLabel: '',
+        progress: 0,
+      ),
+    );
+
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) =>
+          CpdsDistributionProgressDialog(progress: progressNotifier),
+    );
+
+    var success = false;
+    try {
+      success = await startDistribution(
+        onProgress:
+            ({
+              required String stage,
+              required double progress,
+              required String message,
+            }) {
+              if (!mounted) {
+                return;
+              }
+              setState(() {
+                dtc.activeStep = _activeStepForStage(stage);
+              });
+              _setProgress(
+                progressNotifier,
+                total: 100,
+                currentIndex: (progress.clamp(0.0, 1.0) * 100).round(),
+                currentLabel: message,
+                value: progress,
+              );
+            },
+      );
+    } catch (error) {
+      success = false;
+      await cancelDistribution();
+      if (mounted) {
+        SimplePopup.error(error.toString());
+      }
+    } finally {
+      if (mounted) {
+        Navigator.of(context, rootNavigator: true).pop();
+      }
+      progressNotifier.dispose();
+      _distributing = false;
+    }
+
+    if (!mounted) {
+      return;
+    }
+    if (success) {
+      setState(() {
+        dtc.activeStep = 5;
+      });
+      await _showIssueResult(_flattenDeviceItems().length);
+    } else {
+      await _showIssueFailure();
+    }
+  }
+
+  int _activeStepForStage(String stage) {
+    switch (stage) {
+      case '发现':
+        return 1;
+      case '认证':
+        return 2;
+      case '传输':
+        return 3;
+      case '等待解析':
+        return 4;
+      default:
+        return 1;
+    }
+  }
+
+  List<CpdsDeviceItem> _flattenDeviceItems() {
+    return <CpdsDeviceItem>[for (final group in deviceGroups) ...group.items];
+  }
+
+  Future<void> _showIssueFailure() async {
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: const Color(0xFF171C22),
+        title: const Text(
+          '下发失败',
+          style: TextStyle(color: Colors.white, fontSize: 16),
+        ),
+        content: const Text(
+          '未完成发现、认证或传输，请检查设备与网络后重试。',
+          style: TextStyle(color: Colors.white70, fontSize: 13),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('确定'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _setProgress(
+    ValueNotifier<CpdsDistributionProgress> notifier, {
+    required int total,
+    required int currentIndex,
+    required String currentLabel,
+    required double value,
+  }) {
+    notifier.value = CpdsDistributionProgress(
+      total: total,
+      currentIndex: currentIndex,
+      currentLabel: currentLabel,
+      progress: value.clamp(0.0, 1.0).toDouble(),
+    );
+  }
+
+  Future<void> _showIssueResult(int count) async {
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: const Color(0xFF171C22),
+        title: const Text(
+          '下发完成',
+          style: TextStyle(color: Colors.white, fontSize: 16),
+        ),
+        content: Text(
+          '已按顺序完成 $count 台设备下发，请重启通信参数下发成功的相关设备。',
+          style: const TextStyle(color: Colors.white70, fontSize: 13),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('确定'),
+          ),
+        ],
+      ),
+    );
   }
 
   Map<String, dynamic> _parseCcuAndServerNodes(
@@ -480,6 +772,12 @@ class _CpdsPageState extends State<CpdsPage> with CpdsMessageMixin {
     }
     foundDevice = ['0'];
     _initDetailTree();
+
+    await Future<void>.delayed(const Duration(milliseconds: 550));
+    if (!mounted) {
+      return;
+    }
+    await _runFakeDiscovery();
   }
 
   @override
@@ -513,9 +811,7 @@ class _CpdsPageState extends State<CpdsPage> with CpdsMessageMixin {
                     });
                   },
                   onRefresh: _refreshDetail,
-                  onIssue: () {
-                    startDistribution();
-                  },
+                  onIssue: _handleIssue,
                 ),
               ),
             ],

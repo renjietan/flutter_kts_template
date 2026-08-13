@@ -10,6 +10,13 @@ import 'package:flutter_kts_template/core/rtc/tools/rtc.receive.dart';
 import 'package:flutter_kts_template/logger/logger.dart';
 import 'package:flutter_kts_template/pages/test/cpds_right_panel.dart';
 
+typedef CpdsDistributionProgressCallback =
+    void Function({
+      required String stage,
+      required double progress,
+      required String message,
+    });
+
 /// CPDS 消息发送 mixin。
 ///
 /// 只负责 CPDS -> CPDC 的协议流程：
@@ -43,6 +50,11 @@ mixin CpdsMessageMixin<T extends StatefulWidget> on State<T> {
   int _onlineCount = 0;
 
   int get onlineCount => _onlineCount;
+
+  /// 供页面在模拟/真实发现结束后同步右上角已上线数量。
+  void setOnlineCountForUi(int count) {
+    _updateOnlineCount(count);
+  }
 
   /// 当前节点已解析出的期望设备分组。
   List<CpdsDeviceGroup> get deviceGroups;
@@ -114,9 +126,11 @@ mixin CpdsMessageMixin<T extends StatefulWidget> on State<T> {
   void onDeviceGroupsChanged(List<CpdsDeviceGroup> groups);
 
   /// 开始发现 + 下发。
-  Future<void> startDistribution() async {
+  Future<bool> startDistribution({
+    CpdsDistributionProgressCallback? onProgress,
+  }) async {
     if (_sessionRunning) {
-      return;
+      return false;
     }
 
     _sessionRunning = true;
@@ -138,9 +152,10 @@ mixin CpdsMessageMixin<T extends StatefulWidget> on State<T> {
       },
     );
 
-    await _runDiscovery();
+    onProgress?.call(stage: '发现', progress: 0, message: '正在发送 DISCOVER_NTY...');
+    await _runDiscovery(onProgress: onProgress);
     if (!_sessionRunning) {
-      return;
+      return false;
     }
 
     final mismatch = _discoveryMismatch;
@@ -148,23 +163,31 @@ mixin CpdsMessageMixin<T extends StatefulWidget> on State<T> {
       final confirmed = await onDiscoveryMismatch(mismatch);
       if (!confirmed) {
         await _finishSession(success: false);
-        return;
+        return false;
       }
     }
 
-    await _runAuthentication();
+    onProgress?.call(stage: '认证', progress: 0, message: '正在发送 AUTH_NTY...');
+    await _runAuthentication(onProgress: onProgress);
     if (!_sessionRunning) {
-      return;
+      return false;
     }
 
-    await _runTransfer();
+    onProgress?.call(
+      stage: '传输',
+      progress: 0,
+      message: '正在发送 TRANSFER_START_NTY...',
+    );
+    await _runTransfer(onProgress: onProgress);
     if (!_sessionRunning) {
-      return;
+      return false;
     }
 
     // 真实设备会在这段时间内上报 PARSE_COMPLETE_REQ。这里等待一个占位窗口。
+    onProgress?.call(stage: '等待解析', progress: 1, message: '等待 CPDC 解析结果...');
     await Future<void>.delayed(const Duration(seconds: 1));
-    _finishSession(success: true);
+    await _finishSession(success: true);
+    return true;
   }
 
   Future<void> cancelDistribution() async {
@@ -174,13 +197,20 @@ mixin CpdsMessageMixin<T extends StatefulWidget> on State<T> {
     await _finishSession(success: false);
   }
 
-  Future<void> _runDiscovery() async {
+  Future<void> _runDiscovery({
+    CpdsDistributionProgressCallback? onProgress,
+  }) async {
     final messageId = _randomUuid();
 
     for (var second = 0; second < discoverWindow.inSeconds; second++) {
       if (!_sessionRunning) {
         return;
       }
+      onProgress?.call(
+        stage: '发现',
+        progress: (second + 1) / discoverWindow.inSeconds,
+        message: '发现中：${second + 1}/${discoverWindow.inSeconds}s',
+      );
       _sendPacket(
         CpdProtoWriter.packet(
           sessionId: _sessionId,
@@ -193,7 +223,9 @@ mixin CpdsMessageMixin<T extends StatefulWidget> on State<T> {
     }
   }
 
-  Future<void> _runAuthentication() async {
+  Future<void> _runAuthentication({
+    CpdsDistributionProgressCallback? onProgress,
+  }) async {
     final assignments = _buildAuthAssignments();
     if (assignments.isEmpty) {
       await _finishSession(success: false);
@@ -204,6 +236,11 @@ mixin CpdsMessageMixin<T extends StatefulWidget> on State<T> {
       if (!_sessionRunning) {
         return;
       }
+      onProgress?.call(
+        stage: '认证',
+        progress: (second + 1) / authWindow.inSeconds,
+        message: '认证中：${second + 1}/${authWindow.inSeconds}s',
+      );
       for (final assignment in assignments) {
         final body = <int, dynamic>{
           1: <int, dynamic>{
@@ -226,7 +263,9 @@ mixin CpdsMessageMixin<T extends StatefulWidget> on State<T> {
     }
   }
 
-  Future<void> _runTransfer() async {
+  Future<void> _runTransfer({
+    CpdsDistributionProgressCallback? onProgress,
+  }) async {
     final archiveFile = sourceArchivePath == null
         ? null
         : File(sourceArchivePath!);
@@ -244,6 +283,13 @@ mixin CpdsMessageMixin<T extends StatefulWidget> on State<T> {
 
     final digest = sha256.convert(bytes).bytes;
     final chunks = _chunkBytes(bytes, chunkSize: 1200);
+    final targetText = _distributionTargetIps.join(', ');
+    onProgress?.call(
+      stage: '传输',
+      progress: 0,
+      message:
+          '正在发送 $fileName 到 ${targetText.isEmpty ? '广播' : targetText} (0/${chunks.length})',
+    );
 
     // 首部 START x2。
     final startBody = <int, dynamic>{
@@ -261,34 +307,36 @@ mixin CpdsMessageMixin<T extends StatefulWidget> on State<T> {
       bodyField: 7,
       body: startBody,
     );
-    _sendPacket(startMessage);
-    _sendPacket(startMessage);
+    _sendTransferPacket(startMessage);
+    _sendTransferPacket(startMessage);
 
     for (var index = 0; index < chunks.length; index++) {
       if (!_sessionRunning) {
         return;
       }
       final chunk = chunks[index];
-      _sendPacket(
+      _sendTransferPacket(
         CpdProtoWriter.packet(
           sessionId: _sessionId,
           messageId: _randomUuid(),
           bodyField: 8,
-          body: <int, dynamic>{
-            1: index,
-            2: chunk,
-            3: _crc32(chunk),
-          },
+          body: <int, dynamic>{1: index, 2: chunk, 3: _crc32(chunk)},
         ),
+      );
+      onProgress?.call(
+        stage: '传输',
+        progress: (index + 1) / chunks.length,
+        message:
+            '正在发送 $fileName 到 ${targetText.isEmpty ? '广播' : targetText} (${index + 1}/${chunks.length})',
       );
       // 1 Mbit/s 节流的占位实现：1200 字节约需 9.6ms，这里按 chunk 间隔近似。
       await Future<void>.delayed(const Duration(milliseconds: 10));
     }
 
     // 尾部 START x2 + END。
-    _sendPacket(startMessage);
-    _sendPacket(startMessage);
-    _sendPacket(
+    _sendTransferPacket(startMessage);
+    _sendTransferPacket(startMessage);
+    _sendTransferPacket(
       CpdProtoWriter.packet(
         sessionId: _sessionId,
         messageId: _randomUuid(),
@@ -393,10 +441,11 @@ mixin CpdsMessageMixin<T extends StatefulWidget> on State<T> {
         if (type == CpdsDeviceType.unknown) {
           continue;
         }
-        final discovered = _discoveredDevices.values
-            .where((device) => device.types.contains(type))
-            .toList()
-          ..sort((a, b) => a.esn.compareTo(b.esn));
+        final discovered =
+            _discoveredDevices.values
+                .where((device) => device.types.contains(type))
+                .toList()
+              ..sort((a, b) => a.esn.compareTo(b.esn));
         if (discovered.isEmpty) {
           continue;
         }
@@ -441,6 +490,23 @@ mixin CpdsMessageMixin<T extends StatefulWidget> on State<T> {
     return false;
   }
 
+  Set<String> get _distributionTargetIps {
+    final targets = <String>{};
+    for (final group in deviceGroups) {
+      for (final item in group.items) {
+        final type = CpdsDeviceType.fromLabel(item.typeLabel);
+        final isCcu =
+            type == CpdsDeviceType.ccu || type == CpdsDeviceType.ccuAudio;
+        final isServer =
+            type == CpdsDeviceType.server || type == CpdsDeviceType.iec;
+        if ((isCcu || isServer) && item.ip.trim().isNotEmpty) {
+          targets.add(item.ip.trim());
+        }
+      }
+    }
+    return targets;
+  }
+
   void _sendPacket(Uint8List packet) {
     if (packet.length > 1400) {
       GlobalLogger.logError('CPDS 消息超过 1400 字节，已拒绝发送');
@@ -448,6 +514,19 @@ mixin CpdsMessageMixin<T extends StatefulWidget> on State<T> {
     }
     final frame = CpdProtoWriter.frame(packet);
     _socketManager.write(frame, broadcastAddress);
+    _socketManager.write(frame, loopbackAddress);
+  }
+
+  void _sendTransferPacket(Uint8List packet) {
+    if (packet.length > 1400) {
+      GlobalLogger.logError('CPDS ???? 1400 ????????');
+      return;
+    }
+    final frame = CpdProtoWriter.frame(packet);
+    _socketManager.write(frame, broadcastAddress);
+    for (final ip in _distributionTargetIps) {
+      _socketManager.write(frame, ip);
+    }
     _socketManager.write(frame, loopbackAddress);
   }
 
@@ -468,10 +547,7 @@ mixin CpdsMessageMixin<T extends StatefulWidget> on State<T> {
     return bytes;
   }
 
-  static List<Uint8List> _chunkBytes(
-    Uint8List data, {
-    int chunkSize = 1200,
-  }) {
+  static List<Uint8List> _chunkBytes(Uint8List data, {int chunkSize = 1200}) {
     final chunks = <Uint8List>[];
     for (var index = 0; index < data.length; index += chunkSize) {
       final end = min(index + chunkSize, data.length);
@@ -538,20 +614,16 @@ enum CpdsDeviceType {
     if (normalized.startsWith('dc_iec_')) {
       return iec;
     }
-    if (normalized.startsWith('dc_mmr200_') ||
-        normalized.contains('mmr200')) {
+    if (normalized.startsWith('dc_mmr200_') || normalized.contains('mmr200')) {
       return multiBandRadio;
     }
-    if (normalized.startsWith('dc_pmr200_') ||
-        normalized.contains('pmr200')) {
+    if (normalized.startsWith('dc_pmr200_') || normalized.contains('pmr200')) {
       return multibandHandheld;
     }
-    if (normalized.startsWith('dc_mr9360_') ||
-        normalized.contains('mr9360')) {
+    if (normalized.startsWith('dc_mr9360_') || normalized.contains('mr9360')) {
       return hf;
     }
-    if (normalized.startsWith('dc_prr206_') ||
-        normalized.contains('prr206')) {
+    if (normalized.startsWith('dc_prr206_') || normalized.contains('prr206')) {
       return smallHandheld;
     }
     if (normalized.contains('ccu-audio') || normalized.contains('ccu_audio')) {
@@ -677,11 +749,7 @@ class CpdProtoReader {
       } else if (wireType == 2) {
         final length = _readVarint(data, offset);
         offset = length.$2;
-        final value = Uint8List.sublistView(
-          data,
-          offset,
-          offset + length.$1,
-        );
+        final value = Uint8List.sublistView(data, offset, offset + length.$1);
         offset += length.$1;
         _addFieldValue(result, field, value);
       } else {
