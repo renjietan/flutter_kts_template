@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_kts_template/pages/test/cpds_page.dart';
 
 class TestPager extends StatefulWidget {
   const TestPager({super.key});
@@ -10,11 +11,6 @@ class TestPager extends StatefulWidget {
 class _TestPagerState extends State<TestPager> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        
-        ],
-      ),
-    );
+    return const Scaffold(body: SafeArea(child: CpdsPage()));
   }
 }

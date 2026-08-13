@@ -93,6 +93,8 @@ dependencies:
   mime: ^2.0.0
   ## 解压压缩包
   archive: ^4.0.9
+  ## SHA-256 校验（CPDS/CPDC 传输完整性）
+  crypto: ^3.0.7
   ## udp 包
   udp: ^5.0.3
   ## 获取网卡信息

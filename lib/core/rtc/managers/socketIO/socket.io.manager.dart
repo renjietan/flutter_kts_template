@@ -14,6 +14,8 @@ class SocketIOManager implements RtcAbstract {
   static final SocketIOManager _instance = SocketIOManager._internal();
 
   RawDatagramSocket? _socket;
+  int _localPort = 0;
+  int _remotePort = 3333;
 
   final StreamController<RtcReceive> _onDataStreamController =
       StreamController<RtcReceive>.broadcast();
@@ -26,11 +28,23 @@ class SocketIOManager implements RtcAbstract {
 
   bool get isConnected => _socket != null;
 
-  // 参数 peerAddress 无需传, socket 地址采用 InternetAddress.anyIPv4 端口为0(随机分配端口)
+  /// CPDS/CPDC 使用固定收发端口。
+  ///
+  /// [localPort] 为空时保持原有行为（随机端口）。
+  /// [remotePort] 为空时保持原有行为（3333）。
+  void configure({int? localPort, int? remotePort}) {
+    if (localPort != null) {
+      _localPort = localPort;
+    }
+    if (remotePort != null) {
+      _remotePort = remotePort;
+    }
+  }
+
   @override
   Future<void> init(String localPeerAddress) async {
     await disconnect();
-    _socket = await RawDatagramSocket.bind(InternetAddress.anyIPv4, 0);
+    _socket = await RawDatagramSocket.bind(InternetAddress.anyIPv4, _localPort);
     // 启用广播权限
     _socket!.broadcastEnabled = true;
     _socket!.listen((RawSocketEvent event) {
@@ -98,8 +112,10 @@ class SocketIOManager implements RtcAbstract {
     try {
       final broadcastAddress = InternetAddress(remotePeerAddress);
       // 为了获取发送字节数，使用 send 方法
-      int? bytesSent = _socket?.send(data, broadcastAddress, 3333);
-      GlobalLogger.logInfo('已成功向 $broadcastAddress: 发送 $bytesSent 字节数据');
+      int? bytesSent = _socket?.send(data, broadcastAddress, _remotePort);
+      GlobalLogger.logInfo(
+        '已成功向 $broadcastAddress:$_remotePort 发送 $bytesSent 字节数据',
+      );
     } catch (e) {
       SimplePopup.toast(e.toString());
     }
