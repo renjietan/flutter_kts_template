@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter_kts_template/components/loading/simple.loading.dart';
+import 'package:flutter_kts_template/core/rtc/tools/proto/byteTools.dart';
 import 'package:flutter_kts_template/core/rtc/tools/rtc.abstract.dart';
 import 'package:flutter_kts_template/core/rtc/tools/rtc.event.dart';
 import 'package:flutter_kts_template/core/rtc/tools/rtc.receive.dart';
@@ -114,7 +115,7 @@ class SocketIOManager implements RtcAbstract {
       // 为了获取发送字节数，使用 send 方法
       int? bytesSent = _socket?.send(data, broadcastAddress, _remotePort);
       GlobalLogger.logInfo(
-        '已成功向 $broadcastAddress:$_remotePort 发送 $bytesSent 字节数据',
+        '已成功向 $broadcastAddress:$_remotePort 发送 $bytesSent 字节数据: ${ByteTools.uIntList2uIntListStr(data)}',
       );
     } catch (e) {
       SimplePopup.toast(e.toString());

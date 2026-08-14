@@ -272,12 +272,6 @@ class _CpdsPageState extends State<CpdsPage> with CpdsMessageMixin {
     });
 
     _initDetailTree();
-
-    await Future<void>.delayed(const Duration(milliseconds: 550));
-    if (!mounted) {
-      return;
-    }
-    await _runFakeDiscovery();
   }
 
   void _resetDetailTree() {
@@ -409,60 +403,16 @@ class _CpdsPageState extends State<CpdsPage> with CpdsMessageMixin {
     });
   }
 
-  Future<void> _runFakeDiscovery() async {
-    if (deviceGroups.isEmpty) {
-      return;
-    }
-
-    var discoveredIndex = 0;
-    final discoveredGroups = <CpdsDeviceGroup>[];
-    for (final group in deviceGroups) {
-      final discoveredItems = <CpdsDeviceItem>[];
-      for (final item in group.items) {
-        final esn = _fakeEsn(discoveredIndex);
-        discoveredItems.add(
-          CpdsDeviceItem(
-            typeLabel: item.typeLabel,
-            model: item.model,
-            esnSuffix: esn.substring(esn.length - 6),
-            ip: _fakeIp(discoveredIndex),
-            status: CpdsDeviceStatus.discovered,
-          ),
-        );
-        discoveredIndex++;
-      }
-      discoveredGroups.add(
-        CpdsDeviceGroup(title: group.title, items: discoveredItems),
-      );
-    }
-
-    if (!mounted) {
-      return;
-    }
-    setState(() {
-      foundDevice = ['1'];
-      dtc.activeStep = 1;
-      deviceGroups = discoveredGroups;
-      dtc.visible = true;
-    });
-    setOnlineCountForUi(discoveredIndex);
-  }
-
-  String _fakeEsn(int index) {
-    final suffix = index.toString().padLeft(6, '0');
-    return '000000000000000000000000000000000$suffix';
-  }
-
-  String _fakeIp(int index) {
-    return '10.64.0.${20 + index}';
-  }
-
   Future<void> _handleIssue() async {
     if (_distributing) {
       return;
     }
     if (deviceGroups.isEmpty) {
       SimplePopup.warn(Translations.of(context).common.noData);
+      return;
+    }
+    if (dtc.selectWifi < 0) {
+      SimplePopup.warn('请先选择业务网卡');
       return;
     }
 
@@ -672,12 +622,10 @@ class _CpdsPageState extends State<CpdsPage> with CpdsMessageMixin {
           items.add(
             CpdsDeviceItem(
               typeLabel: node.data.title.toString(),
-              ip: node.data.subTexts?.length == 2
-                  ? node.data.subTexts![1].replaceFirst('当前IP: ', '')
-                  : '',
-              esnSuffix: node.data.subTexts?.length == 2
-                  ? node.data.subTexts![0].replaceFirst('ESN: ', '')
-                  : '',
+              // 选择节点时只初始化设备，不显示通信包里的静态 IP。
+              // 等点击下发后，用 DISCOVER_RSP.current_ip 动态更新。
+              ip: '',
+              esnSuffix: '',
             ),
           );
           return;
@@ -772,12 +720,6 @@ class _CpdsPageState extends State<CpdsPage> with CpdsMessageMixin {
     }
     foundDevice = ['0'];
     _initDetailTree();
-
-    await Future<void>.delayed(const Duration(milliseconds: 550));
-    if (!mounted) {
-      return;
-    }
-    await _runFakeDiscovery();
   }
 
   @override

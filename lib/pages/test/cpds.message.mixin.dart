@@ -397,10 +397,11 @@ mixin CpdsMessageMixin<T extends StatefulWidget> on State<T> {
 
     for (final rawType in types) {
       final type = CpdsDeviceType.fromValue(rawType as int? ?? 0);
+      final existing = _discoveredDevices[esnText];
       _discoveredDevices[esnText] = CpdsDiscoveredDevice(
         esn: esnText,
-        ip: ipText,
-        types: {type},
+        ip: existing?.ip ?? ipText,
+        types: {...?existing?.types, type},
       );
       _updateDeviceStatus(
         type,
@@ -409,7 +410,12 @@ mixin CpdsMessageMixin<T extends StatefulWidget> on State<T> {
         status: CpdsDeviceStatus.discovered,
       );
     }
-    _updateOnlineCount(_discoveredDevices.length);
+    _updateOnlineCount(
+      _discoveredDevices.values.fold<int>(
+        0,
+        (sum, device) => sum + device.types.length,
+      ),
+    );
   }
 
   void _handleAuthResponse(Map<int, dynamic> body) {

@@ -34,7 +34,7 @@ class _SimpleNumberStepState extends State<SimpleNumberStep> {
       }
       cur.add(
         _buildStepItem(
-          cur.length + 1,
+          count,
           pre.label,
           isActive: widget.activeStep >= count,
         ),

@@ -8,7 +8,7 @@ import 'package:flutter_kts_template/components/text/text.title.dart';
 import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 
 enum CpdsDeviceStatus {
-  notStarted,
+  notFound,
   discovered,
   receiving,
   waitingParse,
@@ -22,7 +22,7 @@ class CpdsDeviceItem {
     this.model,
     this.esnSuffix = '',
     this.ip = '',
-    this.status = CpdsDeviceStatus.notStarted,
+    this.status = CpdsDeviceStatus.notFound,
     this.progress,
     this.statusText,
   });
@@ -187,11 +187,7 @@ class CpdsRightPanel extends StatelessWidget {
       label: t.button.paramsInject.issue,
       width: 74,
       height: 36,
-      onPressed:
-          (selectedNetworkIndex < 0 && networkOptions.isNotEmpty) ||
-              deviceGroups.isEmpty
-          ? null
-          : onIssue,
+      onPressed: deviceGroups.isEmpty ? null : onIssue,
     );
 
     if (width < 560) {
@@ -423,7 +419,7 @@ class CpdsRightPanel extends StatelessWidget {
 
   Color _statusColor(CpdsDeviceStatus status) {
     switch (status) {
-      case CpdsDeviceStatus.notStarted:
+      case CpdsDeviceStatus.notFound:
         return const Color(0xFF6B7280);
       case CpdsDeviceStatus.discovered:
         return _accent;
@@ -440,8 +436,8 @@ class CpdsRightPanel extends StatelessWidget {
 
   String _statusLabel(CpdsDeviceStatus status) {
     switch (status) {
-      case CpdsDeviceStatus.notStarted:
-        return '未开始';
+      case CpdsDeviceStatus.notFound:
+        return '未发现';
       case CpdsDeviceStatus.discovered:
         return '已发现';
       case CpdsDeviceStatus.receiving:
