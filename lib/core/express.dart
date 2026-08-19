@@ -8,7 +8,7 @@ import 'package:shelf/shelf_io.dart' as shelf_io;
 
 import '../logger/logger.dart';
 import 'middleware/corsMiddleware.dart';
-import 'middleware/errorMiddleware.dart';
+import 'middleware/error_middleware.dart';
 import 'middleware/loggerMiddleware.dart';
 import 'middleware/parseJsonMiddleware.dart';
 

@@ -52,6 +52,7 @@ class TranslationsEn extends Translations with BaseTranslations<AppLocale, Trans
 	@override late final _Translations$errorMiddle$en errorMiddle = _Translations$errorMiddle$en._(_root);
 	@override late final _Translations$platform$en platform = _Translations$platform$en._(_root);
 	@override late final _Translations$settings$en settings = _Translations$settings$en._(_root);
+	@override late final _Translations$cpds$en cpds = _Translations$cpds$en._(_root);
 }
 
 // Path: app
@@ -291,6 +292,93 @@ class _Translations$settings$en extends Translations$settings$zh {
 	// Translations
 	@override String get zh => 'Chinese';
 	@override String get en => 'English';
+}
+
+// Path: cpds
+class _Translations$cpds$en extends Translations$cpds$zh {
+	_Translations$cpds$en._(TranslationsEn root) : this._root = root, super.internal(root);
+
+	final TranslationsEn _root; // ignore: unused_field
+
+	@override String get fileTitle => 'File parse';
+	@override String get browse => 'Browse';
+	@override String get parse => 'Parse';
+	@override String get filePlaceholder => 'Select a communication package';
+	@override String get nodesTitle => 'Net Node';
+	@override String get nodesEmpty => 'Parse a package to display nodes';
+	@override String get currentTitle => 'Current Node';
+	@override String online({required Object online, required Object expected}) => '${online}/${expected} online';
+	@override String get noSelection => 'Select a network node';
+	@override String get networkInterfaceLabel => 'Business NIC';
+	@override String get networkInterfacePlaceholder => 'Select a wired interface';
+	@override String networkInterfaceOption({required Object name, required Object ip}) => '${name} · ${ip}';
+	@override String get automatic => 'Auto';
+	@override String get refresh => 'Refresh';
+	@override String get distribute => 'Distribute';
+	@override String get unsupported => 'The complete distribution state machine will be implemented later';
+
+	@override late final _Translations$cpds$stages$en stages = _Translations$cpds$stages$en._(_root);
+	@override late final _Translations$cpds$statuses$en statuses = _Translations$cpds$statuses$en._(_root);
+	@override late final _Translations$cpds$device$en device = _Translations$cpds$device$en._(_root);
+	@override late final _Translations$cpds$deviceTypes$en deviceTypes = _Translations$cpds$deviceTypes$en._(_root);
+}
+
+// Path: cpds.stages
+class _Translations$cpds$stages$en extends Translations$cpds$stages$zh {
+	_Translations$cpds$stages$en._(TranslationsEn root) : this._root = root, super.internal(root);
+
+	final TranslationsEn _root; // ignore: unused_field
+
+	@override String get discovery => 'Discover';
+	@override String get authentication => 'Auth';
+	@override String get transfer => 'Transfer';
+	@override String get parse => 'Parse';
+	@override String get complete => 'Complete';
+}
+
+// Path: cpds.statuses
+class _Translations$cpds$statuses$en extends Translations$cpds$statuses$zh {
+	_Translations$cpds$statuses$en._(TranslationsEn root) : this._root = root, super.internal(root);
+
+	final TranslationsEn _root; // ignore: unused_field
+
+	@override String get pending => 'Not started';
+	@override String get discovered => 'Discovered';
+	@override String get authenticated => 'Authenticated';
+	@override String get receiving => 'Receiving';
+	@override String get waitingParse => 'Waiting for parse result';
+	@override String get completed => 'Completed';
+	@override String get failed => 'Failed';
+	@override String get ignored => 'Ignored';
+}
+
+// Path: cpds.device
+class _Translations$cpds$device$en extends Translations$cpds$device$zh {
+	_Translations$cpds$device$en._(TranslationsEn root) : this._root = root, super.internal(root);
+
+	final TranslationsEn _root; // ignore: unused_field
+
+	@override String get esn => 'ESN';
+	@override String get ip => 'Current IP';
+	@override String get emptyValue => '--';
+}
+
+// Path: cpds.deviceTypes
+class _Translations$cpds$deviceTypes$en extends Translations$cpds$deviceTypes$zh {
+	_Translations$cpds$deviceTypes$en._(TranslationsEn root) : this._root = root, super.internal(root);
+
+	final TranslationsEn _root; // ignore: unused_field
+
+	@override String get server => 'Server';
+	@override String get hf => 'HF';
+	@override String get multiBandRadio => 'MMR200';
+	@override String get multiBandHandheld => 'PMR200';
+	@override String get ccu => 'CCU-Main';
+	@override String get ccuAudio => 'CCU-Audio';
+	@override String get ccuGroup => 'CCU';
+	@override String get iec => 'IEC';
+	@override String get smallHandheld => 'Small Handheld';
+	@override String get unknown => 'Unknown device';
 }
 
 // Path: app.appbar

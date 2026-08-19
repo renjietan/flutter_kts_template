@@ -10,9 +10,7 @@ import 'package:flutter_kts_template/components/loading/simple.async.loading.dar
 import 'package:flutter_kts_template/components/loading/simple.loading.dart';
 import 'package:flutter_kts_template/components/step/simple.number.step.dart';
 import 'package:flutter_kts_template/components/text/text.title.dart';
-import 'package:flutter_kts_template/core/databaseManager/databaseManager.dart';
 import 'package:flutter_kts_template/core/entities/radios/radiosEntity.dart';
-import 'package:flutter_kts_template/core/express.dart';
 import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 import 'package:flutter_kts_template/pages/paramsInject/paramsInject.mixin.dart';
 import 'package:flutter_kts_template/theme/table.theme.dart';
@@ -42,9 +40,7 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       SimplePopup.loading();
       // 在这个页面进行初始化，减轻【启动页】负担
-      Future.wait([DatabaseManager.init(), Express.start(), initUdp()]).then((
-        res,
-      ) async {
+      initUdp().then((res) async {
         var radioResponse = await RadiosManagerApi.getAll();
         List<RadiosEntity> radios = radioResponse.data.list;
         if (mounted) {

@@ -54,6 +54,7 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 	late final Translations$errorMiddle$zh errorMiddle = Translations$errorMiddle$zh.internal(_root);
 	late final Translations$platform$zh platform = Translations$platform$zh.internal(_root);
 	late final Translations$settings$zh settings = Translations$settings$zh.internal(_root);
+	late final Translations$cpds$zh cpds = Translations$cpds$zh.internal(_root);
 }
 
 // Path: app
@@ -401,6 +402,94 @@ class Translations$settings$zh {
 
 	/// zh: '英文'
 	String get en => '英文';
+}
+
+// Path: cpds
+class Translations$cpds$zh {
+	Translations$cpds$zh.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+	String get fileTitle => '文件解析';
+	String get browse => '浏览';
+	String get parse => '解析';
+	String get filePlaceholder => '请选择通信参数包';
+	String get nodesTitle => '网络节点';
+	String get nodesEmpty => '解析通信包后显示节点';
+	String get currentTitle => '当前节点';
+	String online({required Object online, required Object expected}) => '已上线 ${online}/${expected}';
+	String get noSelection => '请选择一个网络节点';
+	String get networkInterfaceLabel => '业务网卡';
+	String get networkInterfacePlaceholder => '请选择有线网卡';
+	String networkInterfaceOption({required Object name, required Object ip}) => '${name} · ${ip}';
+	String get automatic => '自动选中';
+	String get refresh => '刷新';
+	String get distribute => '下发';
+	String get unsupported => '完整下发状态机将在下一阶段实现';
+
+	late final Translations$cpds$stages$zh stages = Translations$cpds$stages$zh.internal(_root);
+	late final Translations$cpds$statuses$zh statuses = Translations$cpds$statuses$zh.internal(_root);
+	late final Translations$cpds$device$zh device = Translations$cpds$device$zh.internal(_root);
+	late final Translations$cpds$deviceTypes$zh deviceTypes = Translations$cpds$deviceTypes$zh.internal(_root);
+}
+
+// Path: cpds.stages
+class Translations$cpds$stages$zh {
+	Translations$cpds$stages$zh.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	String get discovery => '发现';
+	String get authentication => '认证';
+	String get transfer => '传输';
+	String get parse => '解析';
+	String get complete => '完成';
+}
+
+// Path: cpds.statuses
+class Translations$cpds$statuses$zh {
+	Translations$cpds$statuses$zh.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	String get pending => '未开始';
+	String get discovered => '已发现';
+	String get authenticated => '已认证';
+	String get receiving => '接收中';
+	String get waitingParse => '等待解析结果';
+	String get completed => '已完成';
+	String get failed => '失败';
+	String get ignored => '已忽略';
+}
+
+// Path: cpds.device
+class Translations$cpds$device$zh {
+	Translations$cpds$device$zh.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	String get esn => 'ESN';
+	String get ip => '当前 IP';
+	String get emptyValue => '--';
+}
+
+// Path: cpds.deviceTypes
+class Translations$cpds$deviceTypes$zh {
+	Translations$cpds$deviceTypes$zh.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	String get server => 'Server';
+	String get hf => 'HF';
+	String get multiBandRadio => 'MMR200';
+	String get multiBandHandheld => 'PMR200';
+	String get ccu => 'CCU-Main';
+	String get ccuAudio => 'CCU-Audio';
+	String get ccuGroup => 'CCU';
+	String get iec => 'IEC';
+	String get smallHandheld => 'Small Handheld';
+	String get unknown => '未知设备';
 }
 
 // Path: app.appbar

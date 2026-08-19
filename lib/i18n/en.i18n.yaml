@@ -163,3 +163,50 @@ platform:
 settings:
   zh: Chinese
   en: English
+cpds:
+  fileTitle: File parse
+  browse: Browse
+  parse: Parse
+  filePlaceholder: Select a communication package
+  nodesTitle: Net Node
+  nodesEmpty: Parse a package to display nodes
+  currentTitle: Current Node
+  online: "{online}/{expected} online"
+  noSelection: Select a network node
+  networkInterfaceLabel: Business NIC
+  networkInterfacePlaceholder: Select a wired interface
+  networkInterfaceOption: "{name} · {ip}"
+  automatic: Auto
+  refresh: Refresh
+  distribute: Distribute
+  unsupported: The complete distribution state machine will be implemented later
+  stages:
+    discovery: Discover
+    authentication: Auth
+    transfer: Transfer
+    parse: Parse
+    complete: Complete
+  statuses:
+    pending: Not started
+    discovered: Discovered
+    authenticated: Authenticated
+    receiving: Receiving
+    waitingParse: Waiting for parse result
+    completed: Completed
+    failed: Failed
+    ignored: Ignored
+  device:
+    esn: ESN
+    ip: Current IP
+    emptyValue: "--"
+  deviceTypes:
+    server: Server
+    hf: HF
+    multiBandRadio: MMR200
+    multiBandHandheld: PMR200
+    ccu: CCU-Main
+    ccuAudio: CCU-Audio
+    ccuGroup: CCU
+    iec: IEC
+    smallHandheld: Small Handheld
+    unknown: Unknown device

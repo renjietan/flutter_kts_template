@@ -163,3 +163,50 @@ platform:
 settings:
   zh: 中文
   en: 英文
+cpds:
+  fileTitle: 文件解析
+  browse: 浏览
+  parse: 解析
+  filePlaceholder: 请选择通信参数包
+  nodesTitle: 网络节点
+  nodesEmpty: 解析通信包后显示节点
+  currentTitle: 当前节点
+  online: 已上线 {online}/{expected}
+  noSelection: 请选择一个网络节点
+  networkInterfaceLabel: 业务网卡
+  networkInterfacePlaceholder: 请选择有线网卡
+  networkInterfaceOption: "{name} · {ip}"
+  automatic: 自动选中
+  refresh: 刷新
+  distribute: 下发
+  unsupported: 完整下发状态机将在下一阶段实现
+  stages:
+    discovery: 发现
+    authentication: 认证
+    transfer: 传输
+    parse: 解析
+    complete: 完成
+  statuses:
+    pending: 未开始
+    discovered: 已发现
+    authenticated: 已认证
+    receiving: 接收中
+    waitingParse: 等待解析结果
+    completed: 已完成
+    failed: 失败
+    ignored: 已忽略
+  device:
+    esn: ESN
+    ip: 当前 IP
+    emptyValue: "--"
+  deviceTypes:
+    server: Server
+    hf: HF
+    multiBandRadio: MMR200
+    multiBandHandheld: PMR200
+    ccu: CCU-Main
+    ccuAudio: CCU-Audio
+    ccuGroup: CCU
+    iec: IEC
+    smallHandheld: Small Handheld
+    unknown: 未知设备

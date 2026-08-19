@@ -1,28 +1,26 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_kts_template/pages/cpds/cpds.page.dart';
 import 'package:flutter_kts_template/pages/keyLoader/keyLoader.pager.dart';
 import 'package:flutter_kts_template/pages/layout/layout.pager.dart';
 import 'package:flutter_kts_template/pages/radioManager/radioManager.pager.dart';
-import 'package:flutter_kts_template/pages/test/test.dart';
 import 'package:flutter_kts_template/utils/provider/user.provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../main.dart';
-import '../pages/paramsInject/paramsInject.pager.dart';
 import '../theme/table.theme.dart';
 
 // final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
 final GlobalKey<StatefulNavigationShellState> _layoutKey =
     GlobalKey<StatefulNavigationShellState>();
+final GlobalKey<NavigatorState> _cpdsKey = GlobalKey<NavigatorState>();
 final GlobalKey<NavigatorState> _radioManagerKey = GlobalKey<NavigatorState>();
-final GlobalKey<NavigatorState> _paramsInjectKey = GlobalKey<NavigatorState>();
-final GlobalKey<NavigatorState> _testKey = GlobalKey<NavigatorState>();
 final GlobalKey<NavigatorState> _injectEncryptStickKey =
     GlobalKey<NavigatorState>();
 
 final GoRouter router = GoRouter(
   navigatorKey: rootNavigatorKey,
-  initialLocation: '/paramsInject',
+  initialLocation: '/cpds',
   redirect: (context, state) {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     final userInfo = userProvider.userInfo;
@@ -32,7 +30,7 @@ final GoRouter router = GoRouter(
       return isLoggingIn ? null : '/login';
     }
     if (isLoggingIn) {
-      return '/paramsInject';
+      return '/cpds';
     }
     // 无需重定向时，需要返回 null
     return null;
@@ -50,13 +48,13 @@ final GoRouter router = GoRouter(
       },
       branches: [
         StatefulShellBranch(
-          navigatorKey: _paramsInjectKey,
+          navigatorKey: _cpdsKey,
           routes: [
             GoRoute(
-              parentNavigatorKey: _paramsInjectKey,
-              path: '/paramsInject',
-              name: 'paramsInject',
-              builder: (context, state) => ParamsInjectPager(),
+              parentNavigatorKey: _cpdsKey,
+              path: '/cpds',
+              name: 'cpds',
+              builder: (context, state) => const CpdsPage(),
             ),
           ],
         ),
@@ -85,17 +83,6 @@ final GoRouter router = GoRouter(
                 theme: getThemePreset(ThemePreset.dark),
                 themePreset: ThemePreset.dark,
               ),
-            ),
-          ],
-        ),
-        StatefulShellBranch(
-          navigatorKey: _testKey,
-          routes: [
-            GoRoute(
-              parentNavigatorKey: _testKey,
-              path: '/test',
-              name: 'test',
-              builder: (context, state) => TestPager(),
             ),
           ],
         ),

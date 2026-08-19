@@ -2,6 +2,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_kts_template/config/config.dart';
+import 'package:flutter_kts_template/core/cpds/service/cpds_manager.dart';
+import 'package:flutter_kts_template/core/databaseManager/databaseManager.dart';
+import 'package:flutter_kts_template/core/express.dart';
 import 'package:flutter_kts_template/router/router.dart';
 import 'package:flutter_kts_template/theme/app_theme.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -32,6 +35,9 @@ class DefaultApp {
     );
     // 初始化缓存
     await Shared.init();
+    await DatabaseManager.init();
+    await Express.start();
+    await CpdsManager.instance.restoreLastPackage();
 
     String userInfo = Shared.getUserInfo() ?? '';
     userInfo = "123";

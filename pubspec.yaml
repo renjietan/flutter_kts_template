@@ -41,6 +41,10 @@ dependencies:
   shelf_static: ^1.1.3
   ## shelf的辅助插件：文件上传
   shelf_essentials: ^1.0.1
+  ## WebSocket 服务端接入
+  shelf_web_socket: ^3.0.0
+  ## WebSocket 客户端接入
+  web_socket_channel: ^3.0.3
   ## 向量数据库
   objectbox: ^5.3.2
   ## ObjectBox 在各个平台（如 iOS, Android）上运行的原生底层库，它是运行时的“引擎”，负责真正地读写数据

@@ -25,4 +25,54 @@ class Shared {
   static Future<bool> removeUserInfo() {
     return _spf!.clear();
   }
+
+  static const String _cpdsNetworkInterfaceKey = 'cpds.networkInterface';
+  static const String _cpdsLastSourcePathKey = 'cpds.lastSourcePath';
+
+  static String? getCpdsNetworkInterface() {
+    return _spf?.getString(_cpdsNetworkInterfaceKey);
+  }
+
+  static Future<bool> saveCpdsNetworkInterface(String name) {
+    if (name.isEmpty) {
+      return _spf?.remove(_cpdsNetworkInterfaceKey) ?? Future.value(false);
+    }
+    return _spf!.setString(_cpdsNetworkInterfaceKey, name);
+  }
+
+  static String? getCpdsLastSourcePath() {
+    return _spf?.getString(_cpdsLastSourcePathKey);
+  }
+
+  static Future<bool> saveCpdsLastSourcePath(String path) {
+    if (path.isEmpty) {
+      return _spf?.remove(_cpdsLastSourcePathKey) ?? Future.value(false);
+    }
+    return _spf!.setString(_cpdsLastSourcePathKey, path);
+  }
+
+  static const String _cpdsLastUploadNameKey = 'cpds.lastUploadName';
+  static const String _cpdsLastSelectedNodeKey = 'cpds.lastSelectedNode';
+
+  static String? getCpdsLastUploadName() {
+    return _spf?.getString(_cpdsLastUploadNameKey);
+  }
+
+  static String? getCpdsLastSelectedNode() {
+    return _spf?.getString(_cpdsLastSelectedNodeKey);
+  }
+
+  static Future<void> saveCpdsLastUpload({
+    required String path,
+    required String name,
+  }) async {
+    await Future.wait([
+      _spf!.setString(_cpdsLastSourcePathKey, path),
+      _spf!.setString(_cpdsLastUploadNameKey, name),
+    ]);
+  }
+
+  static Future<void> saveCpdsSelectedNode(String nodeId) {
+    return _spf!.setString(_cpdsLastSelectedNodeKey, nodeId);
+  }
 }

@@ -1,0 +1,168 @@
+【任务目标】
+我需要将一个现有的Go+Vue+Wails工程中的某个页面，完整地仿写到一个Flutter工程中。请帮我完成以下工作：
+
+【源工程信息】
+- 技术栈：Go（后端）+ Vue3（前端）+ Wails（桌面框架）
+- 会话ID：01a01290-8a15-7ae1-97d5-57b5de5b99da
+- 工程名称：CPDS-old
+
+【具体要求】
+
+1. **前端仿写（Vue → Flutter）**
+   - 分析源工程中目标页面的Vue组件结构、样式和交互逻辑
+   - 在Flutter工程中创建对应的页面Widget
+   - 保持UI风格一致（布局、颜色、字体、间距等）
+   - 实现所有前端交互功能（表单验证、数据绑定、事件处理等）
+   - 路由配置：在Flutter工程中注册新页面路由
+
+2. **后端仿写（Go → Dart）**
+   - 分析源工程中对应的Go后端服务代码（API接口、业务逻辑、数据模型、UDP相关）
+   - 在Flutter工程中创建对应的Dart服务层代码
+   - 实现相同的API调用接口（使用Dio或http包）
+   - 创建对应的数据模型（Model类）
+   - 实现业务逻辑处理
+
+3. **代码复用策略**
+   - 优先使用Flutter工程中已存在的插件和封装的组件
+   - 检查并列出当前工程已有的插件清单：[请列出]
+   - 如果源工程使用了某些功能，而目标工程缺少对应插件，请先向我询问
+   - 需要安装的新插件必须经过我的确认才能使用
+
+4. **实现步骤**
+   - 第一步：分析源工程的目标页面（包括前端UI、交互逻辑、API接口）
+   - 第二步：检查目标Flutter工程的现有资源（插件、组件、工具类）
+   - 第三步：创建数据模型（Model）
+   - 第四步：实现API服务层
+   - 第五步：实现页面UI和交互逻辑
+   - 第六步：配置路由
+   - 第七步：测试和验证
+
+5. **输出要求**
+   - 每一步执行前，先向我说明将要做什么
+   - 需要安装新插件时，列出插件名称和用途，等待我确认
+   - 完成每个文件后，显示文件路径和关键代码
+   - 最终提供一个完整的实现总结
+
+【源工程信息补充】
+- 源工程Vue页面代码片段：
+    - 路径：[frontend/Dashboard.vue]
+    - 代码片段：
+    ```
+    <main class="workspace">
+        <PackagePanel :state="state" @browse="$emit('browse')" @file="$emit('file', $event)" @parse="$emit('parse')" @select-node="$emit('select-node', $event)" />
+        <DevicePanel
+          :state="state"
+          :network-interface="networkInterface"
+          @distribute="$emit('distribute')"
+          @refresh-network-interfaces="$emit('refresh-network-interfaces')"
+          @select-network-interface="$emit('select-network-interface', $event)"
+        />
+    </main>
+    ```/
+- 源工程API路由定义：无路由，工程中只有一个页面
+
+【目标工程信息补充】
+- Flutter主入口文件：[lib/main.dart]
+- 现有插件列表：
+```
+  ## 用于语言切换
+  flutter_localizations:
+    sdk: flutter
+  # flutter 创建项目时，自带的包
+  cupertino_icons: ^1.0.8
+
+  ## 国际化
+  slang: ^4.15.0
+  ## 国际化-辅助-富文本
+  slang_flutter: ^4.15.0
+  ## 日志
+  logger: ^2.7.0
+  ## 服务器
+  shelf: ^1.4.2
+  ## shelf的辅助插件：路由-基础类
+  shelf_router: ^1.1.4
+  ## shelf的辅助插件：静态服务
+  shelf_static: ^1.1.3
+  ## shelf的辅助插件：文件上传
+  shelf_essentials: ^1.0.1
+  ## 向量数据库
+  objectbox: ^5.3.2
+  ## ObjectBox 在各个平台（如 iOS, Android）上运行的原生底层库，它是运行时的“引擎”，负责真正地读写数据
+  ## ^5.3.2 | any
+  objectbox_flutter_libs: ^5.3.2
+  ## 集成数据时，顺带安装 =》 生成 创建数据库本地文件 的路径
+  path_provider: ^2.1.5
+  ## 用于各平台的路径拼接
+  path: ^1.9.1
+  ## 转 json
+  json_annotation: ^4.12.0
+  ## 路由
+  go_router: ^17.3.0
+  ## 状态管理器: Provider.of<UserInfoStore>(context, listen: false);
+  provider: ^6.1.5+1
+  ## 内存管理
+  shared_preferences: ^2.5.5
+  ## 响应式
+  flutter_screenutil: ^5.9.3
+  ## 接管 android studio 自带的 闪屏 页面
+  flutter_native_splash: ^2.4.7
+
+  ## tree 组件
+  ## reorderable_tree_list_view: ^0.0.1
+  ## 组件-备用
+  ## super_tree: ^0.2.1
+  recursive_tree_flutter: ^1.0.4
+
+  ## 生成随机数据
+  faker: ^2.2.0
+  ## form表单
+  flutter_form_builder: ^10.3.0+2
+  ## form表单-参数验证
+  form_builder_validators: ^11.3.0
+  ## 弹窗
+  flutter_smart_dialog: ^5.1.0
+  ## 表格 + 分页
+  composable_data_table: ^0.1.1
+  ## 文件上传 - 不带 widget（废弃，使用 dio + file_picker 实现）
+#  universal_file_picker: ^0.1.0
+  ## 提示框 + loading
+  unified_popups: ^1.2.2
+  ## 前端网络库
+  dio: ^5.9.2
+  ## 移动端 权限申请
+  permission_handler: ^12.0.3
+  ## 文件选择
+  file_picker: ^11.0.2
+  ## 获取文件类型
+  mime: ^2.0.0
+  ## 解压压缩包
+  archive: ^4.0.9
+  ## SHA-256 校验（CPDS/CPDC 传输完整性）
+  crypto: ^3.0.7
+  ## udp 包
+  udp: ^5.0.3
+  ## 获取网卡信息
+  network_info_plus: ^7.0.0
+  ## Android USB 串口通信（FTDI / CDC / CH34x / CP210x / PL2303）
+  usb_serial: ^0.5.2
+  ## FFI 用于 Windows WinUSB 底层 API 调用
+  ffi: ^2.1.0
+  ## Proto3 编解码
+  protobuf: ^6.0.0
+```
+- 现有封装组件路径：lib\components
+
+【特殊要求】
+- 如需使用已封装好的状态管理器，请使用 provider，参考：lib/utils/provider
+- 如需调用 权限请求，参考 lib/utils/devicePermission
+- 如需添加前端路由，参考：lib/router
+- 如需打印日志，参考：lib/logger
+- 如需添加国际化，参考：lib/i18n. 添加后，需立刻执行 dart run slang -d
+- 如需添加 服务端 controller，参考：lib/core/controller
+- 如需添加 服务端数据库 model，参考：lib/core/entities
+- 如需添加 服务端后端路由 router，参考：lib/core/router
+- 如需添加 服务端其他协议 udp，参考：lib/core/rtc
+- 如需添加全局配置：参考 lib/config
+- 如需添加 服务端websocket，请在 lib/core 中新增文件夹 ws
+
+请开始分析并逐步实施，每一步都先跟我确认后再继续。

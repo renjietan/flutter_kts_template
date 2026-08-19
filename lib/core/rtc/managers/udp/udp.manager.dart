@@ -20,6 +20,7 @@ class UdpManager implements RtcAbstract {
   UdpManager._internal();
 
   late UDP _udp;
+  bool _initialized = false;
   final Map<String, Endpoint> _remoteEndpoints = {};
   final StreamController<RtcReceive> _onDataStreamController =
       StreamController<RtcReceive>.broadcast();
@@ -32,6 +33,7 @@ class UdpManager implements RtcAbstract {
       UdpAddress udpAddress = UdpAddress.fromString(localPeerAddress);
       Endpoint endpoint = Endpoint.any(port: Port(udpAddress.port));
       _udp = await UDP.bind(endpoint);
+      _initialized = true;
       // 服务建立失败
       if (_udp.closed) {
         _onEventController.sink.add(RtcEvent(type: RtcEventType.closed));
@@ -63,7 +65,9 @@ class UdpManager implements RtcAbstract {
 
   @override
   Future<void> disconnect() async {
+    if (!_initialized) return;
     _udp.close();
+    _initialized = false;
     _remoteEndpoints.clear();
   }
 
