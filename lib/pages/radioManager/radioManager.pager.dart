@@ -26,6 +26,28 @@ class _RadioManagerPagerState extends State<RadioManagerPager>
   @override
   bool get wantKeepAlive => true;
 
+  DataTablePlusTheme get _transparentTableTheme => DataTablePlusTheme(
+    backgroundColor: Colors.transparent,
+    headerBackgroundColor: Colors.transparent,
+    borderColor: const Color(0xFF353A41),
+    borderLightColor: const Color(0xFF282D33),
+    textPrimaryColor: widget.theme.textPrimaryColor,
+    textSecondaryColor: widget.theme.textSecondaryColor,
+    textMutedColor: widget.theme.textMutedColor,
+    accentColor: widget.theme.accentColor,
+    accentLightColor: widget.theme.accentLightColor,
+    successColor: widget.theme.successColor,
+    successLightColor: widget.theme.successLightColor,
+    warningColor: widget.theme.warningColor,
+    warningLightColor: widget.theme.warningLightColor,
+    dangerColor: widget.theme.dangerColor,
+    dangerLightColor: widget.theme.dangerLightColor,
+    cellPadding: widget.theme.cellPadding,
+    headerPadding: widget.theme.headerPadding,
+    cellTextStyle: widget.theme.cellTextStyle,
+    headerTextStyle: widget.theme.headerTextStyle,
+  );
+
   @override
   void initState() {
     super.initState();
@@ -39,7 +61,7 @@ class _RadioManagerPagerState extends State<RadioManagerPager>
     super.build(context);
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+        // color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
@@ -139,7 +161,7 @@ class _RadioManagerPagerState extends State<RadioManagerPager>
           Expanded(
             child: SingleChildScrollView(
               child: DataTablePlusThemeProvider(
-                theme: widget.theme,
+                theme: _transparentTableTheme,
                 child: DataTablePlus<RadiosEntity>(
                   items: data,
                   idGetter: (item) => item.id.toString(),
@@ -164,7 +186,7 @@ class _RadioManagerPagerState extends State<RadioManagerPager>
           ),
           // 分页
           DataTablePlusThemeProvider(
-            theme: widget.theme,
+            theme: _transparentTableTheme,
             child: TablePagination(
               currentPage: currentPage,
               totalPages: totalPages,

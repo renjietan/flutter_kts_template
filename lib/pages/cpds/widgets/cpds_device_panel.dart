@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_kts_template/components/button/base.button.dart';
+import 'package:flutter_kts_template/components/loading/simple.loading.dart';
 import 'package:flutter_kts_template/core/cpds/model/cpds_enums.dart';
 import 'package:flutter_kts_template/core/cpds/model/cpds_models.dart';
 import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
@@ -19,6 +21,7 @@ class CpdsDevicePanel extends StatelessWidget {
     required this.onRefreshInterfaces,
     required this.onSelectInterface,
     required this.onDistribute,
+    this.onSaveFutureWarrior,
   });
 
   final CpdsApplicationState state;
@@ -30,6 +33,7 @@ class CpdsDevicePanel extends StatelessWidget {
   final VoidCallback onRefreshInterfaces;
   final ValueChanged<String?> onSelectInterface;
   final VoidCallback onDistribute;
+  final ValueChanged<List<CpdsDevice>>? onSaveFutureWarrior;
 
   @override
   Widget build(BuildContext context) {
@@ -40,6 +44,12 @@ class CpdsDevicePanel extends StatelessWidget {
         selectedNode = node;
         break;
       }
+    }
+    if (selectedNode?.nodeType == 1) {
+      return CpdsFutureWarriorPanel(
+        node: selectedNode!,
+        onSave: onSaveFutureWarrior,
+      );
     }
     final deviceRows = _buildDeviceRows(selectedNode, state.session);
     final groups = _groupDevices(deviceRows);
@@ -58,11 +68,7 @@ class CpdsDevicePanel extends StatelessWidget {
             height: 48,
             child: Row(
               children: [
-                Container(
-                  width: 4,
-                  height: 32,
-                  color: const Color(0xFF00A2E9),
-                ),
+                Container(width: 4, height: 32, color: const Color(0xFF00A2E9)),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Column(
@@ -83,7 +89,10 @@ class CpdsDevicePanel extends StatelessWidget {
                         Text(
                           t.cpds.online(
                             online: deviceRows
-                                .where((row) => row.status != CpdsDeviceStatus.pending)
+                                .where(
+                                  (row) =>
+                                      row.status != CpdsDeviceStatus.pending,
+                                )
                                 .length,
                             expected: deviceRows.length,
                           ),
@@ -143,9 +152,7 @@ class CpdsDevicePanel extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 7),
-                  CpdsProgressBar(
-                    value: state.session?.sendingProgress ?? 0,
-                  ),
+                  CpdsProgressBar(value: state.session?.sendingProgress ?? 0),
                 ],
               ),
             ),
@@ -176,9 +183,7 @@ class CpdsDevicePanel extends StatelessWidget {
                               title: _groupTitle(context, group.titleKey),
                               count: group.rows.length,
                             ),
-                            ...group.rows.map(
-                              (row) => _DeviceRow(row: row),
-                            ),
+                            ...group.rows.map((row) => _DeviceRow(row: row)),
                           ],
                         ),
                       ],
@@ -199,19 +204,17 @@ class CpdsDevicePanel extends StatelessWidget {
       for (final item in session?.devices ?? const <CpdsDeviceStatusView>[])
         item.device.key: item,
     };
-    return selectedNode.devices
-        .map((device) {
-          final status = byKey[device.key];
-          return _DeviceRowData(
-            device: device,
-            status: status?.status ?? CpdsDeviceStatus.pending,
-            esnSuffix: status?.esnSuffix ?? '',
-            currentIp: status?.currentIp ?? '',
-            progress: status?.progress ?? 0,
-            errorCode: status?.errorCode ?? CpdsErrorCode.unspecified,
-          );
-        })
-        .toList();
+    return selectedNode.devices.map((device) {
+      final status = byKey[device.key];
+      return _DeviceRowData(
+        device: device,
+        status: status?.status ?? CpdsDeviceStatus.pending,
+        esnSuffix: status?.esnSuffix ?? '',
+        currentIp: status?.currentIp ?? '',
+        progress: status?.progress ?? 0,
+        errorCode: status?.errorCode ?? CpdsErrorCode.unspecified,
+      );
+    }).toList();
   }
 
   int _stageIndex(CpdsSessionView? session) {
@@ -220,8 +223,7 @@ class CpdsDevicePanel extends StatelessWidget {
       CpdsActiveState.discovering ||
       CpdsActiveState.awaitingDiscoveryConfirmation => 0,
       CpdsActiveState.authenticating => 1,
-      CpdsActiveState.transferring ||
-      CpdsActiveState.drainingAfterFailure => 2,
+      CpdsActiveState.transferring || CpdsActiveState.drainingAfterFailure => 2,
       CpdsActiveState.waitingParse => 3,
       CpdsActiveState.completed ||
       CpdsActiveState.partialSuccess ||
@@ -247,17 +249,17 @@ class CpdsDevicePanel extends StatelessWidget {
           : row.device.type;
       groups.putIfAbsent(key, () => []).add(row);
     }
-    final result = groups.entries.map((entry) {
-      final titleKey = entry.key == CpdsDeviceType.ccu
-          ? 'ccuGroup'
-          : _deviceTypeKey(entry.key);
-      return _DeviceGroupData(titleKey: titleKey, rows: entry.value);
-    }).toList()
-      ..sort(
-        (a, b) =>
-            order.indexOf(_typeFromKey(a.titleKey)) -
-            order.indexOf(_typeFromKey(b.titleKey)),
-      );
+    final result =
+        groups.entries.map((entry) {
+          final titleKey = entry.key == CpdsDeviceType.ccu
+              ? 'ccuGroup'
+              : _deviceTypeKey(entry.key);
+          return _DeviceGroupData(titleKey: titleKey, rows: entry.value);
+        }).toList()..sort(
+          (a, b) =>
+              order.indexOf(_typeFromKey(a.titleKey)) -
+              order.indexOf(_typeFromKey(b.titleKey)),
+        );
     return result;
   }
 
@@ -334,6 +336,229 @@ class _StageStrip extends StatelessWidget {
               _StageLine(passed: index < activeIndex),
           ],
         ],
+      ),
+    );
+  }
+}
+
+class CpdsFutureWarriorPanel extends StatefulWidget {
+  const CpdsFutureWarriorPanel({super.key, required this.node, this.onSave});
+
+  final CpdsNode node;
+  final ValueChanged<List<CpdsDevice>>? onSave;
+
+  @override
+  State<CpdsFutureWarriorPanel> createState() => _CpdsFutureWarriorPanelState();
+}
+
+class _CpdsFutureWarriorPanelState extends State<CpdsFutureWarriorPanel> {
+  final Set<String> _selectedKeys = {};
+
+  @override
+  void didUpdateWidget(covariant CpdsFutureWarriorPanel oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.node.id != widget.node.id) {
+      _selectedKeys.clear();
+    }
+  }
+
+  List<CpdsDevice> get _selectedDevices => widget.node.devices
+      .where((device) => _selectedKeys.contains(device.key))
+      .toList();
+
+  List<(CpdsDeviceType, List<CpdsDevice>)> _groupedDevices() {
+    const order = [
+      CpdsDeviceType.multiBandRadio,
+      CpdsDeviceType.multiBandHandheld,
+      CpdsDeviceType.hf,
+      CpdsDeviceType.smallHandheld,
+      CpdsDeviceType.ccu,
+      CpdsDeviceType.server,
+      CpdsDeviceType.iec,
+    ];
+    final groups = <CpdsDeviceType, List<CpdsDevice>>{};
+    for (final device in widget.node.devices) {
+      final key = device.type == CpdsDeviceType.ccuAudio
+          ? CpdsDeviceType.ccu
+          : device.type;
+      groups.putIfAbsent(key, () => []).add(device);
+    }
+    final result =
+        groups.entries.map((entry) => (entry.key, entry.value)).toList()
+          ..sort((a, b) => order.indexOf(a.$1) - order.indexOf(b.$1));
+    return result;
+  }
+
+  String _groupTitle(BuildContext context, CpdsDeviceType type) {
+    final t = Translations.of(context);
+    return switch (type) {
+      CpdsDeviceType.server => t.cpds.deviceTypes.server,
+      CpdsDeviceType.hf => t.cpds.deviceTypes.hf,
+      CpdsDeviceType.multiBandRadio => t.cpds.deviceTypes.multiBandRadio,
+      CpdsDeviceType.multiBandHandheld => t.cpds.deviceTypes.multiBandHandheld,
+      CpdsDeviceType.ccu => t.cpds.deviceTypes.ccuGroup,
+      CpdsDeviceType.iec => t.cpds.deviceTypes.iec,
+      CpdsDeviceType.smallHandheld => t.cpds.deviceTypes.smallHandheld,
+      CpdsDeviceType.unspecified => t.cpds.deviceTypes.unknown,
+      CpdsDeviceType.ccuAudio => t.cpds.deviceTypes.ccuGroup,
+    };
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final t = Translations.of(context);
+    final zh = Localizations.localeOf(context).languageCode == 'zh';
+    final total = widget.node.devices.length;
+    final selectedCount = _selectedKeys.length;
+    final groups = _groupedDevices();
+
+    return Container(
+      color: const Color(0xFF0E1114),
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          SizedBox(
+            height: 48,
+            child: Row(
+              children: [
+                Container(width: 4, height: 32, color: const Color(0xFF00A2E9)),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        t.tree.futureWarrior,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                      Text(
+                        zh
+                            ? '已勾选 $selectedCount/$total'
+                            : 'Selected $selectedCount/$total',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Color(0xFFB7BCC6),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                BaseButton(
+                  label: t.button.radioManager.save,
+                  width: 80,
+                  height: 32,
+                  onPressed: () {
+                    if (_selectedKeys.isEmpty) {
+                      SimplePopup.warn(zh ? '请勾选' : 'Please select');
+                      return;
+                    }
+                    widget.onSave?.call(_selectedDevices);
+                  },
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 8),
+          Expanded(
+            child: Container(
+              decoration: BoxDecoration(
+                color: const Color(0xFF171C22),
+                border: Border.all(color: const Color(0x26FFFFFF)),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: total == 0
+                  ? Center(
+                      child: Text(
+                        t.cpds.nodesEmpty,
+                        style: const TextStyle(
+                          color: Colors.white38,
+                          fontSize: 13,
+                        ),
+                      ),
+                    )
+                  : ListView(
+                      children: groups.expand((group) {
+                        return [
+                          _DeviceGroupHeader(
+                            title: _groupTitle(context, group.$1),
+                            count: group.$2.length,
+                          ),
+                          ...group.$2.map((device) {
+                            final selected = _selectedKeys.contains(device.key);
+                            return _FutureWarriorDeviceRow(
+                              device: device,
+                              selected: selected,
+                              onChanged: (checked) {
+                                setState(() {
+                                  if (checked) {
+                                    _selectedKeys.add(device.key);
+                                  } else {
+                                    _selectedKeys.remove(device.key);
+                                  }
+                                });
+                              },
+                            );
+                          }),
+                        ];
+                      }).toList(),
+                    ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FutureWarriorDeviceRow extends StatelessWidget {
+  const _FutureWarriorDeviceRow({
+    required this.device,
+    required this.selected,
+    required this.onChanged,
+  });
+
+  final CpdsDevice device;
+  final bool selected;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: () => onChanged(!selected),
+      child: Container(
+        height: 44,
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        child: Row(
+          children: [
+            Checkbox(
+              value: selected,
+              activeColor: const Color(0xFF00A2E9),
+              onChanged: (value) => onChanged(value ?? false),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                device.id,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(color: Colors.white, fontSize: 14),
+              ),
+            ),
+            const SizedBox(width: 24),
+            Text(
+              device.model,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(color: Colors.white70, fontSize: 14),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -461,6 +686,9 @@ class _DeviceRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = Translations.of(context);
     final name = _deviceDisplayName(context, row.device);
+    final nodeIdLabel = Localizations.localeOf(context).languageCode == 'zh'
+        ? '节点ID'
+        : 'Node ID';
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: const BoxDecoration(
@@ -488,9 +716,17 @@ class _DeviceRow extends StatelessWidget {
               CpdsStatusBadge(status: row.status),
             ],
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 4),
           Row(
             children: [
+              const SizedBox(width: 16),
+              _Meta(label: nodeIdLabel, value: row.device.id),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Row(
+            children: [
+              const SizedBox(width: 16),
               _Meta(label: t.cpds.device.esn, value: row.esnSuffix),
               const SizedBox(width: 16),
               _Meta(label: t.cpds.device.ip, value: row.currentIp),
@@ -504,10 +740,7 @@ class _DeviceRow extends StatelessWidget {
             const SizedBox(height: 6),
             Text(
               row.errorCode.apiName,
-              style: const TextStyle(
-                color: Color(0xFFF15B64),
-                fontSize: 11,
-              ),
+              style: const TextStyle(color: Color(0xFFF15B64), fontSize: 11),
             ),
           ],
         ],

@@ -23,6 +23,8 @@ class KeyLoaderDetailsEntity {
 
   String? consumer; // 使用人
 
+  String parentIdPath; // 上级节点 ID 路径
+
   int keyLoaderId;
 
   @Property(type: PropertyType.date)
@@ -40,6 +42,7 @@ class KeyLoaderDetailsEntity {
     this.consumer,
     this.location,
     this.SN,
+    this.parentIdPath = '',
     required this.createdAt,
     DateTime? updatedAt,
   }) : updatedAt = updatedAt ?? DateTime.now();

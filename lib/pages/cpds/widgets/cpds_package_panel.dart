@@ -99,8 +99,7 @@ class _CpdsPackagePanelState extends State<CpdsPackagePanel> {
                   height: 32,
                   icon: HyIcons.wenjian,
                   isLoading: widget.uploading,
-                  onPressed:
-                      widget.state.active || widget.uploading
+                  onPressed: widget.state.active || widget.uploading
                       ? null
                       : widget.onBrowse,
                 ),
@@ -253,7 +252,7 @@ class _CpdsPackagePanelState extends State<CpdsPackagePanel> {
           .where(
             (id) =>
                 (nodesById[id]?.name.toLowerCase().contains(normalized) ??
-                    false),
+                false),
           )
           .toList();
       final filteredChildren = unit.subUnits
@@ -261,7 +260,9 @@ class _CpdsPackagePanelState extends State<CpdsPackagePanel> {
           .whereType<CpdsUnit>()
           .toList();
       final matches =
-          unitMatches || matchedNodeIds.isNotEmpty || filteredChildren.isNotEmpty;
+          unitMatches ||
+          matchedNodeIds.isNotEmpty ||
+          filteredChildren.isNotEmpty;
       if (!matches) return null;
       return CpdsUnit(
         id: unit.id,
@@ -306,9 +307,7 @@ class _CpdsPackagePanelState extends State<CpdsPackagePanel> {
       );
     }
     for (final child in unit.subUnits) {
-      rows.addAll(
-        _buildUnitRows(child, nodesById, selectedNodeId, depth + 1),
-      );
+      rows.addAll(_buildUnitRows(child, nodesById, selectedNodeId, depth + 1));
     }
     return rows;
   }

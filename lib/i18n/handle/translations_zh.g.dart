@@ -333,6 +333,15 @@ class Translations$entity$zh {
 
 	/// zh: '名称不可重复'
 	String get sameName => '名称不可重复';
+
+	/// zh: '电台别名已存在'
+	String get aliasDuplicate => '电台别名已存在';
+
+	/// zh: '使用人已存在'
+	String get consumerDuplicate => '使用人已存在';
+
+	/// zh: 'SN已存在'
+	String get snDuplicate => 'SN已存在';
 }
 
 // Path: udp
@@ -411,85 +420,62 @@ class Translations$cpds$zh {
 	final Translations _root; // ignore: unused_field
 
 	// Translations
+
+	/// zh: '文件解析'
 	String get fileTitle => '文件解析';
+
+	/// zh: '浏览'
 	String get browse => '浏览';
+
+	/// zh: '解析'
 	String get parse => '解析';
+
+	/// zh: '请选择通信参数包'
 	String get filePlaceholder => '请选择通信参数包';
+
+	/// zh: '网络节点'
 	String get nodesTitle => '网络节点';
+
+	/// zh: '解析通信包后显示节点'
 	String get nodesEmpty => '解析通信包后显示节点';
+
+	/// zh: '当前节点'
 	String get currentTitle => '当前节点';
+
+	/// zh: '已上线 {online}/{expected}'
 	String online({required Object online, required Object expected}) => '已上线 ${online}/${expected}';
+
+	/// zh: '请选择一个网络节点'
 	String get noSelection => '请选择一个网络节点';
+
+	/// zh: '业务网卡'
 	String get networkInterfaceLabel => '业务网卡';
+
+	/// zh: '请选择有线网卡'
 	String get networkInterfacePlaceholder => '请选择有线网卡';
+
+	/// zh: '{name} · {ip}'
 	String networkInterfaceOption({required Object name, required Object ip}) => '${name} · ${ip}';
+
+	/// zh: '自动选中'
 	String get automatic => '自动选中';
+
+	/// zh: '刷新'
 	String get refresh => '刷新';
+
+	/// zh: '下发'
 	String get distribute => '下发';
+
+	/// zh: '完整下发状态机将在下一阶段实现'
 	String get unsupported => '完整下发状态机将在下一阶段实现';
 
 	late final Translations$cpds$stages$zh stages = Translations$cpds$stages$zh.internal(_root);
 	late final Translations$cpds$statuses$zh statuses = Translations$cpds$statuses$zh.internal(_root);
 	late final Translations$cpds$device$zh device = Translations$cpds$device$zh.internal(_root);
 	late final Translations$cpds$deviceTypes$zh deviceTypes = Translations$cpds$deviceTypes$zh.internal(_root);
-}
-
-// Path: cpds.stages
-class Translations$cpds$stages$zh {
-	Translations$cpds$stages$zh.internal(this._root);
-
-	final Translations _root; // ignore: unused_field
-
-	String get discovery => '发现';
-	String get authentication => '认证';
-	String get transfer => '传输';
-	String get parse => '解析';
-	String get complete => '完成';
-}
-
-// Path: cpds.statuses
-class Translations$cpds$statuses$zh {
-	Translations$cpds$statuses$zh.internal(this._root);
-
-	final Translations _root; // ignore: unused_field
-
-	String get pending => '未开始';
-	String get discovered => '已发现';
-	String get authenticated => '已认证';
-	String get receiving => '接收中';
-	String get waitingParse => '等待解析结果';
-	String get completed => '已完成';
-	String get failed => '失败';
-	String get ignored => '已忽略';
-}
-
-// Path: cpds.device
-class Translations$cpds$device$zh {
-	Translations$cpds$device$zh.internal(this._root);
-
-	final Translations _root; // ignore: unused_field
-
-	String get esn => 'ESN';
-	String get ip => '当前 IP';
-	String get emptyValue => '--';
-}
-
-// Path: cpds.deviceTypes
-class Translations$cpds$deviceTypes$zh {
-	Translations$cpds$deviceTypes$zh.internal(this._root);
-
-	final Translations _root; // ignore: unused_field
-
-	String get server => 'Server';
-	String get hf => 'HF';
-	String get multiBandRadio => 'MMR200';
-	String get multiBandHandheld => 'PMR200';
-	String get ccu => 'CCU-Main';
-	String get ccuAudio => 'CCU-Audio';
-	String get ccuGroup => 'CCU';
-	String get iec => 'IEC';
-	String get smallHandheld => 'Small Handheld';
-	String get unknown => '未知设备';
+	late final Translations$cpds$saveDialog$zh saveDialog = Translations$cpds$saveDialog$zh.internal(_root);
+	late final Translations$cpds$setPassword$zh setPassword = Translations$cpds$setPassword$zh.internal(_root);
+	late final Translations$cpds$export$zh export = Translations$cpds$export$zh.internal(_root);
 }
 
 // Path: app.appbar
@@ -773,6 +759,198 @@ class Translations$Form$paramsInject$zh {
 	late final Translations$Form$paramsInject$selectKeyLoader$zh selectKeyLoader = Translations$Form$paramsInject$selectKeyLoader$zh.internal(_root);
 }
 
+// Path: cpds.stages
+class Translations$cpds$stages$zh {
+	Translations$cpds$stages$zh.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// zh: '发现'
+	String get discovery => '发现';
+
+	/// zh: '认证'
+	String get authentication => '认证';
+
+	/// zh: '传输'
+	String get transfer => '传输';
+
+	/// zh: '解析'
+	String get parse => '解析';
+
+	/// zh: '完成'
+	String get complete => '完成';
+}
+
+// Path: cpds.statuses
+class Translations$cpds$statuses$zh {
+	Translations$cpds$statuses$zh.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// zh: '未开始'
+	String get pending => '未开始';
+
+	/// zh: '已发现'
+	String get discovered => '已发现';
+
+	/// zh: '已认证'
+	String get authenticated => '已认证';
+
+	/// zh: '接收中'
+	String get receiving => '接收中';
+
+	/// zh: '等待解析结果'
+	String get waitingParse => '等待解析结果';
+
+	/// zh: '已完成'
+	String get completed => '已完成';
+
+	/// zh: '失败'
+	String get failed => '失败';
+
+	/// zh: '已忽略'
+	String get ignored => '已忽略';
+}
+
+// Path: cpds.device
+class Translations$cpds$device$zh {
+	Translations$cpds$device$zh.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// zh: 'ESN'
+	String get esn => 'ESN';
+
+	/// zh: '当前 IP'
+	String get ip => '当前 IP';
+
+	/// zh: '--'
+	String get emptyValue => '--';
+}
+
+// Path: cpds.deviceTypes
+class Translations$cpds$deviceTypes$zh {
+	Translations$cpds$deviceTypes$zh.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// zh: 'Server'
+	String get server => 'Server';
+
+	/// zh: 'HF'
+	String get hf => 'HF';
+
+	/// zh: 'MMR200'
+	String get multiBandRadio => 'MMR200';
+
+	/// zh: 'PMR200'
+	String get multiBandHandheld => 'PMR200';
+
+	/// zh: 'CCU-Main'
+	String get ccu => 'CCU-Main';
+
+	/// zh: 'CCU-Audio'
+	String get ccuAudio => 'CCU-Audio';
+
+	/// zh: 'CCU'
+	String get ccuGroup => 'CCU';
+
+	/// zh: 'IEC'
+	String get iec => 'IEC';
+
+	/// zh: 'Small Handheld'
+	String get smallHandheld => 'Small Handheld';
+
+	/// zh: '未知设备'
+	String get unknown => '未知设备';
+}
+
+// Path: cpds.saveDialog
+class Translations$cpds$saveDialog$zh {
+	Translations$cpds$saveDialog$zh.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// zh: '名称'
+	String get nameLabel => '名称';
+
+	/// zh: '请输入名称'
+	String get nameHint => '请输入名称';
+
+	/// zh: '请输入名称'
+	String get nameRequired => '请输入名称';
+
+	/// zh: '名称包含非法字符'
+	String get nameInvalid => '名称包含非法字符';
+
+	/// zh: '请选择'
+	String get selectPlaceholder => '请选择';
+}
+
+// Path: cpds.setPassword
+class Translations$cpds$setPassword$zh {
+	Translations$cpds$setPassword$zh.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// zh: '设置密码'
+	String get title => '设置密码';
+
+	/// zh: '密码'
+	String get label => '密码';
+
+	/// zh: '输入密码'
+	String get placeholder => '输入密码';
+
+	/// zh: '请输入密码'
+	String get required => '请输入密码';
+
+	/// zh: '密码长度至少6位'
+	String get minLength => '密码长度至少6位';
+
+	/// zh: '密码长度不能超过20位'
+	String get maxLength => '密码长度不能超过20位';
+
+	/// zh: '密码包含非法字符'
+	String get invalid => '密码包含非法字符';
+
+	/// zh: '密码不能包含中文'
+	String get noChinese => '密码不能包含中文';
+}
+
+// Path: cpds.export
+class Translations$cpds$export$zh {
+	Translations$cpds$export$zh.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// zh: '【{path}】找不到 ZIP 包'
+	String zipNotFound({required Object path}) => '【${path}】找不到 ZIP 包';
+
+	/// zh: '【{path}】找不到'
+	String fileNotFound({required Object path}) => '【${path}】找不到';
+
+	/// zh: '【导出失败】{error}'
+	String failed({required Object error}) => '【导出失败】${error}';
+
+	/// zh: '勾选的行中存在未选择配对电台，请先选择'
+	String get radioRequired => '勾选的行中存在未选择配对电台，请先选择';
+}
+
 // Path: pager.injectParams.steps
 class Translations$pager$injectParams$steps$zh {
 	Translations$pager$injectParams$steps$zh.internal(this._root);
@@ -810,6 +988,9 @@ class Translations$Form$radioManager$alias$zh {
 
 	/// zh: '电台别名不可为空'
 	String get validate => '电台别名不可为空';
+
+	/// zh: '仅允许输入中英文字符和数字'
+	String get invalid => '仅允许输入中英文字符和数字';
 }
 
 // Path: Form.radioManager.sn
@@ -825,6 +1006,12 @@ class Translations$Form$radioManager$sn$zh {
 
 	/// zh: '电台SN号不可为空'
 	String get validate => '电台SN号不可为空';
+
+	/// zh: '仅允许输入中英文字符和数字'
+	String get invalid => '仅允许输入中英文字符和数字';
+
+	/// zh: 'SN不可超过50个字符'
+	String get maxLength => 'SN不可超过50个字符';
 }
 
 // Path: Form.radioManager.location
@@ -855,6 +1042,12 @@ class Translations$Form$radioManager$consumer$zh {
 
 	/// zh: '电台使用人不可为空'
 	String get validate => '电台使用人不可为空';
+
+	/// zh: '仅允许输入中英文字符和数字'
+	String get invalid => '仅允许输入中英文字符和数字';
+
+	/// zh: '使用人不可超过8个字符'
+	String get maxLength => '使用人不可超过8个字符';
 }
 
 // Path: Form.injectEncrypt.name

@@ -6,6 +6,9 @@ import 'package:flutter_kts_template/components/loading/simple.loading.dart';
 import 'package:flutter_kts_template/core/cpds/cpds_exception.dart';
 import 'package:flutter_kts_template/core/cpds/model/cpds_enums.dart';
 import 'package:flutter_kts_template/core/cpds/model/cpds_models.dart';
+import 'package:flutter_kts_template/core/databaseManager/databaseManager.dart';
+import 'package:flutter_kts_template/core/entities/keyLoaderDetails/keyLoaderDetailsEntity.dart';
+import 'package:flutter_kts_template/core/entities/keyLoaders/keyLoadersEntity.dart';
 import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 import 'package:flutter_kts_template/utils/files/pick_files/FileSelector.dart';
 import 'package:flutter_kts_template/utils/shared.dart';
@@ -14,6 +17,7 @@ import 'widgets/cpds_device_panel.dart';
 import 'widgets/cpds_dialogs.dart';
 import 'widgets/cpds_messages.dart';
 import 'widgets/cpds_package_panel.dart';
+import 'widgets/cpds_save_dialog.dart';
 
 class CpdsPage extends StatefulWidget {
   const CpdsPage({super.key});
@@ -276,6 +280,57 @@ class _CpdsPageState extends State<CpdsPage> {
     }
   }
 
+  void _saveFutureWarrior(List<CpdsDevice> devices) {
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) => CpdsFutureWarriorSaveDialog(
+        devices: devices,
+        selectedNodeId: _state.selectedNodeId,
+        units: _state.package?.units ?? const [],
+        onSave: (json) {
+          Navigator.of(dialogContext).pop();
+          unawaited(_persistFutureWarrior(json));
+        },
+      ),
+    );
+  }
+
+  Future<void> _persistFutureWarrior(Map<String, dynamic> json) async {
+    final now = DateTime.now();
+    final name = json['name'] as String;
+    final nodeId = json['nodeId'] as String;
+    final parentIdPath = json['parentIdPath'] as String? ?? '';
+    final items = (json['items'] as List? ?? const []);
+
+    final parentId = DatabaseManager.instance.put<KeyLoadersEntity>(
+      KeyLoadersEntity(
+        name: name,
+        createdAt: now,
+        updatedAt: now,
+      ),
+    );
+
+    for (final rawItem in items) {
+      if (rawItem is! Map) continue;
+      final item = Map<String, dynamic>.from(rawItem);
+      final detail = KeyLoaderDetailsEntity(
+        netNodePackageName: nodeId,
+        dcPackageName: item['communicationParameterPackage']?.toString() ?? '',
+        keyLoaderId: parentId,
+        radioId: item['radioId'] as int?,
+        consumer: item['consumer']?.toString(),
+        location: item['location']?.toString(),
+        SN: item['sn']?.toString(),
+        parentIdPath: parentIdPath,
+        createdAt: now,
+        updatedAt: now,
+      );
+      DatabaseManager.instance.put<KeyLoaderDetailsEntity>(detail);
+    }
+
+    SimplePopup.success('保存成功');
+  }
+
   void _showError(Object error, {String? title}) {
     final dialogTitle =
         title ?? Translations.of(context).common.OperationError;
@@ -351,6 +406,7 @@ class _CpdsPageState extends State<CpdsPage> {
                   onRefreshInterfaces: _refreshNetworkInterfaces,
                   onSelectInterface: _selectInterface,
                   onDistribute: _distribute,
+                  onSaveFutureWarrior: _saveFutureWarrior,
                 ),
               ),
             ],

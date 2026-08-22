@@ -5,7 +5,10 @@ import 'package:flutter_kts_template/components/button/base.button.dart';
 import 'package:flutter_kts_template/components/dialog/simple.form.dialog.dart';
 import 'package:flutter_kts_template/components/loading/simple.loading.dart';
 import 'package:flutter_kts_template/components/text/text.title.dart';
+import 'package:flutter_kts_template/core/databaseManager/databaseManager.dart';
+import 'package:flutter_kts_template/core/entities/keyLoaderDetails/keyLoaderDetailsEntity.dart';
 import 'package:flutter_kts_template/logger/logger.dart';
+import 'package:flutter_kts_template/objectbox.g.dart';
 import 'package:flutter_kts_template/pages/radioManager/radioManager.pager.dart';
 import 'package:flutter_kts_template/utils/enum/dialog_enum.dart';
 import 'package:flutter_kts_template/utils/provider/radios.provider.dart';
@@ -76,6 +79,7 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
 
   void delete(RadiosEntity data) {
     RadiosManagerApi.delete("${data.id}").then((res) {
+      _clearRadioBindings([data.id]);
       SimplePopup.success(t.common.OperationSuccess);
       getList();
     });
@@ -84,6 +88,11 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
   void patchDelete() {
     String idsStr = selectedIds.join("、");
     RadiosManagerApi.delete(idsStr).then((res) {
+      final ids = selectedIds
+          .map((item) => int.tryParse(item) ?? 0)
+          .where((item) => item != 0)
+          .toList();
+      _clearRadioBindings(ids);
       SimplePopup.success(t.common.OperationSuccess);
       clearSelection();
       getList();
@@ -92,9 +101,53 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
 
   void update(RadiosEntity? data, Map<String, dynamic> v) {
     RadiosManagerApi.update(data!.id, data: v).then((res) {
+      _updateRadioBindings(
+        data.id,
+        consumer: v['consumer'] as String?,
+        location: v['location'] as String?,
+        sn: v['sn'] as String?,
+      );
       getList();
       SimplePopup.success(t.common.OperationSuccess);
     });
+  }
+
+  void _clearRadioBindings(List<int> radioIds) {
+    if (radioIds.isEmpty) return;
+    for (final radioId in radioIds) {
+      final query = DatabaseManager.instance
+          .box<KeyLoaderDetailsEntity>()
+          .query(KeyLoaderDetailsEntity_.radioId.equals(radioId))
+          .build();
+      final details = query.find();
+      for (final detail in details) {
+        detail.radioId = null;
+        detail.consumer = null;
+        detail.location = null;
+        detail.SN = null;
+        DatabaseManager.instance.put<KeyLoaderDetailsEntity>(detail);
+      }
+    }
+  }
+
+  void _updateRadioBindings(
+    int radioId, {
+    required String? consumer,
+    required String? location,
+    required String? sn,
+  }) {
+    final query = DatabaseManager.instance
+        .box<KeyLoaderDetailsEntity>()
+        .query(KeyLoaderDetailsEntity_.radioId.equals(radioId))
+        .build();
+    final details = query.find();
+    for (final detail in details) {
+      detail.radioId = radioId;
+      detail.consumer = consumer;
+      detail.location = location;
+      detail.SN = sn;
+      DatabaseManager.instance.put<KeyLoaderDetailsEntity>(detail);
+    }
   }
 
   // =============================================================================
@@ -272,6 +325,11 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
             FormBuilderValidators.required(
               errorText: t.Form.radioManager.alias.validate,
             ),
+            FormBuilderValidators.match(
+              RegExp(r'^[\u4e00-\u9fa5a-zA-Z0-9]+$'),
+              errorText: t.Form.radioManager.alias.invalid,
+              checkNullOrEmpty: false,
+            ),
           ],
         ),
         FormFieldConfig(
@@ -282,6 +340,16 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
           validators: [
             FormBuilderValidators.required(
               errorText: t.Form.radioManager.consumer.validate,
+            ),
+            FormBuilderValidators.match(
+              RegExp(r'^[\u4e00-\u9fa5a-zA-Z0-9]+$'),
+              errorText: t.Form.radioManager.consumer.invalid,
+              checkNullOrEmpty: false,
+            ),
+            FormBuilderValidators.maxLength(
+              8,
+              errorText: t.Form.radioManager.consumer.maxLength,
+              checkNullOrEmpty: false,
             ),
           ],
         ),
@@ -304,6 +372,16 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
           validators: [
             FormBuilderValidators.required(
               errorText: t.Form.radioManager.sn.validate,
+            ),
+            FormBuilderValidators.match(
+              RegExp(r'^[\u4e00-\u9fa5a-zA-Z0-9]+$'),
+              errorText: t.Form.radioManager.sn.invalid,
+              checkNullOrEmpty: false,
+            ),
+            FormBuilderValidators.maxLength(
+              50,
+              errorText: t.Form.radioManager.sn.maxLength,
+              checkNullOrEmpty: false,
             ),
           ],
         ),

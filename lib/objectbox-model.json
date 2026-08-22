@@ -144,7 +144,7 @@
     },
     {
       "id": "7:1813780709103220274",
-      "lastPropertyId": "12:1568432106393426332",
+      "lastPropertyId": "13:7777777777777777777",
       "name": "KeyLoaderDetailsEntity",
       "properties": [
         {
@@ -196,6 +196,11 @@
         {
           "id": "12:1568432106393426332",
           "name": "SN",
+          "type": 9
+        },
+        {
+          "id": "13:7777777777777777777",
+          "name": "parentIdPath",
           "type": 9
         }
       ],

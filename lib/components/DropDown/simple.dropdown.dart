@@ -12,6 +12,8 @@ class SimpleDropdown<T> extends StatelessWidget {
 
   final double height;
 
+  final Color? menuItemsColor;
+
   const SimpleDropdown({
     super.key,
     required this.value,
@@ -20,6 +22,7 @@ class SimpleDropdown<T> extends StatelessWidget {
     required this.items,
     required this.onChanged,
     this.height = 40,
+    this.menuItemsColor,
   });
 
   @override
@@ -60,7 +63,8 @@ class SimpleDropdown<T> extends StatelessWidget {
                   color: theme.textMutedColor,
                 ),
                 style: TextStyle(fontSize: 13, color: theme.textPrimaryColor),
-                dropdownColor: theme.backgroundColor,
+                dropdownColor: menuItemsColor ?? theme.backgroundColor,
+                focusColor: theme.backgroundColor,
                 items: items,
                 onChanged: onChanged,
               ),

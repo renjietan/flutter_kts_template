@@ -7,7 +7,7 @@ import 'package:flutter_kts_template/router/router.dart';
 import '../../components/text/text.title.dart';
 import '../../theme/table.theme.dart';
 import '../../utils/enum/dialog_enum.dart';
-import 'components/InjectEncryptionTable.dart';
+import 'components/key_loader_details_table.dart';
 import 'keyLoader.mixin.dart';
 
 class KeyLoaderPager extends StatefulWidget {
@@ -37,7 +37,7 @@ class _InjectEncryptStickPagerState extends State<KeyLoaderPager>
   void _onRouteChanged() {
     final currentLocation = router.routerDelegate.currentConfiguration.uri
         .toString();
-    // 判断是否是第三个菜单的路径，例如 '/third'
+    // 判断是否是第三个菜单的路径，例如 '/injectEncryptStick'
     if (currentLocation == "/injectEncryptStick") {
       getList();
     }
@@ -76,12 +76,6 @@ class _InjectEncryptStickPagerState extends State<KeyLoaderPager>
                     TextTitle(
                       text: t.pager.injectEncrypt.keyLoaderManager,
                       fontSize: 14,
-                    ),
-                    IconButton(
-                      onPressed: () {
-                        showCustomDialog(DialogTypeEnum.create, null);
-                      },
-                      icon: Icon(Icons.add, color: Colors.white70),
                     ),
                   ],
                 ),
@@ -137,16 +131,23 @@ class _InjectEncryptStickPagerState extends State<KeyLoaderPager>
                                       // delete(data[index]);
                                     }
                                   },
-                                  itemBuilder: (context) => [
-                                    const PopupMenuItem(
-                                      value: 'edit',
-                                      child: Text('编辑'),
-                                    ),
-                                    const PopupMenuItem(
-                                      value: 'delete',
-                                      child: Text('删除'),
-                                    ),
-                                  ],
+                                  itemBuilder: (context) {
+                                    final ts = Translations.of(context);
+                                    return [
+                                      PopupMenuItem(
+                                        value: 'edit',
+                                        child: Text(
+                                          ts.button.radioManager.edit,
+                                        ),
+                                      ),
+                                      PopupMenuItem(
+                                        value: 'delete',
+                                        child: Text(
+                                          ts.button.radioManager.delete,
+                                        ),
+                                      ),
+                                    ];
+                                  },
                                 ),
                               ],
                             ),
@@ -166,7 +167,7 @@ class _InjectEncryptStickPagerState extends State<KeyLoaderPager>
         ),
         const VerticalDivider(width: 0),
         Expanded(
-          child: InjectEncryptionTable(keyLoaderEntity: selectKeyLoader),
+          child: KeyLoaderDetailsTable(keyLoaderEntity: selectKeyLoader),
         ),
       ],
     );

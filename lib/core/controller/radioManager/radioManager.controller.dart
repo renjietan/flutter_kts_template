@@ -64,12 +64,28 @@ class RadioManagerController {
     params["createdAt"] = parseDateTime(DateTime.now());
     // 通过 异步 的方式 运行在后台，防止阻塞UI
     final radiosBox = db.box<RadiosEntity>();
-    final query = radiosBox
-        .query(RadiosEntity_.alias.equals(params["alias"]))
-        .build()
-        .findFirst();
-    if (query != null) {
-      return ApiResponse.error(message: t.entity.sameName);
+
+    final alias = (params["alias"] ?? "").toString();
+    final consumer = (params["consumer"] ?? "").toString();
+    final sn = (params["sn"] ?? "").toString();
+
+    if (radiosBox
+            .query(RadiosEntity_.alias.equals(alias))
+            .build()
+            .findFirst() !=
+        null) {
+      return ApiResponse.error(message: t.entity.aliasDuplicate);
+    }
+    if (radiosBox
+            .query(RadiosEntity_.consumer.equals(consumer))
+            .build()
+            .findFirst() !=
+        null) {
+      return ApiResponse.error(message: t.entity.consumerDuplicate);
+    }
+    if (radiosBox.query(RadiosEntity_.sn.equals(sn)).build().findFirst() !=
+        null) {
+      return ApiResponse.error(message: t.entity.snDuplicate);
     }
     RadiosEntity radio = RadiosEntity.fromJson(params);
     int id = radiosBox.put(radio);
@@ -90,16 +106,43 @@ class RadioManagerController {
       return ApiResponse.error(message: t.common.noData);
     }
     params["createdAt"] = parseDateTime(radiosEntity.createdAt);
-    RadiosEntity? tempEntity = radiosBox
-        .query(
-          RadiosEntity_.alias
-              .equals(params["alias"]) // 或 equalsCaseInsensitive
-              .and(RadiosEntity_.id.notEquals(params["id"])),
-        )
-        .build()
-        .findFirst();
-    if (tempEntity != null) {
-      return ApiResponse.error(message: t.entity.sameName);
+
+    final alias = (params["alias"] ?? "").toString();
+    final consumer = (params["consumer"] ?? "").toString();
+    final sn = (params["sn"] ?? "").toString();
+
+    if (radiosBox
+            .query(
+              RadiosEntity_.alias
+                  .equals(alias)
+                  .and(RadiosEntity_.id.notEquals(uId)),
+            )
+            .build()
+            .findFirst() !=
+        null) {
+      return ApiResponse.error(message: t.entity.aliasDuplicate);
+    }
+    if (radiosBox
+            .query(
+              RadiosEntity_.consumer
+                  .equals(consumer)
+                  .and(RadiosEntity_.id.notEquals(uId)),
+            )
+            .build()
+            .findFirst() !=
+        null) {
+      return ApiResponse.error(message: t.entity.consumerDuplicate);
+    }
+    if (radiosBox
+            .query(
+              RadiosEntity_.sn
+                  .equals(sn)
+                  .and(RadiosEntity_.id.notEquals(uId)),
+            )
+            .build()
+            .findFirst() !=
+        null) {
+      return ApiResponse.error(message: t.entity.snDuplicate);
     }
     radiosEntity = RadiosEntity.fromJson(params);
     int id = radiosBox.put(radiosEntity);

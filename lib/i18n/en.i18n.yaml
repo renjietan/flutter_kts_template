@@ -121,15 +121,20 @@ Form:
     alias:
       placeholder: Please enter radio alias
       validate: Radio alias cannot be empty!
+      invalid: Only Chinese/English characters and numbers are allowed
     sn:
       placeholder: Please enter radio sn
       validate: Radio sn cannot be empty!
+      invalid: Only Chinese/English characters and numbers are allowed
+      maxLength: SN cannot exceed 50 characters
     location:
       placeholder: Please enter radio location
       validate: Radio location cannot be empty!
     consumer:
       placeholder: Please enter radio consumer
       validate: Radio consumer cannot be empty!
+      invalid: Only Chinese/English characters and numbers are allowed
+      maxLength: Consumer cannot exceed 8 characters
   injectEncrypt:
     name:
       label: Key loader
@@ -148,6 +153,9 @@ Form:
       placeholder: "Please select"
 entity:
   sameName: Name must be unique
+  aliasDuplicate: Radio alias already exists
+  consumerDuplicate: Consumer already exists
+  snDuplicate: SN already exists
 udp:
   loginFail: Authentication failed
   loginTimeout: Authentication timeout
@@ -210,3 +218,23 @@ cpds:
     iec: IEC
     smallHandheld: Small Handheld
     unknown: Unknown device
+  saveDialog:
+    nameLabel: Name
+    nameHint: Please enter a name
+    nameRequired: Please enter a name
+    nameInvalid: Name contains invalid characters
+    selectPlaceholder: Please select
+  setPassword:
+    title: Set password
+    label: Password
+    placeholder: Enter password
+    required: Please enter a password
+    minLength: Password must be at least 6 characters
+    maxLength: Password must be at most 20 characters
+    invalid: Password contains invalid characters
+    noChinese: Password cannot contain Chinese characters
+  export:
+    zipNotFound: "ZIP package not found: {path}"
+    fileNotFound: "File not found: {path}"
+    failed: "Export failed: {error}"
+    radioRequired: Some selected rows have no matching radio. Please select one

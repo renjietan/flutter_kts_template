@@ -121,15 +121,20 @@ Form:
     alias:
       placeholder: 请输入电台别名
       validate: 电台别名不可为空
+      invalid: 仅允许输入中英文字符和数字
     sn:
       placeholder: 请输入电台SN号
       validate: 电台SN号不可为空
+      invalid: 仅允许输入中英文字符和数字
+      maxLength: SN不可超过50个字符
     location:
       placeholder: 请输入电台位置
       validate: 电台位置不可为空
     consumer:
       placeholder: 请输入电台使用人
       validate: 电台使用人不可为空
+      invalid: 仅允许输入中英文字符和数字
+      maxLength: 使用人不可超过8个字符
   injectEncrypt:
     name:
       label: 名称
@@ -148,6 +153,9 @@ Form:
       placeholder: "请选择"
 entity:
   sameName: 名称不可重复
+  aliasDuplicate: 电台别名已存在
+  consumerDuplicate: 使用人已存在
+  snDuplicate: SN已存在
 udp:
   loginFail: 身份认证失败
   loginTimeout: 身份认证超时
@@ -210,3 +218,23 @@ cpds:
     iec: IEC
     smallHandheld: Small Handheld
     unknown: 未知设备
+  saveDialog:
+    nameLabel: 名称
+    nameHint: 请输入名称
+    nameRequired: 请输入名称
+    nameInvalid: 名称包含非法字符
+    selectPlaceholder: 请选择
+  setPassword:
+    title: 设置密码
+    label: 密码
+    placeholder: 输入密码
+    required: 请输入密码
+    minLength: 密码长度至少6位
+    maxLength: 密码长度不能超过20位
+    invalid: 密码包含非法字符
+    noChinese: 密码不能包含中文
+  export:
+    zipNotFound: "【{path}】找不到 ZIP 包"
+    fileNotFound: "【{path}】找不到"
+    failed: "【导出失败】{error}"
+    radioRequired: 勾选的行中存在未选择配对电台，请先选择

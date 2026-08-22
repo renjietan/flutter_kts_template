@@ -195,7 +195,7 @@ final _entities = <obx_int.ModelEntity>[
   obx_int.ModelEntity(
     id: const obx_int.IdUid(7, 1813780709103220274),
     name: 'KeyLoaderDetailsEntity',
-    lastPropertyId: const obx_int.IdUid(12, 1568432106393426332),
+    lastPropertyId: const obx_int.IdUid(13, 7777777777777777777),
     flags: 0,
     properties: <obx_int.ModelProperty>[
       obx_int.ModelProperty(
@@ -255,6 +255,12 @@ final _entities = <obx_int.ModelEntity>[
       obx_int.ModelProperty(
         id: const obx_int.IdUid(12, 1568432106393426332),
         name: 'SN',
+        type: 9,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(13, 7777777777777777777),
+        name: 'parentIdPath',
         type: 9,
         flags: 0,
       ),
@@ -582,7 +588,8 @@ obx_int.ModelDefinition getObjectBoxModel() {
             ? null
             : fbb.writeString(object.location!);
         final SNOffset = object.SN == null ? null : fbb.writeString(object.SN!);
-        fbb.startTable(13);
+        final parentIdPathOffset = fbb.writeString(object.parentIdPath);
+        fbb.startTable(14);
         fbb.addInt64(0, object.id);
         fbb.addOffset(1, netNodePackageNameOffset);
         fbb.addOffset(2, dcPackageNameOffset);
@@ -593,6 +600,7 @@ obx_int.ModelDefinition getObjectBoxModel() {
         fbb.addInt64(8, object.updatedAt.millisecondsSinceEpoch);
         fbb.addOffset(10, locationOffset);
         fbb.addOffset(11, SNOffset);
+        fbb.addOffset(12, parentIdPathOffset);
         fbb.finish(fbb.endTable());
         return object.id;
       },
@@ -631,6 +639,9 @@ obx_int.ModelDefinition getObjectBoxModel() {
         final SNParam = const fb.StringReader(
           asciiOptimization: true,
         ).vTableGetNullable(buffer, rootOffset, 26);
+        final parentIdPathParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGet(buffer, rootOffset, 28, '');
         final createdAtParam = DateTime.fromMillisecondsSinceEpoch(
           const fb.Int64Reader().vTableGet(buffer, rootOffset, 18, 0),
         );
@@ -646,6 +657,7 @@ obx_int.ModelDefinition getObjectBoxModel() {
           consumer: consumerParam,
           location: locationParam,
           SN: SNParam,
+          parentIdPath: parentIdPathParam,
           createdAt: createdAtParam,
           updatedAt: updatedAtParam,
         );
@@ -826,5 +838,10 @@ class KeyLoaderDetailsEntity_ {
   /// See [KeyLoaderDetailsEntity.SN].
   static final SN = obx.QueryStringProperty<KeyLoaderDetailsEntity>(
     _entities[4].properties[9],
+  );
+
+  /// See [KeyLoaderDetailsEntity.parentIdPath].
+  static final parentIdPath = obx.QueryStringProperty<KeyLoaderDetailsEntity>(
+    _entities[4].properties[10],
   );
 }

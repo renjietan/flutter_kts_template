@@ -245,6 +245,9 @@ class _Translations$entity$en extends Translations$entity$zh {
 
 	// Translations
 	@override String get sameName => 'Name must be unique';
+	@override String get aliasDuplicate => 'Radio alias already exists';
+	@override String get consumerDuplicate => 'Consumer already exists';
+	@override String get snDuplicate => 'SN already exists';
 }
 
 // Path: udp
@@ -300,6 +303,7 @@ class _Translations$cpds$en extends Translations$cpds$zh {
 
 	final TranslationsEn _root; // ignore: unused_field
 
+	// Translations
 	@override String get fileTitle => 'File parse';
 	@override String get browse => 'Browse';
 	@override String get parse => 'Parse';
@@ -316,69 +320,13 @@ class _Translations$cpds$en extends Translations$cpds$zh {
 	@override String get refresh => 'Refresh';
 	@override String get distribute => 'Distribute';
 	@override String get unsupported => 'The complete distribution state machine will be implemented later';
-
 	@override late final _Translations$cpds$stages$en stages = _Translations$cpds$stages$en._(_root);
 	@override late final _Translations$cpds$statuses$en statuses = _Translations$cpds$statuses$en._(_root);
 	@override late final _Translations$cpds$device$en device = _Translations$cpds$device$en._(_root);
 	@override late final _Translations$cpds$deviceTypes$en deviceTypes = _Translations$cpds$deviceTypes$en._(_root);
-}
-
-// Path: cpds.stages
-class _Translations$cpds$stages$en extends Translations$cpds$stages$zh {
-	_Translations$cpds$stages$en._(TranslationsEn root) : this._root = root, super.internal(root);
-
-	final TranslationsEn _root; // ignore: unused_field
-
-	@override String get discovery => 'Discover';
-	@override String get authentication => 'Auth';
-	@override String get transfer => 'Transfer';
-	@override String get parse => 'Parse';
-	@override String get complete => 'Complete';
-}
-
-// Path: cpds.statuses
-class _Translations$cpds$statuses$en extends Translations$cpds$statuses$zh {
-	_Translations$cpds$statuses$en._(TranslationsEn root) : this._root = root, super.internal(root);
-
-	final TranslationsEn _root; // ignore: unused_field
-
-	@override String get pending => 'Not started';
-	@override String get discovered => 'Discovered';
-	@override String get authenticated => 'Authenticated';
-	@override String get receiving => 'Receiving';
-	@override String get waitingParse => 'Waiting for parse result';
-	@override String get completed => 'Completed';
-	@override String get failed => 'Failed';
-	@override String get ignored => 'Ignored';
-}
-
-// Path: cpds.device
-class _Translations$cpds$device$en extends Translations$cpds$device$zh {
-	_Translations$cpds$device$en._(TranslationsEn root) : this._root = root, super.internal(root);
-
-	final TranslationsEn _root; // ignore: unused_field
-
-	@override String get esn => 'ESN';
-	@override String get ip => 'Current IP';
-	@override String get emptyValue => '--';
-}
-
-// Path: cpds.deviceTypes
-class _Translations$cpds$deviceTypes$en extends Translations$cpds$deviceTypes$zh {
-	_Translations$cpds$deviceTypes$en._(TranslationsEn root) : this._root = root, super.internal(root);
-
-	final TranslationsEn _root; // ignore: unused_field
-
-	@override String get server => 'Server';
-	@override String get hf => 'HF';
-	@override String get multiBandRadio => 'MMR200';
-	@override String get multiBandHandheld => 'PMR200';
-	@override String get ccu => 'CCU-Main';
-	@override String get ccuAudio => 'CCU-Audio';
-	@override String get ccuGroup => 'CCU';
-	@override String get iec => 'IEC';
-	@override String get smallHandheld => 'Small Handheld';
-	@override String get unknown => 'Unknown device';
+	@override late final _Translations$cpds$saveDialog$en saveDialog = _Translations$cpds$saveDialog$en._(_root);
+	@override late final _Translations$cpds$setPassword$en setPassword = _Translations$cpds$setPassword$en._(_root);
+	@override late final _Translations$cpds$export$en export = _Translations$cpds$export$en._(_root);
 }
 
 // Path: app.appbar
@@ -570,6 +518,112 @@ class _Translations$Form$paramsInject$en extends Translations$Form$paramsInject$
 	@override late final _Translations$Form$paramsInject$selectKeyLoader$en selectKeyLoader = _Translations$Form$paramsInject$selectKeyLoader$en._(_root);
 }
 
+// Path: cpds.stages
+class _Translations$cpds$stages$en extends Translations$cpds$stages$zh {
+	_Translations$cpds$stages$en._(TranslationsEn root) : this._root = root, super.internal(root);
+
+	final TranslationsEn _root; // ignore: unused_field
+
+	// Translations
+	@override String get discovery => 'Discover';
+	@override String get authentication => 'Auth';
+	@override String get transfer => 'Transfer';
+	@override String get parse => 'Parse';
+	@override String get complete => 'Complete';
+}
+
+// Path: cpds.statuses
+class _Translations$cpds$statuses$en extends Translations$cpds$statuses$zh {
+	_Translations$cpds$statuses$en._(TranslationsEn root) : this._root = root, super.internal(root);
+
+	final TranslationsEn _root; // ignore: unused_field
+
+	// Translations
+	@override String get pending => 'Not started';
+	@override String get discovered => 'Discovered';
+	@override String get authenticated => 'Authenticated';
+	@override String get receiving => 'Receiving';
+	@override String get waitingParse => 'Waiting for parse result';
+	@override String get completed => 'Completed';
+	@override String get failed => 'Failed';
+	@override String get ignored => 'Ignored';
+}
+
+// Path: cpds.device
+class _Translations$cpds$device$en extends Translations$cpds$device$zh {
+	_Translations$cpds$device$en._(TranslationsEn root) : this._root = root, super.internal(root);
+
+	final TranslationsEn _root; // ignore: unused_field
+
+	// Translations
+	@override String get esn => 'ESN';
+	@override String get ip => 'Current IP';
+	@override String get emptyValue => '--';
+}
+
+// Path: cpds.deviceTypes
+class _Translations$cpds$deviceTypes$en extends Translations$cpds$deviceTypes$zh {
+	_Translations$cpds$deviceTypes$en._(TranslationsEn root) : this._root = root, super.internal(root);
+
+	final TranslationsEn _root; // ignore: unused_field
+
+	// Translations
+	@override String get server => 'Server';
+	@override String get hf => 'HF';
+	@override String get multiBandRadio => 'MMR200';
+	@override String get multiBandHandheld => 'PMR200';
+	@override String get ccu => 'CCU-Main';
+	@override String get ccuAudio => 'CCU-Audio';
+	@override String get ccuGroup => 'CCU';
+	@override String get iec => 'IEC';
+	@override String get smallHandheld => 'Small Handheld';
+	@override String get unknown => 'Unknown device';
+}
+
+// Path: cpds.saveDialog
+class _Translations$cpds$saveDialog$en extends Translations$cpds$saveDialog$zh {
+	_Translations$cpds$saveDialog$en._(TranslationsEn root) : this._root = root, super.internal(root);
+
+	final TranslationsEn _root; // ignore: unused_field
+
+	// Translations
+	@override String get nameLabel => 'Name';
+	@override String get nameHint => 'Please enter a name';
+	@override String get nameRequired => 'Please enter a name';
+	@override String get nameInvalid => 'Name contains invalid characters';
+	@override String get selectPlaceholder => 'Please select';
+}
+
+// Path: cpds.setPassword
+class _Translations$cpds$setPassword$en extends Translations$cpds$setPassword$zh {
+	_Translations$cpds$setPassword$en._(TranslationsEn root) : this._root = root, super.internal(root);
+
+	final TranslationsEn _root; // ignore: unused_field
+
+	// Translations
+	@override String get title => 'Set password';
+	@override String get label => 'Password';
+	@override String get placeholder => 'Enter password';
+	@override String get required => 'Please enter a password';
+	@override String get minLength => 'Password must be at least 6 characters';
+	@override String get maxLength => 'Password must be at most 20 characters';
+	@override String get invalid => 'Password contains invalid characters';
+	@override String get noChinese => 'Password cannot contain Chinese characters';
+}
+
+// Path: cpds.export
+class _Translations$cpds$export$en extends Translations$cpds$export$zh {
+	_Translations$cpds$export$en._(TranslationsEn root) : this._root = root, super.internal(root);
+
+	final TranslationsEn _root; // ignore: unused_field
+
+	// Translations
+	@override String zipNotFound({required Object path}) => 'ZIP package not found: ${path}';
+	@override String fileNotFound({required Object path}) => 'File not found: ${path}';
+	@override String failed({required Object error}) => 'Export failed: ${error}';
+	@override String get radioRequired => 'Some selected rows have no matching radio. Please select one';
+}
+
 // Path: pager.injectParams.steps
 class _Translations$pager$injectParams$steps$en extends Translations$pager$injectParams$steps$zh {
 	_Translations$pager$injectParams$steps$en._(TranslationsEn root) : this._root = root, super.internal(root);
@@ -593,6 +647,7 @@ class _Translations$Form$radioManager$alias$en extends Translations$Form$radioMa
 	// Translations
 	@override String get placeholder => 'Please enter radio alias';
 	@override String get validate => 'Radio alias cannot be empty!';
+	@override String get invalid => 'Only Chinese/English characters and numbers are allowed';
 }
 
 // Path: Form.radioManager.sn
@@ -604,6 +659,8 @@ class _Translations$Form$radioManager$sn$en extends Translations$Form$radioManag
 	// Translations
 	@override String get placeholder => 'Please enter radio sn';
 	@override String get validate => 'Radio sn cannot be empty!';
+	@override String get invalid => 'Only Chinese/English characters and numbers are allowed';
+	@override String get maxLength => 'SN cannot exceed 50 characters';
 }
 
 // Path: Form.radioManager.location
@@ -626,6 +683,8 @@ class _Translations$Form$radioManager$consumer$en extends Translations$Form$radi
 	// Translations
 	@override String get placeholder => 'Please enter radio consumer';
 	@override String get validate => 'Radio consumer cannot be empty!';
+	@override String get invalid => 'Only Chinese/English characters and numbers are allowed';
+	@override String get maxLength => 'Consumer cannot exceed 8 characters';
 }
 
 // Path: Form.injectEncrypt.name

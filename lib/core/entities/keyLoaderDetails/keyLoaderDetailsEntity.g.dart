@@ -17,6 +17,7 @@ KeyLoaderDetailsEntity _$KeyLoaderDetailsEntityFromJson(
   consumer: json['consumer'] as String?,
   location: json['location'] as String?,
   SN: json['SN'] as String?,
+  parentIdPath: json['parentIdPath'] as String? ?? '',
   createdAt: DateTime.parse(json['createdAt'] as String),
   updatedAt: json['updatedAt'] == null
       ? null
@@ -33,6 +34,7 @@ Map<String, dynamic> _$KeyLoaderDetailsEntityToJson(
   'SN': instance.SN,
   'radioId': instance.radioId,
   'consumer': instance.consumer,
+  'parentIdPath': instance.parentIdPath,
   'keyLoaderId': instance.keyLoaderId,
   'createdAt': instance.createdAt.toIso8601String(),
   'updatedAt': instance.updatedAt.toIso8601String(),

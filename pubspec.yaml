@@ -99,6 +99,8 @@ dependencies:
   archive: ^4.0.9
   ## SHA-256 校验（CPDS/CPDC 传输完整性）
   crypto: ^3.0.7
+  ## age 口令加密（与 Go filippo.io/age 互通）
+  dage: ^1.0.10
   ## udp 包
   udp: ^5.0.3
   ## 获取网卡信息
@@ -138,6 +140,12 @@ dev_dependencies:
   flutter_launcher_icons: ^0.14.4
   # 打包
   inno_bundle: ^0.11.2
+
+# dage 依赖 pointycastle ^3.7.4，而 objectbox_generator 依赖 pointycastle ^4.0.0。
+# dage 的 scrypt API 与 pointycastle 4.0.0 兼容，此处统一锁定 4.0.0 以消除版本冲突。
+dependency_overrides:
+  pointycastle: 4.0.0
+  petitparser: 7.0.2
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
