@@ -7,6 +7,7 @@ app:
 common:
   confirm: 确认
   cancel: 取消
+  close: 关闭
   noData: 无数据
   OperationSuccess: 操作成功
   OperationError: 操作失败
@@ -176,6 +177,7 @@ cpds:
   browse: 浏览
   parse: 解析
   filePlaceholder: 请选择通信参数包
+  browseConfirm: 重新上传文件，将清空【注钥管理】的数据，确认是否继续？
   nodesTitle: 网络节点
   nodesEmpty: 解析通信包后显示节点
   currentTitle: 当前节点
@@ -215,6 +217,7 @@ cpds:
     ccu: CCU-Main
     ccuAudio: CCU-Audio
     ccuGroup: CCU
+    vehInter: VehInter
     iec: IEC
     smallHandheld: Small Handheld
     unknown: 未知设备
@@ -238,3 +241,14 @@ cpds:
     fileNotFound: "【{path}】找不到"
     failed: "【导出失败】{error}"
     radioRequired: 勾选的行中存在未选择配对电台，请先选择
+  exportProgress:
+    stepStart: 开始
+    stepPack: 打包
+    stepMerge: 整合
+    stepEncrypt: 加密
+    detailStart: 开始
+    detailStartPack: 开始压缩为 tar 包
+    detailPackSuccess: 第 {index} 个压缩包打包成功
+    detailPackFail: 第 {index} 个压缩包打包失败
+    detailMerge: 开始整合，将多个压缩包合并为 ZIP 包
+    detailEncrypt: 对 ZIP 包进行加密

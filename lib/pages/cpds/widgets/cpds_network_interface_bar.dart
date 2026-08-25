@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_kts_template/components/button/base.button.dart';
 import 'package:flutter_kts_template/core/cpds/model/cpds_models.dart';
 import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 
@@ -11,10 +10,7 @@ class CpdsNetworkInterfaceBar extends StatelessWidget {
     required this.automatic,
     required this.loading,
     required this.disabled,
-    required this.canDistribute,
     required this.onSelected,
-    required this.onRefresh,
-    required this.onDistribute,
   });
 
   final List<CpdsNetworkInterface> interfaces;
@@ -22,17 +18,14 @@ class CpdsNetworkInterfaceBar extends StatelessWidget {
   final bool automatic;
   final bool loading;
   final bool disabled;
-  final bool canDistribute;
   final ValueChanged<String?> onSelected;
-  final VoidCallback onRefresh;
-  final VoidCallback onDistribute;
 
   @override
   Widget build(BuildContext context) {
     final t = Translations.of(context);
     return Container(
-      height: 40,
-      margin: const EdgeInsets.only(bottom: 8),
+      height: 32,
+      margin: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         children: [
           Text(
@@ -49,7 +42,7 @@ class CpdsNetworkInterfaceBar extends StatelessWidget {
                 fillColor: const Color(0xFF282D33),
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 12,
-                  vertical: 6,
+                  vertical: 2,
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(4),
@@ -102,24 +95,6 @@ class CpdsNetworkInterfaceBar extends StatelessWidget {
               ),
             ),
           ],
-          const SizedBox(width: 8),
-          BaseButton(
-            label: t.cpds.refresh,
-            width: 72,
-            height: 32,
-            isLoading: loading,
-            onPressed: disabled || loading ? null : onRefresh,
-          ),
-          const SizedBox(width: 8),
-          BaseButton(
-            label: t.cpds.distribute,
-            width: 88,
-            height: 32,
-            onPressed:
-                disabled || loading || selectedName.isEmpty || !canDistribute
-                ? null
-                : onDistribute,
-          ),
         ],
       ),
     );

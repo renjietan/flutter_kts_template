@@ -95,7 +95,7 @@ class _CpdsPackagePanelState extends State<CpdsPackagePanel> {
                 const SizedBox(width: 8),
                 BaseButton(
                   label: t.cpds.browse,
-                  width: 96,
+                  width: 100,
                   height: 32,
                   icon: HyIcons.wenjian,
                   isLoading: widget.uploading,
@@ -131,7 +131,7 @@ class _CpdsPackagePanelState extends State<CpdsPackagePanel> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Container(
-                    height: 78,
+                    height: 60,
                     padding: const EdgeInsets.symmetric(
                       horizontal: 16,
                       vertical: 12,

@@ -10,6 +10,8 @@ import 'package:flutter_kts_template/api/KeyLoaders.api.dart';
 import 'package:flutter_kts_template/components/DropDown/simple.dropdown.dart';
 import 'package:flutter_kts_template/components/button/base.button.dart';
 import 'package:flutter_kts_template/components/loading/simple.loading.dart';
+import 'package:flutter_kts_template/components/step/step.progress.dialog.dart';
+import 'package:flutter_kts_template/components/step/step.progress.model.dart';
 import 'package:flutter_kts_template/config/config.dart';
 import 'package:flutter_kts_template/core/entities/keyLoaderDetails/keyLoaderDetailsEntity.dart';
 import 'package:flutter_kts_template/core/entities/keyLoaders/keyLoadersEntity.dart';
@@ -177,6 +179,7 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
       context: context,
       builder: (dialogContext) => const SetPasswordDialog(),
     );
+    if (!mounted) return;
     if (password == null) return;
 
     final selectedJson = selectedRows.map((item) => item.toJson()).toList();
@@ -185,13 +188,46 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
     );
     GlobalLogger.logInfo('EXPORT_PASSWORD $password');
 
-    await _extractAndPrintPackage(selectedRows, password);
+    final controller = StepProgressController();
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      useRootNavigator: true,
+      builder: (_) => StepProgressDialog(
+        controller: controller,
+        stepLabels: [
+          t.cpds.exportProgress.stepStart,
+          t.cpds.exportProgress.stepPack,
+          t.cpds.exportProgress.stepMerge,
+          t.cpds.exportProgress.stepEncrypt,
+        ],
+        onClose: _closeProgressDialog,
+      ),
+    );
+
+    await _extractAndPrintPackage(selectedRows, password, controller);
+  }
+
+  void _closeProgressDialog() {
+    if (!mounted) return;
+    final navigator = Navigator.of(context, rootNavigator: true);
+    if (navigator.canPop()) {
+      navigator.pop();
+    }
   }
 
   Future<void> _extractAndPrintPackage(
     List<KeyLoaderDetailsEntity> selectedRows,
     String password,
+    StepProgressController controller,
   ) async {
+    const failColor = Color(0xFFF15B64);
+    const successColor = Colors.white;
+
+    // 步骤 0：开始
+    controller.setStep(0);
+    controller.addLine(t.cpds.exportProgress.detailStart, number: '0');
+
     try {
       final uploadPath = await DirectoryManager.instance.getUploadsPath();
       final zipPath = await _findLatestZip(uploadPath);
@@ -213,7 +249,14 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
       final savePath = await DirectoryManager.instance.getZipCache();
       final resourceEntries = _resourceEntries(outPath);
       final tarPaths = <String>[];
-      for (final row in selectedRows) {
+
+      // 步骤 1：打包（tar）
+      controller.addLine(
+        t.cpds.exportProgress.detailStartPack,
+        number: '1',
+      );
+      for (var i = 0; i < selectedRows.length; i++) {
+        final row = selectedRows[i];
         final tarPath = await _exportOneRow(
           row,
           outPath,
@@ -222,8 +265,20 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
         );
         if (tarPath != null) {
           tarPaths.add(tarPath);
+          controller.addLine(
+            t.cpds.exportProgress.detailPackSuccess(index: i + 1),
+            color: successColor,
+            number: '${i + 1}',
+          );
+        } else {
+          controller.addLine(
+            t.cpds.exportProgress.detailPackFail(index: i + 1),
+            color: failColor,
+            number: '${i + 1}',
+          );
         }
       }
+      controller.setStep(1);
 
       if (tarPaths.isNotEmpty) {
         final zipEntries = tarPaths
@@ -232,15 +287,44 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
         final curTime = parseDateTime(
           DateTime.now(),
         ).replaceAll(RegExp(r'[-:\s]'), '');
-        final packagePath = await FileTools.filesToZipFormPath(
-          entries: zipEntries,
-          outputPath: savePath,
-          zipName: 'UAE_$curTime',
-          type: ArchiveEncoderType.zip,
-        );
-        GlobalLogger.logInfo('EXPORT_ZIP_PACKAGE $packagePath');
 
-        await _encryptZipToPad(packagePath, password, curTime);
+        // 步骤 2：整合（ZIP）
+        final mergeLineId = controller.addLine(
+          t.cpds.exportProgress.detailMerge,
+          number: '2',
+        );
+        String packagePath;
+        try {
+          packagePath = await FileTools.filesToZipFormPath(
+            entries: zipEntries,
+            outputPath: savePath,
+            zipName: 'UAE_$curTime',
+            type: ArchiveEncoderType.zip,
+          );
+        } catch (_) {
+          controller.setLineColor(mergeLineId, failColor);
+          rethrow;
+        }
+        GlobalLogger.logInfo('EXPORT_ZIP_PACKAGE $packagePath');
+        controller.setStep(2);
+
+        // 步骤 3：加密（age）
+        final encryptLineId = controller.addLine(
+          t.cpds.exportProgress.detailEncrypt,
+          number: '3',
+        );
+        String? padPath;
+        try {
+          padPath = await _encryptZipToPad(packagePath, password, curTime);
+        } catch (_) {
+          controller.setLineColor(encryptLineId, failColor);
+          rethrow;
+        }
+        if (padPath != null) {
+          controller.setStep(3);
+        } else {
+          controller.setLineColor(encryptLineId, failColor);
+        }
 
         for (final tarPath in tarPaths) {
           final tarFile = File(tarPath);
@@ -282,10 +366,12 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
   Future<Uint8List> _encryptWithPassphrase(
     Uint8List data,
     String password,
+    {int workFactor = 15}
   ) async {
     final chunks = await encryptWithPassphrase(
       Stream.value(data),
       passphraseProvider: _FixedPassphrase(password),
+      workFactor: workFactor,
     ).toList();
 
     final builder = BytesBuilder(copy: false);

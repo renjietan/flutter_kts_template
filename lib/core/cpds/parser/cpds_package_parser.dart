@@ -588,6 +588,13 @@ class CpdsPackageParser {
       additionalTypes: [CpdsDeviceType.ccuAudio],
     );
 
+    appendIds(
+      _stringList(systemConfig['LANMember']?['VehInter']),
+      CpdsDeviceType.vehInter,
+      'dc_VehInter_',
+      'VehInter',
+    );
+
     final radioMappings = <MapEntry<String, (String, String, CpdsDeviceType)>>[
       MapEntry('MMR200', ('dc_MMR200_', 'MMR200', CpdsDeviceType.multiBandRadio)),
       MapEntry('PMR200', ('dc_PMR200_', 'PMR200', CpdsDeviceType.multiBandHandheld)),

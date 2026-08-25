@@ -75,6 +75,7 @@ class _Translations$common$en extends Translations$common$zh {
 	// Translations
 	@override String get confirm => 'Confirm';
 	@override String get cancel => 'Cancel';
+	@override String get close => 'Close';
 	@override String get noData => 'No data';
 	@override String get OperationSuccess => 'Operation Successful';
 	@override String get OperationError => 'Operation failed';
@@ -308,6 +309,7 @@ class _Translations$cpds$en extends Translations$cpds$zh {
 	@override String get browse => 'Browse';
 	@override String get parse => 'Parse';
 	@override String get filePlaceholder => 'Select a communication package';
+	@override String get browseConfirm => 'Re-uploading a file will clear all data in Key Manager. Continue?';
 	@override String get nodesTitle => 'Net Node';
 	@override String get nodesEmpty => 'Parse a package to display nodes';
 	@override String get currentTitle => 'Current Node';
@@ -327,6 +329,7 @@ class _Translations$cpds$en extends Translations$cpds$zh {
 	@override late final _Translations$cpds$saveDialog$en saveDialog = _Translations$cpds$saveDialog$en._(_root);
 	@override late final _Translations$cpds$setPassword$en setPassword = _Translations$cpds$setPassword$en._(_root);
 	@override late final _Translations$cpds$export$en export = _Translations$cpds$export$en._(_root);
+	@override late final _Translations$cpds$exportProgress$en exportProgress = _Translations$cpds$exportProgress$en._(_root);
 }
 
 // Path: app.appbar
@@ -575,6 +578,7 @@ class _Translations$cpds$deviceTypes$en extends Translations$cpds$deviceTypes$zh
 	@override String get ccu => 'CCU-Main';
 	@override String get ccuAudio => 'CCU-Audio';
 	@override String get ccuGroup => 'CCU';
+	@override String get vehInter => 'VehInter';
 	@override String get iec => 'IEC';
 	@override String get smallHandheld => 'Small Handheld';
 	@override String get unknown => 'Unknown device';
@@ -622,6 +626,25 @@ class _Translations$cpds$export$en extends Translations$cpds$export$zh {
 	@override String fileNotFound({required Object path}) => 'File not found: ${path}';
 	@override String failed({required Object error}) => 'Export failed: ${error}';
 	@override String get radioRequired => 'Some selected rows have no matching radio. Please select one';
+}
+
+// Path: cpds.exportProgress
+class _Translations$cpds$exportProgress$en extends Translations$cpds$exportProgress$zh {
+	_Translations$cpds$exportProgress$en._(TranslationsEn root) : this._root = root, super.internal(root);
+
+	final TranslationsEn _root; // ignore: unused_field
+
+	// Translations
+	@override String get stepStart => 'Start';
+	@override String get stepPack => 'Package';
+	@override String get stepMerge => 'Merge';
+	@override String get stepEncrypt => 'Encrypt';
+	@override String get detailStart => 'Start';
+	@override String get detailStartPack => 'Start packaging to tar';
+	@override String detailPackSuccess({required Object index}) => 'Package ${index} packaged successfully';
+	@override String detailPackFail({required Object index}) => 'Package ${index} packaging failed';
+	@override String get detailMerge => 'Merging tar packages into a ZIP package';
+	@override String get detailEncrypt => 'Encrypting the ZIP package';
 }
 
 // Path: pager.injectParams.steps

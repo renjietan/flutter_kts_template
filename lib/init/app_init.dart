@@ -43,8 +43,33 @@ class AppInit {
 
   //上报错误和日志逻辑
   static void reportErrorAndLog(FlutterErrorDetails details) {
+    if (_isBenignWindowsKeyboardAssertion(details)) {
+      // Windows 桌面端已知引擎 Bug（flutter/flutter#169447，修复 PR #178523）：
+      // 窗口在按键期间失焦会丢失 WM_KEYUP，焦点恢复后再次按下会触发
+      // hardware_keyboard.dart 里“KeyDownEvent already pressed”的断言。
+      // 该断言仅在 debug/profile 生效且非致命，过滤掉以免污染错误日志。
+      // 功能层面的“首次按键被吞”只能通过升级 Flutter 引擎解决。
+      GlobalLogger.logDebug(
+        'Ignored known benign Windows keyboard assertion: ${details.exception}',
+      );
+      return;
+    }
     final errorString = '异常: ${details.exception}\n堆栈: ${details.stack}';
     GlobalLogger.logError(errorString);
+  }
+
+  /// 判断是否为 Windows 桌面端已知的良性按键断言
+  /// （hardware_keyboard.dart: KeyDownEvent 重复按下）。
+  static bool _isBenignWindowsKeyboardAssertion(FlutterErrorDetails details) {
+    final Object? ex = details.exception;
+    if (ex is! AssertionError) {
+      return false;
+    }
+    final String message = ex.toString();
+    return message.contains('hardware_keyboard.dart') &&
+        message.contains(
+          'A KeyDownEvent is dispatched, but the state shows that the physical key is already pressed',
+        );
   }
 
   // 构建错误信息

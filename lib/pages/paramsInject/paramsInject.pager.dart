@@ -205,16 +205,57 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
                   SizedBox(width: 15),
                   TextTitle(text: mtc.select.title),
                   const Spacer(),
-                  mtc.select.type == 1
-                      ? BaseButton(
-                          label: t.button.paramsInject.bind,
-                          width: 65,
-                          height: 30,
-                          onPressed: () {
-                            saveTo(ctx);
-                          },
-                        )
-                      : SizedBox(),
+                  ...(mtc.select.type == 1
+                      ? [
+                          BaseButton(
+                            label: t.button.paramsInject.bind,
+                            width: 65,
+                            height: 30,
+                            onPressed: () {
+                              saveTo(ctx);
+                            },
+                          ),
+                        ]
+                      : [
+                          // 刷新
+                          Container(
+                            width: 74,
+                            height: 36,
+                            margin: const EdgeInsets.only(right: 10),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(5),
+                              border: Border.all(
+                                color: const Color(0xFF00A2E9),
+                                width: 2,
+                              ),
+                            ),
+                            child: Center(
+                              child: BaseButton(
+                                label: t.button.paramsInject.refresh,
+                                width: 70,
+                                height: 30,
+                                colors: const [
+                                  Color(0xFF0A1D35),
+                                  Color(0xFF0A1D35),
+                                  Color(0xFF0A1D35),
+                                  Color(0xFF0A1D35),
+                                ],
+                                onPressed: () {
+                                  detailRefresh();
+                                  foundDevice = ["1"];
+                                  initDetailTree();
+                                },
+                              ),
+                            ),
+                          ),
+                          // 下发
+                          BaseButton(
+                            label: t.button.paramsInject.issue,
+                            width: 74,
+                            height: 36,
+                            onPressed: () {},
+                          ),
+                        ]),
                 ],
               ),
             ),
@@ -237,43 +278,6 @@ class _ParamsInjectPagerState extends State<ParamsInjectPager>
                     onChanged: (value) {
                       setState(() => dtc.selectWifi = value!);
                     },
-                  ),
-                  const Spacer(),
-                  // 刷新
-                  Container(
-                    // FlareButton 没有边框可供配置,所以在 FlareButton  外围套了一层 container,此 container 只作边框使用
-                    width: 74,
-                    height: 36,
-                    margin: EdgeInsets.only(right: 15),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(5),
-                      border: Border.all(color: Color(0xFF00A2E9), width: 2),
-                    ),
-                    child: Center(
-                      child: BaseButton(
-                        label: t.button.paramsInject.refresh,
-                        width: 70,
-                        height: 30,
-                        colors: const [
-                          Color(0xFF0A1D35),
-                          Color(0xFF0A1D35),
-                          Color(0xFF0A1D35),
-                          Color(0xFF0A1D35),
-                        ],
-                        onPressed: () {
-                          detailRefresh();
-                          foundDevice = ["1"];
-                          initDetailTree();
-                        },
-                      ),
-                    ),
-                  ),
-                  // 下发
-                  BaseButton(
-                    label: t.button.paramsInject.issue,
-                    width: 74,
-                    height: 36,
-                    onPressed: () {},
                   ),
                 ],
               ),

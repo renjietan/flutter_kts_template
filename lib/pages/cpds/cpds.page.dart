@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_kts_template/api/cpds.api.dart';
 import 'package:flutter_kts_template/components/loading/simple.loading.dart';
@@ -12,6 +13,7 @@ import 'package:flutter_kts_template/core/entities/keyLoaders/keyLoadersEntity.d
 import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 import 'package:flutter_kts_template/utils/files/pick_files/FileSelector.dart';
 import 'package:flutter_kts_template/utils/shared.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import 'widgets/cpds_device_panel.dart';
 import 'widgets/cpds_dialogs.dart';
@@ -34,7 +36,10 @@ class _CpdsPageState extends State<CpdsPage> {
   bool _interfacesLoading = false;
   bool _uploading = false;
   bool _parsing = false;
+  bool _distributing = false;
   bool _resolvingDecision = false;
+  bool _discoveryDialogShowing = false;
+  String? _shownDiscoverySessionId;
   String? _shownResultSessionId;
   StreamSubscription<CpdsApplicationState>? _subscription;
 
@@ -77,11 +82,14 @@ class _CpdsPageState extends State<CpdsPage> {
     final session = state.session;
     if (session == null) return;
     if (session.activeState == CpdsActiveState.awaitingDiscoveryConfirmation &&
+        session.sessionId != _shownDiscoverySessionId &&
         !_resolvingDecision) {
+      _shownDiscoverySessionId = session.sessionId;
       _showDiscoveryMismatchDialog(session);
       return;
     }
-    final terminal = session.activeState == CpdsActiveState.completed ||
+    final terminal =
+        session.activeState == CpdsActiveState.completed ||
         session.activeState == CpdsActiveState.partialSuccess ||
         session.activeState == CpdsActiveState.failed;
     if (terminal && session.sessionId != _shownResultSessionId) {
@@ -91,17 +99,24 @@ class _CpdsPageState extends State<CpdsPage> {
   }
 
   Future<void> _showDiscoveryMismatchDialog(CpdsSessionView session) async {
-    final proceed = await showDialog<bool>(
-      context: context,
-      barrierDismissible: false,
-      builder: (dialogContext) => CpdsDiscoveryMismatchDialog(
-        session: session,
-        submitting: _resolvingDecision,
-        onResolve: (value) => Navigator.of(dialogContext).pop(value),
-      ),
-    );
-    if (proceed == null || !mounted) return;
-    await _resolveMismatch(session.sessionId, proceed);
+    if (_discoveryDialogShowing) return;
+    _discoveryDialogShowing = true;
+    try {
+      final proceed = await showDialog<bool>(
+        context: context,
+        useRootNavigator: false,
+        barrierDismissible: false,
+        builder: (dialogContext) => CpdsDiscoveryMismatchDialog(
+          session: session,
+          submitting: _resolvingDecision,
+          onResolve: (value) => Navigator.of(dialogContext).pop(value),
+        ),
+      );
+      if (proceed == null || !mounted) return;
+      await _resolveMismatch(session.sessionId, proceed);
+    } finally {
+      _discoveryDialogShowing = false;
+    }
   }
 
   Future<void> _resolveMismatch(String sessionId, bool proceed) async {
@@ -130,6 +145,8 @@ class _CpdsPageState extends State<CpdsPage> {
   Future<void> _showResultDialog(CpdsSessionView session) async {
     await showDialog<void>(
       context: context,
+      useRootNavigator: false,
+      barrierDismissible: true,
       builder: (dialogContext) => CpdsResultDialog(
         session: session,
         onClose: () => Navigator.of(dialogContext).pop(),
@@ -185,6 +202,15 @@ class _CpdsPageState extends State<CpdsPage> {
     if (_state.active || _uploading) return;
     final placeholder = Translations.of(context).cpds.filePlaceholder;
     final browseFailedTitle = Translations.of(context).common.OperationError;
+
+    // 注钥管理有数据时，提示重新上传将清空注钥数据，确认后再继续选择文件
+    var clearOnUpload = false;
+    if (_hasKeyLoaderData()) {
+      final proceed = await _confirmClearKeyLoader();
+      if (proceed != true || !mounted) return;
+      clearOnUpload = true;
+    }
+
     setState(() {
       _uploading = true;
     });
@@ -194,13 +220,14 @@ class _CpdsPageState extends State<CpdsPage> {
         SimplePopup.warn(placeholder);
         return;
       }
+      // 只有用户确认并真正选中文件后，才清空注钥数据
+      if (clearOnUpload) {
+        _clearKeyLoaderData();
+      }
       final state = await CpdsApi.uploadPackage(file);
       _applyState(state);
     } catch (error) {
-      _showError(
-        error,
-        title: browseFailedTitle,
-      );
+      _showError(error, title: browseFailedTitle);
     } finally {
       if (mounted) {
         setState(() {
@@ -208,6 +235,51 @@ class _CpdsPageState extends State<CpdsPage> {
         });
       }
     }
+  }
+
+  /// 已上传文件时，再次浏览前弹出确认框：重新上传将清空注钥数据。
+  Future<bool?> _confirmClearKeyLoader() {
+    final t = Translations.of(context);
+    return showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: const Color(0xFF20262D),
+        title: Text(
+          t.tips.title,
+          style: const TextStyle(color: Colors.white, fontSize: 17),
+        ),
+        content: Text(
+          t.cpds.browseConfirm,
+          style: const TextStyle(color: Colors.white70, fontSize: 13),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(
+              t.tips.cancel,
+              style: const TextStyle(color: Colors.white70),
+            ),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(t.tips.ok),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 清空“注钥管理”页面的数据（父表 + 明细表）。
+  void _clearKeyLoaderData() {
+    DatabaseManager.instance.removeAll<KeyLoaderDetailsEntity>();
+    DatabaseManager.instance.removeAll<KeyLoadersEntity>();
+  }
+
+  /// 判断“注钥管理”是否有数据（父表或明细表任一非空）。
+  bool _hasKeyLoaderData() {
+    return DatabaseManager.instance.count<KeyLoadersEntity>() > 0 ||
+        DatabaseManager.instance.count<KeyLoaderDetailsEntity>() > 0;
   }
 
   Future<void> _parse() async {
@@ -222,10 +294,7 @@ class _CpdsPageState extends State<CpdsPage> {
       final state = await CpdsApi.parsePackage();
       _applyState(state);
     } catch (error) {
-      _showError(
-        error,
-        title: importFailedTitle,
-      );
+      _showError(error, title: importFailedTitle);
     } finally {
       if (mounted) {
         setState(() {
@@ -262,21 +331,18 @@ class _CpdsPageState extends State<CpdsPage> {
   }
 
   Future<void> _distribute() async {
-    if (!_state.canDistribute || _state.active) return;
+    if (_distributing || _state.active || !_state.canDistribute) return;
+    _distributing = true;
     final distributionFailedTitle = CpdsMessages.resultTitle(
       context,
       CpdsActiveState.failed,
     );
     try {
-      SimplePopup.loading();
       _applyState(await CpdsApi.startDistribution());
     } catch (error) {
-      _showError(
-        error,
-        title: distributionFailedTitle,
-      );
+      _showError(error, title: distributionFailedTitle);
     } finally {
-      SimplePopup.hideLoading();
+      _distributing = false;
     }
   }
 
@@ -303,11 +369,7 @@ class _CpdsPageState extends State<CpdsPage> {
     final items = (json['items'] as List? ?? const []);
 
     final parentId = DatabaseManager.instance.put<KeyLoadersEntity>(
-      KeyLoadersEntity(
-        name: name,
-        createdAt: now,
-        updatedAt: now,
-      ),
+      KeyLoadersEntity(name: name, createdAt: now, updatedAt: now),
     );
 
     for (final rawItem in items) {
@@ -332,11 +394,12 @@ class _CpdsPageState extends State<CpdsPage> {
   }
 
   void _showError(Object error, {String? title}) {
-    final dialogTitle =
-        title ?? Translations.of(context).common.OperationError;
+    final dialogTitle = title ?? Translations.of(context).common.OperationError;
     if (error is CpdsException) {
       showDialog<void>(
         context: context,
+        useRootNavigator: false,
+        barrierDismissible: true,
         builder: (dialogContext) => CpdsErrorDialog(
           title: dialogTitle,
           error: error,
@@ -347,6 +410,8 @@ class _CpdsPageState extends State<CpdsPage> {
     }
     showDialog<void>(
       context: context,
+      useRootNavigator: false,
+      barrierDismissible: true,
       builder: (dialogContext) => AlertDialog(
         backgroundColor: const Color(0xFF20262D),
         title: Text(
@@ -369,18 +434,15 @@ class _CpdsPageState extends State<CpdsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    final page = Scaffold(
       backgroundColor: const Color(0xFF0E1114),
       body: LayoutBuilder(
         builder: (context, constraints) {
-          final leftWidth = constraints.maxWidth < 720
-              ? constraints.maxWidth * 0.56
-              : 717.0;
           return Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               SizedBox(
-                width: leftWidth,
+                width: 550.w,
                 child: CpdsPackagePanel(
                   state: _state,
                   uploading: _uploading,
@@ -414,5 +476,15 @@ class _CpdsPageState extends State<CpdsPage> {
         },
       ),
     );
+
+    // Flutter Windows 引擎的已知无障碍语义树 bug：选中节点触发整页重建时，
+    // 语义树中会出现孤儿节点，导致报错：
+    // "Failed to update ui::AXTree, error: N will not be in the tree and is not the new root"
+    // 该错误不影响视觉渲染与鼠标/键盘操作，但会让无障碍树冻结。
+    // 在 Windows 上排除本页语义即可消除此错误。
+    if (defaultTargetPlatform == TargetPlatform.windows) {
+      return ExcludeSemantics(child: page);
+    }
+    return page;
   }
 }

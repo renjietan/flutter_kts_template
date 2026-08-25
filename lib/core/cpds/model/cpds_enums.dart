@@ -7,7 +7,8 @@ enum CpdsDeviceType {
   ccu(5, 'CCU'),
   iec(6, 'IEC'),
   smallHandheld(7, 'SMALL_HANDHELD'),
-  ccuAudio(8, 'CCU_AUDIO');
+  ccuAudio(8, 'CCU_AUDIO'),
+  vehInter(9, 'VEH_INTER');
 
   const CpdsDeviceType(this.value, this.apiName);
 

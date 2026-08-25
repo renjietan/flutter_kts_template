@@ -100,9 +100,30 @@ class CpdsDevicePanel extends StatelessWidget {
                             fontSize: 12,
                             color: Color(0xFFB7BCC6),
                           ),
-                        ),
+                      ),
                     ],
                   ),
+                ),
+                BaseButton(
+                  label: t.cpds.refresh,
+                  width: 72,
+                  height: 32,
+                  isLoading: interfacesLoading,
+                  onPressed: state.active || interfacesLoading
+                      ? null
+                      : onRefreshInterfaces,
+                ),
+                const SizedBox(width: 8),
+                BaseButton(
+                  label: t.cpds.distribute,
+                  width: 88,
+                  height: 32,
+                  onPressed: state.active ||
+                          interfacesLoading ||
+                          selectedInterfaceName.isEmpty ||
+                          !canDistribute
+                      ? null
+                      : onDistribute,
                 ),
               ],
             ),
@@ -113,10 +134,7 @@ class CpdsDevicePanel extends StatelessWidget {
             automatic: automaticInterface,
             loading: interfacesLoading,
             disabled: state.active,
-            canDistribute: canDistribute,
             onSelected: onSelectInterface,
-            onRefresh: onRefreshInterfaces,
-            onDistribute: onDistribute,
           ),
           _StageStrip(activeIndex: stageIndex),
           if (transferring) ...[
@@ -239,6 +257,7 @@ class CpdsDevicePanel extends StatelessWidget {
       CpdsDeviceType.hf,
       CpdsDeviceType.smallHandheld,
       CpdsDeviceType.ccu,
+      CpdsDeviceType.vehInter,
       CpdsDeviceType.server,
       CpdsDeviceType.iec,
     ];
@@ -271,6 +290,7 @@ class CpdsDevicePanel extends StatelessWidget {
       'multiBandRadio' => t.cpds.deviceTypes.multiBandRadio,
       'multiBandHandheld' => t.cpds.deviceTypes.multiBandHandheld,
       'ccuGroup' => t.cpds.deviceTypes.ccuGroup,
+      'vehInter' => t.cpds.deviceTypes.vehInter,
       'iec' => t.cpds.deviceTypes.iec,
       'smallHandheld' => t.cpds.deviceTypes.smallHandheld,
       _ => t.cpds.deviceTypes.unknown,
@@ -283,6 +303,7 @@ class CpdsDevicePanel extends StatelessWidget {
     CpdsDeviceType.multiBandRadio => 'multiBandRadio',
     CpdsDeviceType.multiBandHandheld => 'multiBandHandheld',
     CpdsDeviceType.ccu => 'ccuGroup',
+    CpdsDeviceType.vehInter => 'vehInter',
     CpdsDeviceType.iec => 'iec',
     CpdsDeviceType.smallHandheld => 'smallHandheld',
     CpdsDeviceType.ccuAudio => 'ccuGroup',
@@ -295,6 +316,7 @@ class CpdsDevicePanel extends StatelessWidget {
     'multiBandRadio' => CpdsDeviceType.multiBandRadio,
     'multiBandHandheld' => CpdsDeviceType.multiBandHandheld,
     'ccuGroup' => CpdsDeviceType.ccu,
+    'vehInter' => CpdsDeviceType.vehInter,
     'iec' => CpdsDeviceType.iec,
     'smallHandheld' => CpdsDeviceType.smallHandheld,
     _ => CpdsDeviceType.unspecified,
@@ -373,6 +395,7 @@ class _CpdsFutureWarriorPanelState extends State<CpdsFutureWarriorPanel> {
       CpdsDeviceType.hf,
       CpdsDeviceType.smallHandheld,
       CpdsDeviceType.ccu,
+      CpdsDeviceType.vehInter,
       CpdsDeviceType.server,
       CpdsDeviceType.iec,
     ];
@@ -397,6 +420,7 @@ class _CpdsFutureWarriorPanelState extends State<CpdsFutureWarriorPanel> {
       CpdsDeviceType.multiBandRadio => t.cpds.deviceTypes.multiBandRadio,
       CpdsDeviceType.multiBandHandheld => t.cpds.deviceTypes.multiBandHandheld,
       CpdsDeviceType.ccu => t.cpds.deviceTypes.ccuGroup,
+      CpdsDeviceType.vehInter => t.cpds.deviceTypes.vehInter,
       CpdsDeviceType.iec => t.cpds.deviceTypes.iec,
       CpdsDeviceType.smallHandheld => t.cpds.deviceTypes.smallHandheld,
       CpdsDeviceType.unspecified => t.cpds.deviceTypes.unknown,
@@ -757,6 +781,7 @@ class _DeviceRow extends StatelessWidget {
       CpdsDeviceType.multiBandHandheld => t.cpds.deviceTypes.multiBandHandheld,
       CpdsDeviceType.ccu => t.cpds.deviceTypes.ccu,
       CpdsDeviceType.ccuAudio => t.cpds.deviceTypes.ccuAudio,
+      CpdsDeviceType.vehInter => t.cpds.deviceTypes.vehInter,
       CpdsDeviceType.iec => t.cpds.deviceTypes.iec,
       CpdsDeviceType.smallHandheld => t.cpds.deviceTypes.smallHandheld,
       CpdsDeviceType.unspecified => t.cpds.deviceTypes.unknown,

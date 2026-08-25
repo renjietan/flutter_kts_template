@@ -88,6 +88,7 @@ class CpdsMessages {
       CpdsDeviceType.multiBandHandheld => 'PMR200',
       CpdsDeviceType.ccu => zh ? 'CCU-Main' : 'CCU-Main',
       CpdsDeviceType.ccuAudio => zh ? 'CCU-Audio' : 'CCU-Audio',
+      CpdsDeviceType.vehInter => 'VehInter',
       CpdsDeviceType.iec => 'IEC',
       CpdsDeviceType.smallHandheld => zh ? 'Small Handheld' : 'Small Handheld',
       CpdsDeviceType.unspecified => zh ? '未知设备' : 'Unknown device',

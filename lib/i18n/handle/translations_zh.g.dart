@@ -85,6 +85,9 @@ class Translations$common$zh {
 	/// zh: '取消'
 	String get cancel => '取消';
 
+	/// zh: '关闭'
+	String get close => '关闭';
+
 	/// zh: '无数据'
 	String get noData => '无数据';
 
@@ -433,6 +436,9 @@ class Translations$cpds$zh {
 	/// zh: '请选择通信参数包'
 	String get filePlaceholder => '请选择通信参数包';
 
+	/// zh: '重新上传文件，将清空【注钥管理】的数据，确认是否继续？'
+	String get browseConfirm => '重新上传文件，将清空【注钥管理】的数据，确认是否继续？';
+
 	/// zh: '网络节点'
 	String get nodesTitle => '网络节点';
 
@@ -476,6 +482,7 @@ class Translations$cpds$zh {
 	late final Translations$cpds$saveDialog$zh saveDialog = Translations$cpds$saveDialog$zh.internal(_root);
 	late final Translations$cpds$setPassword$zh setPassword = Translations$cpds$setPassword$zh.internal(_root);
 	late final Translations$cpds$export$zh export = Translations$cpds$export$zh.internal(_root);
+	late final Translations$cpds$exportProgress$zh exportProgress = Translations$cpds$exportProgress$zh.internal(_root);
 }
 
 // Path: app.appbar
@@ -863,6 +870,9 @@ class Translations$cpds$deviceTypes$zh {
 	/// zh: 'CCU'
 	String get ccuGroup => 'CCU';
 
+	/// zh: 'VehInter'
+	String get vehInter => 'VehInter';
+
 	/// zh: 'IEC'
 	String get iec => 'IEC';
 
@@ -949,6 +959,45 @@ class Translations$cpds$export$zh {
 
 	/// zh: '勾选的行中存在未选择配对电台，请先选择'
 	String get radioRequired => '勾选的行中存在未选择配对电台，请先选择';
+}
+
+// Path: cpds.exportProgress
+class Translations$cpds$exportProgress$zh {
+	Translations$cpds$exportProgress$zh.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// zh: '开始'
+	String get stepStart => '开始';
+
+	/// zh: '打包'
+	String get stepPack => '打包';
+
+	/// zh: '整合'
+	String get stepMerge => '整合';
+
+	/// zh: '加密'
+	String get stepEncrypt => '加密';
+
+	/// zh: '开始'
+	String get detailStart => '开始';
+
+	/// zh: '开始压缩为 tar 包'
+	String get detailStartPack => '开始压缩为 tar 包';
+
+	/// zh: '第 {index} 个压缩包打包成功'
+	String detailPackSuccess({required Object index}) => '第 ${index} 个压缩包打包成功';
+
+	/// zh: '第 {index} 个压缩包打包失败'
+	String detailPackFail({required Object index}) => '第 ${index} 个压缩包打包失败';
+
+	/// zh: '开始整合，将多个压缩包合并为 ZIP 包'
+	String get detailMerge => '开始整合，将多个压缩包合并为 ZIP 包';
+
+	/// zh: '对 ZIP 包进行加密'
+	String get detailEncrypt => '对 ZIP 包进行加密';
 }
 
 // Path: pager.injectParams.steps

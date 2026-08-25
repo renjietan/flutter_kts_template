@@ -7,6 +7,7 @@ app:
 common:
   confirm: Confirm
   cancel: Cancel
+  close: Close
   noData: No data
   OperationSuccess: Operation Successful
   OperationError: Operation failed
@@ -176,6 +177,7 @@ cpds:
   browse: Browse
   parse: Parse
   filePlaceholder: Select a communication package
+  browseConfirm: Re-uploading a file will clear all data in Key Manager. Continue?
   nodesTitle: Net Node
   nodesEmpty: Parse a package to display nodes
   currentTitle: Current Node
@@ -215,6 +217,7 @@ cpds:
     ccu: CCU-Main
     ccuAudio: CCU-Audio
     ccuGroup: CCU
+    vehInter: VehInter
     iec: IEC
     smallHandheld: Small Handheld
     unknown: Unknown device
@@ -238,3 +241,14 @@ cpds:
     fileNotFound: "File not found: {path}"
     failed: "Export failed: {error}"
     radioRequired: Some selected rows have no matching radio. Please select one
+  exportProgress:
+    stepStart: Start
+    stepPack: Package
+    stepMerge: Merge
+    stepEncrypt: Encrypt
+    detailStart: Start
+    detailStartPack: Start packaging to tar
+    detailPackSuccess: Package {index} packaged successfully
+    detailPackFail: Package {index} packaging failed
+    detailMerge: Merging tar packages into a ZIP package
+    detailEncrypt: Encrypting the ZIP package

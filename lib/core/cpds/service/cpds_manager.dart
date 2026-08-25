@@ -409,6 +409,12 @@ class CpdsManager {
       throw CpdsException(CpdsErrorCode.busy);
     }
     controller.add(proceed);
+    // 等待状态机处理决定并结束本次会话，避免返回旧的 awaiting 状态，
+    // 也避免前端 _state.active 仍为 true 导致页面按钮被禁用。
+    final deadline = DateTime.now().add(const Duration(seconds: 3));
+    while (_machine != null && DateTime.now().isBefore(deadline)) {
+      await Future<void>.delayed(const Duration(milliseconds: 20));
+    }
   }
 
   void _validateUploadFileName(String name) {
