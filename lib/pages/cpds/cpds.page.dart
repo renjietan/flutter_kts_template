@@ -11,6 +11,8 @@ import 'package:flutter_kts_template/core/databaseManager/databaseManager.dart';
 import 'package:flutter_kts_template/core/entities/keyLoaderDetails/keyLoaderDetailsEntity.dart';
 import 'package:flutter_kts_template/core/entities/keyLoaders/keyLoadersEntity.dart';
 import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
+import 'package:flutter_kts_template/objectbox.g.dart';
+import 'package:flutter_kts_template/pages/cpds/widgets/cpds_package_panel.dart';
 import 'package:flutter_kts_template/utils/files/pick_files/FileSelector.dart';
 import 'package:flutter_kts_template/utils/shared.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -18,7 +20,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'widgets/cpds_device_panel.dart';
 import 'widgets/cpds_dialogs.dart';
 import 'widgets/cpds_messages.dart';
-import 'widgets/cpds_package_panel.dart';
 import 'widgets/cpds_save_dialog.dart';
 
 class CpdsPage extends StatefulWidget {
@@ -367,6 +368,17 @@ class _CpdsPageState extends State<CpdsPage> {
     final nodeId = json['nodeId'] as String;
     final parentIdPath = json['parentIdPath'] as String? ?? '';
     final items = (json['items'] as List? ?? const []);
+
+    // 名称重复校验：与已有“密钥枪”名称冲突时不允许保存。
+    final duplicated = DatabaseManager.instance
+        .box<KeyLoadersEntity>()
+        .query(KeyLoadersEntity_.name.equals(name))
+        .build()
+        .findFirst();
+    if (duplicated != null) {
+      SimplePopup.warn(Translations.of(context).entity.sameName);
+      return;
+    }
 
     final parentId = DatabaseManager.instance.put<KeyLoadersEntity>(
       KeyLoadersEntity(name: name, createdAt: now, updatedAt: now),

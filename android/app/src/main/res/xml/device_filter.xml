@@ -28,4 +28,7 @@
 
     <!-- 0x1A86 / 0x7523: CH340 -->
     <usb-device vendor-id="6790" product-id="29987" />
+
+    <!-- 0x1D6B / 0x0104: 公司自研注钥枪（Vendor Specific Bulk） -->
+    <usb-device vendor-id="7531" product-id="260" />
 </resources>

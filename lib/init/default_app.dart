@@ -14,6 +14,7 @@ import 'package:unified_popups/unified_popups.dart';
 
 import '../i18n/handle/translations.g.dart';
 import '../main.dart';
+import '../utils/keyboard_shortcut_recovery.dart';
 import '../utils/provider/provider.dart';
 import '../utils/shared.dart';
 
@@ -65,6 +66,8 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
+    // 修复 Windows 焦点切换丢 keyup 导致的 Ctrl+V 等快捷键失效。
+    KeyboardShortcutRecovery.install();
     // 关键：在第一帧绘制完成后移除原生启动页
     // 保证 Flutter 已经准备好显示内容了，不会闪烁
     WidgetsBinding.instance.addPostFrameCallback((_) {

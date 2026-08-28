@@ -48,7 +48,8 @@ class AppInit {
       // 窗口在按键期间失焦会丢失 WM_KEYUP，焦点恢复后再次按下会触发
       // hardware_keyboard.dart 里“KeyDownEvent already pressed”的断言。
       // 该断言仅在 debug/profile 生效且非致命，过滤掉以免污染错误日志。
-      // 功能层面的“首次按键被吞”只能通过升级 Flutter 引擎解决。
+      // 功能层面（keydown 被丢导致 Ctrl+V 等失效）已由
+      // KeyboardShortcutRecovery 在应用层兜底恢复；彻底修复需升级引擎。
       GlobalLogger.logDebug(
         'Ignored known benign Windows keyboard assertion: ${details.exception}',
       );

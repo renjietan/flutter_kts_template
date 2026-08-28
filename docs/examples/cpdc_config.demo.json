@@ -1,0 +1,14 @@
+{
+  "deviceTypes": [
+    "CCU",
+    "Server"
+  ],
+  "esn": "",
+  "txbzName": "",
+  "txbzHash": "",
+  "nodeId": "",
+  "deviceIds": {
+    "CCU": "",
+    "Server": ""
+  }
+}

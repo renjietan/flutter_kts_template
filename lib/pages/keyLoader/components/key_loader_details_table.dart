@@ -1,12 +1,15 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:archive/archive_io.dart';
 import 'package:composable_data_table/composable_data_table.dart';
+import 'package:crypto/crypto.dart';
 import 'package:dage/dage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_kts_template/api/KeyLoaders.api.dart';
+import 'package:flutter_kts_template/api/RadiosManagerApi.dart';
 import 'package:flutter_kts_template/components/DropDown/simple.dropdown.dart';
 import 'package:flutter_kts_template/components/button/base.button.dart';
 import 'package:flutter_kts_template/components/loading/simple.loading.dart';
@@ -15,6 +18,8 @@ import 'package:flutter_kts_template/components/step/step.progress.model.dart';
 import 'package:flutter_kts_template/config/config.dart';
 import 'package:flutter_kts_template/core/entities/keyLoaderDetails/keyLoaderDetailsEntity.dart';
 import 'package:flutter_kts_template/core/entities/keyLoaders/keyLoadersEntity.dart';
+import 'package:flutter_kts_template/core/entities/radios/radiosEntity.dart';
+import 'package:flutter_kts_template/core/rtc/managers/android-usb/android.usb.bulk.manager.dart';
 import 'package:flutter_kts_template/core/utils/director.dart';
 import 'package:flutter_kts_template/core/utils/time.dart';
 import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
@@ -49,12 +54,15 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
   final Set<String> _selectedIds = {};
   Future<List<KeyLoaderDetailsEntity>>? _future;
   RadiosProvider? _radiosProvider;
+  List<RadiosEntity> _radios = [];
+  bool _exporting = false;
 
   @override
   void initState() {
     super.initState();
     _theme = _buildTheme();
     _future = _load();
+    _loadRadios();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       final provider = context.read<RadiosProvider>();
@@ -65,9 +73,22 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
 
   void _onRadiosChanged() {
     if (!mounted) return;
+    _loadRadios();
     setState(() {
       _future = _load();
     });
+  }
+
+  Future<void> _loadRadios() async {
+    try {
+      final response = await RadiosManagerApi.getAll();
+      if (!mounted) return;
+      setState(() {
+        _radios = response.data.list;
+      });
+    } catch (error) {
+      GlobalLogger.logError('load radios failed: $error');
+    }
   }
 
   @override
@@ -165,7 +186,147 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
     });
   }
 
+  /// USB 上传：连接注钥枪 → PAD_LIGHT 握手 → PC_UPLOAD 协议逐个发送 .pad 文件。
+  Future<bool> _usbUploadPads(List<String> padPaths) async {
+    if (!Platform.isAndroid) {
+      // 注钥枪 USB 通信暂仅支持 Android PAD，其他平台跳过。
+      return true;
+    }
+    try {
+      if (!await AndroidUsbBulkManager.instance.hasPermission()) {
+        final granted = await AndroidUsbBulkManager.instance
+            .requestPermission()
+            .timeout(const Duration(seconds: 30), onTimeout: () => false);
+        if (!granted) {
+          SimplePopup.error('未授予 USB 权限');
+          return false;
+        }
+      }
+
+      if (!await AndroidUsbBulkManager.instance.connect()) {
+        SimplePopup.error('USB 连接失败');
+        return false;
+      }
+
+      final reader = _UsbLineReader()..start();
+      try {
+        // 1) PAD_LIGHT 握手
+        await AndroidUsbBulkManager.instance.write(
+          Uint8List.fromList(utf8.encode('PAD_LIGHT\n')),
+        );
+        final lightReply = await _waitReply(reader);
+        if (lightReply == null) return false;
+        GlobalLogger.logInfo('USB_PAD_LIGHT_REPLY $lightReply');
+        if (!lightReply.contains('FILE_OK')) {
+          SimplePopup.error('注钥枪未就绪');
+          return false;
+        }
+
+        // 2) PC_UPLOAD
+        await AndroidUsbBulkManager.instance.write(
+          Uint8List.fromList(utf8.encode('PC_UPLOAD\n')),
+        );
+        final readyReply = await _waitReply(reader);
+        if (readyReply == null) return false;
+        GlobalLogger.logInfo('USB_PC_UPLOAD_REPLY $readyReply');
+        if (readyReply != 'READY') {
+          SimplePopup.error('注钥枪未响应 READY');
+          return false;
+        }
+
+        // 3) 循环发送每个文件
+        const chunkSize = 4 * 1024;
+        for (final path in padPaths) {
+          final file = File(path);
+          final fileBytes = await file.readAsBytes();
+          final fileName = p.basename(path);
+          final nameBytes = utf8.encode(fileName);
+
+          await AndroidUsbBulkManager.instance.write(_u32le(nameBytes.length));
+          await AndroidUsbBulkManager.instance.write(
+            Uint8List.fromList(nameBytes),
+          );
+          await AndroidUsbBulkManager.instance.write(_u64le(fileBytes.length));
+
+          for (var offset = 0; offset < fileBytes.length; offset += chunkSize) {
+            var end = offset + chunkSize;
+            if (end > fileBytes.length) end = fileBytes.length;
+            await AndroidUsbBulkManager.instance.write(
+              Uint8List.sublistView(fileBytes, offset, end),
+            );
+          }
+
+          final md5Bytes = md5.convert(fileBytes).bytes;
+          await AndroidUsbBulkManager.instance.write(
+            Uint8List.fromList(md5Bytes),
+          );
+
+          // 4) 等待校验回复
+          final reply = await _waitReply(reader);
+          if (reply == null) return false;
+          GlobalLogger.logInfo('USB_FILE_REPLY $reply');
+          if (reply.contains('FILE_OK')) {
+            continue; // 校验通过，发送下一包
+          }
+          SimplePopup.error(_usbUploadErrorText(reply));
+          return false;
+        }
+
+        SimplePopup.success('注钥枪接收成功');
+        return true;
+      } finally {
+        reader.stop();
+        await AndroidUsbBulkManager.instance.disconnect();
+      }
+    } catch (e) {
+      GlobalLogger.logError('USB_UPLOAD_ERROR $e');
+      try {
+        await AndroidUsbBulkManager.instance.disconnect();
+      } catch (_) {
+        // ignore
+      }
+      SimplePopup.error('USB 传输异常');
+      return false;
+    }
+  }
+
+  /// 等待注钥枪回复，3 秒超时；超时则弹窗提示并返回 null。
+  Future<String?> _waitReply(_UsbLineReader reader) async {
+    try {
+      return await reader.nextLine(timeout: const Duration(seconds: 3));
+    } on TimeoutException {
+      SimplePopup.error('注钥枪回复超时，请重新插拔注钥枪后重试');
+      return null;
+    }
+  }
+
+  String _usbUploadErrorText(String reply) {
+    if (reply.contains('MD5')) {
+      return 'MD5 校验失败，请重新插拔注钥枪后重试';
+    }
+    if (reply.contains('保存')) {
+      return '注钥枪保存失败，请重新插拔注钥枪后重试';
+    }
+    return '注钥枪传输失败：$reply，请重新插拔注钥枪后重试';
+  }
+
   Future<void> _exportSelected() async {
+    if (_exporting) return;
+    setState(() {
+      _exporting = true;
+    });
+    try {
+      await _runExport();
+    } finally {
+      if (mounted) {
+        setState(() {
+          _exporting = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _runExport() async {
     final selectedRows = _allData
         .where((item) => _selectedIds.contains(item.id.toString()))
         .toList();
@@ -205,7 +366,16 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
       ),
     );
 
-    await _extractAndPrintPackage(selectedRows, password, controller);
+    final padPath = await _extractAndPrintPackage(
+      selectedRows,
+      password,
+      controller,
+    );
+    if (!mounted) return;
+    if (padPath == null) return;
+
+    _closeProgressDialog();
+    await _usbUploadPads([padPath]);
   }
 
   void _closeProgressDialog() {
@@ -216,13 +386,14 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
     }
   }
 
-  Future<void> _extractAndPrintPackage(
+  Future<String?> _extractAndPrintPackage(
     List<KeyLoaderDetailsEntity> selectedRows,
     String password,
     StepProgressController controller,
   ) async {
     const failColor = Color(0xFFF15B64);
     const successColor = Colors.white;
+    String? padPath;
 
     // 步骤 0：开始
     controller.setStep(0);
@@ -234,7 +405,7 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
       if (zipPath == null) {
         SimplePopup.error(t.cpds.export.zipNotFound(path: uploadPath));
         GlobalLogger.logError('EXPORT_ZIP_NOT_FOUND in $uploadPath');
-        return;
+        return null;
       }
       GlobalLogger.logInfo('EXPORT_ZIP $zipPath');
 
@@ -313,7 +484,6 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
           t.cpds.exportProgress.detailEncrypt,
           number: '3',
         );
-        String? padPath;
         try {
           padPath = await _encryptZipToPad(packagePath, password, curTime);
         } catch (_) {
@@ -338,9 +508,11 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
           }
         }
       }
+      return padPath;
     } catch (e, stackTrace) {
       SimplePopup.error(t.cpds.export.failed(error: e.toString()));
       GlobalLogger.logError('EXPORT_FAILED $e\n$stackTrace');
+      return null;
     }
   }
 
@@ -536,7 +708,8 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
               BaseButton(
                 label: Translations.of(context).button.injectEncrypt.export,
                 width: 70,
-                onPressed: () => _exportSelected(),
+                isLoading: _exporting,
+                onPressed: _exporting ? null : () => _exportSelected(),
               ),
             ],
           ),
@@ -597,7 +770,7 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
     BuildContext context,
   ) {
     final t = Translations.of(context);
-    final radios = context.read<RadiosProvider>().radios;
+    final radios = _radios;
 
     return [
       ColumnDefinition<KeyLoaderDetailsEntity>(
@@ -690,4 +863,71 @@ class _FixedPassphrase extends PassphraseProvider {
 
   @override
   Future<String> passphrase() async => password;
+}
+
+Uint8List _u32le(int value) {
+  final data = ByteData(4);
+  data.setUint32(0, value, Endian.little);
+  return data.buffer.asUint8List();
+}
+
+Uint8List _u64le(int value) {
+  final data = ByteData(8);
+  data.setUint64(0, value, Endian.little);
+  return data.buffer.asUint8List();
+}
+
+/// 按 `\n` 分帧的 USB 行读取器，用于按协议逐行等待设备回复。
+class _UsbLineReader {
+  final List<int> _buffer = [];
+  final List<String> _pending = [];
+  final List<Completer<String>> _waiters = [];
+  StreamSubscription<Uint8List>? _sub;
+
+  void start() {
+    _sub = AndroidUsbBulkManager.instance.listenData().listen(_onData);
+  }
+
+  void _onData(Uint8List data) {
+    if (data.isEmpty) return;
+    _buffer.addAll(data);
+    while (true) {
+      final idx = _buffer.indexOf(0x0A); // \n
+      if (idx < 0) break;
+      final lineBytes = _buffer.sublist(0, idx);
+      _buffer.removeRange(0, idx + 1);
+      final line = utf8.decode(lineBytes, allowMalformed: true).trim();
+      if (line.isEmpty) continue;
+      _deliver(line);
+    }
+  }
+
+  void _deliver(String line) {
+    if (_waiters.isNotEmpty) {
+      _waiters.removeAt(0).complete(line);
+    } else {
+      _pending.add(line);
+    }
+  }
+
+  Future<String> nextLine({Duration timeout = const Duration(seconds: 10)}) {
+    if (_pending.isNotEmpty) {
+      return Future.value(_pending.removeAt(0));
+    }
+    final completer = Completer<String>();
+    _waiters.add(completer);
+    return completer.future.timeout(timeout);
+  }
+
+  void stop() {
+    _sub?.cancel();
+    _sub = null;
+    _pending.clear();
+    for (final waiter in _waiters) {
+      if (!waiter.isCompleted) {
+        waiter.completeError(StateError('reader stopped'));
+      }
+    }
+    _waiters.clear();
+  }
 }
