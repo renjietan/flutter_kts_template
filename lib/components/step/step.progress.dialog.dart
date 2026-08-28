@@ -7,12 +7,10 @@ class StepProgressDialog extends StatefulWidget {
   const StepProgressDialog({
     super.key,
     required this.controller,
-    required this.stepLabels,
     this.onClose,
   });
 
   final StepProgressController controller;
-  final List<String> stepLabels;
   final VoidCallback? onClose;
 
   @override
@@ -23,6 +21,7 @@ class _StepProgressDialogState extends State<StepProgressDialog> {
   static const _accent = Color(0xFF00A2E9);
   static const _dim = Color(0xFF8A94A6);
   static const _line = Color(0xFF353A41);
+  static const _danger = Color(0xFFF15B64);
 
   final ScrollController _scrollController = ScrollController();
   bool _allowPop = false;
@@ -100,7 +99,7 @@ class _StepProgressDialogState extends State<StepProgressDialog> {
     return ListenableBuilder(
       listenable: widget.controller,
       builder: (context, _) {
-        final labels = widget.stepLabels;
+        final labels = widget.controller.stepLabels;
         return Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -111,7 +110,9 @@ class _StepProgressDialogState extends State<StepProgressDialog> {
                     padding: const EdgeInsets.only(top: 13),
                     child: Container(
                       height: 2,
-                      color: i <= widget.controller.activeStep
+                      color: i == widget.controller.terminatedStep
+                          ? _danger
+                          : i <= widget.controller.activeStep
                           ? _accent
                           : _line,
                     ),
@@ -126,7 +127,24 @@ class _StepProgressDialogState extends State<StepProgressDialog> {
   }
 
   Widget _buildStepItem(int index) {
+    final terminated = index == widget.controller.terminatedStep;
     final active = index <= widget.controller.activeStep;
+    final circleBorder = terminated
+        ? _danger
+        : active
+        ? _accent
+        : _line;
+    final circleFill = terminated
+        ? _danger
+        : active
+        ? _accent
+        : Colors.transparent;
+    final numberColor = terminated || active ? Colors.white : _dim;
+    final labelColor = terminated
+        ? _danger
+        : active
+        ? Colors.white
+        : _dim;
     return SizedBox(
       width: 64,
       child: Column(
@@ -136,11 +154,8 @@ class _StepProgressDialogState extends State<StepProgressDialog> {
             height: 28,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: active ? _accent : Colors.transparent,
-              border: Border.all(
-                color: active ? _accent : _line,
-                width: 1.5,
-              ),
+              color: circleFill,
+              border: Border.all(color: circleBorder, width: 1.5),
             ),
             alignment: Alignment.center,
             child: Text(
@@ -148,17 +163,17 @@ class _StepProgressDialogState extends State<StepProgressDialog> {
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
-                color: active ? Colors.white : _dim,
+                color: numberColor,
               ),
             ),
           ),
           const SizedBox(height: 6),
           Text(
-            widget.stepLabels[index],
+            widget.controller.stepLabels[index],
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 12,
-              color: active ? Colors.white : _dim,
+              color: labelColor,
             ),
           ),
         ],

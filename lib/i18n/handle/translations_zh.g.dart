@@ -483,6 +483,7 @@ class Translations$cpds$zh {
 	late final Translations$cpds$setPassword$zh setPassword = Translations$cpds$setPassword$zh.internal(_root);
 	late final Translations$cpds$export$zh export = Translations$cpds$export$zh.internal(_root);
 	late final Translations$cpds$exportProgress$zh exportProgress = Translations$cpds$exportProgress$zh.internal(_root);
+	late final Translations$cpds$usbProgress$zh usbProgress = Translations$cpds$usbProgress$zh.internal(_root);
 }
 
 // Path: app.appbar
@@ -998,6 +999,93 @@ class Translations$cpds$exportProgress$zh {
 
 	/// zh: '对 ZIP 包进行加密'
 	String get detailEncrypt => '对 ZIP 包进行加密';
+}
+
+// Path: cpds.usbProgress
+class Translations$cpds$usbProgress$zh {
+	Translations$cpds$usbProgress$zh.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// zh: '权限'
+	String get stepPermission => '权限';
+
+	/// zh: '连接'
+	String get stepConnect => '连接';
+
+	/// zh: '握手'
+	String get stepHandshake => '握手';
+
+	/// zh: '准备'
+	String get stepReady => '准备';
+
+	/// zh: '传输'
+	String get stepTransfer => '传输';
+
+	/// zh: '完成'
+	String get stepComplete => '完成';
+
+	/// zh: 'USB'
+	String get stepUsb => 'USB';
+
+	/// zh: '已完成'
+	String get completed => '已完成';
+
+	/// zh: '已终止'
+	String get terminated => '已终止';
+
+	/// zh: '检查 USB 权限'
+	String get detailPermissionStart => '检查 USB 权限';
+
+	/// zh: '连接注钥枪'
+	String get detailConnectStart => '连接注钥枪';
+
+	/// zh: '连接成功'
+	String get detailConnectSuccess => '连接成功';
+
+	/// zh: '连接失败'
+	String get detailConnectFail => '连接失败';
+
+	/// zh: '发送 PAD_LIGHT，等待 FILE_OK'
+	String get detailHandshakeStart => '发送 PAD_LIGHT，等待 FILE_OK';
+
+	/// zh: '握手成功'
+	String get detailHandshakeSuccess => '握手成功';
+
+	/// zh: '握手超时'
+	String get detailHandshakeTimeout => '握手超时';
+
+	/// zh: '握手失败'
+	String get detailHandshakeFail => '握手失败';
+
+	/// zh: '发送 PC_UPLOAD，等待 READY'
+	String get detailReadyStart => '发送 PC_UPLOAD，等待 READY';
+
+	/// zh: '设备已就绪'
+	String get detailReadySuccess => '设备已就绪';
+
+	/// zh: '准备超时'
+	String get detailReadyTimeout => '准备超时';
+
+	/// zh: '准备失败'
+	String get detailReadyFail => '准备失败';
+
+	/// zh: '分包发送'
+	String get detailTransferStart => '分包发送';
+
+	/// zh: '注钥枪接收成功'
+	String get detailComplete => '注钥枪接收成功';
+
+	/// zh: '第 {index} 包 发送成功'
+	String detailPacketSuccess({required Object index}) => '第 ${index} 包 发送成功';
+
+	/// zh: '第 {index} 包 发送失败'
+	String detailPacketFail({required Object index}) => '第 ${index} 包 发送失败';
+
+	/// zh: 'USB 传输异常'
+	String get detailError => 'USB 传输异常';
 }
 
 // Path: pager.injectParams.steps

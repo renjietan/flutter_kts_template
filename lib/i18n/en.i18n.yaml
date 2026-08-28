@@ -252,3 +252,30 @@ cpds:
     detailPackFail: Package {index} packaging failed
     detailMerge: Merging tar packages into a ZIP package
     detailEncrypt: Encrypting the ZIP package
+  usbProgress:
+    stepPermission: Permission
+    stepConnect: Connect
+    stepHandshake: Handshake
+    stepReady: Ready
+    stepTransfer: Transfer
+    stepComplete: Complete
+    stepUsb: USB
+    completed: Completed
+    terminated: Terminated
+    detailPermissionStart: Checking USB permission
+    detailConnectStart: Connecting key loader
+    detailConnectSuccess: Connected
+    detailConnectFail: Connection failed
+    detailHandshakeStart: Sending PAD_LIGHT, waiting for FILE_OK
+    detailHandshakeSuccess: Handshake succeeded
+    detailHandshakeTimeout: Handshake timed out
+    detailHandshakeFail: Handshake failed
+    detailReadyStart: Sending PC_UPLOAD, waiting for READY
+    detailReadySuccess: Device is ready
+    detailReadyTimeout: Ready timed out
+    detailReadyFail: Ready failed
+    detailTransferStart: Chunked sending
+    detailComplete: Key loader received successfully
+    detailPacketSuccess: Packet {index} sent successfully
+    detailPacketFail: Packet {index} send failed
+    detailError: USB transfer error

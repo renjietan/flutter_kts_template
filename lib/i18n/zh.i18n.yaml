@@ -252,3 +252,30 @@ cpds:
     detailPackFail: 第 {index} 个压缩包打包失败
     detailMerge: 开始整合，将多个压缩包合并为 ZIP 包
     detailEncrypt: 对 ZIP 包进行加密
+  usbProgress:
+    stepPermission: 权限
+    stepConnect: 连接
+    stepHandshake: 握手
+    stepReady: 准备
+    stepTransfer: 传输
+    stepComplete: 完成
+    stepUsb: USB
+    completed: 已完成
+    terminated: 已终止
+    detailPermissionStart: 检查 USB 权限
+    detailConnectStart: 连接注钥枪
+    detailConnectSuccess: 连接成功
+    detailConnectFail: 连接失败
+    detailHandshakeStart: 发送 PAD_LIGHT，等待 FILE_OK
+    detailHandshakeSuccess: 握手成功
+    detailHandshakeTimeout: 握手超时
+    detailHandshakeFail: 握手失败
+    detailReadyStart: 发送 PC_UPLOAD，等待 READY
+    detailReadySuccess: 设备已就绪
+    detailReadyTimeout: 准备超时
+    detailReadyFail: 准备失败
+    detailTransferStart: 分包发送
+    detailComplete: 注钥枪接收成功
+    detailPacketSuccess: 第 {index} 包 发送成功
+    detailPacketFail: 第 {index} 包 发送失败
+    detailError: USB 传输异常

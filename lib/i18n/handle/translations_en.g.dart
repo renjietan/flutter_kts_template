@@ -330,6 +330,7 @@ class _Translations$cpds$en extends Translations$cpds$zh {
 	@override late final _Translations$cpds$setPassword$en setPassword = _Translations$cpds$setPassword$en._(_root);
 	@override late final _Translations$cpds$export$en export = _Translations$cpds$export$en._(_root);
 	@override late final _Translations$cpds$exportProgress$en exportProgress = _Translations$cpds$exportProgress$en._(_root);
+	@override late final _Translations$cpds$usbProgress$en usbProgress = _Translations$cpds$usbProgress$en._(_root);
 }
 
 // Path: app.appbar
@@ -645,6 +646,41 @@ class _Translations$cpds$exportProgress$en extends Translations$cpds$exportProgr
 	@override String detailPackFail({required Object index}) => 'Package ${index} packaging failed';
 	@override String get detailMerge => 'Merging tar packages into a ZIP package';
 	@override String get detailEncrypt => 'Encrypting the ZIP package';
+}
+
+// Path: cpds.usbProgress
+class _Translations$cpds$usbProgress$en extends Translations$cpds$usbProgress$zh {
+	_Translations$cpds$usbProgress$en._(TranslationsEn root) : this._root = root, super.internal(root);
+
+	final TranslationsEn _root; // ignore: unused_field
+
+	// Translations
+	@override String get stepPermission => 'Permission';
+	@override String get stepConnect => 'Connect';
+	@override String get stepHandshake => 'Handshake';
+	@override String get stepReady => 'Ready';
+	@override String get stepTransfer => 'Transfer';
+	@override String get stepComplete => 'Complete';
+	@override String get stepUsb => 'USB';
+	@override String get completed => 'Completed';
+	@override String get terminated => 'Terminated';
+	@override String get detailPermissionStart => 'Checking USB permission';
+	@override String get detailConnectStart => 'Connecting key loader';
+	@override String get detailConnectSuccess => 'Connected';
+	@override String get detailConnectFail => 'Connection failed';
+	@override String get detailHandshakeStart => 'Sending PAD_LIGHT, waiting for FILE_OK';
+	@override String get detailHandshakeSuccess => 'Handshake succeeded';
+	@override String get detailHandshakeTimeout => 'Handshake timed out';
+	@override String get detailHandshakeFail => 'Handshake failed';
+	@override String get detailReadyStart => 'Sending PC_UPLOAD, waiting for READY';
+	@override String get detailReadySuccess => 'Device is ready';
+	@override String get detailReadyTimeout => 'Ready timed out';
+	@override String get detailReadyFail => 'Ready failed';
+	@override String get detailTransferStart => 'Chunked sending';
+	@override String get detailComplete => 'Key loader received successfully';
+	@override String detailPacketSuccess({required Object index}) => 'Packet ${index} sent successfully';
+	@override String detailPacketFail({required Object index}) => 'Packet ${index} send failed';
+	@override String get detailError => 'USB transfer error';
 }
 
 // Path: pager.injectParams.steps
