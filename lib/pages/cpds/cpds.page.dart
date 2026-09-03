@@ -3,7 +3,9 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_kts_template/api/KeyLoaders.api.dart';
 import 'package:flutter_kts_template/api/cpds.api.dart';
+import 'package:flutter_kts_template/components/dialog/simple.tips.dialog.dart';
 import 'package:flutter_kts_template/components/loading/simple.loading.dart';
 import 'package:flutter_kts_template/core/cpds/cpds_exception.dart';
 import 'package:flutter_kts_template/core/cpds/model/cpds_enums.dart';
@@ -20,6 +22,7 @@ import 'package:flutter_kts_template/pages/cpds/widgets/cpds_package_panel.dart'
 import 'package:flutter_kts_template/utils/files/pick_files/FileSelector.dart';
 import 'package:flutter_kts_template/utils/shared.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 
 import 'widgets/cpds_device_panel.dart';
 import 'widgets/cpds_dialogs.dart';
@@ -323,6 +326,15 @@ class _CpdsPageState extends State<CpdsPage> {
     }
   }
 
+  Future<void> _selectFutureWarrior(String unitId) async {
+    if (_state.active) return;
+    try {
+      _applyState(await CpdsApi.selectFutureWarrior(unitId));
+    } catch (error) {
+      _showError(error);
+    }
+  }
+
   Future<void> _selectInterface(String? name) async {
     final value = name ?? '';
     if (_state.active || value == _selectedInterfaceName) return;
@@ -405,13 +417,43 @@ class _CpdsPageState extends State<CpdsPage> {
     }
   }
 
-  void _saveFutureWarrior(List<CpdsDevice> devices) {
+  Future<void> _saveFutureWarrior(
+    List<CpdsFutureWarriorDevice> devices,
+    String unitId,
+  ) async {
+    final t = Translations.of(context);
+
+    final List<KeyLoadersEntity> keyLoaders;
+    try {
+      final response = await KeyLoadersApi.getAll();
+      keyLoaders = List<KeyLoadersEntity>.from(response.data.list as List);
+    } catch (error) {
+      if (mounted) _showError(error);
+      return;
+    }
+    if (!mounted) return;
+
+    if (keyLoaders.isEmpty) {
+      SimpleTipsDialog(
+        context,
+        title: t.tips.title,
+        contentText: t.tips.paramsInject.noKeyLoader,
+        okText: t.cpds.goNow,
+        func: () {
+          context.go('/injectEncryptStick');
+        },
+      );
+      return;
+    }
+
+    if (!mounted) return;
     showDialog<void>(
       context: context,
       builder: (dialogContext) => CpdsFutureWarriorSaveDialog(
         devices: devices,
-        selectedNodeId: _state.selectedNodeId,
+        unitId: unitId,
         units: _state.package?.units ?? const [],
+        keyLoaders: keyLoaders,
         onSave: (json) {
           Navigator.of(dialogContext).pop();
           unawaited(_persistFutureWarrior(json));
@@ -422,33 +464,28 @@ class _CpdsPageState extends State<CpdsPage> {
 
   Future<void> _persistFutureWarrior(Map<String, dynamic> json) async {
     final now = DateTime.now();
-    final name = json['name'] as String;
-    final nodeId = json['nodeId'] as String;
+    final keyLoaderId = json['keyLoaderId'] as int?;
     final parentIdPath = json['parentIdPath'] as String? ?? '';
     final items = (json['items'] as List? ?? const []);
 
-    // 名称重复校验：与已有“密钥枪”名称冲突时不允许保存。
-    final duplicated = DatabaseManager.instance
-        .box<KeyLoadersEntity>()
-        .query(KeyLoadersEntity_.name.equals(name))
-        .build()
-        .findFirst();
-    if (duplicated != null) {
-      SimplePopup.warn(Translations.of(context).entity.sameName);
+    if (keyLoaderId == null) {
       return;
     }
 
-    final parentId = DatabaseManager.instance.put<KeyLoadersEntity>(
-      KeyLoadersEntity(name: name, createdAt: now, updatedAt: now),
-    );
+    // 先清除该注钥枪已有的子表数据，再写入本次勾选的数据（替换式保存）。
+    final detailBox = DatabaseManager.instance.box<KeyLoaderDetailsEntity>();
+    detailBox
+        .query(KeyLoaderDetailsEntity_.keyLoaderId.equals(keyLoaderId))
+        .build()
+        .remove();
 
     for (final rawItem in items) {
       if (rawItem is! Map) continue;
       final item = Map<String, dynamic>.from(rawItem);
       final detail = KeyLoaderDetailsEntity(
-        netNodePackageName: nodeId,
-        dcPackageName: item['communicationParameterPackage']?.toString() ?? '',
-        keyLoaderId: parentId,
+        netNodePackageName: item['netNodePackageName']?.toString() ?? '',
+        dcPackageName: item['dcPackageName']?.toString() ?? '',
+        keyLoaderId: keyLoaderId,
         radioId: item['radioId'] as int?,
         consumer: item['consumer']?.toString(),
         location: item['location']?.toString(),
@@ -518,6 +555,7 @@ class _CpdsPageState extends State<CpdsPage> {
                   uploading: _uploading,
                   onBrowse: _browse,
                   onSelectNode: _selectNode,
+                  onSelectFutureWarrior: _selectFutureWarrior,
                 ),
               ),
               const VerticalDivider(

@@ -47,6 +47,14 @@ class CpdsApi {
     return CpdsApplicationState.fromJson(_asMap(data));
   }
 
+  static Future<CpdsApplicationState> selectFutureWarrior(String unitId) async {
+    final data = await _post(
+      '/nodes/select-future-warrior',
+      data: {'unitId': unitId},
+    );
+    return CpdsApplicationState.fromJson(_asMap(data));
+  }
+
   static Future<List<CpdsNetworkInterface>> listNetworkInterfaces() async {
     final data = await _get('/network-interfaces');
     if (data is! List) return const [];

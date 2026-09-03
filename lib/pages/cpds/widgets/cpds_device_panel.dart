@@ -35,7 +35,56 @@ class CpdsDevicePanel extends StatelessWidget {
   final VoidCallback onRefreshInterfaces;
   final ValueChanged<String?> onSelectInterface;
   final VoidCallback onDistribute;
-  final ValueChanged<List<CpdsDevice>>? onSaveFutureWarrior;
+  final Future<void> Function(List<CpdsFutureWarriorDevice>, String unitId)?
+  onSaveFutureWarrior;
+
+  static List<CpdsFutureWarriorDevice> _aggregateFutureWarriorDevices(
+    CpdsPackage? package,
+    String unitId,
+  ) {
+    if (package == null) return const [];
+    final unit = _findUnit(package.units, unitId);
+    if (unit == null) return const [];
+    final nodesById = {
+      for (final node in package.nodes) node.id: node,
+    };
+    final result = <CpdsFutureWarriorDevice>[];
+    for (final nodeId in unit.nodeIds) {
+      final node = nodesById[nodeId];
+      if (node == null || node.nodeType != 1) continue;
+      for (final device in node.devices) {
+        result.add(
+          CpdsFutureWarriorDevice(device: device, nodeId: nodeId),
+        );
+      }
+    }
+    return result;
+  }
+
+  static String _findUnitIdForNode(List<CpdsUnit> units, String nodeId) {
+    String? found;
+    void walk(List<CpdsUnit> list) {
+      for (final unit in list) {
+        if (unit.nodeIds.contains(nodeId)) {
+          found = unit.id;
+          return;
+        }
+        walk(unit.subUnits);
+      }
+    }
+
+    walk(units);
+    return found ?? '';
+  }
+
+  static CpdsUnit? _findUnit(List<CpdsUnit> units, String unitId) {
+    for (final unit in units) {
+      if (unit.id == unitId) return unit;
+      final found = _findUnit(unit.subUnits, unitId);
+      if (found != null) return found;
+    }
+    return null;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,9 +96,33 @@ class CpdsDevicePanel extends StatelessWidget {
         break;
       }
     }
-    if (selectedNode?.nodeType == 1) {
+
+    if (state.selectedFutureWarriorUnitId.isNotEmpty) {
       return CpdsFutureWarriorPanel(
-        node: selectedNode!,
+        devices: _aggregateFutureWarriorDevices(
+          state.package,
+          state.selectedFutureWarriorUnitId,
+        ),
+        unitId: state.selectedFutureWarriorUnitId,
+        onSave: onSaveFutureWarrior,
+      );
+    }
+
+    if (selectedNode?.nodeType == 1) {
+      final node = selectedNode!;
+      return CpdsFutureWarriorPanel(
+        devices: node.devices
+            .map(
+              (device) => CpdsFutureWarriorDevice(
+                device: device,
+                nodeId: node.id,
+              ),
+            )
+            .toList(),
+        unitId: _findUnitIdForNode(
+          state.package?.units ?? const [],
+          node.id,
+        ),
         onSave: onSaveFutureWarrior,
       );
     }
@@ -197,18 +270,10 @@ class CpdsDevicePanel extends StatelessWidget {
                         ),
                       ),
                     )
-                  : ListView(
-                      children: [
-                        ...groups.expand(
-                          (group) => [
-                            _DeviceGroupHeader(
-                              title: _groupTitle(context, group.titleKey),
-                              count: group.rows.length,
-                            ),
-                            ...group.rows.map((row) => _DeviceRow(row: row)),
-                          ],
-                        ),
-                      ],
+                  : _CpdsDeviceGroupList(
+                      key: ValueKey(selectedNode.id),
+                      groups: groups,
+                      groupTitle: (key) => _groupTitle(context, key),
                     ),
             ),
           ),
@@ -375,10 +440,17 @@ class _StageStrip extends StatelessWidget {
 }
 
 class CpdsFutureWarriorPanel extends StatefulWidget {
-  const CpdsFutureWarriorPanel({super.key, required this.node, this.onSave});
+  const CpdsFutureWarriorPanel({
+    super.key,
+    required this.devices,
+    required this.unitId,
+    this.onSave,
+  });
 
-  final CpdsNode node;
-  final ValueChanged<List<CpdsDevice>>? onSave;
+  final List<CpdsFutureWarriorDevice> devices;
+  final String unitId;
+  final Future<void> Function(List<CpdsFutureWarriorDevice>, String unitId)?
+  onSave;
 
   @override
   State<CpdsFutureWarriorPanel> createState() => _CpdsFutureWarriorPanelState();
@@ -386,20 +458,49 @@ class CpdsFutureWarriorPanel extends StatefulWidget {
 
 class _CpdsFutureWarriorPanelState extends State<CpdsFutureWarriorPanel> {
   final Set<String> _selectedKeys = {};
+  final Set<CpdsDeviceType> _collapsedGroups = {};
+  bool _saving = false;
 
   @override
   void didUpdateWidget(covariant CpdsFutureWarriorPanel oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.node.id != widget.node.id) {
+    if (oldWidget.unitId != widget.unitId) {
       _selectedKeys.clear();
+      _collapsedGroups.clear();
     }
   }
 
-  List<CpdsDevice> get _selectedDevices => widget.node.devices
+  void _toggleGroup(CpdsDeviceType type) {
+    setState(() {
+      if (_collapsedGroups.contains(type)) {
+        _collapsedGroups.remove(type);
+      } else {
+        _collapsedGroups.add(type);
+      }
+    });
+  }
+
+  List<CpdsFutureWarriorDevice> get _selectedDevices => widget.devices
       .where((device) => _selectedKeys.contains(device.key))
       .toList();
 
-  List<(CpdsDeviceType, List<CpdsDevice>)> _groupedDevices() {
+  Future<void> _handleSave() async {
+    if (_selectedKeys.isEmpty) {
+      final zh = Localizations.localeOf(context).languageCode == 'zh';
+      SimplePopup.warn(zh ? '请勾选' : 'Please select');
+      return;
+    }
+    setState(() => _saving = true);
+    try {
+      await widget.onSave?.call(_selectedDevices, widget.unitId);
+    } finally {
+      if (mounted) {
+        setState(() => _saving = false);
+      }
+    }
+  }
+
+  List<(CpdsDeviceType, List<CpdsFutureWarriorDevice>)> _groupedDevices() {
     const order = [
       CpdsDeviceType.multiBandRadio,
       CpdsDeviceType.multiBandHandheld,
@@ -410,12 +511,13 @@ class _CpdsFutureWarriorPanelState extends State<CpdsFutureWarriorPanel> {
       CpdsDeviceType.server,
       CpdsDeviceType.iec,
     ];
-    final groups = <CpdsDeviceType, List<CpdsDevice>>{};
-    for (final device in widget.node.devices) {
+    final groups = <CpdsDeviceType, List<CpdsFutureWarriorDevice>>{};
+    for (final fwDevice in widget.devices) {
+      final device = fwDevice.device;
       final key = device.type == CpdsDeviceType.ccuAudio
           ? CpdsDeviceType.ccu
           : device.type;
-      groups.putIfAbsent(key, () => []).add(device);
+      groups.putIfAbsent(key, () => []).add(fwDevice);
     }
     final result =
         groups.entries.map((entry) => (entry.key, entry.value)).toList()
@@ -443,7 +545,7 @@ class _CpdsFutureWarriorPanelState extends State<CpdsFutureWarriorPanel> {
   Widget build(BuildContext context) {
     final t = Translations.of(context);
     final zh = Localizations.localeOf(context).languageCode == 'zh';
-    final total = widget.node.devices.length;
+    final total = widget.devices.length;
     final selectedCount = _selectedKeys.length;
     final groups = _groupedDevices();
 
@@ -488,13 +590,8 @@ class _CpdsFutureWarriorPanelState extends State<CpdsFutureWarriorPanel> {
                   label: t.button.radioManager.save,
                   width: 80,
                   height: 32,
-                  onPressed: () {
-                    if (_selectedKeys.isEmpty) {
-                      SimplePopup.warn(zh ? '请勾选' : 'Please select');
-                      return;
-                    }
-                    widget.onSave?.call(_selectedDevices);
-                  },
+                  isLoading: _saving,
+                  onPressed: _saving ? null : _handleSave,
                 ),
               ],
             ),
@@ -519,27 +616,33 @@ class _CpdsFutureWarriorPanelState extends State<CpdsFutureWarriorPanel> {
                     )
                   : ListView(
                       children: groups.expand((group) {
+                        final expanded = !_collapsedGroups.contains(group.$1);
                         return [
                           _DeviceGroupHeader(
                             title: _groupTitle(context, group.$1),
                             count: group.$2.length,
+                            expanded: expanded,
+                            onTap: () => _toggleGroup(group.$1),
                           ),
-                          ...group.$2.map((device) {
-                            final selected = _selectedKeys.contains(device.key);
-                            return _FutureWarriorDeviceRow(
-                              device: device,
-                              selected: selected,
-                              onChanged: (checked) {
-                                setState(() {
-                                  if (checked) {
-                                    _selectedKeys.add(device.key);
-                                  } else {
-                                    _selectedKeys.remove(device.key);
-                                  }
-                                });
-                              },
-                            );
-                          }),
+                          if (expanded)
+                            ...group.$2.map((fwDevice) {
+                              final selected = _selectedKeys.contains(
+                                fwDevice.key,
+                              );
+                              return _FutureWarriorDeviceRow(
+                                fwDevice: fwDevice,
+                                selected: selected,
+                                onChanged: (checked) {
+                                  setState(() {
+                                    if (checked) {
+                                      _selectedKeys.add(fwDevice.key);
+                                    } else {
+                                      _selectedKeys.remove(fwDevice.key);
+                                    }
+                                  });
+                                },
+                              );
+                            }),
                         ];
                       }).toList(),
                     ),
@@ -553,17 +656,18 @@ class _CpdsFutureWarriorPanelState extends State<CpdsFutureWarriorPanel> {
 
 class _FutureWarriorDeviceRow extends StatelessWidget {
   const _FutureWarriorDeviceRow({
-    required this.device,
+    required this.fwDevice,
     required this.selected,
     required this.onChanged,
   });
 
-  final CpdsDevice device;
+  final CpdsFutureWarriorDevice fwDevice;
   final bool selected;
   final ValueChanged<bool> onChanged;
 
   @override
   Widget build(BuildContext context) {
+    final device = fwDevice.device;
     return InkWell(
       onTap: () => onChanged(!selected),
       child: Container(
@@ -678,36 +782,101 @@ class _StageLine extends StatelessWidget {
 }
 
 class _DeviceGroupHeader extends StatelessWidget {
-  const _DeviceGroupHeader({required this.title, required this.count});
+  const _DeviceGroupHeader({
+    required this.title,
+    required this.count,
+    required this.expanded,
+    required this.onTap,
+  });
 
   final String title;
   final int count;
+  final bool expanded;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 32,
-      padding: const EdgeInsets.symmetric(horizontal: 12),
+    return Material(
       color: const Color(0xFF242A31),
-      child: Row(
-        children: [
-          const Icon(Icons.arrow_drop_down, size: 16, color: Colors.white70),
-          const SizedBox(width: 8),
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
-            ),
+      child: InkWell(
+        onTap: onTap,
+        child: Container(
+          height: 32,
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          child: Row(
+            children: [
+              Icon(
+                expanded ? Icons.arrow_drop_down : Icons.arrow_right,
+                size: 16,
+                color: Colors.white70,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+              ),
+              const Spacer(),
+              Text(
+                '$count',
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: Color(0xFFB7BCC6),
+                ),
+              ),
+            ],
           ),
-          const Spacer(),
-          Text(
-            '$count',
-            style: const TextStyle(fontSize: 12, color: Color(0xFFB7BCC6)),
-          ),
-        ],
+        ),
       ),
+    );
+  }
+}
+
+class _CpdsDeviceGroupList extends StatefulWidget {
+  const _CpdsDeviceGroupList({
+    super.key,
+    required this.groups,
+    required this.groupTitle,
+  });
+
+  final List<_DeviceGroupData> groups;
+  final String Function(String titleKey) groupTitle;
+
+  @override
+  State<_CpdsDeviceGroupList> createState() => _CpdsDeviceGroupListState();
+}
+
+class _CpdsDeviceGroupListState extends State<_CpdsDeviceGroupList> {
+  final Set<String> _collapsedGroups = {};
+
+  void _toggleGroup(String key) {
+    setState(() {
+      if (_collapsedGroups.contains(key)) {
+        _collapsedGroups.remove(key);
+      } else {
+        _collapsedGroups.add(key);
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      children: widget.groups.expand((group) {
+        final expanded = !_collapsedGroups.contains(group.titleKey);
+        return [
+          _DeviceGroupHeader(
+            title: widget.groupTitle(group.titleKey),
+            count: group.rows.length,
+            expanded: expanded,
+            onTap: () => _toggleGroup(group.titleKey),
+          ),
+          if (expanded) ...group.rows.map((row) => _DeviceRow(row: row)),
+        ];
+      }).toList(),
     );
   }
 }

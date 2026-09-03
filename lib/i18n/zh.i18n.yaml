@@ -110,6 +110,7 @@ button:
     issue: 下发
   injectEncrypt:
     export: 导出
+    create: 新增
 checkbox:
   DeselectAll: 取消全选
   SelectAll: 全选 ({count})
@@ -175,6 +176,7 @@ settings:
 cpds:
   fileTitle: 文件解析
   browse: 浏览
+  goNow: 立即前往
   parse: 解析
   filePlaceholder: 请选择通信参数包
   browseConfirm: 重新上传文件，将清空【注钥管理】的数据，确认是否继续？

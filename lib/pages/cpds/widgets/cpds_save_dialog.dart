@@ -6,24 +6,26 @@ import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_kts_template/api/RadiosManagerApi.dart';
 import 'package:flutter_kts_template/core/cpds/model/cpds_models.dart';
+import 'package:flutter_kts_template/core/entities/keyLoaders/keyLoadersEntity.dart';
 import 'package:flutter_kts_template/core/entities/radios/radiosEntity.dart';
 import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 import 'package:flutter_kts_template/logger/logger.dart';
 import 'package:flutter_kts_template/theme/table.theme.dart';
-import 'package:form_builder_validators/form_builder_validators.dart';
 
 class CpdsFutureWarriorSaveDialog extends StatefulWidget {
   const CpdsFutureWarriorSaveDialog({
     super.key,
     required this.devices,
-    required this.selectedNodeId,
+    required this.unitId,
     required this.units,
+    required this.keyLoaders,
     required this.onSave,
   });
 
-  final List<CpdsDevice> devices;
-  final String selectedNodeId;
+  final List<CpdsFutureWarriorDevice> devices;
+  final String unitId;
   final List<CpdsUnit> units;
+  final List<KeyLoadersEntity> keyLoaders;
   final ValueChanged<Map<String, dynamic>> onSave;
 
   @override
@@ -34,9 +36,9 @@ class CpdsFutureWarriorSaveDialog extends StatefulWidget {
 class _CpdsFutureWarriorSaveDialogState
     extends State<CpdsFutureWarriorSaveDialog> {
   final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>();
-  final TextEditingController _nameController = TextEditingController();
   List<RadiosEntity> _radios = [];
   Map<String, int?> _selectedRadioId = {};
+  int? _selectedKeyLoaderId;
   int _currentPage = 1;
   int _pageSize = 10;
   StreamSubscription<AppLocale>? _localeSubscription;
@@ -53,7 +55,6 @@ class _CpdsFutureWarriorSaveDialogState
   @override
   void dispose() {
     _localeSubscription?.cancel();
-    _nameController.dispose();
     super.dispose();
   }
 
@@ -64,7 +65,7 @@ class _CpdsFutureWarriorSaveDialogState
       setState(() {
         _radios = response.data.list;
         _selectedRadioId = {
-          for (final device in widget.devices) device.key: null,
+          for (final fwDevice in widget.devices) fwDevice.key: null,
         };
       });
     } catch (error) {
@@ -75,15 +76,15 @@ class _CpdsFutureWarriorSaveDialogState
   int get _pageCount =>
       (widget.devices.length / _pageSize).ceil().clamp(1, 999999);
 
-  List<CpdsDevice> get _pagedDevices {
+  List<CpdsFutureWarriorDevice> get _pagedDevices {
     final start = (_currentPage - 1) * _pageSize;
     if (start >= widget.devices.length) return const [];
     final end = (start + _pageSize).clamp(0, widget.devices.length);
     return widget.devices.sublist(start, end);
   }
 
-  RadiosEntity? _radioFor(CpdsDevice device) {
-    final id = _selectedRadioId[device.key];
+  RadiosEntity? _radioFor(CpdsFutureWarriorDevice fwDevice) {
+    final id = _selectedRadioId[fwDevice.key];
     if (id == null) return null;
     for (final radio in _radios) {
       if (radio.id == id) return radio;
@@ -93,20 +94,17 @@ class _CpdsFutureWarriorSaveDialogState
 
   void _save() {
     if (!(_formKey.currentState?.saveAndValidate() ?? false)) return;
-    final parentIdPath = _findParentIdPath(
-      widget.units,
-      widget.selectedNodeId,
-    );
+    final parentIdPath = _findUnitPath(widget.units, widget.unitId);
     final json = {
-      'name': _nameController.text.trim(),
-      'nodeId': widget.selectedNodeId,
+      'keyLoaderId': _selectedKeyLoaderId,
       'parentIdPath': parentIdPath.join('/'),
-      'items': widget.devices.map((device) {
-        final radio = _radioFor(device);
+      'items': widget.devices.map((fwDevice) {
+        final radio = _radioFor(fwDevice);
         return {
-          'communicationParameterPackage': device.id,
-          'deviceType': device.type.value,
-          'deviceModel': device.model,
+          'netNodePackageName': fwDevice.nodeId,
+          'dcPackageName': fwDevice.device.id,
+          'deviceType': fwDevice.device.type.value,
+          'deviceModel': fwDevice.device.model,
           'radioId': radio?.id,
           'radioAlias': radio?.alias ?? '',
           'consumer': radio?.consumer ?? '',
@@ -119,11 +117,11 @@ class _CpdsFutureWarriorSaveDialogState
     widget.onSave(json);
   }
 
-  List<String> _findParentIdPath(List<CpdsUnit> units, String nodeId) {
+  List<String> _findUnitPath(List<CpdsUnit> units, String unitId) {
     final path = <String>[];
     bool search(List<CpdsUnit> items) {
       for (final unit in items) {
-        if (unit.nodeIds.contains(nodeId)) {
+        if (unit.id == unitId) {
           path.add(unit.id);
           return true;
         }
@@ -160,36 +158,39 @@ class _CpdsFutureWarriorSaveDialogState
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                FormBuilderTextField(
-                  name: 'name',
-                  controller: _nameController,
-                  validator: FormBuilderValidators.compose([
-                    FormBuilderValidators.required(
-                      errorText: t.cpds.saveDialog.nameRequired,
-                    ),
-                    (value) {
-                      final input = value?.trim() ?? '';
-                      if (input.isEmpty) return null;
-                      final valid = RegExp(
-                        r'^[a-zA-Z0-9_\-\u4e00-\u9fa5]+$',
-                      ).hasMatch(input);
-                      return valid ? null : t.cpds.saveDialog.nameInvalid;
-                    },
-                  ]),
+                DropdownButtonFormField<int>(
+                  initialValue: _selectedKeyLoaderId,
+                  isExpanded: true,
                   decoration: InputDecoration(
-                    labelText: t.cpds.saveDialog.nameLabel,
-                    hintText: t.cpds.saveDialog.nameHint,
+                    labelText: t.Form.paramsInject.selectKeyLoader.text,
+                    hintText: t.Form.paramsInject.selectKeyLoader.placeholder,
                     filled: true,
                     fillColor: const Color(0xFF282D33),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(4),
                     ),
                   ),
+                  items: widget.keyLoaders
+                      .map(
+                        (item) => DropdownMenuItem<int>(
+                          value: item.id,
+                          child: Text(item.name),
+                        ),
+                      )
+                      .toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedKeyLoaderId = value;
+                    });
+                  },
+                  validator: (value) => value == null
+                      ? t.Form.paramsInject.selectKeyLoader.placeholder
+                      : null,
                 ),
                 const SizedBox(height: 16),
                 Text(
                   t.pager.injectEncrypt.paramPairing,
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
@@ -215,7 +216,7 @@ class _CpdsFutureWarriorSaveDialogState
                           columns: [
                             DataColumn(
                               label: Padding(
-                                padding: EdgeInsets.only(left: 8),
+                                padding: const EdgeInsets.only(left: 8),
                                 child: Text(
                                   t.tableColumn.injectEncrypt.parameterPacket,
                                   overflow: TextOverflow.ellipsis,
@@ -235,7 +236,7 @@ class _CpdsFutureWarriorSaveDialogState
                             ),
                             DataColumn(
                               label: Padding(
-                                padding: EdgeInsets.only(left: 8),
+                                padding: const EdgeInsets.only(left: 8),
                                 child: Text(
                                   t.tableColumn.injectEncrypt.radio,
                                   overflow: TextOverflow.ellipsis,
@@ -245,7 +246,7 @@ class _CpdsFutureWarriorSaveDialogState
                             ),
                             DataColumn(
                               label: Padding(
-                                padding: EdgeInsets.only(left: 8),
+                                padding: const EdgeInsets.only(left: 8),
                                 child: Text(
                                   t.tableColumn.injectEncrypt.consumer,
                                   overflow: TextOverflow.ellipsis,
@@ -255,7 +256,7 @@ class _CpdsFutureWarriorSaveDialogState
                             ),
                             DataColumn(
                               label: Padding(
-                                padding: EdgeInsets.only(left: 8),
+                                padding: const EdgeInsets.only(left: 8),
                                 child: Text(
                                   t.tableColumn.injectEncrypt.location,
                                   overflow: TextOverflow.ellipsis,
@@ -265,7 +266,7 @@ class _CpdsFutureWarriorSaveDialogState
                             ),
                             DataColumn(
                               label: Padding(
-                                padding: EdgeInsets.only(left: 8),
+                                padding: const EdgeInsets.only(left: 8),
                                 child: Text(
                                   t.tableColumn.injectEncrypt.SN,
                                   overflow: TextOverflow.ellipsis,
@@ -274,9 +275,10 @@ class _CpdsFutureWarriorSaveDialogState
                               ),
                             ),
                           ],
-                          rows: _pagedDevices.map((device) {
-                            final radio = _radioFor(device);
-                            final index = widget.devices.indexOf(device);
+                          rows: _pagedDevices.map((fwDevice) {
+                            final device = fwDevice.device;
+                            final radio = _radioFor(fwDevice);
+                            final index = widget.devices.indexOf(fwDevice);
                             return DataRow(
                               color: WidgetStatePropertyAll(
                                 index.isEven
@@ -308,7 +310,7 @@ class _CpdsFutureWarriorSaveDialogState
                                   Padding(
                                     padding: const EdgeInsets.only(left: 8),
                                     child: DropdownButton<int?>(
-                                      value: _selectedRadioId[device.key],
+                                      value: _selectedRadioId[fwDevice.key],
                                       hint: Text(
                                         t.cpds.saveDialog.selectPlaceholder,
                                       ),
@@ -322,7 +324,8 @@ class _CpdsFutureWarriorSaveDialogState
                                       ],
                                       onChanged: (value) {
                                         setState(() {
-                                          _selectedRadioId[device.key] = value;
+                                          _selectedRadioId[fwDevice.key] =
+                                              value;
                                         });
                                       },
                                     ),

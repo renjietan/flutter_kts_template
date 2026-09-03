@@ -18,6 +18,7 @@ class CpdsRoutes extends BaseRouteGroup {
     router.post('/package/upload', CpdsController.upload);
     router.post('/package/parse', CpdsController.parse);
     router.post('/nodes/select', CpdsController.selectNode);
+    router.post('/nodes/select-future-warrior', CpdsController.selectFutureWarrior);
     router.get('/network-interfaces', CpdsController.listNetworkInterfaces);
     router.post(
       '/network-interfaces/select',

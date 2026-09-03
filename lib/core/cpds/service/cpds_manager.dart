@@ -31,6 +31,7 @@ class CpdsManager {
   int _uploadSize = 0;
   CpdsPackage? _package;
   String _selectedNodeId = '';
+  String _selectedFutureWarriorUnitId = '';
   String _interfaceName = '';
   CpdsSessionView? _session;
   CpdsSessionMachine? _machine;
@@ -48,6 +49,7 @@ class CpdsManager {
           : CpdsUpload(fileName: _uploadName, fileSize: _uploadSize),
       package: _package,
       selectedNodeId: _selectedNodeId,
+      selectedFutureWarriorUnitId: _selectedFutureWarriorUnitId,
       canDistribute:
           _uploadPath != null &&
           _package != null &&
@@ -95,6 +97,7 @@ class CpdsManager {
     _uploadSize = bytes.length;
     _package = null;
     _selectedNodeId = '';
+    _selectedFutureWarriorUnitId = '';
     _session = null;
     _machine = null;
     _runner = null;
@@ -126,6 +129,7 @@ class CpdsManager {
     );
     _package = package;
     _selectedNodeId = '';
+    _selectedFutureWarriorUnitId = '';
     _session = null;
     _machine = null;
     _runner = null;
@@ -146,6 +150,7 @@ class CpdsManager {
       _uploadSize = 0;
       _package = package;
       _selectedNodeId = '';
+      _selectedFutureWarriorUnitId = '';
       _session = null;
       _machine = null;
       _runner = null;
@@ -177,6 +182,7 @@ class CpdsManager {
       _uploadSize = stat.size;
       _package = null;
       _selectedNodeId = '';
+      _selectedFutureWarriorUnitId = '';
       _session = null;
       _machine = null;
       _runner = null;
@@ -207,6 +213,7 @@ class CpdsManager {
       );
     }
     _selectedNodeId = nodeId;
+    _selectedFutureWarriorUnitId = '';
     unawaited(Shared.saveCpdsSelectedNode(nodeId));
     _session = null;
     _machine = null;
@@ -214,6 +221,41 @@ class CpdsManager {
     _active = false;
     _notify();
     return state();
+  }
+
+  CpdsApplicationState selectFutureWarrior(String unitId) {
+    final package = _package;
+    if (package == null) {
+      throw CpdsException(
+        CpdsErrorCode.invalidPackage,
+        params: {'field': 'package'},
+        message: 'no parsed package',
+      );
+    }
+    if (_findUnit(package.units, unitId) == null) {
+      throw CpdsException(
+        CpdsErrorCode.invalidPackage,
+        params: {'field': 'unitId', 'actual': unitId},
+        message: 'unknown unit',
+      );
+    }
+    _selectedFutureWarriorUnitId = unitId;
+    _selectedNodeId = '';
+    _session = null;
+    _machine = null;
+    _runner = null;
+    _active = false;
+    _notify();
+    return state();
+  }
+
+  CpdsUnit? _findUnit(List<CpdsUnit> units, String unitId) {
+    for (final unit in units) {
+      if (unit.id == unitId) return unit;
+      final found = _findUnit(unit.subUnits, unitId);
+      if (found != null) return found;
+    }
+    return null;
   }
 
   Future<List<CpdsNetworkInterface>> listNetworkInterfaces() async {
@@ -261,12 +303,15 @@ class CpdsManager {
       if (lastNode.isNotEmpty &&
           package.nodes.any((node) => node.id == lastNode)) {
         _selectedNodeId = lastNode;
+        _selectedFutureWarriorUnitId = '';
       } else {
         _selectedNodeId = '';
+        _selectedFutureWarriorUnitId = '';
       }
     } catch (_) {
       _package = null;
       _selectedNodeId = '';
+      _selectedFutureWarriorUnitId = '';
     }
     _notify();
   }

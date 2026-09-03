@@ -430,6 +430,9 @@ class Translations$cpds$zh {
 	/// zh: '浏览'
 	String get browse => '浏览';
 
+	/// zh: '立即前往'
+	String get goNow => '立即前往';
+
 	/// zh: '解析'
 	String get parse => '解析';
 
@@ -825,6 +828,9 @@ class Translations$button$injectEncrypt$zh {
 
 	/// zh: '导出'
 	String get export => '导出';
+
+	/// zh: '新增'
+	String get create => '新增';
 }
 
 // Path: Form.radioManager

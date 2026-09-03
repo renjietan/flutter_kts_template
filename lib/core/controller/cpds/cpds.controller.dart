@@ -59,6 +59,13 @@ class CpdsController {
     return _ok(state.toJson());
   }
 
+  static Response selectFutureWarrior(Request request) {
+    final body = _readBody(request);
+    final unitId = body['unitId']?.toString() ?? '';
+    final state = CpdsManager.instance.selectFutureWarrior(unitId);
+    return _ok(state.toJson());
+  }
+
   static Future<Response> listNetworkInterfaces(Request request) async {
     final interfaces = await CpdsManager.instance.listNetworkInterfaces();
     return Response.ok(

@@ -78,6 +78,20 @@ class CpdsDevice {
   String get key => '${type.value}:$id';
 }
 
+/// 未来战士分组下聚合出的设备，携带其所属 nodeType==1 节点的 id。
+class CpdsFutureWarriorDevice {
+  const CpdsFutureWarriorDevice({
+    required this.device,
+    required this.nodeId,
+  });
+
+  final CpdsDevice device;
+  final String nodeId;
+
+  /// 使用「节点 id + 设备 key」保证跨节点也不去重。
+  String get key => '$nodeId:${device.key}';
+}
+
 class CpdsNode {
   CpdsNode({
     required this.id,
@@ -315,6 +329,7 @@ class CpdsApplicationState {
     this.upload,
     this.package,
     this.selectedNodeId = '',
+    this.selectedFutureWarriorUnitId = '',
     this.canDistribute = false,
     this.active = false,
     this.session,
@@ -323,6 +338,7 @@ class CpdsApplicationState {
   CpdsUpload? upload;
   CpdsPackage? package;
   String selectedNodeId;
+  String selectedFutureWarriorUnitId;
   bool canDistribute;
   bool active;
   CpdsSessionView? session;
@@ -332,6 +348,8 @@ class CpdsApplicationState {
         upload: _nullableMap(json['upload'], CpdsUpload.fromJson),
         package: _nullableMap(json['package'], CpdsPackage.fromJson),
         selectedNodeId: json['selectedNodeId'] as String? ?? '',
+        selectedFutureWarriorUnitId:
+            json['selectedFutureWarriorUnitId'] as String? ?? '',
         canDistribute: json['canDistribute'] as bool? ?? false,
         active: json['active'] as bool? ?? false,
         session: _nullableMap(json['session'], CpdsSessionView.fromJson),
@@ -341,6 +359,7 @@ class CpdsApplicationState {
     'upload': upload?.toJson(),
     'package': package?.toJson(),
     'selectedNodeId': selectedNodeId,
+    'selectedFutureWarriorUnitId': selectedFutureWarriorUnitId,
     'canDistribute': canDistribute,
     'active': active,
     'session': session?.toJson(),

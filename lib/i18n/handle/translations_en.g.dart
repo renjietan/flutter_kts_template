@@ -307,6 +307,7 @@ class _Translations$cpds$en extends Translations$cpds$zh {
 	// Translations
 	@override String get fileTitle => 'File parse';
 	@override String get browse => 'Browse';
+	@override String get goNow => 'Go now';
 	@override String get parse => 'Parse';
 	@override String get filePlaceholder => 'Select a communication package';
 	@override String get browseConfirm => 'Re-uploading a file will clear all data in Key Manager. Continue?';
@@ -517,6 +518,7 @@ class _Translations$button$injectEncrypt$en extends Translations$button$injectEn
 
 	// Translations
 	@override String get export => 'export';
+	@override String get create => 'Add';
 }
 
 // Path: Form.radioManager

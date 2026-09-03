@@ -110,6 +110,7 @@ button:
     issue: issue
   injectEncrypt:
     export: export
+    create: Add
 checkbox:
   DeselectAll: Deselect All
   SelectAll: Select All ({count})
@@ -175,6 +176,7 @@ settings:
 cpds:
   fileTitle: File parse
   browse: Browse
+  goNow: Go now
   parse: Parse
   filePlaceholder: Select a communication package
   browseConfirm: Re-uploading a file will clear all data in Key Manager. Continue?
@@ -313,7 +315,7 @@ cpds:
     detailVerifyTimeout: Verification timed out
     detailVerifyFail: Verification failed
     detailVerifySaveFail: Save failed
-    detailExportComplete: Complete: file exported
+    detailExportComplete: "Complete: file exported"
     detailPacketSuccess: Packet {index} sent successfully
     detailPacketFail: Packet {index} send failed
     detailPacketTimeout: Packet {index} send timeout

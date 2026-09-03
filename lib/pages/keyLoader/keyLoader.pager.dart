@@ -59,7 +59,7 @@ class _InjectEncryptStickPagerState extends State<KeyLoaderPager>
             children: [
               Container(
                 height: 45,
-                padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
+                padding: EdgeInsets.fromLTRB(10, 0, 6, 0),
                 decoration: BoxDecoration(
                   color: Colors.black,
                   border: Border(
@@ -76,6 +76,21 @@ class _InjectEncryptStickPagerState extends State<KeyLoaderPager>
                     TextTitle(
                       text: t.pager.injectEncrypt.keyLoaderManager,
                       fontSize: 14,
+                    ),
+                    Tooltip(
+                      message: t.button.injectEncrypt.create,
+                      child: InkWell(
+                        onTap: () =>
+                            showCustomDialog(DialogTypeEnum.create, null),
+                        child: const Padding(
+                          padding: EdgeInsets.all(6),
+                          child: Icon(
+                            Icons.add,
+                            size: 18,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
                     ),
                   ],
                 ),

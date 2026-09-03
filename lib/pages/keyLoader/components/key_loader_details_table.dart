@@ -58,6 +58,7 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
   List<RadiosEntity> _radios = [];
   bool _exporting = false;
   bool _usbDisconnected = false;
+  final ScrollController _tableScrollController = ScrollController();
 
   @override
   void initState() {
@@ -96,6 +97,7 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
   @override
   void dispose() {
     _radiosProvider?.removeListener(_onRadiosChanged);
+    _tableScrollController.dispose();
     super.dispose();
   }
 
@@ -185,6 +187,12 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
           _selectedIds.add(item.id.toString());
         }
       }
+    });
+  }
+
+  void _clearSelection() {
+    setState(() {
+      _selectedIds.clear();
     });
   }
 
@@ -854,16 +862,88 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
 
   @override
   Widget build(BuildContext context) {
+    final t = Translations.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          child: Row(
-            children: [
-              const Spacer(),
+        DataTablePlusThemeProvider(
+          theme: _theme,
+          child: TableContextualBar(
+            selectedCount: _selectedIds.length,
+            normalToolbar: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 12,
+              ),
+              child: Row(
+                children: [
+                  const Spacer(),
+                  BaseButton(
+                    label: t.button.injectEncrypt.export,
+                    width: 70,
+                    isLoading: _exporting,
+                    onPressed: _exporting ? null : () => _exportSelected(),
+                  ),
+                ],
+              ),
+            ),
+            selectedCountTemplate: '{count} ${t.checkbox.selected}',
+            selectAllWidget: OutlinedButton(
+              onPressed: _toggleSelectAll,
+              style: OutlinedButton.styleFrom(
+                foregroundColor: _theme.accentColor,
+                side: BorderSide(
+                  color: _theme.accentColor.withValues(alpha: 0.4),
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 10,
+                ),
+                minimumSize: const Size(0, 36),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: Text(
+                _allSelected
+                    ? t.checkbox.DeselectAll
+                    : t.checkbox.SelectAll(count: _pagedData.length),
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            actions: [
+              OutlinedButton.icon(
+                onPressed: _clearSelection,
+                icon: Icon(
+                  Icons.close,
+                  size: 16,
+                  color: _theme.textSecondaryColor,
+                ),
+                label: Text(
+                  t.button.radioManager.clear,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: _theme.textSecondaryColor,
+                  ),
+                ),
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size(0, 36),
+                  side: BorderSide(color: _theme.borderColor),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 10,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 4),
               BaseButton(
-                label: Translations.of(context).button.injectEncrypt.export,
+                label: t.button.injectEncrypt.export,
                 width: 70,
                 isLoading: _exporting,
                 onPressed: _exporting ? null : () => _exportSelected(),
@@ -886,18 +966,24 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
                 return _buildEmpty(context);
               }
               _allData = snapshot.data ?? [];
-              return DataTablePlusThemeProvider(
-                theme: _theme,
-                child: DataTablePlus<KeyLoaderDetailsEntity>(
-                  items: _pagedData,
-                  idGetter: (item) => item.id.toString(),
-                  selectedIds: _selectedIds,
-                  allSelected: _allSelected,
-                  showCheckboxes: true,
-                  onSelectionChanged: _toggleSelection,
-                  onSelectAllChanged: () => _toggleSelectAll(),
-                  columns: _buildColumns(context),
-                  emptyWidget: _buildEmpty(context),
+              return Scrollbar(
+                controller: _tableScrollController,
+                child: SingleChildScrollView(
+                  controller: _tableScrollController,
+                  child: DataTablePlusThemeProvider(
+                    theme: _theme,
+                    child: DataTablePlus<KeyLoaderDetailsEntity>(
+                      items: _pagedData,
+                      idGetter: (item) => item.id.toString(),
+                      selectedIds: _selectedIds,
+                      allSelected: _allSelected,
+                      showCheckboxes: true,
+                      onSelectionChanged: _toggleSelection,
+                      onSelectAllChanged: () => _toggleSelectAll(),
+                      columns: _buildColumns(context),
+                      emptyWidget: _buildEmpty(context),
+                    ),
+                  ),
                 ),
               );
             },
