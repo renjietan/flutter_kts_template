@@ -82,6 +82,7 @@ class CpdsSessionMachine {
   int _totalChunks = 0;
   bool _retransmitting = false;
   int _pendingChunks = 0;
+  int _lastStageIndex = -1;
 
   CpdsActiveState get state => _state;
   Uint8List get sessionId => Uint8List.fromList(_sessionId);
@@ -545,6 +546,10 @@ class CpdsSessionMachine {
       _assignments.map((item) => item.toBody()).toList();
 
   CpdsSessionView view() {
+    final stageIndex = _stageIndexOf(_state);
+    if (stageIndex >= 0) {
+      _lastStageIndex = stageIndex;
+    }
     final progress = _totalChunks == 0
         ? 0
         : ((_sentChunks * 100) ~/ _totalChunks).clamp(0, 100);
@@ -559,7 +564,22 @@ class CpdsSessionMachine {
       sendingProgress: progress,
       retransmitting: _retransmitting,
       pendingChunks: _pendingChunks,
+      lastStageIndex: _lastStageIndex,
     );
+  }
+
+  int _stageIndexOf(CpdsActiveState state) {
+    return switch (state) {
+      CpdsActiveState.discovering ||
+      CpdsActiveState.awaitingDiscoveryConfirmation => 0,
+      CpdsActiveState.authenticating => 1,
+      CpdsActiveState.transferring || CpdsActiveState.drainingAfterFailure => 2,
+      CpdsActiveState.waitingParse => 3,
+      CpdsActiveState.idle => -1,
+      CpdsActiveState.completed ||
+      CpdsActiveState.partialSuccess ||
+      CpdsActiveState.failed => -1,
+    };
   }
 
   List<CpdsDeviceStatusView> _statusView() {

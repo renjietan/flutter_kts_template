@@ -178,6 +178,39 @@ cpds:
   parse: 解析
   filePlaceholder: 请选择通信参数包
   browseConfirm: 重新上传文件，将清空【注钥管理】的数据，确认是否继续？
+  browseSourceTitle: 选择文件来源
+  browseSourceLocal: 本地文件列表
+  browseSourceKeyLoader: 注钥枪文件列表
+  keyLoaderPermissionDenied: 未授予 USB 权限
+  keyLoaderConnectSuccess: 注钥枪连接成功
+  keyLoaderConnectFailed: 注钥枪连接失败
+  keyLoaderStepConnect: 连接注钥枪
+  keyLoaderStepList: 获取文件列表
+  keyLoaderStepSelect: 文件选择
+  keyLoaderStepSelected: 文件已选择
+  keyLoaderListEmpty: 暂无文件
+  keyLoaderListError: 获取文件列表失败
+  keyLoaderListTimeout: 获取文件列表超时
+  keyLoaderStepPassword: 密码校验
+  keyLoaderStepDownload: 下载
+  keyLoaderStepReady: 就绪
+  keyLoaderStepComplete: 完成
+  keyLoaderNext: 下一步
+  keyLoaderPrev: 上一步
+  keyLoaderDecryptTimeout: 已超时
+  keyLoaderDecryptFail: 校验失败
+  keyLoaderDecryptFailRemaining: "密码错误，还剩下{n}次机会"
+  keyLoaderDecryptCleared: 密码多次错误，已毁钥
+  keyLoaderDecryptErr: 文件已损坏
+  keyLoaderStepDecrypt: 解密
+  keyLoaderStepParse: 解析
+  keyLoaderFileCorrupted: 文件不完整，已损坏
+  keyLoaderDecryptFailed: 解密失败
+  keyLoaderSuccess: 下载完成
+  keyLoaderReadyTimeout: 响应超时
+  keyLoaderVerifyFailed: 失败：校验失败
+  keyLoaderParseSuccess: 解析成功
+  keyLoaderParseFailed: 解析失败
   nodesTitle: 网络节点
   nodesEmpty: 解析通信包后显示节点
   currentTitle: 当前节点
@@ -241,6 +274,7 @@ cpds:
     fileNotFound: "【{path}】找不到"
     failed: "【导出失败】{error}"
     radioRequired: 勾选的行中存在未选择配对电台，请先选择
+    noSelection: 请先勾选需要导出的行
   exportProgress:
     stepStart: 开始
     stepPack: 打包
@@ -259,7 +293,7 @@ cpds:
     stepReady: 准备
     stepTransfer: 传输
     stepComplete: 完成
-    stepUsb: USB
+    stepUsb: 注钥枪
     completed: 已完成
     terminated: 已终止
     detailPermissionStart: 检查 USB 权限
@@ -270,12 +304,21 @@ cpds:
     detailHandshakeSuccess: 握手成功
     detailHandshakeTimeout: 握手超时
     detailHandshakeFail: 握手失败
-    detailReadyStart: 发送 PC_UPLOAD，等待 READY
+    detailReadyStart: 发送 PAD_UPLOAD，等待 READY
     detailReadySuccess: 设备已就绪
     detailReadyTimeout: 准备超时
     detailReadyFail: 准备失败
     detailTransferStart: 分包发送
     detailComplete: 注钥枪接收成功
+    detailVerifyTimeout: 校验超时
+    detailVerifyFail: 校验失败
+    detailVerifySaveFail: 保存失败
+    detailExportComplete: 完成：文件已导出
     detailPacketSuccess: 第 {index} 包 发送成功
     detailPacketFail: 第 {index} 包 发送失败
+    detailPacketTimeout: 第 {index} 包 发送超时
+    detailMd5Error: 第 {index} 包 MD5 校验失败
+    detailSaveError: 第 {index} 包 保存失败
     detailError: USB 传输异常
+    detailDeviceRemoved: USB 设备已断开
+    detailKeyLoadSuccess: 注钥成功

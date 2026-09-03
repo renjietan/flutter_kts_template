@@ -178,6 +178,39 @@ cpds:
   parse: Parse
   filePlaceholder: Select a communication package
   browseConfirm: Re-uploading a file will clear all data in Key Manager. Continue?
+  browseSourceTitle: Select file source
+  browseSourceLocal: Local files
+  browseSourceKeyLoader: Key loader files
+  keyLoaderPermissionDenied: USB permission not granted
+  keyLoaderConnectSuccess: Key loader connected
+  keyLoaderConnectFailed: Failed to connect to key loader
+  keyLoaderStepConnect: Connect key loader
+  keyLoaderStepList: Get file list
+  keyLoaderStepSelect: File selection
+  keyLoaderStepSelected: File selected
+  keyLoaderListEmpty: No files
+  keyLoaderListError: Failed to get file list
+  keyLoaderListTimeout: Timed out getting file list
+  keyLoaderStepPassword: Password verification
+  keyLoaderStepDownload: Download
+  keyLoaderStepReady: Ready
+  keyLoaderStepComplete: Complete
+  keyLoaderNext: Next
+  keyLoaderPrev: Previous
+  keyLoaderDecryptTimeout: Timed out
+  keyLoaderDecryptFail: Verification failed
+  keyLoaderDecryptFailRemaining: "Wrong password, {n} attempts remaining"
+  keyLoaderDecryptCleared: Too many wrong passwords, key destroyed
+  keyLoaderDecryptErr: File corrupted
+  keyLoaderStepDecrypt: Decrypt
+  keyLoaderStepParse: Parse
+  keyLoaderFileCorrupted: File incomplete, corrupted
+  keyLoaderDecryptFailed: Decrypt failed
+  keyLoaderSuccess: Download complete
+  keyLoaderReadyTimeout: Response timeout
+  keyLoaderVerifyFailed: "Failed: verification failed"
+  keyLoaderParseSuccess: Parse success
+  keyLoaderParseFailed: Parse failed
   nodesTitle: Net Node
   nodesEmpty: Parse a package to display nodes
   currentTitle: Current Node
@@ -241,6 +274,7 @@ cpds:
     fileNotFound: "File not found: {path}"
     failed: "Export failed: {error}"
     radioRequired: Some selected rows have no matching radio. Please select one
+    noSelection: Please select at least one row to export
   exportProgress:
     stepStart: Start
     stepPack: Package
@@ -259,7 +293,7 @@ cpds:
     stepReady: Ready
     stepTransfer: Transfer
     stepComplete: Complete
-    stepUsb: USB
+    stepUsb: Key loader
     completed: Completed
     terminated: Terminated
     detailPermissionStart: Checking USB permission
@@ -270,12 +304,21 @@ cpds:
     detailHandshakeSuccess: Handshake succeeded
     detailHandshakeTimeout: Handshake timed out
     detailHandshakeFail: Handshake failed
-    detailReadyStart: Sending PC_UPLOAD, waiting for READY
+    detailReadyStart: Sending PAD_UPLOAD, waiting for READY
     detailReadySuccess: Device is ready
     detailReadyTimeout: Ready timed out
     detailReadyFail: Ready failed
     detailTransferStart: Chunked sending
     detailComplete: Key loader received successfully
+    detailVerifyTimeout: Verification timed out
+    detailVerifyFail: Verification failed
+    detailVerifySaveFail: Save failed
+    detailExportComplete: Complete: file exported
     detailPacketSuccess: Packet {index} sent successfully
     detailPacketFail: Packet {index} send failed
+    detailPacketTimeout: Packet {index} send timeout
+    detailMd5Error: Packet {index} MD5 verification failed
+    detailSaveError: Packet {index} save failed
     detailError: USB transfer error
+    detailDeviceRemoved: USB device disconnected
+    detailKeyLoadSuccess: Key load successful

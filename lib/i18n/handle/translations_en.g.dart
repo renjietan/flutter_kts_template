@@ -310,6 +310,39 @@ class _Translations$cpds$en extends Translations$cpds$zh {
 	@override String get parse => 'Parse';
 	@override String get filePlaceholder => 'Select a communication package';
 	@override String get browseConfirm => 'Re-uploading a file will clear all data in Key Manager. Continue?';
+	@override String get browseSourceTitle => 'Select file source';
+	@override String get browseSourceLocal => 'Local files';
+	@override String get browseSourceKeyLoader => 'Key loader files';
+	@override String get keyLoaderPermissionDenied => 'USB permission not granted';
+	@override String get keyLoaderConnectSuccess => 'Key loader connected';
+	@override String get keyLoaderConnectFailed => 'Failed to connect to key loader';
+	@override String get keyLoaderStepConnect => 'Connect key loader';
+	@override String get keyLoaderStepList => 'Get file list';
+	@override String get keyLoaderStepSelect => 'File selection';
+	@override String get keyLoaderStepSelected => 'File selected';
+	@override String get keyLoaderListEmpty => 'No files';
+	@override String get keyLoaderListError => 'Failed to get file list';
+	@override String get keyLoaderListTimeout => 'Timed out getting file list';
+	@override String get keyLoaderStepPassword => 'Password verification';
+	@override String get keyLoaderStepDownload => 'Download';
+	@override String get keyLoaderStepReady => 'Ready';
+	@override String get keyLoaderStepComplete => 'Complete';
+	@override String get keyLoaderNext => 'Next';
+	@override String get keyLoaderPrev => 'Previous';
+	@override String get keyLoaderDecryptTimeout => 'Timed out';
+	@override String get keyLoaderDecryptFail => 'Verification failed';
+	@override String keyLoaderDecryptFailRemaining({required Object n}) => 'Wrong password, ${n} attempts remaining';
+	@override String get keyLoaderDecryptCleared => 'Too many wrong passwords, key destroyed';
+	@override String get keyLoaderDecryptErr => 'File corrupted';
+	@override String get keyLoaderStepDecrypt => 'Decrypt';
+	@override String get keyLoaderStepParse => 'Parse';
+	@override String get keyLoaderFileCorrupted => 'File incomplete, corrupted';
+	@override String get keyLoaderDecryptFailed => 'Decrypt failed';
+	@override String get keyLoaderSuccess => 'Download complete';
+	@override String get keyLoaderReadyTimeout => 'Response timeout';
+	@override String get keyLoaderVerifyFailed => 'Failed: verification failed';
+	@override String get keyLoaderParseSuccess => 'Parse success';
+	@override String get keyLoaderParseFailed => 'Parse failed';
 	@override String get nodesTitle => 'Net Node';
 	@override String get nodesEmpty => 'Parse a package to display nodes';
 	@override String get currentTitle => 'Current Node';
@@ -627,6 +660,7 @@ class _Translations$cpds$export$en extends Translations$cpds$export$zh {
 	@override String fileNotFound({required Object path}) => 'File not found: ${path}';
 	@override String failed({required Object error}) => 'Export failed: ${error}';
 	@override String get radioRequired => 'Some selected rows have no matching radio. Please select one';
+	@override String get noSelection => 'Please select at least one row to export';
 }
 
 // Path: cpds.exportProgress
@@ -661,7 +695,7 @@ class _Translations$cpds$usbProgress$en extends Translations$cpds$usbProgress$zh
 	@override String get stepReady => 'Ready';
 	@override String get stepTransfer => 'Transfer';
 	@override String get stepComplete => 'Complete';
-	@override String get stepUsb => 'USB';
+	@override String get stepUsb => 'Key loader';
 	@override String get completed => 'Completed';
 	@override String get terminated => 'Terminated';
 	@override String get detailPermissionStart => 'Checking USB permission';
@@ -672,15 +706,24 @@ class _Translations$cpds$usbProgress$en extends Translations$cpds$usbProgress$zh
 	@override String get detailHandshakeSuccess => 'Handshake succeeded';
 	@override String get detailHandshakeTimeout => 'Handshake timed out';
 	@override String get detailHandshakeFail => 'Handshake failed';
-	@override String get detailReadyStart => 'Sending PC_UPLOAD, waiting for READY';
+	@override String get detailReadyStart => 'Sending PAD_UPLOAD, waiting for READY';
 	@override String get detailReadySuccess => 'Device is ready';
 	@override String get detailReadyTimeout => 'Ready timed out';
 	@override String get detailReadyFail => 'Ready failed';
 	@override String get detailTransferStart => 'Chunked sending';
 	@override String get detailComplete => 'Key loader received successfully';
+	@override String get detailVerifyTimeout => 'Verification timed out';
+	@override String get detailVerifyFail => 'Verification failed';
+	@override String get detailVerifySaveFail => 'Save failed';
+	@override String get detailExportComplete => 'Complete: file exported';
 	@override String detailPacketSuccess({required Object index}) => 'Packet ${index} sent successfully';
 	@override String detailPacketFail({required Object index}) => 'Packet ${index} send failed';
+	@override String detailPacketTimeout({required Object index}) => 'Packet ${index} send timeout';
+	@override String detailMd5Error({required Object index}) => 'Packet ${index} MD5 verification failed';
+	@override String detailSaveError({required Object index}) => 'Packet ${index} save failed';
 	@override String get detailError => 'USB transfer error';
+	@override String get detailDeviceRemoved => 'USB device disconnected';
+	@override String get detailKeyLoadSuccess => 'Key load successful';
 }
 
 // Path: pager.injectParams.steps

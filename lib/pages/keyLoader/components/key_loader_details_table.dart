@@ -19,7 +19,8 @@ import 'package:flutter_kts_template/config/config.dart';
 import 'package:flutter_kts_template/core/entities/keyLoaderDetails/keyLoaderDetailsEntity.dart';
 import 'package:flutter_kts_template/core/entities/keyLoaders/keyLoadersEntity.dart';
 import 'package:flutter_kts_template/core/entities/radios/radiosEntity.dart';
-import 'package:flutter_kts_template/core/rtc/managers/android-usb/android.usb.bulk.manager.dart';
+import 'package:flutter_kts_template/core/rtc/managers/keyloader_usb_bulk_factory.dart';
+import 'package:flutter_kts_template/core/rtc/managers/keyloader_usb_bulk_manager.dart';
 import 'package:flutter_kts_template/core/utils/director.dart';
 import 'package:flutter_kts_template/core/utils/time.dart';
 import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
@@ -56,6 +57,7 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
   RadiosProvider? _radiosProvider;
   List<RadiosEntity> _radios = [];
   bool _exporting = false;
+  bool _usbDisconnected = false;
 
   @override
   void initState() {
@@ -186,16 +188,19 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
     });
   }
 
-  /// USB 上传：连接注钥枪 → PAD_LIGHT 握手 → PC_UPLOAD 协议逐个发送 .pad 文件。
-  /// 检查/申请注钥枪 USB 权限（仅 Android 需要）。
+  /// USB 上传：连接注钥枪 → PAD_LIGHT 握手 → PAD_UPLOAD 协议发送 .pad 文件。
+  /// 检查/申请注钥枪 USB 权限（仅 Android 需要；Windows 无授权弹窗）。
   Future<bool> _ensureUsbPermission() async {
-    if (!Platform.isAndroid) return true;
-    if (await AndroidUsbBulkManager.instance.hasPermission()) {
+    if (Platform.isWindows) return true;
+    if (!Platform.isAndroid) return false;
+    final manager = getKeyLoaderUsbBulkManager();
+    if (await manager.hasPermission()) {
       return true;
     }
-    final granted = await AndroidUsbBulkManager.instance
-        .requestPermission()
-        .timeout(const Duration(seconds: 30), onTimeout: () => false);
+    final granted = await manager.requestPermission().timeout(
+      const Duration(seconds: 30),
+      onTimeout: () => false,
+    );
     if (!granted) {
       SimplePopup.error('未授予 USB 权限');
       return false;
@@ -207,20 +212,25 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
     List<String> padPaths, {
     StepProgressController? controller,
   }) async {
-    if (!Platform.isAndroid) {
-      // 注钥枪 USB 通信暂仅支持 Android PAD，其他平台跳过。
+    if (!Platform.isAndroid && !Platform.isWindows) {
+      // 其它平台暂不支持。
       return true;
     }
+    final manager = getKeyLoaderUsbBulkManager();
     const failColor = Color(0xFFF15B64);
     final usb = t.cpds.usbProgress;
+    _usbDisconnected = false;
 
     // 点亮步骤条中的「USB」节点（索引 4）。
     controller?.setStep(4);
 
+    _UsbLineReader? reader;
+    StreamSubscription<void>? disconnectSub;
+
     try {
       // 4-1 连接
       controller?.addLine(usb.detailConnectStart, number: '4-1');
-      if (!await AndroidUsbBulkManager.instance.connect()) {
+      if (!await manager.connect()) {
         controller?.addLine(
           usb.detailConnectFail,
           color: failColor,
@@ -231,137 +241,218 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
       }
       controller?.addLine(usb.detailConnectSuccess, number: '4-1');
 
-      final reader = _UsbLineReader()..start();
-      try {
-        // 4-2 握手
-        controller?.addLine(usb.detailHandshakeStart, number: '4-2');
-        await AndroidUsbBulkManager.instance.write(
-          Uint8List.fromList(utf8.encode('PAD_LIGHT\n')),
-        );
-        final lightReply = await _waitReply(reader);
-        if (lightReply == null) {
-          controller?.addLine(
-            usb.detailHandshakeTimeout,
-            color: failColor,
-            number: '4-2',
-          );
-          controller?.appendStep(usb.terminated, terminated: true);
-          return false;
-        }
-        GlobalLogger.logInfo('USB_PAD_LIGHT_REPLY $lightReply');
-        if (!lightReply.contains('FILE_OK')) {
-          controller?.addLine(
-            usb.detailHandshakeFail,
-            color: failColor,
-            number: '4-2',
-          );
-          controller?.appendStep(usb.terminated, terminated: true);
-          return false;
-        }
-        controller?.addLine(usb.detailHandshakeSuccess, number: '4-2');
+      reader = _UsbLineReader(manager.listenData())..start();
+      disconnectSub = manager.onDisconnected.listen((_) {
+        _usbDisconnected = true;
+        reader?.abort(const _UsbDisconnected());
+      });
 
-        // 4-3 准备
-        controller?.addLine(usb.detailReadyStart, number: '4-3');
-        await AndroidUsbBulkManager.instance.write(
-          Uint8List.fromList(utf8.encode('PC_UPLOAD\n')),
-        );
-        final readyReply = await _waitReply(reader);
-        if (readyReply == null) {
-          controller?.addLine(
-            usb.detailReadyTimeout,
-            color: failColor,
-            number: '4-3',
-          );
-          controller?.appendStep(usb.terminated, terminated: true);
-          return false;
-        }
-        GlobalLogger.logInfo('USB_PC_UPLOAD_REPLY $readyReply');
-        if (readyReply != 'READY') {
-          controller?.addLine(
-            usb.detailReadyFail,
-            color: failColor,
-            number: '4-3',
-          );
-          controller?.appendStep(usb.terminated, terminated: true);
-          return false;
-        }
-        controller?.addLine(usb.detailReadySuccess, number: '4-3');
-
-        // 4-4 传输
-        controller?.addLine(usb.detailTransferStart, number: '4-4');
-        const chunkSize = 4 * 1024;
-        var packetIndex = 0;
-        for (final path in padPaths) {
-          packetIndex++;
-          final file = File(path);
-          final fileBytes = await file.readAsBytes();
-          final fileName = p.basename(path);
-          final nameBytes = utf8.encode(fileName);
-
-          await AndroidUsbBulkManager.instance.write(_u32le(nameBytes.length));
-          await AndroidUsbBulkManager.instance.write(
-            Uint8List.fromList(nameBytes),
-          );
-          await AndroidUsbBulkManager.instance.write(_u64le(fileBytes.length));
-
-          for (var offset = 0; offset < fileBytes.length; offset += chunkSize) {
-            var end = offset + chunkSize;
-            if (end > fileBytes.length) end = fileBytes.length;
-            await AndroidUsbBulkManager.instance.write(
-              Uint8List.sublistView(fileBytes, offset, end),
-            );
-          }
-
-          final md5Bytes = md5.convert(fileBytes).bytes;
-          await AndroidUsbBulkManager.instance.write(
-            Uint8List.fromList(md5Bytes),
-          );
-
-          final reply = await _waitReply(reader);
-          if (reply == null || !reply.contains('FILE_OK')) {
-            controller?.addLine(
-              usb.detailPacketFail(index: packetIndex),
-              color: failColor,
-              number: '4-4-$packetIndex',
-            );
-            controller?.appendStep(usb.terminated, terminated: true);
-            return false;
-          }
-          GlobalLogger.logInfo('USB_FILE_REPLY $reply');
-          controller?.addLine(
-            usb.detailPacketSuccess(index: packetIndex),
-            number: '4-4-$packetIndex',
-          );
-        }
-
-        // 4-5 完成
-        controller?.addLine(usb.detailComplete, number: '4-5');
-        controller?.appendStep(usb.completed);
-        return true;
-      } finally {
-        reader.stop();
-        await AndroidUsbBulkManager.instance.disconnect();
+      // 4-2 握手
+      controller?.addLine(usb.detailHandshakeStart, number: '4-2');
+      await _writeUsb(manager, Uint8List.fromList(utf8.encode('PAD_LIGHT\n')));
+      final lightResult = await _waitReplyResult(reader);
+      if (_handleUsbDisconnected(
+        lightResult,
+        controller,
+        usb,
+        failColor,
+        '4-2',
+      )) {
+        return false;
       }
+      if (lightResult == _UsbReplyResult.timeout) {
+        controller?.addLine(
+          usb.detailHandshakeTimeout,
+          color: failColor,
+          number: '4-2',
+        );
+        controller?.appendStep(usb.terminated, terminated: true);
+        return false;
+      }
+      if (lightResult != _UsbReplyResult.ok) {
+        controller?.addLine(
+          _replyFailureText(usb, lightResult),
+          color: failColor,
+          number: '4-2',
+        );
+        controller?.appendStep(usb.terminated, terminated: true);
+        return false;
+      }
+      controller?.addLine(usb.detailHandshakeSuccess, number: '4-2');
+
+      // 4-3 准备
+      controller?.addLine(usb.detailReadyStart, number: '4-3');
+      await _writeUsb(manager, Uint8List.fromList(utf8.encode('PAD_UPLOAD\n')));
+      final readyResult = await _waitReplyResult(
+        reader,
+        successValues: const {'READY\n'},
+      );
+      if (_handleUsbDisconnected(
+        readyResult,
+        controller,
+        usb,
+        failColor,
+        '4-3',
+      )) {
+        return false;
+      }
+      if (readyResult == _UsbReplyResult.timeout) {
+        controller?.addLine(
+          usb.detailReadyTimeout,
+          color: failColor,
+          number: '4-3',
+        );
+        controller?.appendStep(usb.terminated, terminated: true);
+        return false;
+      }
+      if (readyResult != _UsbReplyResult.ok) {
+        controller?.addLine(
+          _replyFailureText(usb, readyResult),
+          color: failColor,
+          number: '4-3',
+        );
+        controller?.appendStep(usb.terminated, terminated: true);
+        return false;
+      }
+      controller?.addLine(usb.detailReadySuccess, number: '4-3');
+
+      // 4-4 传输
+      controller?.addLine(usb.detailTransferStart, number: '4-4');
+      if (padPaths.length != 1) {
+        GlobalLogger.logError(
+          'USB_UPLOAD_EXPECTS_ONE_PAD got=${padPaths.length}',
+        );
+        controller?.addLine(usb.detailError, color: failColor);
+        controller?.appendStep(usb.terminated, terminated: true);
+        return false;
+      }
+
+      final padPath = padPaths.single;
+      final padFile = File(padPath);
+      final fileBytes = await padFile.readAsBytes();
+
+      // 文件名：当前 .pad 已经落到本地，直接使用存储后的 .pad 文件名。
+      final fileName = p.basename(padPath);
+      final nameBytes = utf8.encode(fileName);
+
+      // 3、发送小端序 4 字节的数字 1，不等待回复。
+      await _writeUsb(manager, _u32le(1));
+
+      // 4、发送文件名长度（小端序 4 字节），不等待回复。
+      await _writeUsb(manager, _u32le(nameBytes.length));
+
+      // 5、立即发送文件名码流，不等待回复。
+      await _writeUsb(manager, Uint8List.fromList(nameBytes));
+
+      // 6、发送文件内容长度（小端序 8 字节），不等待回复。
+      await _writeUsb(manager, _u64le(fileBytes.length));
+
+      // 7、将文件内容按 4KB 拆包，逐包发送；每包发送完成后延迟 30ms，
+      // 最后一包发送完成后也延迟 30ms，再进入 MD5 发送。
+      const chunkSize = 4 * 1024;
+      for (var offset = 0; offset < fileBytes.length; offset += chunkSize) {
+        var end = offset + chunkSize;
+        if (end > fileBytes.length) end = fileBytes.length;
+        await _writeUsb(manager, Uint8List.sublistView(fileBytes, offset, end));
+        await Future<void>.delayed(const Duration(milliseconds: 30));
+      }
+
+      // 8、发送整个文件内容的 16 字节 MD5，然后等待 FILE_OK。
+      final md5Bytes = md5.convert(fileBytes).bytes;
+      await _writeUsb(manager, Uint8List.fromList(md5Bytes));
+      final result = await _waitReplyResult(reader);
+
+      if (_handleUsbDisconnected(result, controller, usb, failColor, '4-5')) {
+        return false;
+      }
+      if (result == _UsbReplyResult.timeout) {
+        GlobalLogger.logWarn('USB_FILE_VERIFY_TIMEOUT');
+        controller?.addLine(
+          usb.detailVerifyTimeout,
+          color: failColor,
+          number: '4-5',
+        );
+        controller?.appendStep(usb.terminated, terminated: true);
+        return false;
+      }
+      if (result != _UsbReplyResult.ok) {
+        GlobalLogger.logWarn('USB_FILE_VERIFY_FAILED result=${result.name}');
+        controller?.addLine(
+          _replyFailureText(usb, result),
+          color: failColor,
+          number: '4-5',
+        );
+        controller?.appendStep(usb.terminated, terminated: true);
+        return false;
+      }
+
+      // 9、收到 FILE_OK，完成导出。
+      GlobalLogger.logInfo('USB_FILE_OK');
+      controller?.addLine(usb.detailExportComplete, number: '4-5');
+      controller?.appendStep(usb.completed);
+      return true;
     } catch (e) {
       GlobalLogger.logError('USB_UPLOAD_ERROR $e');
-      try {
-        await AndroidUsbBulkManager.instance.disconnect();
-      } catch (_) {
-        // ignore
-      }
       controller?.addLine(usb.detailError, color: failColor);
       controller?.appendStep(usb.terminated, terminated: true);
       return false;
+    } finally {
+      disconnectSub?.cancel();
+      reader?.stop();
+      try {
+        await manager.disconnect();
+      } catch (e) {
+        GlobalLogger.logWarn('USB_DISCONNECT_ERROR $e');
+      }
+      _usbDisconnected = false;
     }
   }
 
-  /// 等待注钥枪回复，3 秒超时；超时返回 null（由调用方在详情框标记超时状态）。
-  Future<String?> _waitReply(_UsbLineReader reader) async {
+  /// 处理「USB 已拔出」结果：写步骤条并返回 true 表示应终止本次导出。
+  bool _handleUsbDisconnected(
+    _UsbReplyResult result,
+    StepProgressController? controller,
+    Translations$cpds$usbProgress$zh usb,
+    Color failColor,
+    String number,
+  ) {
+    if (result != _UsbReplyResult.disconnected) return false;
+    controller?.addLine(
+      usb.detailDeviceRemoved,
+      color: failColor,
+      number: number,
+    );
+    controller?.appendStep(usb.terminated, terminated: true);
+    return true;
+  }
+
+  /// 等待注钥枪回复，使用显式 [Timer] 实现超时。
+  ///
+  /// 收到回复或超时后，都会取消本次等待对应的定时器，避免旧回复污染后续流程。
+  Future<_UsbReplyResult> _waitReplyResult(
+    _UsbLineReader reader, {
+    Set<String> successValues = const {'FILE_OK\n'},
+  }) async {
+    if (_usbDisconnected) return _UsbReplyResult.disconnected;
+    String? line;
     try {
-      return await reader.nextLine(timeout: const Duration(seconds: 3));
+      line = await reader.nextLine(timeout: const Duration(seconds: 3));
     } on TimeoutException {
-      return null;
+      return _UsbReplyResult.timeout;
+    } on _UsbDisconnected {
+      return _UsbReplyResult.disconnected;
+    } on StateError {
+      return _UsbReplyResult.timeout;
     }
+    final normalized = line;
+    if (successValues.contains(normalized)) return _UsbReplyResult.ok;
+    if (normalized == 'ERR:MD5校验失败\n') {
+      return _UsbReplyResult.md5Error;
+    }
+    if (normalized == 'ERR:保存失败\n') {
+      return _UsbReplyResult.saveError;
+    }
+    return _UsbReplyResult.unexpected;
   }
 
   Future<void> _exportSelected() async {
@@ -381,13 +472,19 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
   }
 
   Future<void> _runExport() async {
+    final selectedRows = _allData
+        .where((item) => _selectedIds.contains(item.id.toString()))
+        .toList();
+
+    if (selectedRows.isEmpty) {
+      SimplePopup.error(t.cpds.export.noSelection);
+      return;
+    }
+
     // Android 端先申请 USB 权限，通过后再弹「设置密码」。
     if (!await _ensureUsbPermission()) {
       return;
     }
-    final selectedRows = _allData
-        .where((item) => _selectedIds.contains(item.id.toString()))
-        .toList();
 
     if (selectedRows.any((item) => item.radioId == null)) {
       SimplePopup.error(t.cpds.export.radioRequired);
@@ -413,7 +510,7 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
       t.cpds.exportProgress.stepPack,
       t.cpds.exportProgress.stepMerge,
       t.cpds.exportProgress.stepEncrypt,
-      if (Platform.isAndroid) t.cpds.usbProgress.stepUsb,
+      if (Platform.isAndroid || Platform.isWindows) t.cpds.usbProgress.stepUsb,
     ]);
     showDialog<void>(
       context: context,
@@ -433,10 +530,10 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
     if (!mounted) return;
     if (padPath == null) return;
 
-    if (Platform.isAndroid) {
+    if (Platform.isAndroid || Platform.isWindows) {
       await _usbUploadPads([padPath], controller: controller);
     } else {
-      // Windows 无 USB 阶段，直接标记完成。
+      // 其它平台无 USB 阶段，直接标记完成。
       controller.appendStep(t.cpds.usbProgress.completed);
     }
   }
@@ -485,10 +582,7 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
       final tarPaths = <String>[];
 
       // 步骤 1：打包（tar）
-      controller.addLine(
-        t.cpds.exportProgress.detailStartPack,
-        number: '1',
-      );
+      controller.addLine(t.cpds.exportProgress.detailStartPack, number: '1');
       for (var i = 0; i < selectedRows.length; i++) {
         final row = selectedRows[i];
         final tarPath = await _exportOneRow(
@@ -600,9 +694,9 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
 
   Future<Uint8List> _encryptWithPassphrase(
     Uint8List data,
-    String password,
-    {int workFactor = 15}
-  ) async {
+    String password, {
+    int workFactor = 15,
+  }) async {
     final chunks = await encryptWithPassphrase(
       Stream.value(data),
       passphraseProvider: _FixedPassphrase(password),
@@ -928,6 +1022,63 @@ class _FixedPassphrase extends PassphraseProvider {
   Future<String> passphrase() async => password;
 }
 
+enum _UsbReplyResult {
+  ok,
+  timeout,
+  disconnected,
+  md5Error,
+  saveError,
+  unexpected,
+}
+
+class _UsbDisconnected implements Exception {
+  const _UsbDisconnected();
+}
+
+String _replyFailureText(
+  Translations$cpds$usbProgress$zh usb,
+  _UsbReplyResult result,
+) {
+  switch (result) {
+    case _UsbReplyResult.md5Error:
+      return usb.detailVerifyFail;
+    case _UsbReplyResult.saveError:
+      return usb.detailVerifySaveFail;
+    default:
+      return usb.detailError;
+  }
+}
+
+/// 打印即将发送的 USB 码流（十六进制），以及可读的文本内容（如果可解码且非乱码）。
+void _logUsbSend(Uint8List data) {
+  final hex = data.map((b) => b.toRadixString(16).padLeft(2, '0')).join(' ');
+  final text = _decodePrintableText(data);
+  GlobalLogger.logInfo(
+    'USB_SEND len=${data.length} hex=[$hex]'
+    '${text != null ? ' text="$text"' : ''}',
+  );
+}
+
+String? _decodePrintableText(Uint8List data) {
+  try {
+    final text = utf8.decode(data, allowMalformed: false);
+    if (text.isEmpty) return null;
+    for (final unit in text.codeUnits) {
+      final isPrintableAscii = unit >= 0x20 && unit <= 0x7E;
+      final isWhitespace = unit == 0x0A || unit == 0x0D || unit == 0x09;
+      if (!isPrintableAscii && !isWhitespace) return null;
+    }
+    return text;
+  } catch (_) {
+    return null;
+  }
+}
+
+Future<void> _writeUsb(KeyLoaderUsbBulkManager manager, Uint8List data) async {
+  _logUsbSend(data);
+  await manager.write(data);
+}
+
 Uint8List _u32le(int value) {
   final data = ByteData(4);
   data.setUint32(0, value, Endian.little);
@@ -942,13 +1093,16 @@ Uint8List _u64le(int value) {
 
 /// 按 `\n` 分帧的 USB 行读取器，用于按协议逐行等待设备回复。
 class _UsbLineReader {
+  _UsbLineReader(this._dataStream);
+
+  final Stream<Uint8List> _dataStream;
   final List<int> _buffer = [];
   final List<String> _pending = [];
-  final List<Completer<String>> _waiters = [];
+  final List<_PendingLine> _waiters = [];
   StreamSubscription<Uint8List>? _sub;
 
   void start() {
-    _sub = AndroidUsbBulkManager.instance.listenData().listen(_onData);
+    _sub = _dataStream.listen(_onData);
   }
 
   void _onData(Uint8List data) {
@@ -959,38 +1113,84 @@ class _UsbLineReader {
       if (idx < 0) break;
       final lineBytes = _buffer.sublist(0, idx);
       _buffer.removeRange(0, idx + 1);
-      final line = utf8.decode(lineBytes, allowMalformed: true).trim();
-      if (line.isEmpty) continue;
+      var content = utf8.decode(lineBytes, allowMalformed: true);
+      if (content.endsWith('\r')) {
+        content = content.substring(0, content.length - 1);
+      }
+      if (content.trim().isEmpty) continue;
+      final line = '$content\n';
       _deliver(line);
     }
   }
 
   void _deliver(String line) {
     if (_waiters.isNotEmpty) {
-      _waiters.removeAt(0).complete(line);
+      _waiters.removeAt(0).deliver(line);
     } else {
       _pending.add(line);
     }
+  }
+
+  /// 以 [error] 立即失败所有正在等待的行，用于设备拔出时中断等待。
+  void abort(Object error) {
+    for (final waiter in _waiters) {
+      waiter.fail(error);
+    }
+    _waiters.clear();
   }
 
   Future<String> nextLine({Duration timeout = const Duration(seconds: 10)}) {
     if (_pending.isNotEmpty) {
       return Future.value(_pending.removeAt(0));
     }
-    final completer = Completer<String>();
-    _waiters.add(completer);
-    return completer.future.timeout(timeout);
+    final pending = _PendingLine();
+    _waiters.add(pending);
+    pending.start(
+      timeout,
+      onTimeout: () {
+        _waiters.remove(pending);
+      },
+    );
+    return pending.completer.future;
   }
 
   void stop() {
     _sub?.cancel();
     _sub = null;
+    _buffer.clear();
     _pending.clear();
     for (final waiter in _waiters) {
-      if (!waiter.isCompleted) {
-        waiter.completeError(StateError('reader stopped'));
-      }
+      waiter.fail(StateError('reader stopped'));
     }
     _waiters.clear();
+  }
+}
+
+class _PendingLine {
+  final Completer<String> completer = Completer<String>();
+  Timer? _timer;
+
+  void start(Duration timeout, {required VoidCallback onTimeout}) {
+    _timer = Timer(timeout, () {
+      _timer = null;
+      onTimeout();
+      fail(TimeoutException('reply timeout'));
+    });
+  }
+
+  void deliver(String line) {
+    _timer?.cancel();
+    _timer = null;
+    if (!completer.isCompleted) {
+      completer.complete(line);
+    }
+  }
+
+  void fail(Object error) {
+    _timer?.cancel();
+    _timer = null;
+    if (!completer.isCompleted) {
+      completer.completeError(error);
+    }
   }
 }

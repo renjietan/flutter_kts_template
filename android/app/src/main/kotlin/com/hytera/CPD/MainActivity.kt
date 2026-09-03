@@ -34,6 +34,8 @@ class MainActivity : FlutterActivity() {
         private const val TAG = "KeyLoaderUsbHost"
         private const val METHOD_CHANNEL = "com.hytera.cpd/usb_host"
         private const val EVENT_CHANNEL = "com.hytera.cpd/usb_host/events"
+        private const val EVENT_CHANNEL_DISCONNECT =
+            "com.hytera.cpd/usb_host/disconnected"
         private const val ACTION_USB_PERMISSION = "com.hytera.cpd.USB_PERMISSION"
 
         private const val TARGET_VENDOR_ID = 0x1D6B
@@ -54,6 +56,7 @@ class MainActivity : FlutterActivity() {
     private var readThread: Thread? = null
     private val readRunning = AtomicBoolean(false)
     private var eventSink: EventChannel.EventSink? = null
+    private var disconnectEventSink: EventChannel.EventSink? = null
 
     private var permissionResult: MethodChannel.Result? = null
 
@@ -68,11 +71,24 @@ class MainActivity : FlutterActivity() {
         }
     }
 
+    private val usbDetachedReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent?.action != UsbManager.ACTION_USB_DEVICE_DETACHED) return
+            @Suppress("DEPRECATION")
+            val detached = intent.getParcelableExtra<UsbDevice>(UsbManager.EXTRA_DEVICE)
+            val current = device
+            if (detached == null || current == null || detached.deviceName == current.deviceName) {
+                notifyDisconnected()
+            }
+        }
+    }
+
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
 
         usbManager = getSystemService(Context.USB_SERVICE) as UsbManager
         registerUsbPermissionReceiver()
+        registerUsbDetachedReceiver()
 
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, METHOD_CHANNEL)
             .setMethodCallHandler { call, result ->
@@ -103,11 +119,23 @@ class MainActivity : FlutterActivity() {
                     eventSink = null
                 }
             })
+
+        EventChannel(flutterEngine.dartExecutor.binaryMessenger, EVENT_CHANNEL_DISCONNECT)
+            .setStreamHandler(object : EventChannel.StreamHandler {
+                override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
+                    disconnectEventSink = events
+                }
+
+                override fun onCancel(arguments: Any?) {
+                    disconnectEventSink = null
+                }
+            })
     }
 
     override fun onDestroy() {
         disconnect()
         unregisterReceiver(usbPermissionReceiver)
+        unregisterReceiver(usbDetachedReceiver)
         super.onDestroy()
     }
 
@@ -157,6 +185,16 @@ class MainActivity : FlutterActivity() {
         } else {
             @Suppress("UnspecifiedRegisterReceiverFlag")
             registerReceiver(usbPermissionReceiver, filter)
+        }
+    }
+
+    private fun registerUsbDetachedReceiver() {
+        val filter = IntentFilter(UsbManager.ACTION_USB_DEVICE_DETACHED)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(usbDetachedReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
+        } else {
+            @Suppress("UnspecifiedRegisterReceiverFlag")
+            registerReceiver(usbDetachedReceiver, filter)
         }
     }
 
@@ -271,10 +309,9 @@ class MainActivity : FlutterActivity() {
             result.success(-1)
             return
         }
-        val hex = data.joinToString(",") {
-            "0x${(it.toInt() and 0xFF).toString(16).padStart(2, '0')}"
-        }
-        Log.i(TAG, "write ${data.size} bytes: $hex")
+        // 现在一次写入的是完整文件包，体积可能较大且可能包含敏感数据，
+        // 因此只记录大小，不打印完整十六进制内容。
+        Log.i(TAG, "write ${data.size} bytes")
         Thread {
             var written = -1
             try {
@@ -299,6 +336,14 @@ class MainActivity : FlutterActivity() {
                     conn.bulkTransfer(ep, buffer, buffer.size, READ_TIMEOUT_MS)
                 } catch (e: Exception) {
                     Log.e(TAG, "read error", e)
+                    if (readRunning.get()) {
+                        notifyDisconnected()
+                    }
+                    break
+                }
+                if (!readRunning.get()) break
+                if (length < 0) {
+                    notifyDisconnected()
                     break
                 }
                 if (length > 0) {
@@ -312,6 +357,14 @@ class MainActivity : FlutterActivity() {
             }
         }
         readThread?.start()
+    }
+
+    private fun notifyDisconnected() {
+        try {
+            disconnectEventSink?.success(true)
+        } catch (_: Exception) {
+            // EventChannel 已取消，忽略
+        }
     }
 
     private fun disconnect() {

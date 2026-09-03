@@ -261,6 +261,7 @@ class CpdsSessionView {
     required this.sendingProgress,
     required this.retransmitting,
     required this.pendingChunks,
+    this.lastStageIndex = -1,
   });
 
   final String sessionId;
@@ -273,6 +274,7 @@ class CpdsSessionView {
   final int sendingProgress;
   final bool retransmitting;
   final int pendingChunks;
+  final int lastStageIndex;
 
   factory CpdsSessionView.fromJson(Map<String, dynamic> json) =>
       CpdsSessionView(
@@ -290,6 +292,7 @@ class CpdsSessionView {
         sendingProgress: _asInt(json['sendingProgress']),
         retransmitting: json['retransmitting'] as bool? ?? false,
         pendingChunks: _asInt(json['pendingChunks']),
+        lastStageIndex: _asInt(json['lastStageIndex'], defaultValue: -1),
       );
 
   Map<String, dynamic> toJson() => {
@@ -303,6 +306,7 @@ class CpdsSessionView {
     'sendingProgress': sendingProgress,
     'retransmitting': retransmitting,
     'pendingChunks': pendingChunks,
+    'lastStageIndex': lastStageIndex,
   };
 }
 
@@ -368,10 +372,10 @@ class CpdsNetworkInterface {
   };
 }
 
-int _asInt(Object? value) {
+int _asInt(Object? value, {int defaultValue = 0}) {
   if (value is int) return value;
   if (value is num) return value.toInt();
-  return int.tryParse(value?.toString() ?? '') ?? 0;
+  return int.tryParse(value?.toString() ?? '') ?? defaultValue;
 }
 
 List<Map<String, dynamic>> _listOfMaps(Object? value) {

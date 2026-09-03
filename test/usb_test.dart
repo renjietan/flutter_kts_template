@@ -70,30 +70,29 @@ void main() async {
   // 第 4 步：queryEndpoints（对齐 go.md 的 queryEndpoints）
   print('[4] queryEndpoints...');
   final settings = queryInterfaceSettings(interfaceHandle, 0);
-  print('  bInterfaceNumber: ${settings.bInterfaceNumber}');
-  print('  cOutEndpoints: ${settings.cOutEndpoints}');
-  print('  cInEndpoints: ${settings.cInEndpoints}');
+  print('  bInterfaceNumber: ${settings.interfaceNumber}');
+  print('  bNumEndpoints: ${settings.numEndpoints}');
 
   final pipes = listPipes(interfaceHandle, 0);
   print('  发现 ${pipes.length} 个管道:');
   int inPipeId = 0;
   int outPipeId = 0;
   for (final p in pipes) {
-    final direction = isInPipe(p.PipeId) ? 'IN' : 'OUT';
-    final typeName = switch (p.PipeType) {
+    final direction = isInPipe(p.pipeId) ? 'IN' : 'OUT';
+    final typeName = switch (p.pipeType) {
       PIPE_TYPE_BULK => 'BULK',
       PIPE_TYPE_INTERRUPT => 'INTERRUPT',
       PIPE_TYPE_ISOCHRONOUS => 'ISOCHRONOUS',
       PIPE_TYPE_CONTROL => 'CONTROL',
-      _ => 'UNKNOWN(${p.PipeType})',
+      _ => 'UNKNOWN(${p.pipeType})',
     };
-    print('    PipeId=0x${p.PipeId.toRadixString(16).padLeft(2, '0')} '
-        '$direction $typeName maxPacket=${p.MaximumPacketSize}');
+    print('    PipeId=0x${p.pipeId.toRadixString(16).padLeft(2, '0')} '
+        '$direction $typeName maxPacket=${p.maximumPacketSize}');
     // 对齐 go.md：PipeId & 0x80 != 0 为 IN，否则为 OUT
-    if (isInPipe(p.PipeId)) {
-      inPipeId = p.PipeId;
+    if (isInPipe(p.pipeId)) {
+      inPipeId = p.pipeId;
     } else {
-      outPipeId = p.PipeId;
+      outPipeId = p.pipeId;
     }
   }
   print('');

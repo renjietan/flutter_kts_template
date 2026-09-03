@@ -150,16 +150,15 @@ class WinUsbManager implements RtcAbstract {
       // 对齐 go.md 的 queryEndpoints：查询 alternate setting 0
       final settings = queryInterfaceSettings(_interfaceHandle, 0);
       GlobalLogger.logInfo(
-        '接口 ${settings.bInterfaceNumber} - OUT端点: ${settings.cOutEndpoints}, '
-        'IN端点: ${settings.cInEndpoints}',
+        '接口 ${settings.interfaceNumber} - 端点数量: ${settings.numEndpoints}',
       );
 
       final pipes = listPipes(_interfaceHandle, 0);
       GlobalLogger.logInfo('发现 ${pipes.length} 个管道');
 
       for (final pipe in pipes) {
-        final pipeId = pipe.PipeId;
-        final pipeType = pipe.PipeType;
+        final pipeId = pipe.pipeId;
+        final pipeType = pipe.pipeType;
         if (pipeType == PIPE_TYPE_BULK ||
             pipeType == PIPE_TYPE_INTERRUPT ||
             pipeType == PIPE_TYPE_ISOCHRONOUS) {
@@ -168,13 +167,13 @@ class WinUsbManager implements RtcAbstract {
             _inPipeId = pipeId;
             GlobalLogger.logInfo(
               'IN 管道: id=$pipeId, type=$pipeType, '
-              'maxPacketSize=${pipe.MaximumPacketSize}',
+              'maxPacketSize=${pipe.maximumPacketSize}',
             );
           } else {
             _outPipeId = pipeId;
             GlobalLogger.logInfo(
               'OUT 管道: id=$pipeId, type=$pipeType, '
-              'maxPacketSize=${pipe.MaximumPacketSize}',
+              'maxPacketSize=${pipe.maximumPacketSize}',
             );
           }
         }

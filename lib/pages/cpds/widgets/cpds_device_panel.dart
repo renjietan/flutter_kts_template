@@ -18,6 +18,7 @@ class CpdsDevicePanel extends StatelessWidget {
     required this.automaticInterface,
     required this.interfacesLoading,
     required this.canDistribute,
+    required this.distributing,
     required this.onRefreshInterfaces,
     required this.onSelectInterface,
     required this.onDistribute,
@@ -30,6 +31,7 @@ class CpdsDevicePanel extends StatelessWidget {
   final bool automaticInterface;
   final bool interfacesLoading;
   final bool canDistribute;
+  final bool distributing;
   final VoidCallback onRefreshInterfaces;
   final ValueChanged<String?> onSelectInterface;
   final VoidCallback onDistribute;
@@ -118,7 +120,9 @@ class CpdsDevicePanel extends StatelessWidget {
                   label: t.cpds.distribute,
                   width: 88,
                   height: 32,
-                  onPressed: state.active ||
+                  isLoading: distributing,
+                  onPressed: distributing ||
+                          state.active ||
                           interfacesLoading ||
                           selectedInterfaceName.isEmpty ||
                           !canDistribute
@@ -237,6 +241,13 @@ class CpdsDevicePanel extends StatelessWidget {
 
   int _stageIndex(CpdsSessionView? session) {
     if (session == null) return -1;
+    if ((session.activeState == CpdsActiveState.failed ||
+            session.activeState == CpdsActiveState.partialSuccess) &&
+        !session.devices.any(
+          (item) => item.status == CpdsDeviceStatus.completed,
+        )) {
+      return session.lastStageIndex;
+    }
     return switch (session.activeState) {
       CpdsActiveState.discovering ||
       CpdsActiveState.awaitingDiscoveryConfirmation => 0,

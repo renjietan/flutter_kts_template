@@ -1,5 +1,5 @@
 import 'dart:ffi';
-import 'dart:typed_data';
+import 'dart:typed_data' show Uint8List;
 import 'package:ffi/ffi.dart';
 
 // ============================================================================
@@ -19,15 +19,23 @@ const int FILE_ATTRIBUTE_NORMAL = 0x00000080;
 const int FILE_FLAG_OVERLAPPED = 0x40000000;
 const int INVALID_HANDLE_VALUE = -1;
 
-const int PIPE_TYPE_BULK = 0x03;
-const int PIPE_TYPE_INTERRUPT = 0x04;
-const int PIPE_TYPE_ISOCHRONOUS = 0x02;
-const int PIPE_TYPE_CONTROL = 0x01;
+// USBD_PIPE_TYPE (usb.h): Control=0, Isochronous=1, Bulk=2, Interrupt=3.
+const int PIPE_TYPE_CONTROL = 0x00;
+const int PIPE_TYPE_ISOCHRONOUS = 0x01;
+const int PIPE_TYPE_BULK = 0x02;
+const int PIPE_TYPE_INTERRUPT = 0x03;
 
 const int PIPE_ID_IN_MASK = 0x80;
 
 // Pipe policy types (对齐 go.md：仅使用 PIPE_TRANSFER_TIMEOUT)
 const int PIPE_TRANSFER_TIMEOUT = 0x03;
+
+// Win32 overlapped I/O / wait constants
+const int ERROR_IO_PENDING = 997;
+const int INFINITE = 0xFFFFFFFF;
+const int WAIT_OBJECT_0 = 0x00000000;
+const int WAIT_TIMEOUT = 0x00000102;
+const int WAIT_FAILED = 0xFFFFFFFF;
 
 // Registry constants (只读)
 const int HKEY_LOCAL_MACHINE = 0x80000002;
@@ -85,7 +93,16 @@ base class SP_DEVICE_INTERFACE_DETAIL_DATA_W extends Struct {
   external int cbSize;
 }
 
-base class WINUSB_INTERFACE_SETTINGS extends Struct {
+/// USB 接口描述符（WinUsb_QueryInterfaceSettings 实际返回的类型）。
+///
+/// 对应 `USB_INTERFACE_DESCRIPTOR` (usbspec.h)，共 9 字节。
+base class USB_INTERFACE_DESCRIPTOR extends Struct {
+  @Uint8()
+  external int bLength;
+
+  @Uint8()
+  external int bDescriptorType;
+
   @Uint8()
   external int bInterfaceNumber;
 
@@ -93,10 +110,7 @@ base class WINUSB_INTERFACE_SETTINGS extends Struct {
   external int bAlternateSetting;
 
   @Uint8()
-  external int cOutEndpoints;
-
-  @Uint8()
-  external int cInEndpoints;
+  external int bNumEndpoints;
 
   @Uint8()
   external int bInterfaceClass;
@@ -107,37 +121,80 @@ base class WINUSB_INTERFACE_SETTINGS extends Struct {
   @Uint8()
   external int bInterfaceProtocol;
 
-  @Uint32()
-  external int reserved;
+  @Uint8()
+  external int iInterface;
 }
 
+/// WinUSB 管道信息（winusbio.h: WINUSB_PIPE_INFORMATION）。
+///
+/// 布局：PipeType(u32) + PipeId(u8) + [pad 1] + MaximumPacketSize(u16) + Interval(u8)。
 base class WINUSB_PIPE_INFORMATION extends Struct {
-  @Uint16()
-  external int MaximumPacketSize;
-
-  @Uint8()
+  @Uint32()
   external int PipeType;
 
   @Uint8()
   external int PipeId;
 
   @Uint16()
-  external int MaximumTransmissionSize;
-
-  @Uint16()
-  external int PacketSize;
-
-  @Uint32()
-  external int ScheduleOffset;
+  external int MaximumPacketSize;
 
   @Uint8()
   external int Interval;
+}
 
-  @Uint8()
-  external int RefreshPolicy;
+/// Windows OVERLAPPED 结构体（用于 WinUsb_ReadPipe 的异步读）。
+///
+/// 布局（x64）：ULONG_PTR Internal(8) + ULONG_PTR InternalHigh(8)
+/// + union{ DWORD Offset; DWORD OffsetHigh }(8) + HANDLE hEvent(8) = 32 字节。
+base class OVERLAPPED extends Struct {
+  @UintPtr()
+  external int Internal;
 
-  @Uint8()
-  external int Reserved;
+  @UintPtr()
+  external int InternalHigh;
+
+  @Uint32()
+  external int Offset;
+
+  @Uint32()
+  external int OffsetHigh;
+
+  @IntPtr()
+  external int hEvent;
+}
+
+/// Dart 侧的管道信息值对象（从 FFI 结构体拷贝而来，避免 use-after-free）。
+class WinUsbPipeInformation {
+  final int pipeType;
+  final int pipeId;
+  final int maximumPacketSize;
+  final int interval;
+
+  const WinUsbPipeInformation({
+    required this.pipeType,
+    required this.pipeId,
+    required this.maximumPacketSize,
+    required this.interval,
+  });
+}
+
+/// Dart 侧的接口描述符值对象（从 FFI 结构体拷贝而来，避免 use-after-free）。
+class WinUsbInterfaceDescriptor {
+  final int interfaceNumber;
+  final int alternateSetting;
+  final int numEndpoints;
+  final int interfaceClass;
+  final int interfaceSubClass;
+  final int interfaceProtocol;
+
+  const WinUsbInterfaceDescriptor({
+    required this.interfaceNumber,
+    required this.alternateSetting,
+    required this.numEndpoints,
+    required this.interfaceClass,
+    required this.interfaceSubClass,
+    required this.interfaceProtocol,
+  });
 }
 
 // ============================================================================
@@ -237,27 +294,27 @@ typedef _WinUsb_Free_Dart = int Function(int InterfaceHandle);
 typedef _WinUsb_QueryInterfaceSettings_Native =
     Int32 Function(
       IntPtr InterfaceHandle,
-      Uint32 InterfaceIndex,
-      Pointer<WINUSB_INTERFACE_SETTINGS> InterfaceSettings,
+      Uint8 AlternateInterfaceNumber,
+      Pointer<USB_INTERFACE_DESCRIPTOR> InterfaceDescriptor,
     );
 typedef _WinUsb_QueryInterfaceSettings_Dart =
     int Function(
       int InterfaceHandle,
-      int InterfaceIndex,
-      Pointer<WINUSB_INTERFACE_SETTINGS> InterfaceSettings,
+      int AlternateInterfaceNumber,
+      Pointer<USB_INTERFACE_DESCRIPTOR> InterfaceDescriptor,
     );
 
 typedef _WinUsb_QueryPipe_Native =
     Int32 Function(
       IntPtr InterfaceHandle,
-      Uint32 InterfaceIndex,
-      Uint32 PipeIndex,
+      Uint8 AlternateInterfaceNumber,
+      Uint8 PipeIndex,
       Pointer<WINUSB_PIPE_INFORMATION> PipeInformation,
     );
 typedef _WinUsb_QueryPipe_Dart =
     int Function(
       int InterfaceHandle,
-      int InterfaceIndex,
+      int AlternateInterfaceNumber,
       int PipeIndex,
       Pointer<WINUSB_PIPE_INFORMATION> PipeInformation,
     );
@@ -321,6 +378,61 @@ typedef _WinUsb_SetPipePolicy_Dart =
 typedef _WinUsb_FlushPipe_Native =
     Int32 Function(IntPtr InterfaceHandle, Uint8 PipeID);
 typedef _WinUsb_FlushPipe_Dart = int Function(int InterfaceHandle, int PipeID);
+
+typedef _WinUsb_AbortPipe_Native =
+    Int32 Function(IntPtr InterfaceHandle, Uint8 PipeID);
+typedef _WinUsb_AbortPipe_Dart = int Function(int InterfaceHandle, int PipeID);
+
+typedef _WinUsb_GetOverlappedResult_Native =
+    Int32 Function(
+      IntPtr InterfaceHandle,
+      Pointer<OVERLAPPED> Overlapped,
+      Pointer<Uint32> BytesTransferred,
+      Int32 Wait,
+    );
+typedef _WinUsb_GetOverlappedResult_Dart =
+    int Function(
+      int InterfaceHandle,
+      Pointer<OVERLAPPED> Overlapped,
+      Pointer<Uint32> BytesTransferred,
+      int Wait,
+    );
+
+typedef _CreateEventW_Native =
+    IntPtr Function(
+      Pointer EventAttributes,
+      Int32 ManualReset,
+      Int32 InitialState,
+      Pointer<Utf16> Name,
+    );
+typedef _CreateEventW_Dart =
+    int Function(
+      Pointer EventAttributes,
+      int ManualReset,
+      int InitialState,
+      Pointer<Utf16> Name,
+    );
+
+typedef _ResetEvent_Native = Int32 Function(IntPtr Event);
+typedef _ResetEvent_Dart = int Function(int Event);
+
+typedef _SetEvent_Native = Int32 Function(IntPtr Event);
+typedef _SetEvent_Dart = int Function(int Event);
+
+typedef _WaitForMultipleObjects_Native =
+    Uint32 Function(
+      Uint32 Count,
+      Pointer<IntPtr> Handles,
+      Int32 WaitAll,
+      Uint32 Milliseconds,
+    );
+typedef _WaitForMultipleObjects_Dart =
+    int Function(
+      int Count,
+      Pointer<IntPtr> Handles,
+      int WaitAll,
+      int Milliseconds,
+    );
 
 // ============================================================================
 // Registry API FFI bindings (advapi32.dll) - 只读
@@ -458,6 +570,27 @@ final fWinUsbFlushPipe = _winusb
     .lookupFunction<_WinUsb_FlushPipe_Native, _WinUsb_FlushPipe_Dart>(
       'WinUsb_FlushPipe',
     );
+final fWinUsbAbortPipe = _winusb
+    .lookupFunction<_WinUsb_AbortPipe_Native, _WinUsb_AbortPipe_Dart>(
+      'WinUsb_AbortPipe',
+    );
+final fWinUsbGetOverlappedResult = _winusb
+    .lookupFunction<
+      _WinUsb_GetOverlappedResult_Native,
+      _WinUsb_GetOverlappedResult_Dart
+    >('WinUsb_GetOverlappedResult');
+
+final fCreateEventW = _kernel32
+    .lookupFunction<_CreateEventW_Native, _CreateEventW_Dart>('CreateEventW');
+final fResetEvent = _kernel32
+    .lookupFunction<_ResetEvent_Native, _ResetEvent_Dart>('ResetEvent');
+final fSetEvent = _kernel32
+    .lookupFunction<_SetEvent_Native, _SetEvent_Dart>('SetEvent');
+final fWaitForMultipleObjects = _kernel32
+    .lookupFunction<
+      _WaitForMultipleObjects_Native,
+      _WaitForMultipleObjects_Dart
+    >('WaitForMultipleObjects');
 
 final fRegOpenKeyExW = _advapi32
     .lookupFunction<_RegOpenKeyExW_Native, _RegOpenKeyExW_Dart>(
@@ -480,6 +613,34 @@ final fRegEnumKeyExW = _advapi32
 
 bool isInPipe(int pipeId) => (pipeId & PIPE_ID_IN_MASK) != 0;
 bool isOutPipe(int pipeId) => (pipeId & PIPE_ID_IN_MASK) == 0;
+
+/// 携带 Win32 错误码的 WinUSB 调用异常。
+class WinUsbError implements Exception {
+  final int errorCode;
+  final String message;
+
+  WinUsbError(this.errorCode, this.message);
+
+  @override
+  String toString() => 'WinUsbError($errorCode): $message';
+}
+
+/// 判断错误码是否为「设备已拔出」。
+///
+/// 拔掉设备后，WinUsb_ReadPipe / WinUsb_WritePipe 通常会返回这些错误码；
+/// 正常「无数据超时」通常为 ERROR_SEM_TIMEOUT(121)，不属于设备拔出。
+bool isUsbDeviceGoneError(int errorCode) {
+  switch (errorCode) {
+    case 1167: // ERROR_DEVICE_NOT_CONNECTED
+    case 433: // ERROR_NO_SUCH_DEVICE
+    case 31: // ERROR_GEN_FAILURE
+    case 995: // ERROR_OPERATION_ABORTED
+    case 6: // ERROR_INVALID_HANDLE
+      return true;
+    default:
+      return false;
+  }
+}
 
 // ============================================================================
 // Device info model
@@ -784,31 +945,39 @@ void winUsbFree(int interfaceHandle) {
   }
 }
 
-/// 查询接口设置（对齐 go.md 的 queryEndpoints: QueryInterfaceSettings）。
-WINUSB_INTERFACE_SETTINGS queryInterfaceSettings(
+/// 查询接口描述符（WinUsb_QueryInterfaceSettings 返回 USB_INTERFACE_DESCRIPTOR）。
+WinUsbInterfaceDescriptor queryInterfaceSettings(
   int interfaceHandle,
-  int interfaceIndex,
+  int alternateInterfaceNumber,
 ) {
-  final settingsPtr = calloc<WINUSB_INTERFACE_SETTINGS>();
+  final descriptorPtr = calloc<USB_INTERFACE_DESCRIPTOR>();
 
   try {
     final result = fWinUsbQueryInterfaceSettings(
       interfaceHandle,
-      interfaceIndex,
-      settingsPtr,
+      alternateInterfaceNumber,
+      descriptorPtr,
     );
     if (result == 0) {
       final error = fGetLastError();
       throw Exception('WinUsb_QueryInterfaceSettings failed: error=$error');
     }
-    return settingsPtr.ref;
+    final descriptor = descriptorPtr.ref;
+    return WinUsbInterfaceDescriptor(
+      interfaceNumber: descriptor.bInterfaceNumber,
+      alternateSetting: descriptor.bAlternateSetting,
+      numEndpoints: descriptor.bNumEndpoints,
+      interfaceClass: descriptor.bInterfaceClass,
+      interfaceSubClass: descriptor.bInterfaceSubClass,
+      interfaceProtocol: descriptor.bInterfaceProtocol,
+    );
   } finally {
-    calloc.free(settingsPtr);
+    calloc.free(descriptorPtr);
   }
 }
 
 /// 查询单个管道信息（对齐 go.md 的 QueryPipe）。
-WINUSB_PIPE_INFORMATION queryPipeInfo(
+WinUsbPipeInformation queryPipeInfo(
   int interfaceHandle,
   int interfaceIndex,
   int pipeIndex,
@@ -828,7 +997,13 @@ WINUSB_PIPE_INFORMATION queryPipeInfo(
         'WinUsb_QueryPipe failed: index=$pipeIndex, error=$error',
       );
     }
-    return pipeInfoPtr.ref;
+    final pipe = pipeInfoPtr.ref;
+    return WinUsbPipeInformation(
+      pipeType: pipe.PipeType,
+      pipeId: pipe.PipeId,
+      maximumPacketSize: pipe.MaximumPacketSize,
+      interval: pipe.Interval,
+    );
   } finally {
     calloc.free(pipeInfoPtr);
   }
@@ -837,11 +1012,11 @@ WINUSB_PIPE_INFORMATION queryPipeInfo(
 /// 列出接口的全部管道（对齐 go.md 的 queryEndpoints 循环 QueryPipe）。
 ///
 /// 返回的管道列表按 PipeId 分类：bit7=1 为 IN 管道，bit7=0 为 OUT 管道。
-List<WINUSB_PIPE_INFORMATION> listPipes(
+List<WinUsbPipeInformation> listPipes(
   int interfaceHandle,
   int interfaceIndex,
 ) {
-  final pipes = <WINUSB_PIPE_INFORMATION>[];
+  final pipes = <WinUsbPipeInformation>[];
   var pipeIndex = 0;
 
   while (true) {
@@ -902,7 +1077,7 @@ int winUsbWritePipe(int interfaceHandle, int pipeId, Uint8List data) {
 
     if (result == 0) {
       final error = fGetLastError();
-      throw Exception('WinUsb_WritePipe failed: error=$error');
+      throw WinUsbError(error, 'WinUsb_WritePipe failed: error=$error');
     }
 
     return bytesWrittenPtr.value;
@@ -929,7 +1104,7 @@ Uint8List winUsbReadPipe(int interfaceHandle, int pipeId, int bufferSize) {
 
     if (result == 0) {
       final error = fGetLastError();
-      throw Exception('WinUsb_ReadPipe failed: error=$error');
+      throw WinUsbError(error, 'WinUsb_ReadPipe failed: error=$error');
     }
 
     final bytesRead = bytesReadPtr.value;
@@ -953,6 +1128,12 @@ void winUsbFlushPipe(int interfaceHandle, int pipeId) {
   fWinUsbFlushPipe(interfaceHandle, pipeId);
 }
 
+/// 中止管道上所有挂起的传输（对齐 WinUSB 的 AbortPipe）。
+void winUsbAbortPipe(int interfaceHandle, int pipeId) {
+  if (interfaceHandle == 0 || pipeId == 0) return;
+  fWinUsbAbortPipe(interfaceHandle, pipeId);
+}
+
 // ============================================================================
 // Internal helpers
 // ============================================================================
@@ -967,6 +1148,66 @@ Pointer<GUID> _allocGuidDevInterfaceUsbDevice() {
   g.data4a = 0x901F00C0;
   g.data4b = 0x4FB951ED;
   return p;
+}
+
+/// 从 `DeviceClasses` 注册表枚举并查找匹配 VID/PID/接口号的设备接口路径。
+///
+/// WinUSB 设备的接口 GUID 会以子键形式出现在
+/// `HKLM\SYSTEM\CurrentControlSet\Control\DeviceClasses` 下，子键值即为
+/// 可直接用 `CreateFile` 打开的设备接口路径。
+String? findWinUsbDevicePathByDeviceClasses({
+  required int vid,
+  required int pid,
+  int interfaceNumber = 0,
+  String? interfaceGuid,
+}) {
+  const deviceClassesKeyPath =
+      r'SYSTEM\CurrentControlSet\Control\DeviceClasses';
+  final deviceClassesKey = _openRegKey(deviceClassesKeyPath);
+  if (deviceClassesKey == 0) return null;
+
+  final candidates = <String>[];
+  try {
+    final guidKeys = _enumRegSubKeys(deviceClassesKey);
+    for (final guidKeyName in guidKeys) {
+      final guidKey = _openRegKey('$deviceClassesKeyPath\\$guidKeyName');
+      if (guidKey == 0) continue;
+      try {
+        final instances = _enumRegSubKeys(guidKey);
+        for (final instance in instances) {
+          var devicePath = instance;
+          // 注册表 DeviceClasses 中的 `##?` 是设备接口符号链接的转义前缀，
+          // 实际 `CreateFile` 打开时应使用 `\\?\`，且去掉紧随其后的 `#`。
+          if (devicePath.startsWith('##?#')) {
+            devicePath = r'\\?\' + devicePath.substring(4);
+          }
+          if (!devicePath.contains('VID_') || !devicePath.contains('PID_')) {
+            continue;
+          }
+          final parsed = _parseDevicePath(devicePath);
+          if (parsed == null) continue;
+          final (pathVid, pathPid, pathInterface) = parsed;
+          if (pathVid == vid &&
+              pathPid == pid &&
+              pathInterface == interfaceNumber) {
+            if (interfaceGuid != null &&
+                !devicePath.contains(interfaceGuid.toLowerCase())) {
+              continue;
+            }
+            candidates.add(devicePath);
+          }
+        }
+      } finally {
+        fRegCloseKey(guidKey);
+      }
+    }
+  } finally {
+    fRegCloseKey(deviceClassesKey);
+  }
+  for (final candidate in candidates) {
+    if (canOpenAsWinUsb(candidate)) return candidate;
+  }
+  return candidates.isNotEmpty ? candidates.first : null;
 }
 
 /// 打开注册表子键（只读），失败返回 0。

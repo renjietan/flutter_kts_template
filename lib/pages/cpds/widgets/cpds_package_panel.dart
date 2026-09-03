@@ -9,17 +9,13 @@ class CpdsPackagePanel extends StatefulWidget {
     super.key,
     required this.state,
     required this.uploading,
-    required this.parsing,
     required this.onBrowse,
-    required this.onParse,
     required this.onSelectNode,
   });
 
   final CpdsApplicationState state;
   final bool uploading;
-  final bool parsing;
   final VoidCallback onBrowse;
-  final VoidCallback onParse;
   final ValueChanged<String> onSelectNode;
 
   @override
@@ -102,19 +98,6 @@ class _CpdsPackagePanelState extends State<CpdsPackagePanel> {
                   onPressed: widget.state.active || widget.uploading
                       ? null
                       : widget.onBrowse,
-                ),
-                const SizedBox(width: 8),
-                BaseButton(
-                  label: t.cpds.parse,
-                  width: 88,
-                  height: 32,
-                  isLoading: widget.parsing,
-                  onPressed:
-                      widget.state.upload == null ||
-                          widget.state.active ||
-                          widget.parsing
-                      ? null
-                      : widget.onParse,
                 ),
               ],
             ),

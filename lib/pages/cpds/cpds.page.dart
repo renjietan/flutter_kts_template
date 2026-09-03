@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -10,8 +11,11 @@ import 'package:flutter_kts_template/core/cpds/model/cpds_models.dart';
 import 'package:flutter_kts_template/core/databaseManager/databaseManager.dart';
 import 'package:flutter_kts_template/core/entities/keyLoaderDetails/keyLoaderDetailsEntity.dart';
 import 'package:flutter_kts_template/core/entities/keyLoaders/keyLoadersEntity.dart';
+import 'package:flutter_kts_template/core/rtc/managers/keyloader_usb_bulk_factory.dart';
 import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
+import 'package:flutter_kts_template/logger/logger.dart';
 import 'package:flutter_kts_template/objectbox.g.dart';
+import 'package:flutter_kts_template/pages/cpds/widgets/cpds_key_loader_file_dialog.dart';
 import 'package:flutter_kts_template/pages/cpds/widgets/cpds_package_panel.dart';
 import 'package:flutter_kts_template/utils/files/pick_files/FileSelector.dart';
 import 'package:flutter_kts_template/utils/shared.dart';
@@ -36,7 +40,6 @@ class _CpdsPageState extends State<CpdsPage> {
   bool _automaticInterface = false;
   bool _interfacesLoading = false;
   bool _uploading = false;
-  bool _parsing = false;
   bool _distributing = false;
   bool _resolvingDecision = false;
   bool _discoveryDialogShowing = false;
@@ -201,16 +204,34 @@ class _CpdsPageState extends State<CpdsPage> {
 
   Future<void> _browse() async {
     if (_state.active || _uploading) return;
+
+    // 先弹出确认框：重新上传将清空注钥数据。
+    final proceed = await _confirmClearKeyLoader();
+    if (proceed != true || !mounted) return;
+
+    // 确认后再选择文件来源：本地文件 或 注钥枪设备文件。
+    final source = await _chooseBrowseSource();
+    if (source == null || !mounted) return;
+
+    switch (source) {
+      case _CpdsBrowseSource.local:
+        await _browseLocal();
+      case _CpdsBrowseSource.keyLoader:
+        await _browseKeyLoader();
+    }
+  }
+
+  Future<_CpdsBrowseSource?> _chooseBrowseSource() {
+    return showDialog<_CpdsBrowseSource>(
+      context: context,
+      builder: (dialogContext) => const _CpdsBrowseSourceDialog(),
+    );
+  }
+
+  Future<void> _browseLocal() async {
+    if (_state.active || _uploading) return;
     final placeholder = Translations.of(context).cpds.filePlaceholder;
     final browseFailedTitle = Translations.of(context).common.OperationError;
-
-    // 注钥管理有数据时，提示重新上传将清空注钥数据，确认后再继续选择文件
-    var clearOnUpload = false;
-    if (_hasKeyLoaderData()) {
-      final proceed = await _confirmClearKeyLoader();
-      if (proceed != true || !mounted) return;
-      clearOnUpload = true;
-    }
 
     setState(() {
       _uploading = true;
@@ -221,12 +242,12 @@ class _CpdsPageState extends State<CpdsPage> {
         SimplePopup.warn(placeholder);
         return;
       }
-      // 只有用户确认并真正选中文件后，才清空注钥数据
-      if (clearOnUpload) {
-        _clearKeyLoaderData();
-      }
+      // 已在浏览前确认，选中文件后清空注钥数据。
+      _clearKeyLoaderData();
       final state = await CpdsApi.uploadPackage(file);
       _applyState(state);
+      // 上传成功后自动解析。
+      await _parse();
     } catch (error) {
       _showError(error, title: browseFailedTitle);
     } finally {
@@ -277,31 +298,19 @@ class _CpdsPageState extends State<CpdsPage> {
     DatabaseManager.instance.removeAll<KeyLoadersEntity>();
   }
 
-  /// 判断“注钥管理”是否有数据（父表或明细表任一非空）。
-  bool _hasKeyLoaderData() {
-    return DatabaseManager.instance.count<KeyLoadersEntity>() > 0 ||
-        DatabaseManager.instance.count<KeyLoaderDetailsEntity>() > 0;
-  }
-
   Future<void> _parse() async {
-    if (_state.upload == null || _state.active || _parsing) return;
-    final importFailedTitle = CpdsMessages.isZh(context)
-        ? '通信包导入失败'
-        : 'Package import failed';
-    setState(() {
-      _parsing = true;
-    });
+    if (_state.upload == null || _state.active) return;
+    final t = Translations.of(context);
     try {
       final state = await CpdsApi.parsePackage();
       _applyState(state);
+      SimplePopup.success(t.cpds.keyLoaderParseSuccess);
     } catch (error) {
-      _showError(error, title: importFailedTitle);
-    } finally {
-      if (mounted) {
-        setState(() {
-          _parsing = false;
-        });
-      }
+      GlobalLogger.logError('PARSE_FAILED $error');
+      final detail = error is CpdsException
+          ? CpdsMessages.errorCode(context, error.code, params: error.params)
+          : error.toString();
+      SimplePopup.error('${t.cpds.keyLoaderParseFailed}：$detail');
     }
   }
 
@@ -343,7 +352,56 @@ class _CpdsPageState extends State<CpdsPage> {
     } catch (error) {
       _showError(error, title: distributionFailedTitle);
     } finally {
-      _distributing = false;
+      if (mounted) {
+        setState(() {
+          _distributing = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _browseKeyLoader() async {
+    if (_state.active || _uploading) return;
+    final t = Translations.of(context);
+
+    setState(() {
+      _uploading = true;
+    });
+    try {
+      final manager = getKeyLoaderUsbBulkManager();
+
+      // Android 需先申请 USB 权限；其它平台直接放行。
+      if (Platform.isAndroid) {
+        if (!await manager.hasPermission()) {
+          final granted = await manager
+              .requestPermission()
+              .timeout(const Duration(seconds: 30), onTimeout: () => false);
+          if (!granted) {
+            SimplePopup.error(t.cpds.keyLoaderPermissionDenied);
+            return;
+          }
+        }
+      }
+
+      // 弹窗内完成：连接注钥枪 → 获取文件列表 → 文件选择。
+      if (!mounted) return;
+      final selected = await showDialog<String>(
+        context: context,
+        barrierDismissible: false,
+        builder: (dialogContext) => const CpdsKeyLoaderFileDialog(),
+      );
+      if (selected != null) {
+        GlobalLogger.logInfo('KEY_LOADER_SELECTED $selected');
+        // TODO: 后续从注钥枪读取所选文件并作为通信包上传。
+      }
+    } catch (error) {
+      _showError(error);
+    } finally {
+      if (mounted) {
+        setState(() {
+          _uploading = false;
+        });
+      }
     }
   }
 
@@ -458,9 +516,7 @@ class _CpdsPageState extends State<CpdsPage> {
                 child: CpdsPackagePanel(
                   state: _state,
                   uploading: _uploading,
-                  parsing: _parsing,
                   onBrowse: _browse,
-                  onParse: _parse,
                   onSelectNode: _selectNode,
                 ),
               ),
@@ -477,6 +533,7 @@ class _CpdsPageState extends State<CpdsPage> {
                   automaticInterface: _automaticInterface,
                   interfacesLoading: _interfacesLoading,
                   canDistribute: _state.canDistribute,
+                  distributing: _distributing || _state.active,
                   onRefreshInterfaces: _refreshNetworkInterfaces,
                   onSelectInterface: _selectInterface,
                   onDistribute: _distribute,
@@ -498,5 +555,95 @@ class _CpdsPageState extends State<CpdsPage> {
       return ExcludeSemantics(child: page);
     }
     return page;
+  }
+}
+
+enum _CpdsBrowseSource { local, keyLoader }
+
+class _CpdsBrowseSourceDialog extends StatefulWidget {
+  const _CpdsBrowseSourceDialog();
+
+  @override
+  State<_CpdsBrowseSourceDialog> createState() =>
+      _CpdsBrowseSourceDialogState();
+}
+
+class _CpdsBrowseSourceDialogState extends State<_CpdsBrowseSourceDialog> {
+  _CpdsBrowseSource _selected = _CpdsBrowseSource.local;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = Translations.of(context);
+    return AlertDialog(
+      backgroundColor: const Color(0xFF20262D),
+      title: Text(
+        t.cpds.browseSourceTitle,
+        style: const TextStyle(color: Colors.white, fontSize: 17),
+      ),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _buildOption(t.cpds.browseSourceLocal, _CpdsBrowseSource.local),
+          const SizedBox(height: 8),
+          _buildOption(
+            t.cpds.browseSourceKeyLoader,
+            _CpdsBrowseSource.keyLoader,
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(null),
+          child: Text(
+            t.tips.cancel,
+            style: const TextStyle(color: Colors.white70),
+          ),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.of(context).pop(_selected),
+          child: Text(t.tips.ok),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildOption(String label, _CpdsBrowseSource value) {
+    final selected = _selected == value;
+    return InkWell(
+      onTap: () => setState(() => _selected = value),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: selected ? const Color(0xFF0E1114) : Colors.transparent,
+          borderRadius: BorderRadius.circular(4),
+          border: Border.all(
+            color: selected
+                ? const Color(0xFF00A2E9)
+                : const Color(0x26FFFFFF),
+          ),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              selected
+                  ? Icons.radio_button_checked
+                  : Icons.radio_button_unchecked,
+              size: 18,
+              color: selected ? const Color(0xFF00A2E9) : Colors.white54,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                label,
+                style: TextStyle(
+                  color: selected ? Colors.white : Colors.white70,
+                  fontSize: 13,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

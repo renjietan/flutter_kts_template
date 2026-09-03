@@ -439,6 +439,105 @@ class Translations$cpds$zh {
 	/// zh: '重新上传文件，将清空【注钥管理】的数据，确认是否继续？'
 	String get browseConfirm => '重新上传文件，将清空【注钥管理】的数据，确认是否继续？';
 
+	/// zh: '选择文件来源'
+	String get browseSourceTitle => '选择文件来源';
+
+	/// zh: '本地文件列表'
+	String get browseSourceLocal => '本地文件列表';
+
+	/// zh: '注钥枪文件列表'
+	String get browseSourceKeyLoader => '注钥枪文件列表';
+
+	/// zh: '未授予 USB 权限'
+	String get keyLoaderPermissionDenied => '未授予 USB 权限';
+
+	/// zh: '注钥枪连接成功'
+	String get keyLoaderConnectSuccess => '注钥枪连接成功';
+
+	/// zh: '注钥枪连接失败'
+	String get keyLoaderConnectFailed => '注钥枪连接失败';
+
+	/// zh: '连接注钥枪'
+	String get keyLoaderStepConnect => '连接注钥枪';
+
+	/// zh: '获取文件列表'
+	String get keyLoaderStepList => '获取文件列表';
+
+	/// zh: '文件选择'
+	String get keyLoaderStepSelect => '文件选择';
+
+	/// zh: '文件已选择'
+	String get keyLoaderStepSelected => '文件已选择';
+
+	/// zh: '暂无文件'
+	String get keyLoaderListEmpty => '暂无文件';
+
+	/// zh: '获取文件列表失败'
+	String get keyLoaderListError => '获取文件列表失败';
+
+	/// zh: '获取文件列表超时'
+	String get keyLoaderListTimeout => '获取文件列表超时';
+
+	/// zh: '密码校验'
+	String get keyLoaderStepPassword => '密码校验';
+
+	/// zh: '下载'
+	String get keyLoaderStepDownload => '下载';
+
+	/// zh: '就绪'
+	String get keyLoaderStepReady => '就绪';
+
+	/// zh: '完成'
+	String get keyLoaderStepComplete => '完成';
+
+	/// zh: '下一步'
+	String get keyLoaderNext => '下一步';
+
+	/// zh: '上一步'
+	String get keyLoaderPrev => '上一步';
+
+	/// zh: '已超时'
+	String get keyLoaderDecryptTimeout => '已超时';
+
+	/// zh: '校验失败'
+	String get keyLoaderDecryptFail => '校验失败';
+
+	/// zh: '密码错误，还剩下{n}次机会'
+	String keyLoaderDecryptFailRemaining({required Object n}) => '密码错误，还剩下${n}次机会';
+
+	/// zh: '密码多次错误，已毁钥'
+	String get keyLoaderDecryptCleared => '密码多次错误，已毁钥';
+
+	/// zh: '文件已损坏'
+	String get keyLoaderDecryptErr => '文件已损坏';
+
+	/// zh: '解密'
+	String get keyLoaderStepDecrypt => '解密';
+
+	/// zh: '解析'
+	String get keyLoaderStepParse => '解析';
+
+	/// zh: '文件不完整，已损坏'
+	String get keyLoaderFileCorrupted => '文件不完整，已损坏';
+
+	/// zh: '解密失败'
+	String get keyLoaderDecryptFailed => '解密失败';
+
+	/// zh: '下载完成'
+	String get keyLoaderSuccess => '下载完成';
+
+	/// zh: '响应超时'
+	String get keyLoaderReadyTimeout => '响应超时';
+
+	/// zh: '失败：校验失败'
+	String get keyLoaderVerifyFailed => '失败：校验失败';
+
+	/// zh: '解析成功'
+	String get keyLoaderParseSuccess => '解析成功';
+
+	/// zh: '解析失败'
+	String get keyLoaderParseFailed => '解析失败';
+
 	/// zh: '网络节点'
 	String get nodesTitle => '网络节点';
 
@@ -960,6 +1059,9 @@ class Translations$cpds$export$zh {
 
 	/// zh: '勾选的行中存在未选择配对电台，请先选择'
 	String get radioRequired => '勾选的行中存在未选择配对电台，请先选择';
+
+	/// zh: '请先勾选需要导出的行'
+	String get noSelection => '请先勾选需要导出的行';
 }
 
 // Path: cpds.exportProgress
@@ -1027,8 +1129,8 @@ class Translations$cpds$usbProgress$zh {
 	/// zh: '完成'
 	String get stepComplete => '完成';
 
-	/// zh: 'USB'
-	String get stepUsb => 'USB';
+	/// zh: '注钥枪'
+	String get stepUsb => '注钥枪';
 
 	/// zh: '已完成'
 	String get completed => '已完成';
@@ -1060,8 +1162,8 @@ class Translations$cpds$usbProgress$zh {
 	/// zh: '握手失败'
 	String get detailHandshakeFail => '握手失败';
 
-	/// zh: '发送 PC_UPLOAD，等待 READY'
-	String get detailReadyStart => '发送 PC_UPLOAD，等待 READY';
+	/// zh: '发送 PAD_UPLOAD，等待 READY'
+	String get detailReadyStart => '发送 PAD_UPLOAD，等待 READY';
 
 	/// zh: '设备已就绪'
 	String get detailReadySuccess => '设备已就绪';
@@ -1078,14 +1180,41 @@ class Translations$cpds$usbProgress$zh {
 	/// zh: '注钥枪接收成功'
 	String get detailComplete => '注钥枪接收成功';
 
+	/// zh: '校验超时'
+	String get detailVerifyTimeout => '校验超时';
+
+	/// zh: '校验失败'
+	String get detailVerifyFail => '校验失败';
+
+	/// zh: '保存失败'
+	String get detailVerifySaveFail => '保存失败';
+
+	/// zh: '完成：文件已导出'
+	String get detailExportComplete => '完成：文件已导出';
+
 	/// zh: '第 {index} 包 发送成功'
 	String detailPacketSuccess({required Object index}) => '第 ${index} 包 发送成功';
 
 	/// zh: '第 {index} 包 发送失败'
 	String detailPacketFail({required Object index}) => '第 ${index} 包 发送失败';
 
+	/// zh: '第 {index} 包 发送超时'
+	String detailPacketTimeout({required Object index}) => '第 ${index} 包 发送超时';
+
+	/// zh: '第 {index} 包 MD5 校验失败'
+	String detailMd5Error({required Object index}) => '第 ${index} 包 MD5 校验失败';
+
+	/// zh: '第 {index} 包 保存失败'
+	String detailSaveError({required Object index}) => '第 ${index} 包 保存失败';
+
 	/// zh: 'USB 传输异常'
 	String get detailError => 'USB 传输异常';
+
+	/// zh: 'USB 设备已断开'
+	String get detailDeviceRemoved => 'USB 设备已断开';
+
+	/// zh: '注钥成功'
+	String get detailKeyLoadSuccess => '注钥成功';
 }
 
 // Path: pager.injectParams.steps
