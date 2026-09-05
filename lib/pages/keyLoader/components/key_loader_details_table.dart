@@ -37,10 +37,12 @@ class KeyLoaderDetailsTable extends StatefulWidget {
   const KeyLoaderDetailsTable({
     super.key,
     required this.keyLoaderEntity,
+    this.refreshToken = 0,
     this.themePreset = ThemePreset.dark,
   });
 
   final KeyLoadersEntity? keyLoaderEntity;
+  final int refreshToken;
   final ThemePreset themePreset;
 
   @override
@@ -132,7 +134,8 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
   @override
   void didUpdateWidget(covariant KeyLoaderDetailsTable oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.keyLoaderEntity?.id != widget.keyLoaderEntity?.id) {
+    if (oldWidget.refreshToken != widget.refreshToken ||
+        oldWidget.keyLoaderEntity?.id != widget.keyLoaderEntity?.id) {
       _future = _load();
       _currentPage = 1;
       _allData = [];

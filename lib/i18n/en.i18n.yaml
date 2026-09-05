@@ -66,6 +66,7 @@ tips:
   ok: Confirm
   paramsInject:
     noKeyLoader: No Key Loader is available. Please go and add one
+    noRadio: No radio is available. Please go and add one
     selectRadios: Please select a radio
     gotoConfig: Binding completed. go to configuration now?
   keyLoaders:

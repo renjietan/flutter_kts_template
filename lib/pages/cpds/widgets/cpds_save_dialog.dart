@@ -42,6 +42,7 @@ class _CpdsFutureWarriorSaveDialogState
   int _currentPage = 1;
   int _pageSize = 10;
   StreamSubscription<AppLocale>? _localeSubscription;
+  bool _closed = false;
 
   @override
   void initState() {
@@ -92,7 +93,20 @@ class _CpdsFutureWarriorSaveDialogState
     return null;
   }
 
+  List<RadiosEntity> _availableRadiosFor(CpdsFutureWarriorDevice fwDevice) {
+    final selectedByOthers = <int>{};
+    _selectedRadioId.forEach((key, id) {
+      if (key != fwDevice.key && id != null) {
+        selectedByOthers.add(id);
+      }
+    });
+    return _radios
+        .where((radio) => !selectedByOthers.contains(radio.id))
+        .toList();
+  }
+
   void _save() {
+    if (_closed) return;
     if (!(_formKey.currentState?.saveAndValidate() ?? false)) return;
     final parentIdPath = _findUnitPath(widget.units, widget.unitId);
     final json = {
@@ -114,6 +128,7 @@ class _CpdsFutureWarriorSaveDialogState
       }).toList(),
     };
     GlobalLogger.logInfo('SAVE_JSON ${jsonEncode(json)}');
+    _closed = true;
     widget.onSave(json);
   }
 
@@ -315,7 +330,7 @@ class _CpdsFutureWarriorSaveDialogState
                                         t.cpds.saveDialog.selectPlaceholder,
                                       ),
                                       items: [
-                                        ..._radios.map(
+                                        ..._availableRadiosFor(fwDevice).map(
                                           (item) => DropdownMenuItem<int?>(
                                             value: item.id,
                                             child: Text(item.alias),
@@ -397,7 +412,11 @@ class _CpdsFutureWarriorSaveDialogState
       ),
       actions: [
         TextButton(
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () {
+            if (_closed) return;
+            _closed = true;
+            Navigator.of(context).pop();
+          },
           child: Text(t.common.cancel),
         ),
         FilledButton(onPressed: _save, child: Text(t.button.radioManager.save)),

@@ -66,6 +66,7 @@ tips:
   ok: 确定
   paramsInject:
     noKeyLoader: 当前无可选的密钥枪, 请前往添加后再试
+    noRadio: 当前无可选的电台, 请前往添加后再试
     selectRadios: 请勾选电台
     gotoConfig: 绑定已完成，是否现在前往配置？
   keyLoaders:

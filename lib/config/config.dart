@@ -1,6 +1,3 @@
-import 'dart:io';
-
-import 'package:flutter/foundation.dart';
 import 'package:flutter_kts_template/config/module/database.dart';
 import 'package:flutter_kts_template/config/module/server.dart';
 import 'package:flutter_kts_template/config/module/udp.dart';
@@ -14,26 +11,28 @@ class AppConfig {
     'ENV_MODE',
     defaultValue: 'dev',
   );
+
+  /// Express（shelf 服务）实际监听的端口。
+  /// 启动前为 0；启动后由 Express 回写。若默认端口被占用，
+  /// 服务会回退到系统分配的空闲端口，此值即实际端口。
+  static int actualServerPort = 0;
+
   static String get baseUrl {
-    if (kIsWeb) {
-      return 'http://localhost:8080/api'; // 根据实际情况修改
-    }
-    if (Platform.isAndroid) {
-      // Android 模拟器使用 10.0.2.2，真机使用电脑的局域网 IP
-      return 'http://localhost:8080/api'; // 模拟器
-    }
-    if (Platform.isIOS) {
-      // 真机改为电脑 IP
-      return 'http://localhost:8080/api'; // 模拟器
-    }
-    // 其他平台（Windows/macOS/Linux）直接用 localhost
-    return 'http://localhost:8080/api';
+    final port = actualServerPort > 0
+        ? actualServerPort
+        : int.parse(serverConfig.port);
+    // shelf 服务与应用运行在同一进程内，所有平台都通过 localhost 访问自身服务。
+    return 'http://localhost:$port/api';
   }
 
   static String zipPassword = "UAE@123";
 
   static final ServerConfig serverConfig = ServerConfig(
-    port: const String.fromEnvironment('SERVER_PORT', defaultValue: "8080"),
+    port: const String.fromEnvironment('SERVER_PORT', defaultValue: "3303"),
+    fallbackPort: const String.fromEnvironment(
+      'SERVER_FALLBACK_PORT',
+      defaultValue: "3309",
+    ),
   );
   static final DataBaseConfig dataBaseConfig = DataBaseConfig(
     name: const String.fromEnvironment("DB_NAME", defaultValue: "app_db"),

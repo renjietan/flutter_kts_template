@@ -588,12 +588,11 @@ class CpdsPackageParser {
       additionalTypes: [CpdsDeviceType.ccuAudio],
     );
 
-    appendIds(
-      _stringList(systemConfig['LANMember']?['VehInter']),
-      CpdsDeviceType.vehInter,
-      'dc_VehInter_',
-      'VehInter',
-    );
+    // 暂不把 VehInter 加入期望设备清单。VehInter(device_type=9) 是较新的
+    // 设备类型，目前旧版 CPDC 固件（例如 MMR200 电台）不认识 type=9，
+    // 收到携带 VehInter 的 AUTH_NTY 时会按 INVALID_MESSAGE 拒绝，导致整轮
+    // 认证被拖垮。这里与旧版 Go CPDS 保持一致：解析时忽略 VehInter，待
+    // 端侧固件都升级支持 VehInter 后再重新启用。
 
     final radioMappings = <MapEntry<String, (String, String, CpdsDeviceType)>>[
       MapEntry('MMR200', ('dc_MMR200_', 'MMR200', CpdsDeviceType.multiBandRadio)),

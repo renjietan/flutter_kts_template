@@ -21,6 +21,7 @@ mixin KeyLoaderMixin on State<KeyLoaderPager> {
   KeyLoadersEntity? selectKeyLoader;
   List<KeyLoadersEntity> data = [];
   int totalItems = 0;
+  int refreshToken = 0;
   final nameTextEditController = TextEditingController();
 
   void getList() {
@@ -34,6 +35,7 @@ mixin KeyLoaderMixin on State<KeyLoaderPager> {
         data = res.data.list;
         totalItems = res.data.total;
         selectKeyLoader = data.isNotEmpty ? data[0] : null;
+        refreshToken++;
       });
     });
   }

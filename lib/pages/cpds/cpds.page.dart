@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_kts_template/api/KeyLoaders.api.dart';
+import 'package:flutter_kts_template/api/RadiosManagerApi.dart';
 import 'package:flutter_kts_template/api/cpds.api.dart';
 import 'package:flutter_kts_template/components/dialog/simple.tips.dialog.dart';
 import 'package:flutter_kts_template/components/loading/simple.loading.dart';
@@ -13,6 +14,7 @@ import 'package:flutter_kts_template/core/cpds/model/cpds_models.dart';
 import 'package:flutter_kts_template/core/databaseManager/databaseManager.dart';
 import 'package:flutter_kts_template/core/entities/keyLoaderDetails/keyLoaderDetailsEntity.dart';
 import 'package:flutter_kts_template/core/entities/keyLoaders/keyLoadersEntity.dart';
+import 'package:flutter_kts_template/core/entities/radios/radiosEntity.dart';
 import 'package:flutter_kts_template/core/rtc/managers/keyloader_usb_bulk_factory.dart';
 import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 import 'package:flutter_kts_template/logger/logger.dart';
@@ -20,9 +22,11 @@ import 'package:flutter_kts_template/objectbox.g.dart';
 import 'package:flutter_kts_template/pages/cpds/widgets/cpds_key_loader_file_dialog.dart';
 import 'package:flutter_kts_template/pages/cpds/widgets/cpds_package_panel.dart';
 import 'package:flutter_kts_template/utils/files/pick_files/FileSelector.dart';
+import 'package:flutter_kts_template/utils/provider/menu.provider.dart';
 import 'package:flutter_kts_template/utils/shared.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 
 import 'widgets/cpds_device_panel.dart';
 import 'widgets/cpds_dialogs.dart';
@@ -43,6 +47,7 @@ class _CpdsPageState extends State<CpdsPage> {
   bool _automaticInterface = false;
   bool _interfacesLoading = false;
   bool _uploading = false;
+  bool _browseRunning = false;
   bool _distributing = false;
   bool _resolvingDecision = false;
   bool _discoveryDialogShowing = false;
@@ -113,11 +118,18 @@ class _CpdsPageState extends State<CpdsPage> {
         context: context,
         useRootNavigator: false,
         barrierDismissible: false,
-        builder: (dialogContext) => CpdsDiscoveryMismatchDialog(
-          session: session,
-          submitting: _resolvingDecision,
-          onResolve: (value) => Navigator.of(dialogContext).pop(value),
-        ),
+        builder: (dialogContext) {
+          var closed = false;
+          return CpdsDiscoveryMismatchDialog(
+            session: session,
+            submitting: _resolvingDecision,
+            onResolve: (value) {
+              if (closed) return;
+              closed = true;
+              Navigator.of(dialogContext).pop(value);
+            },
+          );
+        },
       );
       if (proceed == null || !mounted) return;
       await _resolveMismatch(session.sessionId, proceed);
@@ -154,10 +166,17 @@ class _CpdsPageState extends State<CpdsPage> {
       context: context,
       useRootNavigator: false,
       barrierDismissible: true,
-      builder: (dialogContext) => CpdsResultDialog(
-        session: session,
-        onClose: () => Navigator.of(dialogContext).pop(),
-      ),
+      builder: (dialogContext) {
+        var closed = false;
+        return CpdsResultDialog(
+          session: session,
+          onClose: () {
+            if (closed) return;
+            closed = true;
+            Navigator.of(dialogContext).pop();
+          },
+        );
+      },
     );
   }
 
@@ -206,21 +225,25 @@ class _CpdsPageState extends State<CpdsPage> {
   }
 
   Future<void> _browse() async {
-    if (_state.active || _uploading) return;
+    if (_browseRunning || _state.active || _uploading) return;
+    _browseRunning = true;
+    try {
+      // 先弹出确认框：重新上传将清空注钥数据。
+      final proceed = await _confirmClearKeyLoader();
+      if (proceed != true || !mounted) return;
 
-    // 先弹出确认框：重新上传将清空注钥数据。
-    final proceed = await _confirmClearKeyLoader();
-    if (proceed != true || !mounted) return;
+      // 确认后再选择文件来源：本地文件 或 注钥枪设备文件。
+      final source = await _chooseBrowseSource();
+      if (source == null || !mounted) return;
 
-    // 确认后再选择文件来源：本地文件 或 注钥枪设备文件。
-    final source = await _chooseBrowseSource();
-    if (source == null || !mounted) return;
-
-    switch (source) {
-      case _CpdsBrowseSource.local:
-        await _browseLocal();
-      case _CpdsBrowseSource.keyLoader:
-        await _browseKeyLoader();
+      switch (source) {
+        case _CpdsBrowseSource.local:
+          await _browseLocal();
+        case _CpdsBrowseSource.keyLoader:
+          await _browseKeyLoader();
+      }
+    } finally {
+      _browseRunning = false;
     }
   }
 
@@ -268,30 +291,39 @@ class _CpdsPageState extends State<CpdsPage> {
     return showDialog<bool>(
       context: context,
       barrierDismissible: false,
-      builder: (dialogContext) => AlertDialog(
-        backgroundColor: const Color(0xFF20262D),
-        title: Text(
-          t.tips.title,
-          style: const TextStyle(color: Colors.white, fontSize: 17),
-        ),
-        content: Text(
-          t.cpds.browseConfirm,
-          style: const TextStyle(color: Colors.white70, fontSize: 13),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: Text(
-              t.tips.cancel,
-              style: const TextStyle(color: Colors.white70),
+      builder: (dialogContext) {
+        var closed = false;
+        void close(bool value) {
+          if (closed) return;
+          closed = true;
+          Navigator.of(dialogContext).pop(value);
+        }
+
+        return AlertDialog(
+          backgroundColor: const Color(0xFF20262D),
+          title: Text(
+            t.tips.title,
+            style: const TextStyle(color: Colors.white, fontSize: 17),
+          ),
+          content: Text(
+            t.cpds.browseConfirm,
+            style: const TextStyle(color: Colors.white70, fontSize: 13),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => close(false),
+              child: Text(
+                t.tips.cancel,
+                style: const TextStyle(color: Colors.white70),
+              ),
             ),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: Text(t.tips.ok),
-          ),
-        ],
-      ),
+            FilledButton(
+              onPressed: () => close(true),
+              child: Text(t.tips.ok),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -423,6 +455,32 @@ class _CpdsPageState extends State<CpdsPage> {
   ) async {
     final t = Translations.of(context);
 
+    // 电台列表为空时，提示并跳转到【电台管理】。
+    final List<RadiosEntity> radios;
+    try {
+      final radiosResponse = await RadiosManagerApi.getAll();
+      radios = List<RadiosEntity>.from(radiosResponse.data.list as List);
+    } catch (error) {
+      if (mounted) _showError(error);
+      return;
+    }
+    if (!mounted) return;
+
+    if (radios.isEmpty) {
+      SimpleTipsDialog(
+        context,
+        title: t.tips.title,
+        contentText: t.tips.paramsInject.noRadio,
+        okText: t.cpds.goNow,
+        func: () {
+          Provider.of<MenuProvider>(context, listen: false).selectedIndex = 1;
+          context.go('/radioManager');
+        },
+      );
+      return;
+    }
+
+    // 注钥列表为空时，提示并跳转到【注钥枪管理】。
     final List<KeyLoadersEntity> keyLoaders;
     try {
       final response = await KeyLoadersApi.getAll();
@@ -440,6 +498,7 @@ class _CpdsPageState extends State<CpdsPage> {
         contentText: t.tips.paramsInject.noKeyLoader,
         okText: t.cpds.goNow,
         func: () {
+          Provider.of<MenuProvider>(context, listen: false).selectedIndex = 2;
           context.go('/injectEncryptStick');
         },
       );
@@ -507,11 +566,18 @@ class _CpdsPageState extends State<CpdsPage> {
         context: context,
         useRootNavigator: false,
         barrierDismissible: true,
-        builder: (dialogContext) => CpdsErrorDialog(
-          title: dialogTitle,
-          error: error,
-          onClose: () => Navigator.of(dialogContext).pop(),
-        ),
+        builder: (dialogContext) {
+          var closed = false;
+          return CpdsErrorDialog(
+            title: dialogTitle,
+            error: error,
+            onClose: () {
+              if (closed) return;
+              closed = true;
+              Navigator.of(dialogContext).pop();
+            },
+          );
+        },
       );
       return;
     }
@@ -519,23 +585,30 @@ class _CpdsPageState extends State<CpdsPage> {
       context: context,
       useRootNavigator: false,
       barrierDismissible: true,
-      builder: (dialogContext) => AlertDialog(
-        backgroundColor: const Color(0xFF20262D),
-        title: Text(
-          dialogTitle,
-          style: const TextStyle(color: Colors.white, fontSize: 17),
-        ),
-        content: Text(
-          error.toString().replaceFirst('Exception: ', ''),
-          style: const TextStyle(color: Colors.white70, fontSize: 13),
-        ),
-        actions: [
-          FilledButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            child: Text(Translations.of(context).common.confirm),
+      builder: (dialogContext) {
+        var closed = false;
+        return AlertDialog(
+          backgroundColor: const Color(0xFF20262D),
+          title: Text(
+            dialogTitle,
+            style: const TextStyle(color: Colors.white, fontSize: 17),
           ),
-        ],
-      ),
+          content: Text(
+            error.toString().replaceFirst('Exception: ', ''),
+            style: const TextStyle(color: Colors.white70, fontSize: 13),
+          ),
+          actions: [
+            FilledButton(
+              onPressed: () {
+                if (closed) return;
+                closed = true;
+                Navigator.of(dialogContext).pop();
+              },
+              child: Text(Translations.of(context).common.confirm),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -608,6 +681,13 @@ class _CpdsBrowseSourceDialog extends StatefulWidget {
 
 class _CpdsBrowseSourceDialogState extends State<_CpdsBrowseSourceDialog> {
   _CpdsBrowseSource _selected = _CpdsBrowseSource.local;
+  bool _closed = false;
+
+  void _close(_CpdsBrowseSource? value) {
+    if (_closed) return;
+    _closed = true;
+    Navigator.of(context).pop(value);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -631,14 +711,14 @@ class _CpdsBrowseSourceDialogState extends State<_CpdsBrowseSourceDialog> {
       ),
       actions: [
         TextButton(
-          onPressed: () => Navigator.of(context).pop(null),
+          onPressed: () => _close(null),
           child: Text(
             t.tips.cancel,
             style: const TextStyle(color: Colors.white70),
           ),
         ),
         FilledButton(
-          onPressed: () => Navigator.of(context).pop(_selected),
+          onPressed: () => _close(_selected),
           child: Text(t.tips.ok),
         ),
       ],

@@ -94,10 +94,7 @@ class CpdsSessionRunner {
 
   Future<void> _authenticate() async {
     final assignments = machine.assignmentBodies;
-    final packets = <CpdPacket>[];
-    for (final assignment in assignments) {
-      packets.add(_packet(12, {1: [assignment]}));
-    }
+    final packets = _splitAuthPackets(assignments);
     if (packets.isEmpty) {
       machine.failActive(
         'AUTHENTICATION',
@@ -119,6 +116,40 @@ class CpdsSessionRunner {
     }
     if (!_terminal) machine.finishAuthentication();
     _updated();
+  }
+
+  /// 按旧版 Go CPDS 的 SplitAuthPackets 语义，把认证记录尽量装进同一条
+  /// AuthNty；只有加入下一条记录会导致 4 + proto.Size(Packet) 超过 1400
+  /// 时才换到下一条消息。这样能与参考实现保持一致（设备侧按 session_id +
+  /// device_type 累计，多条 AuthNty 也支持，但单条消息更符合既有固件预期）。
+  List<CpdPacket> _splitAuthPackets(List<Map<int, dynamic>> assignments) {
+    final packets = <CpdPacket>[];
+    var current = <Map<int, dynamic>>[];
+    for (final assignment in assignments) {
+      final candidate = <Map<int, dynamic>>[...current, assignment];
+      if (_packetFits(candidate)) {
+        current = candidate;
+        continue;
+      }
+      if (current.isEmpty) {
+        throw StateError('single auth assignment exceeds packet limit');
+      }
+      packets.add(_packet(12, {1: current}));
+      current = <Map<int, dynamic>>[assignment];
+    }
+    if (current.isNotEmpty) {
+      packets.add(_packet(12, {1: current}));
+    }
+    return packets;
+  }
+
+  bool _packetFits(List<Map<int, dynamic>> assignments) {
+    try {
+      CpdProtocol.encodePacket(_packet(12, {1: assignments}));
+      return true;
+    } catch (_) {
+      return false;
+    }
   }
 
   Future<void> _transfer() async {

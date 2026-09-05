@@ -336,9 +336,6 @@ void _winUsbReadLoop(_WinUsbReadContext context) {
   events[0] = context.readEvent;
   events[1] = context.shutdownEvent;
 
-  final overlapped = calloc<OVERLAPPED>();
-  overlapped.ref.hEvent = context.readEvent;
-
   final buffer = calloc<Uint8>(context.bufferSize);
   final bytesReadPtr = calloc<Uint32>();
 
@@ -347,11 +344,11 @@ void _winUsbReadLoop(_WinUsbReadContext context) {
   try {
     while (true) {
       fResetEvent(context.readEvent);
-      overlapped.ref.Internal = 0;
-      overlapped.ref.InternalHigh = 0;
-      overlapped.ref.Offset = 0;
-      overlapped.ref.OffsetHigh = 0;
       bytesReadPtr.value = 0;
+
+      // 每次使用全新的 OVERLAPPED，避免复用导致的“重复读/误读”竞态。
+      final overlapped = calloc<OVERLAPPED>();
+      overlapped.ref.hEvent = context.readEvent;
 
       final result = fWinUsbReadPipe(
         context.interfaceHandle,
@@ -364,6 +361,7 @@ void _winUsbReadLoop(_WinUsbReadContext context) {
 
       if (result != 0) {
         final count = bytesReadPtr.value;
+        calloc.free(overlapped);
         if (count > 0) {
           sendPort.send({
             'type': 'data',
@@ -373,15 +371,9 @@ void _winUsbReadLoop(_WinUsbReadContext context) {
         continue;
       }
 
-      final pendingError = fGetLastError();
-      // 在独立 isolate 中 GetLastError() 可能不会可靠返回 ERROR_IO_PENDING，
-      // 因此这里只快速识别“设备已拔出”，其余情况统一等待 overlapped 事件完成，
+      // result == 0：可能 pending，也可能已同步完成（成功/失败）。
+      // isolate 中 GetLastError() 不可靠，因此不依赖它判断，统一等待事件，
       // 再通过 WinUsb_GetOverlappedResult 判断最终结果。
-      if (isUsbDeviceGoneError(pendingError)) {
-        _sendReadError(sendPort, pendingError);
-        return;
-      }
-
       final wait = fWaitForMultipleObjects(2, events, 0, INFINITE);
       if (wait == WAIT_OBJECT_0) {
         final got = fWinUsbGetOverlappedResult(
@@ -390,6 +382,7 @@ void _winUsbReadLoop(_WinUsbReadContext context) {
           bytesReadPtr,
           0,
         );
+        calloc.free(overlapped);
         if (got == 0) {
           _sendReadError(sendPort, fGetLastError());
           return;
@@ -403,8 +396,10 @@ void _winUsbReadLoop(_WinUsbReadContext context) {
         }
       } else if (wait == WAIT_OBJECT_0 + 1) {
         // 收到关闭信号。
+        calloc.free(overlapped);
         return;
       } else {
+        calloc.free(overlapped);
         sendPort.send({
           'type': 'error',
           'message': 'WaitForMultipleObjects failed: wait=$wait',
@@ -417,7 +412,6 @@ void _winUsbReadLoop(_WinUsbReadContext context) {
     fWinUsbAbortPipe(context.interfaceHandle, context.inPipeId);
     calloc.free(buffer);
     calloc.free(bytesReadPtr);
-    calloc.free(overlapped);
     calloc.free(events);
     sendPort.send({'type': 'done'});
   }

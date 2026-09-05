@@ -169,10 +169,15 @@ class MainActivity : FlutterActivity() {
             return
         }
         permissionResult = result
+        // Android 14（targetSdk 34+）不允许“隐式 Intent + FLAG_MUTABLE”，
+        // 而 USB 权限回调需要系统向 PendingIntent 写入 EXTRA_DEVICE /
+        // EXTRA_PERMISSION_GRANTED，因此必须使用可变的 PendingIntent。
+        // 先通过 setPackage 把 Intent 变成显式 Intent，再使用 FLAG_MUTABLE。
+        val permissionIntent = Intent(ACTION_USB_PERMISSION).setPackage(packageName)
         val pendingIntent = PendingIntent.getBroadcast(
             this,
             0,
-            Intent(ACTION_USB_PERMISSION),
+            permissionIntent,
             PendingIntent.FLAG_MUTABLE,
         )
         usbManager?.requestPermission(target, pendingIntent)
@@ -320,6 +325,7 @@ class MainActivity : FlutterActivity() {
                 Log.e(TAG, "write error", e)
             }
             val finalWritten = written
+            Log.i(TAG, "write result=$finalWritten")
             runOnUiThread { result.success(finalWritten) }
         }.start()
     }
@@ -328,6 +334,7 @@ class MainActivity : FlutterActivity() {
         readRunning.set(true)
         readThread = Thread {
             val buffer = ByteArray(READ_BUFFER_SIZE)
+            Log.i(TAG, "read thread started")
             while (readRunning.get()) {
                 val ep = inEndpoint
                 val conn = connection
@@ -343,18 +350,26 @@ class MainActivity : FlutterActivity() {
                 }
                 if (!readRunning.get()) break
                 if (length < 0) {
-                    notifyDisconnected()
-                    break
+                    // -1 在此设备上表示“无数据超时”，继续轮询；
+                    // 设备拔出由 ACTION_USB_DEVICE_DETACHED 广播接收器单独处理。
+                    continue
                 }
                 if (length > 0) {
+                    Log.i(TAG, "read $length bytes")
+                    if (eventSink == null) {
+                        Log.w(TAG, "eventSink is null, dropping $length bytes")
+                    }
                     val chunk = buffer.copyOf(length)
-                    try {
-                        eventSink?.success(chunk)
-                    } catch (_: Exception) {
-                        // EventChannel 已取消，忽略
+                    runOnUiThread {
+                        try {
+                            eventSink?.success(chunk)
+                        } catch (e: Exception) {
+                            Log.w(TAG, "eventSink success failed", e)
+                        }
                     }
                 }
             }
+            Log.i(TAG, "read thread stopped")
         }
         readThread?.start()
     }

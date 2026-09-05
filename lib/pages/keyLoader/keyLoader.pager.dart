@@ -182,7 +182,10 @@ class _InjectEncryptStickPagerState extends State<KeyLoaderPager>
         ),
         const VerticalDivider(width: 0),
         Expanded(
-          child: KeyLoaderDetailsTable(keyLoaderEntity: selectKeyLoader),
+          child: KeyLoaderDetailsTable(
+            keyLoaderEntity: selectKeyLoader,
+            refreshToken: refreshToken,
+          ),
         ),
       ],
     );

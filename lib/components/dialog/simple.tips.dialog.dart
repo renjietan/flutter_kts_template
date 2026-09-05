@@ -13,17 +13,24 @@ void SimpleTipsDialog(
   showDialog(
     context: ctx,
     builder: (BuildContext context) {
+      var closed = false;
       return AlertDialog(
         title: Text(title.isEmpty ? t.tips.title : title),
         content: Text(contentText),
         actions: <Widget>[
           TextButton(
             child: Text(cancelText.isEmpty ? t.tips.cancel : cancelText),
-            onPressed: () => Navigator.pop(context),
+            onPressed: () {
+              if (closed) return;
+              closed = true;
+              Navigator.pop(context);
+            },
           ),
           TextButton(
             child: Text(okText.isEmpty ? t.tips.ok : okText),
             onPressed: () {
+              if (closed) return;
+              closed = true;
               func();
               Navigator.pop(context); // 保存完再关闭
             },

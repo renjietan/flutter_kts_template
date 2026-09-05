@@ -69,10 +69,20 @@ class _BaseButtonState extends State<BaseButton> with TickerProviderStateMixin {
     if (widget.loadingColor == null) {
       loadingColor = widget.colors[0].withValues(alpha: 0.1);
     }
+    // 仅当渐变确实存在多个不同颜色时才启动循环动画。
+    // 默认颜色全部相同（视觉上是一个纯色），此时 repeat() 只会让每个按钮
+    // 以 60fps 持续空转重绘，却没有可见变化，既浪费 CPU/GPU，也会在部分
+    // 固件上触发大量 ViewRootImpl “Cancelling draw” 调试日志。
+    final hasAnimatedGradient =
+        widget.colors.length > 1 &&
+        widget.colors.any((color) => color != widget.colors.first);
     _gradientController = AnimationController(
       vsync: this,
       duration: widget.gradientDuration,
-    )..repeat();
+    );
+    if (hasAnimatedGradient) {
+      _gradientController.repeat();
+    }
     _gradientAnimation = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(parent: _gradientController, curve: Curves.linear),
     );

@@ -422,6 +422,7 @@ class _Translations$tips$paramsInject$en extends Translations$tips$paramsInject$
 
 	// Translations
 	@override String get noKeyLoader => 'No Key Loader is available. Please go and add one';
+	@override String get noRadio => 'No radio is available. Please go and add one';
 	@override String get selectRadios => 'Please select a radio';
 	@override String get gotoConfig => 'Binding completed. go to configuration now?';
 }

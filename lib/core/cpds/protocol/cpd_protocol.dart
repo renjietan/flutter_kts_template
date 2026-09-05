@@ -274,7 +274,11 @@ class _ProtoReader {
     final existing = result[field];
     if (existing == null) {
       result[field] = value;
-    } else if (existing is List) {
+    } else if (existing is List && existing is! Uint8List) {
+      // 单个 length-delimited 字段会被存成 Uint8List，而 Uint8List 本身也是
+      // List<int>。若只判断 `existing is List`，同一个 repeated 消息字段
+      // 出现第二次时会把 Uint8List 误当成“集合”，对其调用 add 一个 Uint8List，
+      // 触发 `_Uint8ArrayView is not a subtype of int`。因此这里要排除 Uint8List。
       existing.add(value);
     } else {
       result[field] = <dynamic>[existing, value];

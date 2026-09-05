@@ -54,7 +54,11 @@ class CpdsDevicePanel extends StatelessWidget {
       if (node == null || node.nodeType != 1) continue;
       for (final device in node.devices) {
         result.add(
-          CpdsFutureWarriorDevice(device: device, nodeId: nodeId),
+          CpdsFutureWarriorDevice(
+            device: device,
+            nodeId: nodeId,
+            nodeName: node.name,
+          ),
         );
       }
     }
@@ -116,6 +120,7 @@ class CpdsDevicePanel extends StatelessWidget {
               (device) => CpdsFutureWarriorDevice(
                 device: device,
                 nodeId: node.id,
+                nodeName: node.name,
               ),
             )
             .toList(),
@@ -691,7 +696,7 @@ class _FutureWarriorDeviceRow extends StatelessWidget {
             ),
             const SizedBox(width: 24),
             Text(
-              device.model,
+              fwDevice.nodeName,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(color: Colors.white70, fontSize: 14),

@@ -32,6 +32,7 @@ class _CpdsPackagePanelState extends State<CpdsPackagePanel> {
   Set<String> _preSearchExpandedKeys = {};
   String _query = '';
   CpdsPackage? _lastPackage;
+  double _searchBoxWidth = 0;
 
   @override
   void dispose() {
@@ -94,6 +95,48 @@ class _CpdsPackagePanelState extends State<CpdsPackagePanel> {
           ..addAll(_preSearchExpandedKeys);
       }
     });
+  }
+
+  Future<void> _openSearchDialog() async {
+    final result = await showDialog<String>(
+      context: context,
+      barrierDismissible: true,
+      builder: (dialogContext) => _CpdsSearchDialog(
+        initialValue: _searchController.text,
+        width: _searchBoxWidth,
+      ),
+    );
+    if (result != null && mounted) {
+      _searchController.text = result;
+      _applySearch(result);
+    }
+  }
+
+  InputDecoration _searchDecoration(Translations t) {
+    return InputDecoration(
+      hintText: t.TextField.search,
+      hintStyle: const TextStyle(color: Colors.white38),
+      prefixIcon: const Icon(
+        Icons.search,
+        size: 18,
+        color: Colors.white54,
+      ),
+      filled: true,
+      fillColor: const Color(0xFF282D33),
+      contentPadding: EdgeInsets.zero,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(4),
+        borderSide: const BorderSide(color: Color(0xFF353A41)),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(4),
+        borderSide: const BorderSide(color: Color(0xFF353A41)),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(4),
+        borderSide: const BorderSide(color: Color(0xFF00A2E9)),
+      ),
+    );
   }
 
   @override
@@ -213,63 +256,36 @@ class _CpdsPackagePanelState extends State<CpdsPackagePanel> {
                   ),
                   Padding(
                     padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
-                    child: SizedBox(
-                      height: 36,
-                      child: TextField(
-                        controller: _searchController,
-                        textInputAction: TextInputAction.search,
-                        onChanged: (value) {
-                          if (defaultTargetPlatform ==
-                              TargetPlatform.android) {
-                            // Android：输入时不搜索，仅在清空时恢复。
-                            if (value.trim().isEmpty) {
-                              _applySearch(value);
-                            }
-                          } else {
-                            _applySearch(value);
-                          }
-                        },
-                        onSubmitted: (value) {
-                          if (defaultTargetPlatform ==
-                              TargetPlatform.android) {
-                            _applySearch(value);
-                          }
-                        },
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 13,
-                        ),
-                        decoration: InputDecoration(
-                          hintText: t.TextField.search,
-                          hintStyle: const TextStyle(color: Colors.white38),
-                          prefixIcon: const Icon(
-                            Icons.search,
-                            size: 18,
-                            color: Colors.white54,
-                          ),
-                          filled: true,
-                          fillColor: const Color(0xFF282D33),
-                          contentPadding: EdgeInsets.zero,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(4),
-                            borderSide: const BorderSide(
-                              color: Color(0xFF353A41),
-                            ),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(4),
-                            borderSide: const BorderSide(
-                              color: Color(0xFF353A41),
-                            ),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(4),
-                            borderSide: const BorderSide(
-                              color: Color(0xFF00A2E9),
-                            ),
-                          ),
-                        ),
-                      ),
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        _searchBoxWidth = constraints.maxWidth;
+                        return SizedBox(
+                          height: 36,
+                          child: defaultTargetPlatform ==
+                                  TargetPlatform.android
+                              ? TextField(
+                                  controller: _searchController,
+                                  readOnly: true,
+                                  onTap: _openSearchDialog,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 13,
+                                  ),
+                                  decoration: _searchDecoration(t),
+                                )
+                              : TextField(
+                                  controller: _searchController,
+                                  textInputAction: TextInputAction.search,
+                                  onChanged: (value) => _applySearch(value),
+                                  onSubmitted: (value) => _applySearch(value),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 13,
+                                  ),
+                                  decoration: _searchDecoration(t),
+                                ),
+                        );
+                      },
                     ),
                   ),
                   Expanded(
@@ -441,5 +457,80 @@ class _CpdsTreeRow extends StatelessWidget {
       CpdsTreeItemKind.futureWarrior => HyIcons.ren,
     };
     return Icon(icon, size: 16, color: Colors.white70);
+  }
+}
+
+class _CpdsSearchDialog extends StatefulWidget {
+  const _CpdsSearchDialog({
+    required this.initialValue,
+    required this.width,
+  });
+
+  final String initialValue;
+  final double width;
+
+  @override
+  State<_CpdsSearchDialog> createState() => _CpdsSearchDialogState();
+}
+
+class _CpdsSearchDialogState extends State<_CpdsSearchDialog> {
+  late final TextEditingController _controller = TextEditingController(
+    text: widget.initialValue,
+  );
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final t = Translations.of(context);
+    return Align(
+      alignment: Alignment.topCenter,
+      child: Padding(
+        padding: const EdgeInsets.only(top: 80),
+        child: Material(
+          color: const Color(0xFF20262D),
+          borderRadius: BorderRadius.circular(4),
+          child: SizedBox(
+            width: widget.width,
+            height: 44,
+            child: TextField(
+              controller: _controller,
+              autofocus: true,
+              textInputAction: TextInputAction.search,
+              onSubmitted: (value) => Navigator.of(context).pop(value),
+              style: const TextStyle(color: Colors.white, fontSize: 13),
+              decoration: InputDecoration(
+                hintText: t.TextField.search,
+                hintStyle: const TextStyle(color: Colors.white38),
+                prefixIcon: const Icon(
+                  Icons.search,
+                  size: 18,
+                  color: Colors.white54,
+                ),
+                filled: true,
+                fillColor: const Color(0xFF282D33),
+                contentPadding: EdgeInsets.zero,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(4),
+                  borderSide: const BorderSide(color: Color(0xFF353A41)),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(4),
+                  borderSide: const BorderSide(color: Color(0xFF353A41)),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(4),
+                  borderSide: const BorderSide(color: Color(0xFF00A2E9)),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }

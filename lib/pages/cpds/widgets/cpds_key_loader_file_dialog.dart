@@ -9,7 +9,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_kts_template/core/cpds/service/cpds_manager.dart';
 import 'package:flutter_kts_template/core/databaseManager/databaseManager.dart';
 import 'package:flutter_kts_template/core/entities/keyLoaderDetails/keyLoaderDetailsEntity.dart';
-import 'package:flutter_kts_template/core/entities/keyLoaders/keyLoadersEntity.dart';
 import 'package:flutter_kts_template/core/rtc/managers/keyloader_usb_bulk_factory.dart';
 import 'package:flutter_kts_template/core/rtc/managers/keyloader_usb_bulk_manager.dart';
 import 'package:flutter_kts_template/core/utils/director.dart';
@@ -63,6 +62,7 @@ class _CpdsKeyLoaderFileDialogState extends State<CpdsKeyLoaderFileDialog> {
   String? _parseError;
   int _progress = 0;
   int _progressMax = 0;
+  bool _closed = false;
 
   KeyLoaderUsbBulkManager? _manager;
   _UsbLineReader? _reader;
@@ -188,6 +188,8 @@ class _CpdsKeyLoaderFileDialogState extends State<CpdsKeyLoaderFileDialog> {
   }
 
   Future<void> _finish(String? result) async {
+    if (_closed) return;
+    _closed = true;
     _reader?.stop();
     final manager = _manager;
     if (manager != null) {
@@ -439,7 +441,7 @@ class _CpdsKeyLoaderFileDialogState extends State<CpdsKeyLoaderFileDialog> {
       final zipName = '$baseName.zip';
       await CpdsManager.instance.uploadPackage(zipName, zipBytes);
       GlobalLogger.logInfo('KEY_LOADER_ZIP $zipName');
-      // 解密结果写入 uploads 后，清空【注钥管理】页面数据。
+      // 解密结果写入 uploads 后，只清空注钥枪明细数据（子表），保留注钥枪（父表）。
       _clearKeyLoaderData();
     } catch (e) {
       GlobalLogger.logError('KEY_LOADER_DECRYPT_FAILED $e');
@@ -475,7 +477,6 @@ class _CpdsKeyLoaderFileDialogState extends State<CpdsKeyLoaderFileDialog> {
 
   void _clearKeyLoaderData() {
     DatabaseManager.instance.removeAll<KeyLoaderDetailsEntity>();
-    DatabaseManager.instance.removeAll<KeyLoadersEntity>();
   }
 
   Future<({Uint8List content, Uint8List md5})?> _receiveFile(
@@ -614,7 +615,7 @@ class _CpdsKeyLoaderFileDialogState extends State<CpdsKeyLoaderFileDialog> {
     final dialogWidth = (screenWidth * 0.9).clamp(0.0, 960.0);
     return AlertDialog(
       backgroundColor: const Color(0xFF20262D),
-      insetPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 24),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       title: Text(
         t.cpds.browseSourceKeyLoader,
         style: const TextStyle(color: Colors.white, fontSize: 17),
@@ -630,8 +631,13 @@ class _CpdsKeyLoaderFileDialogState extends State<CpdsKeyLoaderFileDialog> {
               statuses: _computeStepStatuses(),
               activeIndex: _step.index,
             ),
-            const SizedBox(height: 16),
-            SizedBox(height: 220, child: _buildContentArea(t)),
+            const SizedBox(height: 12),
+            Flexible(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxHeight: 220),
+                child: _buildContentArea(t),
+              ),
+            ),
           ],
         ),
       ),
@@ -1108,10 +1114,9 @@ Future<void> _writeUsb(
   KeyLoaderUsbBulkManager manager,
   Uint8List data,
 ) async {
-  GlobalLogger.logInfo(
-    'USB_SEND text="${utf8.decode(data, allowMalformed: true)}"',
-  );
-  await manager.write(data);
+  GlobalLogger.logInfo('USB_SEND ${_formatUsbPayload(data)}');
+  final written = await manager.write(data);
+  GlobalLogger.logInfo('USB_WRITE_RESULT $written');
 }
 
 Uint8List _u32le(int value) {
@@ -1121,10 +1126,52 @@ Uint8List _u32le(int value) {
 }
 
 void _logUsbRecv(Uint8List data) {
+  GlobalLogger.logInfo('USB_RECV ${_formatUsbPayload(data)}');
+}
+
+String _formatUsbPayload(Uint8List data) {
   final hex = data
       .map((b) => b.toRadixString(16).padLeft(2, '0'))
       .join(' ');
-  GlobalLogger.logInfo('USB_RECV len=${data.length} hex=[$hex]');
+  final parts = <String>['len=${data.length}', 'hex=[$hex]'];
+
+  final text = _decodePrintableText(data);
+  if (text != null) {
+    parts.add(
+      'text="${text.replaceAll('\r', '\\r').replaceAll('\n', '\\n')}"',
+    );
+  }
+
+  if (data.length == 4) {
+    parts.add('u32le=${_toU32Le(data)}');
+  } else if (data.length == 8) {
+    parts.add('u64le=${_toU64Le(data)}');
+  }
+
+  return parts.join(' ');
+}
+
+String? _decodePrintableText(Uint8List data) {
+  try {
+    final text = utf8.decode(data, allowMalformed: false);
+    if (text.isEmpty) return null;
+    for (final unit in text.codeUnits) {
+      final isPrintableAscii = unit >= 0x20 && unit <= 0x7E;
+      final isWhitespace = unit == 0x0A || unit == 0x0D || unit == 0x09;
+      if (!isPrintableAscii && !isWhitespace) return null;
+    }
+    return text;
+  } catch (_) {
+    return null;
+  }
+}
+
+int _toU32Le(Uint8List data) {
+  return ByteData.sublistView(data).getUint32(0, Endian.little);
+}
+
+int _toU64Le(Uint8List data) {
+  return ByteData.sublistView(data).getUint64(0, Endian.little);
 }
 
 bool _listEquals(List<int> a, List<int> b) {
@@ -1160,6 +1207,7 @@ class _UsbLineReader {
 
   void _onData(Uint8List data) {
     if (data.isEmpty) return;
+    GlobalLogger.logInfo('USB_RAW ${_formatUsbPayload(data)}');
     _buffer.addAll(data);
     while (true) {
       final idx = _buffer.indexOf(0x0A); // \n
@@ -1176,6 +1224,9 @@ class _UsbLineReader {
   }
 
   void _deliver(String line) {
+    GlobalLogger.logInfo(
+      'USB_LINE ${line.replaceAll('\r', '\\r').replaceAll('\n', '\\n')}',
+    );
     if (_waiters.isNotEmpty) {
       _waiters.removeAt(0).deliver(line);
     } else {

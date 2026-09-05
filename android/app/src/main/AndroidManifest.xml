@@ -86,6 +86,12 @@
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data android:name="flutterEmbedding" android:value="2"/>
+        <!-- 部分 Android 设备的 Vulkan 驱动不稳定（表现为 Impeller Vulkan swapchain
+             ErrorDeviceLost / Could not wait for fence），强制 Impeller 使用 OpenGL ES
+             后端，避免使用 Vulkan。 -->
+        <meta-data
+            android:name="io.flutter.embedding.android.ImpellerBackend"
+            android:value="opengles"/>
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and

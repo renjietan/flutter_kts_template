@@ -667,6 +667,9 @@ class Translations$tips$paramsInject$zh {
 	/// zh: '当前无可选的密钥枪, 请前往添加后再试'
 	String get noKeyLoader => '当前无可选的密钥枪, 请前往添加后再试';
 
+	/// zh: '当前无可选的电台, 请前往添加后再试'
+	String get noRadio => '当前无可选的电台, 请前往添加后再试';
+
 	/// zh: '请勾选电台'
 	String get selectRadios => '请勾选电台';
 

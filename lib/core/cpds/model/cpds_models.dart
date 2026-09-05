@@ -78,15 +78,17 @@ class CpdsDevice {
   String get key => '${type.value}:$id';
 }
 
-/// 未来战士分组下聚合出的设备，携带其所属 nodeType==1 节点的 id。
+/// 未来战士分组下聚合出的设备，携带其所属 nodeType==1 节点的 id 与名称。
 class CpdsFutureWarriorDevice {
   const CpdsFutureWarriorDevice({
     required this.device,
     required this.nodeId,
+    required this.nodeName,
   });
 
   final CpdsDevice device;
   final String nodeId;
+  final String nodeName;
 
   /// 使用「节点 id + 设备 key」保证跨节点也不去重。
   String get key => '$nodeId:${device.key}';

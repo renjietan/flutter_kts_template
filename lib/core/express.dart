@@ -13,9 +13,10 @@ import 'middleware/loggerMiddleware.dart';
 import 'middleware/parseJsonMiddleware.dart';
 
 class Express {
-  static late HttpServer _sev;
+  static HttpServer? _sev;
 
   static Future<void> start() async {
+    if (_sev != null) return;
     final router = await RouterRegistry.init();
     // 应用中间件管道，包装路由处理器
     final handler = const Pipeline()
@@ -29,15 +30,53 @@ class Express {
         .addMiddleware(cors())
         // 注意: 这里必须使用 call 方法 重定向指针
         .addHandler(router.call);
-    _sev = await shelf_io.serve(
+    final preferredPort = int.parse(AppConfig.serverConfig.port);
+    final fallbackPort = int.parse(AppConfig.serverConfig.fallbackPort);
+    final server = await _bind(
       handler,
       InternetAddress.anyIPv4,
-      int.parse(AppConfig.serverConfig.port),
+      preferredPort,
+      fallbackPort,
     );
-    GlobalLogger.logInfo("Server start :${AppConfig.serverConfig.port}");
+    _sev = server;
+    AppConfig.actualServerPort = server.port;
+    GlobalLogger.logInfo("Server start :${server.port}");
+  }
+
+  static Future<HttpServer> _bind(
+    Handler handler,
+    InternetAddress address,
+    int preferredPort,
+    int fallbackPort,
+  ) async {
+    try {
+      return await shelf_io.serve(handler, address, preferredPort);
+    } on SocketException catch (e) {
+      if (!_isAddressInUse(e)) rethrow;
+      GlobalLogger.logWarn(
+        'Port $preferredPort is already in use '
+        '(${e.osError?.message ?? e.message}); '
+        'falling back to port $fallbackPort',
+      );
+      return shelf_io.serve(handler, address, fallbackPort);
+    }
+  }
+
+  static bool _isAddressInUse(SocketException e) {
+    final code = e.osError?.errorCode;
+    if (code != null) {
+      // EADDRINUSE: 98(Linux/Android), 48(macOS), 10048(Windows WSAEADDRINUSE)
+      return code == 98 || code == 48 || code == 10048;
+    }
+    return e.message.toLowerCase().contains('address already in use');
   }
 
   static Future<void> stop() async {
-    await _sev.close();
+    final server = _sev;
+    _sev = null;
+    AppConfig.actualServerPort = 0;
+    if (server != null) {
+      await server.close();
+    }
   }
 }
