@@ -112,6 +112,7 @@ button:
   injectEncrypt:
     export: 导出
     create: 新增
+    createKeyLoader: 添加注钥枪
 checkbox:
   DeselectAll: 取消全选
   SelectAll: 全选 ({count})
@@ -208,6 +209,8 @@ cpds:
   keyLoaderStepDecrypt: 解密
   keyLoaderStepParse: 解析
   keyLoaderFileCorrupted: 文件不完整，已损坏
+  keyLoaderDownloadTimeout: 文件接收超时，重新插拔注钥枪
+  keyLoaderDeviceRemoved: USB 设备已断开
   keyLoaderDecryptFailed: 解密失败
   keyLoaderSuccess: 下载完成
   keyLoaderReadyTimeout: 响应超时
@@ -312,6 +315,7 @@ cpds:
     detailReadyTimeout: 准备超时
     detailReadyFail: 准备失败
     detailTransferStart: 分包发送
+    detailTransferTimeout: 文件接收超时，重新插拔注钥枪
     detailComplete: 注钥枪接收成功
     detailVerifyTimeout: 校验超时
     detailVerifyFail: 校验失败

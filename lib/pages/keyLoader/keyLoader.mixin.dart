@@ -73,9 +73,15 @@ mixin KeyLoaderMixin on State<KeyLoaderPager> {
         ? ""
         : (data?.name ?? '');
 
+    final isCreate = type == DialogTypeEnum.create;
+
     SimpleFormDialog(
-      title: t.button.radioManager.createRadio,
-      confirmText: t.button.radioManager.createRadio,
+      title: isCreate
+          ? t.button.injectEncrypt.createKeyLoader
+          : t.button.radioManager.edit,
+      confirmText: isCreate
+          ? t.button.injectEncrypt.create
+          : t.button.radioManager.save,
       confirmBtnWidth: 160,
       fields: [
         FormFieldConfig(

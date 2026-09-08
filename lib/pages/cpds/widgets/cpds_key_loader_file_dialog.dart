@@ -392,16 +392,28 @@ class _CpdsKeyLoaderFileDialogState extends State<CpdsKeyLoaderFileDialog> {
     await _writeUsb(manager, _u32le(fileNameBytes.length));
     await _writeUsb(manager, Uint8List.fromList(fileNameBytes));
 
-    // 4. 接收并组装文件（长度头 + 内容 + MD5）。
-    final received = await _receiveFile(manager);
-    if (!mounted) return;
-    if (received == null) {
+    // 4. 接收并组装文件（长度头 + 分块 + MD5）。
+    final ({Uint8List content, Uint8List md5}) received;
+    try {
+      received = await _receiveFile(manager);
+    } on _DownloadTimeout {
+      if (!mounted) return;
       setState(() {
         _downloading = false;
-        _downloadError = t.cpds.keyLoaderFileCorrupted;
+        _downloadFailed = true;
+        _downloadError = t.cpds.keyLoaderDownloadTimeout;
+      });
+      return;
+    } on _DownloadDisconnected {
+      if (!mounted) return;
+      setState(() {
+        _downloading = false;
+        _downloadFailed = true;
+        _downloadError = t.cpds.keyLoaderDeviceRemoved;
       });
       return;
     }
+    if (!mounted) return;
 
     // 5. 收到 MD5 后，发送 FILE_OK（无论校验结果，不等待回复），同时进行 MD5 校验。
     await _writeUsb(
@@ -479,61 +491,83 @@ class _CpdsKeyLoaderFileDialogState extends State<CpdsKeyLoaderFileDialog> {
     DatabaseManager.instance.removeAll<KeyLoaderDetailsEntity>();
   }
 
-  Future<({Uint8List content, Uint8List md5})?> _receiveFile(
+  Future<({Uint8List content, Uint8List md5})> _receiveFile(
     KeyLoaderUsbBulkManager manager,
   ) async {
-    final done = Completer<({Uint8List content, Uint8List md5})?>();
-    final buffer = <int>[];
-    int? totalLen;
-    StreamSubscription<Uint8List>? sub;
+    final byteReader = _UsbByteReader(manager.listenData())..start();
+    final disconnectSub = manager.onDisconnected.listen((_) {
+      byteReader.abort(const _DownloadDisconnected());
+    });
 
-    sub = manager.listenData().listen((chunk) {
-      if (!mounted) {
-        if (!done.isCompleted) done.complete(null);
-        return;
-      }
-      if (chunk.isEmpty) return;
-      _logUsbRecv(chunk);
-      buffer.addAll(chunk);
-
-      if (totalLen == null && buffer.length >= 8) {
-        final header = ByteData.sublistView(
-          Uint8List.fromList(buffer.sublist(0, 8)),
-        );
-        totalLen = header.getUint64(0, Endian.little);
+    try {
+      // 1. 读取 8 字节：文件内容总长度。
+      final totalLenBytes = await byteReader.readExactly(
+        8,
+        timeout: const Duration(seconds: 3),
+      );
+      final totalLen = _toU64Le(totalLenBytes);
+      if (mounted) {
         setState(() {
-          _progressMax = (totalLen! + 511) ~/ 512;
+          _progressMax = (totalLen + 511) ~/ 512;
           _progress = 0;
         });
       }
 
-      if (totalLen != null) {
-        final contentReceived = buffer.length - 8;
-        final capped = contentReceived > totalLen!
-            ? totalLen!
-            : contentReceived;
-        final progress = (capped + 511) ~/ 512;
-        if (progress != _progress) {
+      const chunkSize = 4 * 1024;
+      final contentBuffer = <int>[];
+
+      // 2. 读取第一个分块序号（此时尚无 ACK，超时直接失败）。
+      final firstIndexBytes = await byteReader.readExactly(
+        4,
+        timeout: const Duration(seconds: 3),
+      );
+      var index = _toU32Le(firstIndexBytes);
+
+      // 3. 循环读取分块内容，并逐块 ACK。
+      while (true) {
+        final remaining = totalLen - contentBuffer.length;
+        final contentLen = remaining < chunkSize ? remaining : chunkSize;
+        final contentBytes = await byteReader.readExactly(
+          contentLen,
+          timeout: const Duration(seconds: 3),
+        );
+        contentBuffer.addAll(contentBytes);
+
+        if (mounted) {
           setState(() {
-            _progress = progress;
+            _progress = (contentBuffer.length + 511) ~/ 512;
           });
         }
-      }
 
-      if (totalLen != null && buffer.length >= 8 + totalLen! + 16) {
-        final content = Uint8List.fromList(buffer.sublist(8, 8 + totalLen!));
-        final md5 = Uint8List.fromList(
-          buffer.sublist(8 + totalLen!, 8 + totalLen! + 16),
+        // 发送 ACK:<序号>\n（回显收到的 0 起始序号）。
+        await _writeUsb(
+          manager,
+          Uint8List.fromList(utf8.encode('ACK:$index\n')),
         );
-        if (!done.isCompleted) {
-          done.complete((content: content, md5: md5));
-        }
-      }
-    });
 
-    final result = await done.future;
-    await sub.cancel();
-    return result;
+        if (contentBuffer.length >= totalLen) break;
+
+        // 等待下一个分块序号（3 秒超时，无重试）。
+        final nextIndexBytes = await byteReader.readExactly(
+          4,
+          timeout: const Duration(seconds: 3),
+        );
+        index = _toU32Le(nextIndexBytes);
+      }
+
+      // 4. 读取 16 字节 MD5。
+      final md5Bytes = await byteReader.readExactly(
+        16,
+        timeout: const Duration(seconds: 3),
+      );
+
+      return (content: Uint8List.fromList(contentBuffer), md5: md5Bytes);
+    } on TimeoutException {
+      throw const _DownloadTimeout();
+    } finally {
+      await disconnectSub.cancel();
+      byteReader.stop();
+    }
   }
 
   Future<Uint8List> _decryptWithPassphrase(
@@ -1180,6 +1214,115 @@ bool _listEquals(List<int> a, List<int> b) {
     if (a[i] != b[i]) return false;
   }
   return true;
+}
+
+class _DownloadTimeout implements Exception {
+  const _DownloadTimeout();
+}
+
+class _DownloadDisconnected implements Exception {
+  const _DownloadDisconnected();
+}
+
+/// 按“精确字节数”读取 USB 二进制码流的读取器。
+///
+/// 与 [_UsbLineReader] 不同，这里不按 `\n` 分帧，而是把收到的字节缓存起来，
+/// 供 [readExactly] 精确读取指定长度，剩余字节留在缓冲区中供下次读取。
+class _UsbByteReader {
+  _UsbByteReader(this._dataStream);
+
+  final Stream<Uint8List> _dataStream;
+  final List<int> _buffer = [];
+  final List<_PendingBytes> _waiters = [];
+  StreamSubscription<Uint8List>? _sub;
+
+  void start() {
+    _sub = _dataStream.listen(_onData);
+  }
+
+  void _onData(Uint8List data) {
+    if (data.isEmpty) return;
+    _logUsbRecv(data);
+    _buffer.addAll(data);
+    _flush();
+  }
+
+  void _flush() {
+    while (_waiters.isNotEmpty) {
+      final waiter = _waiters.first;
+      if (_buffer.length < waiter.count) return;
+      final bytes = Uint8List.fromList(_buffer.sublist(0, waiter.count));
+      _buffer.removeRange(0, waiter.count);
+      _waiters.removeAt(0);
+      waiter.deliver(bytes);
+    }
+  }
+
+  Future<Uint8List> readExactly(
+    int count, {
+    Duration timeout = const Duration(seconds: 3),
+  }) {
+    if (_buffer.length >= count) {
+      final bytes = Uint8List.fromList(_buffer.sublist(0, count));
+      _buffer.removeRange(0, count);
+      return Future.value(bytes);
+    }
+    final pending = _PendingBytes(count);
+    _waiters.add(pending);
+    pending.start(timeout, onTimeout: () {
+      _waiters.remove(pending);
+    });
+    return pending.completer.future;
+  }
+
+  void abort(Object error) {
+    for (final waiter in _waiters) {
+      waiter.fail(error);
+    }
+    _waiters.clear();
+  }
+
+  void stop() {
+    _sub?.cancel();
+    _sub = null;
+    _buffer.clear();
+    for (final waiter in _waiters) {
+      waiter.fail(const _DownloadDisconnected());
+    }
+    _waiters.clear();
+  }
+}
+
+class _PendingBytes {
+  _PendingBytes(this.count);
+
+  final int count;
+  final Completer<Uint8List> completer = Completer<Uint8List>();
+  Timer? _timer;
+
+  void start(Duration timeout, {required VoidCallback onTimeout}) {
+    _timer = Timer(timeout, () {
+      _timer = null;
+      onTimeout();
+      fail(TimeoutException('read timeout'));
+    });
+  }
+
+  void deliver(Uint8List bytes) {
+    _timer?.cancel();
+    _timer = null;
+    if (!completer.isCompleted) {
+      completer.complete(bytes);
+    }
+  }
+
+  void fail(Object error) {
+    _timer?.cancel();
+    _timer = null;
+    if (!completer.isCompleted) {
+      completer.completeError(error);
+    }
+  }
 }
 
 class _FixedPassphrase extends PassphraseProvider {

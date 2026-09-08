@@ -338,6 +338,8 @@ class _Translations$cpds$en extends Translations$cpds$zh {
 	@override String get keyLoaderStepDecrypt => 'Decrypt';
 	@override String get keyLoaderStepParse => 'Parse';
 	@override String get keyLoaderFileCorrupted => 'File incomplete, corrupted';
+	@override String get keyLoaderDownloadTimeout => 'File receive timed out, replug the key loader';
+	@override String get keyLoaderDeviceRemoved => 'USB device disconnected';
 	@override String get keyLoaderDecryptFailed => 'Decrypt failed';
 	@override String get keyLoaderSuccess => 'Download complete';
 	@override String get keyLoaderReadyTimeout => 'Response timeout';
@@ -520,6 +522,7 @@ class _Translations$button$injectEncrypt$en extends Translations$button$injectEn
 	// Translations
 	@override String get export => 'export';
 	@override String get create => 'Add';
+	@override String get createKeyLoader => 'Add Key Loader';
 }
 
 // Path: Form.radioManager
@@ -714,6 +717,7 @@ class _Translations$cpds$usbProgress$en extends Translations$cpds$usbProgress$zh
 	@override String get detailReadyTimeout => 'Ready timed out';
 	@override String get detailReadyFail => 'Ready failed';
 	@override String get detailTransferStart => 'Chunked sending';
+	@override String get detailTransferTimeout => 'File receive timed out, replug the key loader';
 	@override String get detailComplete => 'Key loader received successfully';
 	@override String get detailVerifyTimeout => 'Verification timed out';
 	@override String get detailVerifyFail => 'Verification failed';

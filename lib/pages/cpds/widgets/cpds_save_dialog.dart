@@ -4,12 +4,16 @@ import 'dart:convert';
 import 'package:composable_data_table/composable_data_table.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:flutter_kts_template/api/KeyLoaders.api.dart';
 import 'package:flutter_kts_template/api/RadiosManagerApi.dart';
 import 'package:flutter_kts_template/core/cpds/model/cpds_models.dart';
+import 'package:flutter_kts_template/core/databaseManager/databaseManager.dart';
+import 'package:flutter_kts_template/core/entities/keyLoaderDetails/keyLoaderDetailsEntity.dart';
 import 'package:flutter_kts_template/core/entities/keyLoaders/keyLoadersEntity.dart';
 import 'package:flutter_kts_template/core/entities/radios/radiosEntity.dart';
 import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 import 'package:flutter_kts_template/logger/logger.dart';
+import 'package:flutter_kts_template/objectbox.g.dart';
 import 'package:flutter_kts_template/theme/table.theme.dart';
 
 class CpdsFutureWarriorSaveDialog extends StatefulWidget {
@@ -37,17 +41,21 @@ class _CpdsFutureWarriorSaveDialogState
     extends State<CpdsFutureWarriorSaveDialog> {
   final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>();
   List<RadiosEntity> _radios = [];
+  List<KeyLoadersEntity> _keyLoaders = [];
   Map<String, int?> _selectedRadioId = {};
   int? _selectedKeyLoaderId;
   int _currentPage = 1;
   int _pageSize = 10;
   StreamSubscription<AppLocale>? _localeSubscription;
   bool _closed = false;
+  bool _saving = false;
 
   @override
   void initState() {
     super.initState();
+    _keyLoaders = List<KeyLoadersEntity>.from(widget.keyLoaders);
     _loadRadios();
+    _loadKeyLoaders();
     _localeSubscription = LocaleSettings.getLocaleStream().listen((_) {
       if (mounted) setState(() {});
     });
@@ -71,6 +79,18 @@ class _CpdsFutureWarriorSaveDialogState
       });
     } catch (error) {
       GlobalLogger.logError('load radios failed: $error');
+    }
+  }
+
+  Future<void> _loadKeyLoaders() async {
+    try {
+      final response = await KeyLoadersApi.getAll();
+      if (!mounted) return;
+      setState(() {
+        _keyLoaders = List<KeyLoadersEntity>.from(response.data.list as List);
+      });
+    } catch (error) {
+      GlobalLogger.logError('load key loaders failed: $error');
     }
   }
 
@@ -105,32 +125,106 @@ class _CpdsFutureWarriorSaveDialogState
         .toList();
   }
 
-  void _save() {
-    if (_closed) return;
-    if (!(_formKey.currentState?.saveAndValidate() ?? false)) return;
-    final parentIdPath = _findUnitPath(widget.units, widget.unitId);
-    final json = {
-      'keyLoaderId': _selectedKeyLoaderId,
-      'parentIdPath': parentIdPath.join('/'),
-      'items': widget.devices.map((fwDevice) {
-        final radio = _radioFor(fwDevice);
-        return {
-          'netNodePackageName': fwDevice.nodeId,
-          'dcPackageName': fwDevice.device.id,
-          'deviceType': fwDevice.device.type.value,
-          'deviceModel': fwDevice.device.model,
-          'radioId': radio?.id,
-          'radioAlias': radio?.alias ?? '',
-          'consumer': radio?.consumer ?? '',
-          'location': radio?.location ?? '',
-          'sn': radio?.sn ?? '',
-        };
-      }).toList(),
-    };
-    GlobalLogger.logInfo('SAVE_JSON ${jsonEncode(json)}');
+  void _cancel() {
+    if (_closed || _saving) return;
     _closed = true;
-    widget.onSave(json);
+    Navigator.of(context).pop();
   }
+
+  Future<void> _save() async {
+    if (_closed || _saving) return;
+    if (!(_formKey.currentState?.saveAndValidate() ?? false)) return;
+
+    final keyLoaderId = _selectedKeyLoaderId;
+    if (keyLoaderId == null) return;
+
+    final parentIdPath = _findUnitPath(widget.units, widget.unitId);
+    final items = widget.devices.map((fwDevice) {
+      final radio = _radioFor(fwDevice);
+      return {
+        'netNodePackageName': fwDevice.nodeId,
+        'dcPackageName': fwDevice.device.id,
+        'deviceType': fwDevice.device.type.value,
+        'deviceModel': fwDevice.device.model,
+        'radioId': radio?.id,
+        'radioAlias': radio?.alias ?? '',
+        'consumer': radio?.consumer ?? '',
+        'location': radio?.location ?? '',
+        'sn': radio?.sn ?? '',
+      };
+    }).toList();
+
+    setState(() => _saving = true);
+    try {
+      final duplicates = await _findDuplicates(keyLoaderId, items);
+      final duplicateKeys = {
+        for (final item in duplicates)
+          _detailKey(
+            item['netNodePackageName']?.toString() ?? '',
+            item['dcPackageName']?.toString() ?? '',
+          ),
+      };
+      final nonDuplicates = items.where((item) {
+        final key = _detailKey(
+          item['netNodePackageName']?.toString() ?? '',
+          item['dcPackageName']?.toString() ?? '',
+        );
+        return !duplicateKeys.contains(key);
+      }).toList();
+
+      if (duplicates.isNotEmpty) {
+        if (!mounted) return;
+        final proceed = await showDialog<bool>(
+          context: context,
+          barrierDismissible: false,
+          builder: (dialogContext) =>
+              CpdsFutureWarriorDuplicateDialog(duplicates: duplicates),
+        );
+        if (proceed != true) {
+          if (mounted) setState(() => _saving = false);
+          return;
+        }
+      }
+
+      _closed = true;
+      if (mounted) Navigator.of(context).pop();
+      final json = {
+        'keyLoaderId': keyLoaderId,
+        'parentIdPath': parentIdPath.join('/'),
+        'items': nonDuplicates,
+      };
+      GlobalLogger.logInfo('SAVE_JSON ${jsonEncode(json)}');
+      widget.onSave(json);
+    } catch (error) {
+      GlobalLogger.logError('save future warrior failed: $error');
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> _findDuplicates(
+    int keyLoaderId,
+    List<Map<String, dynamic>> items,
+  ) async {
+    final detailBox = DatabaseManager.instance.box<KeyLoaderDetailsEntity>();
+    final existing = detailBox
+        .query(KeyLoaderDetailsEntity_.keyLoaderId.equals(keyLoaderId))
+        .build()
+        .find();
+    final existingKeys = {
+      for (final row in existing)
+        _detailKey(row.netNodePackageName, row.dcPackageName),
+    };
+    return items.where((item) {
+      final key = _detailKey(
+        item['netNodePackageName']?.toString() ?? '',
+        item['dcPackageName']?.toString() ?? '',
+      );
+      return existingKeys.contains(key);
+    }).toList();
+  }
+
+  String _detailKey(String netNodePackageName, String dcPackageName) =>
+      '$netNodePackageName\u0000$dcPackageName';
 
   List<String> _findUnitPath(List<CpdsUnit> units, String unitId) {
     final path = <String>[];
@@ -185,7 +279,7 @@ class _CpdsFutureWarriorSaveDialogState
                       borderRadius: BorderRadius.circular(4),
                     ),
                   ),
-                  items: widget.keyLoaders
+                  items: _keyLoaders
                       .map(
                         (item) => DropdownMenuItem<int>(
                           value: item.id,
@@ -412,14 +506,103 @@ class _CpdsFutureWarriorSaveDialogState
       ),
       actions: [
         TextButton(
-          onPressed: () {
-            if (_closed) return;
-            _closed = true;
-            Navigator.of(context).pop();
-          },
+          onPressed: _saving ? null : _cancel,
           child: Text(t.common.cancel),
         ),
-        FilledButton(onPressed: _save, child: Text(t.button.radioManager.save)),
+        FilledButton(
+          onPressed: _saving ? null : _save,
+          child: Text(t.button.radioManager.save),
+        ),
+      ],
+    );
+  }
+}
+
+class CpdsFutureWarriorDuplicateDialog extends StatelessWidget {
+  const CpdsFutureWarriorDuplicateDialog({super.key, required this.duplicates});
+
+  final List<Map<String, dynamic>> duplicates;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = Translations.of(context);
+    final zh = Localizations.localeOf(context).languageCode == 'zh';
+    return AlertDialog(
+      backgroundColor: const Color(0xFF20262D),
+      title: Text(
+        t.tips.title,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 17,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      content: SizedBox(
+        width: 560,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              zh
+                  ? '以下数据已存在，重复数据将不会重复保存：'
+                  : 'The following data already exists and will not be saved again:',
+              style: const TextStyle(color: Colors.white70, fontSize: 13),
+            ),
+            const SizedBox(height: 12),
+            Container(
+              constraints: const BoxConstraints(maxHeight: 260),
+              decoration: BoxDecoration(
+                border: Border.all(color: const Color(0xFF353A41)),
+              ),
+              child: SingleChildScrollView(
+                child: DataTable(
+                  headingRowColor: const WidgetStatePropertyAll(
+                    Color(0xFF292E33),
+                  ),
+                  horizontalMargin: 0,
+                  columnSpacing: 8,
+                  columns: [
+                    DataColumn(label: Text(t.pager.radioManager.netNode)),
+                    DataColumn(
+                      label: Text(t.tableColumn.injectEncrypt.parameterPacket),
+                    ),
+                  ],
+                  rows: duplicates.map((item) {
+                    return DataRow(
+                      cells: [
+                        DataCell(
+                          Text(
+                            item['netNodePackageName']?.toString() ?? '--',
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                          ),
+                        ),
+                        DataCell(
+                          Text(
+                            item['dcPackageName']?.toString() ?? '--',
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                          ),
+                        ),
+                      ],
+                    );
+                  }).toList(),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(false),
+          child: Text(t.tips.cancel),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.of(context).pop(true),
+          child: Text(t.tips.ok),
+        ),
       ],
     );
   }

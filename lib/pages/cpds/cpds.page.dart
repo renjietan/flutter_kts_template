@@ -18,7 +18,6 @@ import 'package:flutter_kts_template/core/entities/radios/radiosEntity.dart';
 import 'package:flutter_kts_template/core/rtc/managers/keyloader_usb_bulk_factory.dart';
 import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 import 'package:flutter_kts_template/logger/logger.dart';
-import 'package:flutter_kts_template/objectbox.g.dart';
 import 'package:flutter_kts_template/pages/cpds/widgets/cpds_key_loader_file_dialog.dart';
 import 'package:flutter_kts_template/pages/cpds/widgets/cpds_package_panel.dart';
 import 'package:flutter_kts_template/utils/files/pick_files/FileSelector.dart';
@@ -508,13 +507,12 @@ class _CpdsPageState extends State<CpdsPage> {
     if (!mounted) return;
     showDialog<void>(
       context: context,
-      builder: (dialogContext) => CpdsFutureWarriorSaveDialog(
+      builder: (_) => CpdsFutureWarriorSaveDialog(
         devices: devices,
         unitId: unitId,
         units: _state.package?.units ?? const [],
         keyLoaders: keyLoaders,
         onSave: (json) {
-          Navigator.of(dialogContext).pop();
           unawaited(_persistFutureWarrior(json));
         },
       ),
@@ -531,12 +529,7 @@ class _CpdsPageState extends State<CpdsPage> {
       return;
     }
 
-    // 先清除该注钥枪已有的子表数据，再写入本次勾选的数据（替换式保存）。
-    final detailBox = DatabaseManager.instance.box<KeyLoaderDetailsEntity>();
-    detailBox
-        .query(KeyLoaderDetailsEntity_.keyLoaderId.equals(keyLoaderId))
-        .build()
-        .remove();
+    // 仅新增本次勾选的数据，重复数据已在前置流程中过滤，不再清空已有明细。
 
     for (final rawItem in items) {
       if (rawItem is! Map) continue;

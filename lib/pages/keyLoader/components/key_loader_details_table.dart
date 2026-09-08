@@ -148,12 +148,22 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
     if (entity == null) return [];
     final response = await KeyLoadersApi.getDetails(entity.id);
     final list = response.data['list'] as List? ?? const [];
-    return list
+    final result = list
         .map(
           (item) =>
               KeyLoaderDetailsEntity.fromJson(item as Map<String, dynamic>),
         )
         .toList();
+    if (mounted) {
+      setState(() {
+        _allData = result;
+        final totalPages = (_allData.length / _pageSize).ceil().clamp(1, 999999);
+        if (_currentPage > totalPages) {
+          _currentPage = totalPages;
+        }
+      });
+    }
+    return result;
   }
 
   List<KeyLoaderDetailsEntity> get _pagedData {
@@ -358,14 +368,50 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
       // 6、发送文件内容长度（小端序 8 字节），不等待回复。
       await _writeUsb(manager, _u64le(fileBytes.length));
 
-      // 7、将文件内容按 4KB 拆包，逐包发送；每包发送完成后延迟 30ms，
-      // 最后一包发送完成后也延迟 30ms，再进入 MD5 发送。
+      // 7、按 4KB 拆包，逐包发送「4 字节小端序块序号 + 分块内容」。
+      // 每包发送后等待 ACK:<块序号>\n；3 秒超时则重发，最多重发 2 次（共 3 次）。
       const chunkSize = 4 * 1024;
-      for (var offset = 0; offset < fileBytes.length; offset += chunkSize) {
-        var end = offset + chunkSize;
+      final chunkCount = (fileBytes.length + chunkSize - 1) ~/ chunkSize;
+      for (var index = 0; index < chunkCount; index++) {
+        final start = index * chunkSize;
+        var end = start + chunkSize;
         if (end > fileBytes.length) end = fileBytes.length;
-        await _writeUsb(manager, Uint8List.sublistView(fileBytes, offset, end));
-        await Future<void>.delayed(const Duration(milliseconds: 30));
+        final chunk = Uint8List.sublistView(fileBytes, start, end);
+
+        _UsbReplyResult ackResult = _UsbReplyResult.timeout;
+        for (var attempt = 0; attempt < 3; attempt++) {
+          // 发送「4 字节小端序块序号 + 分块内容」，合并成一条码流一次 write。
+          final indexBytes = _u32le(index);
+          final packet = Uint8List(4 + chunk.length)
+            ..setRange(0, 4, indexBytes)
+            ..setRange(4, 4 + chunk.length, chunk);
+          await _writeUsb(manager, packet);
+
+          ackResult = await _waitForAck(reader, index);
+          if (ackResult == _UsbReplyResult.ok ||
+              ackResult == _UsbReplyResult.disconnected) {
+            break;
+          }
+        }
+
+        if (_handleUsbDisconnected(
+          ackResult,
+          controller,
+          usb,
+          failColor,
+          '4-4',
+        )) {
+          return false;
+        }
+        if (ackResult != _UsbReplyResult.ok) {
+          controller?.addLine(
+            usb.detailTransferTimeout,
+            color: failColor,
+            number: '4-4',
+          );
+          controller?.appendStep(usb.terminated, terminated: true);
+          return false;
+        }
       }
 
       // 8、发送整个文件内容的 16 字节 MD5，然后等待 FILE_OK。
@@ -464,6 +510,36 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
       return _UsbReplyResult.saveError;
     }
     return _UsbReplyResult.unexpected;
+  }
+
+  /// 等待注钥枪返回 ACK:<块序号>\n；忽略其它行，直到收到目标 ACK 或超时。
+  Future<_UsbReplyResult> _waitForAck(
+    _UsbLineReader reader,
+    int chunkIndex,
+  ) async {
+    if (_usbDisconnected) return _UsbReplyResult.disconnected;
+    final expected = 'ACK:$chunkIndex\n';
+    final deadline = DateTime.now().add(const Duration(seconds: 3));
+    while (true) {
+      final remaining = deadline.difference(DateTime.now());
+      if (remaining <= Duration.zero) {
+        return _UsbReplyResult.timeout;
+      }
+      String line;
+      try {
+        line = await reader.nextLine(timeout: remaining);
+      } on TimeoutException {
+        return _UsbReplyResult.timeout;
+      } on _UsbDisconnected {
+        return _UsbReplyResult.disconnected;
+      } on StateError {
+        return _UsbReplyResult.timeout;
+      }
+      if (line == expected) {
+        return _UsbReplyResult.ok;
+      }
+      // 忽略非 ACK 行，继续等待。
+    }
   }
 
   Future<void> _exportSelected() async {

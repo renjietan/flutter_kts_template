@@ -523,6 +523,12 @@ class Translations$cpds$zh {
 	/// zh: '文件不完整，已损坏'
 	String get keyLoaderFileCorrupted => '文件不完整，已损坏';
 
+	/// zh: '文件接收超时，重新插拔注钥枪'
+	String get keyLoaderDownloadTimeout => '文件接收超时，重新插拔注钥枪';
+
+	/// zh: 'USB 设备已断开'
+	String get keyLoaderDeviceRemoved => 'USB 设备已断开';
+
 	/// zh: '解密失败'
 	String get keyLoaderDecryptFailed => '解密失败';
 
@@ -834,6 +840,9 @@ class Translations$button$injectEncrypt$zh {
 
 	/// zh: '新增'
 	String get create => '新增';
+
+	/// zh: '添加注钥枪'
+	String get createKeyLoader => '添加注钥枪';
 }
 
 // Path: Form.radioManager
@@ -1185,6 +1194,9 @@ class Translations$cpds$usbProgress$zh {
 
 	/// zh: '分包发送'
 	String get detailTransferStart => '分包发送';
+
+	/// zh: '文件接收超时，重新插拔注钥枪'
+	String get detailTransferTimeout => '文件接收超时，重新插拔注钥枪';
 
 	/// zh: '注钥枪接收成功'
 	String get detailComplete => '注钥枪接收成功';

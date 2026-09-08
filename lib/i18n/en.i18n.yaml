@@ -112,6 +112,7 @@ button:
   injectEncrypt:
     export: export
     create: Add
+    createKeyLoader: Add Key Loader
 checkbox:
   DeselectAll: Deselect All
   SelectAll: Select All ({count})
@@ -208,6 +209,8 @@ cpds:
   keyLoaderStepDecrypt: Decrypt
   keyLoaderStepParse: Parse
   keyLoaderFileCorrupted: File incomplete, corrupted
+  keyLoaderDownloadTimeout: File receive timed out, replug the key loader
+  keyLoaderDeviceRemoved: USB device disconnected
   keyLoaderDecryptFailed: Decrypt failed
   keyLoaderSuccess: Download complete
   keyLoaderReadyTimeout: Response timeout
@@ -312,6 +315,7 @@ cpds:
     detailReadyTimeout: Ready timed out
     detailReadyFail: Ready failed
     detailTransferStart: Chunked sending
+    detailTransferTimeout: File receive timed out, replug the key loader
     detailComplete: Key loader received successfully
     detailVerifyTimeout: Verification timed out
     detailVerifyFail: Verification failed
