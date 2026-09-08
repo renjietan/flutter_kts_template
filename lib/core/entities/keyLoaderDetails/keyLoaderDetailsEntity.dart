@@ -15,6 +15,8 @@ class KeyLoaderDetailsEntity {
 
   String dcPackageName; // 3_device_config 中的文件名称
 
+  String? dcPackageAlias; // 3_device_config 中对应 JSON 的 Alias
+
   String? location; // 位置
 
   String? SN; // 电台SN号
@@ -38,6 +40,7 @@ class KeyLoaderDetailsEntity {
     required this.netNodePackageName,
     required this.dcPackageName,
     required this.keyLoaderId,
+    this.dcPackageAlias,
     this.radioId,
     this.consumer,
     this.location,

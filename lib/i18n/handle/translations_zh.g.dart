@@ -439,8 +439,8 @@ class Translations$cpds$zh {
 	/// zh: '请选择通信参数包'
 	String get filePlaceholder => '请选择通信参数包';
 
-	/// zh: '重新上传文件，将清空【注钥管理】的数据，确认是否继续？'
-	String get browseConfirm => '重新上传文件，将清空【注钥管理】的数据，确认是否继续？';
+	/// zh: '重新上传文件，将清除注钥枪绑定的通信参数包，确认是否继续？'
+	String get browseConfirm => '重新上传文件，将清除注钥枪绑定的通信参数包，确认是否继续？';
 
 	/// zh: '选择文件来源'
 	String get browseSourceTitle => '选择文件来源';
@@ -1045,14 +1045,14 @@ class Translations$cpds$setPassword$zh {
 	/// zh: '请输入密码'
 	String get required => '请输入密码';
 
-	/// zh: '密码长度至少6位'
-	String get minLength => '密码长度至少6位';
+	/// zh: '密码长度至少8位'
+	String get minLength => '密码长度至少8位';
 
 	/// zh: '密码长度不能超过20位'
 	String get maxLength => '密码长度不能超过20位';
 
-	/// zh: '密码包含非法字符'
-	String get invalid => '密码包含非法字符';
+	/// zh: '密码仅允许输入数字'
+	String get invalid => '密码仅允许输入数字';
 
 	/// zh: '密码不能包含中文'
 	String get noChinese => '密码不能包含中文';

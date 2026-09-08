@@ -15,6 +15,7 @@ class KeyLoadersRoutes extends BaseRouteGroup {
     router.put('/update/<id>', KeyLoadersController.update);
     router.put('/updateDetail/<id>', KeyLoadersController.updateDetails);
     router.put('/updateOneDetail/<id>', KeyLoadersController.updateDetail);
+    router.delete('/detail/<ids>', KeyLoadersController.deleteDetails);
     router.delete('/<id>', KeyLoadersController.delete);
     return router;
   }

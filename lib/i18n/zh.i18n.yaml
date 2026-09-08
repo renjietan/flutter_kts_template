@@ -181,7 +181,7 @@ cpds:
   goNow: 立即前往
   parse: 解析
   filePlaceholder: 请选择通信参数包
-  browseConfirm: 重新上传文件，将清空【注钥管理】的数据，确认是否继续？
+  browseConfirm: 重新上传文件，将清除注钥枪绑定的通信参数包，确认是否继续？
   browseSourceTitle: 选择文件来源
   browseSourceLocal: 本地文件列表
   browseSourceKeyLoader: 注钥枪文件列表
@@ -271,9 +271,9 @@ cpds:
     label: 密码
     placeholder: 输入密码
     required: 请输入密码
-    minLength: 密码长度至少6位
+    minLength: 密码长度至少8位
     maxLength: 密码长度不能超过20位
-    invalid: 密码包含非法字符
+    invalid: 密码仅允许输入数字
     noChinese: 密码不能包含中文
   export:
     zipNotFound: "【{path}】找不到 ZIP 包"

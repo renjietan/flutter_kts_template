@@ -45,9 +45,7 @@ class CpdsDevicePanel extends StatelessWidget {
     if (package == null) return const [];
     final unit = _findUnit(package.units, unitId);
     if (unit == null) return const [];
-    final nodesById = {
-      for (final node in package.nodes) node.id: node,
-    };
+    final nodesById = {for (final node in package.nodes) node.id: node};
     final result = <CpdsFutureWarriorDevice>[];
     for (final nodeId in unit.nodeIds) {
       final node = nodesById[nodeId];
@@ -124,15 +122,13 @@ class CpdsDevicePanel extends StatelessWidget {
               ),
             )
             .toList(),
-        unitId: _findUnitIdForNode(
-          state.package?.units ?? const [],
-          node.id,
-        ),
+        unitId: _findUnitIdForNode(state.package?.units ?? const [], node.id),
         onSave: onSaveFutureWarrior,
       );
     }
     final deviceRows = _buildDeviceRows(selectedNode, state.session);
     final groups = _groupDevices(deviceRows);
+    final showAlias = selectedNode?.nodeType == 2;
     final stageIndex = _stageIndex(state.session);
     final transferring =
         state.session?.activeState == CpdsActiveState.transferring ||
@@ -180,7 +176,7 @@ class CpdsDevicePanel extends StatelessWidget {
                             fontSize: 12,
                             color: Color(0xFFB7BCC6),
                           ),
-                      ),
+                        ),
                     ],
                   ),
                 ),
@@ -199,7 +195,8 @@ class CpdsDevicePanel extends StatelessWidget {
                   width: 88,
                   height: 32,
                   isLoading: distributing,
-                  onPressed: distributing ||
+                  onPressed:
+                      distributing ||
                           state.active ||
                           interfacesLoading ||
                           selectedInterfaceName.isEmpty ||
@@ -279,6 +276,7 @@ class CpdsDevicePanel extends StatelessWidget {
                       key: ValueKey(selectedNode.id),
                       groups: groups,
                       groupTitle: (key) => _groupTitle(context, key),
+                      showAlias: showAlias,
                     ),
             ),
           ),
@@ -673,33 +671,76 @@ class _FutureWarriorDeviceRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final device = fwDevice.device;
+    final zh = Localizations.localeOf(context).languageCode == 'zh';
     return InkWell(
       onTap: () => onChanged(!selected),
       child: Container(
-        height: 44,
-        padding: const EdgeInsets.symmetric(horizontal: 12),
-        child: Row(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: const BoxDecoration(
+          border: Border(
+            bottom: BorderSide(color: Color(0xFF353A41)),
+          ),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Checkbox(
-              value: selected,
-              activeColor: const Color(0xFF00A2E9),
-              onChanged: (value) => onChanged(value ?? false),
+            Row(
+              children: [
+                SizedBox(
+                  width: 48,
+                  height: 48,
+                  child: Checkbox(
+                    value: selected,
+                    activeColor: const Color(0xFF00A2E9),
+                    onChanged: (value) => onChanged(value ?? false),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    device.alias,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(color: Colors.white, fontSize: 14),
+                  ),
+                ),
+                const SizedBox(width: 24),
+                Text(
+                  device.id,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(color: Colors.white70, fontSize: 14),
+                ),
+              ],
             ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                device.id,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(color: Colors.white, fontSize: 14),
-              ),
+            Row(
+              children: [
+                const SizedBox(width: 56),
+                Expanded(
+                  child: Text(
+                    '${zh ? '网络节点ID' : 'Net Node ID'}：${fwDevice.nodeId}',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(color: Colors.white54, fontSize: 12),
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(width: 24),
-            Text(
-              fwDevice.nodeName,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(color: Colors.white70, fontSize: 14),
+            const SizedBox(height: 4),
+            Row(
+              children: [
+                const SizedBox(width: 56),
+                Expanded(
+                  child: Text(
+                    '${zh ? '网络节点名称' : 'Net Node Name'}：'
+                    '${fwDevice.nodeName}',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(color: Colors.white54, fontSize: 12),
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -827,10 +868,7 @@ class _DeviceGroupHeader extends StatelessWidget {
               const Spacer(),
               Text(
                 '$count',
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: Color(0xFFB7BCC6),
-                ),
+                style: const TextStyle(fontSize: 12, color: Color(0xFFB7BCC6)),
               ),
             ],
           ),
@@ -845,10 +883,12 @@ class _CpdsDeviceGroupList extends StatefulWidget {
     super.key,
     required this.groups,
     required this.groupTitle,
+    required this.showAlias,
   });
 
   final List<_DeviceGroupData> groups;
   final String Function(String titleKey) groupTitle;
+  final bool showAlias;
 
   @override
   State<_CpdsDeviceGroupList> createState() => _CpdsDeviceGroupListState();
@@ -879,7 +919,10 @@ class _CpdsDeviceGroupListState extends State<_CpdsDeviceGroupList> {
             expanded: expanded,
             onTap: () => _toggleGroup(group.titleKey),
           ),
-          if (expanded) ...group.rows.map((row) => _DeviceRow(row: row)),
+          if (expanded)
+            ...group.rows.map(
+              (row) => _DeviceRow(row: row, showAlias: widget.showAlias),
+            ),
         ];
       }).toList(),
     );
@@ -887,9 +930,10 @@ class _CpdsDeviceGroupListState extends State<_CpdsDeviceGroupList> {
 }
 
 class _DeviceRow extends StatelessWidget {
-  const _DeviceRow({required this.row});
+  const _DeviceRow({required this.row, required this.showAlias});
 
   final _DeviceRowData row;
+  final bool showAlias;
 
   @override
   Widget build(BuildContext context) {
@@ -898,6 +942,7 @@ class _DeviceRow extends StatelessWidget {
     final nodeIdLabel = Localizations.localeOf(context).languageCode == 'zh'
         ? '节点ID'
         : 'Node ID';
+    final zh = Localizations.localeOf(context).languageCode == 'zh';
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: const BoxDecoration(
@@ -930,6 +975,19 @@ class _DeviceRow extends StatelessWidget {
             children: [
               const SizedBox(width: 16),
               _Meta(label: nodeIdLabel, value: row.device.id),
+              if (showAlias) ...[
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Text(
+                    '${zh ? '别名' : 'Alias'}: '
+                    '${row.device.alias.isEmpty ? '--' : row.device.alias}',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.left,
+                    style: const TextStyle(color: Colors.white54, fontSize: 12),
+                  ),
+                ),
+              ],
             ],
           ),
           const SizedBox(height: 4),

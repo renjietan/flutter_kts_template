@@ -326,10 +326,9 @@ class _CpdsPageState extends State<CpdsPage> {
     );
   }
 
-  /// 清空“注钥管理”页面的数据（父表 + 明细表）。
+  /// 仅清空注钥枪绑定的设备明细（子表），保留注钥枪列表（父表）。
   void _clearKeyLoaderData() {
     DatabaseManager.instance.removeAll<KeyLoaderDetailsEntity>();
-    DatabaseManager.instance.removeAll<KeyLoadersEntity>();
   }
 
   Future<void> _parse() async {
@@ -529,6 +528,11 @@ class _CpdsPageState extends State<CpdsPage> {
       return;
     }
 
+    if (items.isEmpty) {
+      SimplePopup.warn('无新增数据');
+      return;
+    }
+
     // 仅新增本次勾选的数据，重复数据已在前置流程中过滤，不再清空已有明细。
 
     for (final rawItem in items) {
@@ -537,6 +541,7 @@ class _CpdsPageState extends State<CpdsPage> {
       final detail = KeyLoaderDetailsEntity(
         netNodePackageName: item['netNodePackageName']?.toString() ?? '',
         dcPackageName: item['dcPackageName']?.toString() ?? '',
+        dcPackageAlias: item['deviceAlias']?.toString(),
         keyLoaderId: keyLoaderId,
         radioId: item['radioId'] as int?,
         consumer: item['consumer']?.toString(),

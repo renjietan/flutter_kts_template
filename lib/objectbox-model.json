@@ -144,7 +144,7 @@
     },
     {
       "id": "7:1813780709103220274",
-      "lastPropertyId": "13:7777777777777777777",
+      "lastPropertyId": "14:9112345678901234567",
       "name": "KeyLoaderDetailsEntity",
       "properties": [
         {
@@ -201,6 +201,11 @@
         {
           "id": "13:7777777777777777777",
           "name": "parentIdPath",
+          "type": 9
+        },
+        {
+          "id": "14:9112345678901234567",
+          "name": "dcPackageAlias",
           "type": 9
         }
       ],

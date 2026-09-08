@@ -65,4 +65,9 @@ class KeyLoadersApi {
     final res = await _instance.delete("$url/$id", fromJson: null);
     return res;
   }
+
+  static Future deleteDetails(String ids) async {
+    final res = await _instance.delete("$url/detail/$ids", fromJson: null);
+    return res;
+  }
 }

@@ -138,12 +138,14 @@ class _CpdsFutureWarriorSaveDialogState
     final keyLoaderId = _selectedKeyLoaderId;
     if (keyLoaderId == null) return;
 
-    final parentIdPath = _findUnitPath(widget.units, widget.unitId);
+    final parentIdPath = _findUnitPath(widget.units, widget.unitId).join('/');
     final items = widget.devices.map((fwDevice) {
       final radio = _radioFor(fwDevice);
       return {
         'netNodePackageName': fwDevice.nodeId,
         'dcPackageName': fwDevice.device.id,
+        'nodeName': fwDevice.nodeName,
+        'deviceAlias': fwDevice.device.alias,
         'deviceType': fwDevice.device.type.value,
         'deviceModel': fwDevice.device.model,
         'radioId': radio?.id,
@@ -156,18 +158,24 @@ class _CpdsFutureWarriorSaveDialogState
 
     setState(() => _saving = true);
     try {
-      final duplicates = await _findDuplicates(keyLoaderId, items);
+      final duplicates = await _findDuplicates(
+        keyLoaderId,
+        items,
+        parentIdPath,
+      );
       final duplicateKeys = {
         for (final item in duplicates)
           _detailKey(
             item['netNodePackageName']?.toString() ?? '',
             item['dcPackageName']?.toString() ?? '',
+            parentIdPath,
           ),
       };
       final nonDuplicates = items.where((item) {
         final key = _detailKey(
           item['netNodePackageName']?.toString() ?? '',
           item['dcPackageName']?.toString() ?? '',
+          parentIdPath,
         );
         return !duplicateKeys.contains(key);
       }).toList();
@@ -190,7 +198,7 @@ class _CpdsFutureWarriorSaveDialogState
       if (mounted) Navigator.of(context).pop();
       final json = {
         'keyLoaderId': keyLoaderId,
-        'parentIdPath': parentIdPath.join('/'),
+        'parentIdPath': parentIdPath,
         'items': nonDuplicates,
       };
       GlobalLogger.logInfo('SAVE_JSON ${jsonEncode(json)}');
@@ -204,6 +212,7 @@ class _CpdsFutureWarriorSaveDialogState
   Future<List<Map<String, dynamic>>> _findDuplicates(
     int keyLoaderId,
     List<Map<String, dynamic>> items,
+    String parentIdPath,
   ) async {
     final detailBox = DatabaseManager.instance.box<KeyLoaderDetailsEntity>();
     final existing = detailBox
@@ -212,19 +221,23 @@ class _CpdsFutureWarriorSaveDialogState
         .find();
     final existingKeys = {
       for (final row in existing)
-        _detailKey(row.netNodePackageName, row.dcPackageName),
+        _detailKey(row.netNodePackageName, row.dcPackageName, row.parentIdPath),
     };
     return items.where((item) {
       final key = _detailKey(
         item['netNodePackageName']?.toString() ?? '',
         item['dcPackageName']?.toString() ?? '',
+        parentIdPath,
       );
       return existingKeys.contains(key);
     }).toList();
   }
 
-  String _detailKey(String netNodePackageName, String dcPackageName) =>
-      '$netNodePackageName\u0000$dcPackageName';
+  String _detailKey(
+    String netNodePackageName,
+    String dcPackageName,
+    String parentIdPath,
+  ) => '$netNodePackageName\u0000$dcPackageName\u0000$parentIdPath';
 
   List<String> _findUnitPath(List<CpdsUnit> units, String unitId) {
     final path = <String>[];
@@ -249,6 +262,7 @@ class _CpdsFutureWarriorSaveDialogState
   @override
   Widget build(BuildContext context) {
     final t = Translations.of(context);
+    final zh = Localizations.localeOf(context).languageCode == 'zh';
     return AlertDialog(
       backgroundColor: const Color(0xFF20262D),
       title: Text(
@@ -337,6 +351,16 @@ class _CpdsFutureWarriorSaveDialogState
                               label: Padding(
                                 padding: const EdgeInsets.only(left: 8),
                                 child: Text(
+                                  zh ? '别名' : 'Alias',
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                ),
+                              ),
+                            ),
+                            DataColumn(
+                              label: Padding(
+                                padding: const EdgeInsets.only(left: 8),
+                                child: Text(
                                   t.Form.paramsInject.deviceType.text,
                                   overflow: TextOverflow.ellipsis,
                                   maxLines: 1,
@@ -400,6 +424,16 @@ class _CpdsFutureWarriorSaveDialogState
                                     padding: const EdgeInsets.only(left: 8),
                                     child: Text(
                                       device.id,
+                                      overflow: TextOverflow.ellipsis,
+                                      maxLines: 1,
+                                    ),
+                                  ),
+                                ),
+                                DataCell(
+                                  Padding(
+                                    padding: const EdgeInsets.only(left: 8),
+                                    child: Text(
+                                      device.alias,
                                       overflow: TextOverflow.ellipsis,
                                       maxLines: 1,
                                     ),
@@ -523,6 +557,38 @@ class CpdsFutureWarriorDuplicateDialog extends StatelessWidget {
 
   final List<Map<String, dynamic>> duplicates;
 
+  Widget _headerCell(String text) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+        child: Text(
+          text,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _bodyCell(String text) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+        child: Text(
+          text,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(color: Colors.white, fontSize: 13),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final t = Translations.of(context);
@@ -552,42 +618,36 @@ class CpdsFutureWarriorDuplicateDialog extends StatelessWidget {
             const SizedBox(height: 12),
             Container(
               constraints: const BoxConstraints(maxHeight: 260),
-              decoration: BoxDecoration(
-                border: Border.all(color: const Color(0xFF353A41)),
-              ),
               child: SingleChildScrollView(
-                child: DataTable(
-                  headingRowColor: const WidgetStatePropertyAll(
-                    Color(0xFF292E33),
-                  ),
-                  horizontalMargin: 0,
-                  columnSpacing: 8,
-                  columns: [
-                    DataColumn(label: Text(t.pager.radioManager.netNode)),
-                    DataColumn(
-                      label: Text(t.tableColumn.injectEncrypt.parameterPacket),
-                    ),
-                  ],
-                  rows: duplicates.map((item) {
-                    return DataRow(
-                      cells: [
-                        DataCell(
-                          Text(
-                            item['netNodePackageName']?.toString() ?? '--',
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 1,
-                          ),
+                child: Table(
+                  border: TableBorder.all(color: const Color(0xFF6B7480)),
+                  columnWidths: const {
+                    0: FlexColumnWidth(1),
+                    1: FlexColumnWidth(1),
+                    2: FlexColumnWidth(1),
+                  },
+                  children: [
+                    TableRow(
+                      children: [
+                        _headerCell(t.pager.radioManager.netNode),
+                        _headerCell(
+                          '${t.tableColumn.injectEncrypt.parameterPacket}'
+                          '${zh ? '别名' : ' Alias'}',
                         ),
-                        DataCell(
-                          Text(
-                            item['dcPackageName']?.toString() ?? '--',
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 1,
-                          ),
+                        _headerCell(
+                          t.tableColumn.injectEncrypt.parameterPacket,
                         ),
                       ],
-                    );
-                  }).toList(),
+                    ),
+                    for (final item in duplicates)
+                      TableRow(
+                        children: [
+                          _bodyCell(item['nodeName']?.toString() ?? '--'),
+                          _bodyCell(item['deviceAlias']?.toString() ?? '--'),
+                          _bodyCell(item['dcPackageName']?.toString() ?? '--'),
+                        ],
+                      ),
+                  ],
                 ),
               ),
             ),

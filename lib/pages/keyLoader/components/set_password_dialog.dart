@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 
 class SetPasswordDialog extends StatefulWidget {
@@ -23,17 +24,11 @@ class _SetPasswordDialogState extends State<SetPasswordDialog> {
     final text = value ?? '';
     final t = Translations.of(context);
     if (text.isEmpty) return t.cpds.setPassword.required;
-    if (text.length < 6) return t.cpds.setPassword.minLength;
-    if (text.length > 20) return t.cpds.setPassword.maxLength;
-    if (RegExp(r'[\u4e00-\u9fff]').hasMatch(text)) {
-      return t.cpds.setPassword.noChinese;
-    }
-    if (RegExp(r'[<>:"/\\|?*]').hasMatch(text) ||
-        text.contains('\u0000') ||
-        text.contains('\r') ||
-        text.contains('\n')) {
+    if (!RegExp(r'^\d+$').hasMatch(text)) {
       return t.cpds.setPassword.invalid;
     }
+    if (text.length < 8) return t.cpds.setPassword.minLength;
+    if (text.length > 20) return t.cpds.setPassword.maxLength;
     return null;
   }
 
@@ -61,6 +56,8 @@ class _SetPasswordDialogState extends State<SetPasswordDialog> {
         child: TextFormField(
           controller: _passwordController,
           obscureText: _obscurePassword,
+          keyboardType: TextInputType.number,
+          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
           style: const TextStyle(color: Colors.white, fontSize: 14),
           validator: _validate,
           decoration: InputDecoration(

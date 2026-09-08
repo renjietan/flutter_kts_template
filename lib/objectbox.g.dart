@@ -195,7 +195,7 @@ final _entities = <obx_int.ModelEntity>[
   obx_int.ModelEntity(
     id: const obx_int.IdUid(7, 1813780709103220274),
     name: 'KeyLoaderDetailsEntity',
-    lastPropertyId: const obx_int.IdUid(13, 7777777777777777777),
+    lastPropertyId: const obx_int.IdUid(14, 9112345678901234567),
     flags: 0,
     properties: <obx_int.ModelProperty>[
       obx_int.ModelProperty(
@@ -261,6 +261,12 @@ final _entities = <obx_int.ModelEntity>[
       obx_int.ModelProperty(
         id: const obx_int.IdUid(13, 7777777777777777777),
         name: 'parentIdPath',
+        type: 9,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(14, 9112345678901234567),
+        name: 'dcPackageAlias',
         type: 9,
         flags: 0,
       ),
@@ -581,6 +587,9 @@ obx_int.ModelDefinition getObjectBoxModel() {
           object.netNodePackageName,
         );
         final dcPackageNameOffset = fbb.writeString(object.dcPackageName);
+        final dcPackageAliasOffset = object.dcPackageAlias == null
+            ? null
+            : fbb.writeString(object.dcPackageAlias!);
         final consumerOffset = object.consumer == null
             ? null
             : fbb.writeString(object.consumer!);
@@ -601,6 +610,7 @@ obx_int.ModelDefinition getObjectBoxModel() {
         fbb.addOffset(10, locationOffset);
         fbb.addOffset(11, SNOffset);
         fbb.addOffset(12, parentIdPathOffset);
+        fbb.addOffset(13, dcPackageAliasOffset);
         fbb.finish(fbb.endTable());
         return object.id;
       },
@@ -642,6 +652,9 @@ obx_int.ModelDefinition getObjectBoxModel() {
         final parentIdPathParam = const fb.StringReader(
           asciiOptimization: true,
         ).vTableGet(buffer, rootOffset, 28, '');
+        final dcPackageAliasParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGetNullable(buffer, rootOffset, 30);
         final createdAtParam = DateTime.fromMillisecondsSinceEpoch(
           const fb.Int64Reader().vTableGet(buffer, rootOffset, 18, 0),
         );
@@ -652,6 +665,7 @@ obx_int.ModelDefinition getObjectBoxModel() {
           id: idParam,
           netNodePackageName: netNodePackageNameParam,
           dcPackageName: dcPackageNameParam,
+          dcPackageAlias: dcPackageAliasParam,
           keyLoaderId: keyLoaderIdParam,
           radioId: radioIdParam,
           consumer: consumerParam,
@@ -844,4 +858,10 @@ class KeyLoaderDetailsEntity_ {
   static final parentIdPath = obx.QueryStringProperty<KeyLoaderDetailsEntity>(
     _entities[4].properties[10],
   );
+
+  /// See [KeyLoaderDetailsEntity.dcPackageAlias].
+  static final dcPackageAlias =
+      obx.QueryStringProperty<KeyLoaderDetailsEntity>(
+        _entities[4].properties[11],
+      );
 }

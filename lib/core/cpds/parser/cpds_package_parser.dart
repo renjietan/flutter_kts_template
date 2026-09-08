@@ -532,7 +532,7 @@ class CpdsPackageParser {
           id: deviceId,
           type: type,
           model: model,
-          alias: config['Alias']?.toString() ?? '',
+          alias: _deviceAlias(config),
           ip: config['IP']?.toString() ?? '',
         );
         devices.add(device);
@@ -645,14 +645,14 @@ class CpdsPackageParser {
     Map<String, dynamic> config,
     Set<String> subnets,
   ) {
+    final alias = _deviceAlias(config);
     if ((type == CpdsDeviceType.multiBandRadio ||
             type == CpdsDeviceType.multiBandHandheld) &&
-        (config['Alias'] == null ||
-            config['Alias'].toString().isEmpty ||
-            config['Alias'].toString().length > 128 ||
-            config['Alias'].toString().contains('\u0000') ||
-            config['Alias'].toString().contains('\r') ||
-            config['Alias'].toString().contains('\n'))) {
+        (alias.isEmpty ||
+            alias.length > 128 ||
+            alias.contains('\u0000') ||
+            alias.contains('\r') ||
+            alias.contains('\n'))) {
       throw CpdsException(
         CpdsErrorCode.invalidPackage,
         params: {'field': 'Alias', 'path': id},
@@ -685,6 +685,11 @@ class CpdsPackageParser {
       type == CpdsDeviceType.multiBandRadio ||
       type == CpdsDeviceType.multiBandHandheld ||
       type == CpdsDeviceType.smallHandheld;
+
+  static String _deviceAlias(Map<String, dynamic> config) {
+    final alias = config['Alias'] ?? config['alias'];
+    return alias?.toString() ?? '';
+  }
 
   static int _estimateWorkspace(int fileSize, int expandedSize) {
     final base = fileSize + expandedSize * 2;

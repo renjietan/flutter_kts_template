@@ -179,4 +179,12 @@ class KeyLoadersController {
     }
     return ApiResponse.success(data: data, message: t.common.OperationSuccess);
   }
+
+  static Future<Response> deleteDetails(Request request) async {
+    final db = DatabaseManager.instance;
+    List<int> ids = getIds(request.context["path"] as List<String>?);
+    final box = db.box<KeyLoaderDetailsEntity>();
+    int data = box.removeMany(ids);
+    return ApiResponse.success(data: data, message: t.common.OperationSuccess);
+  }
 }

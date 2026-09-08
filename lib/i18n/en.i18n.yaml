@@ -181,7 +181,7 @@ cpds:
   goNow: Go now
   parse: Parse
   filePlaceholder: Select a communication package
-  browseConfirm: Re-uploading a file will clear all data in Key Manager. Continue?
+  browseConfirm: Re-uploading a file will clear communication parameter packages bound to key loaders. Continue?
   browseSourceTitle: Select file source
   browseSourceLocal: Local files
   browseSourceKeyLoader: Key loader files
@@ -271,9 +271,9 @@ cpds:
     label: Password
     placeholder: Enter password
     required: Please enter a password
-    minLength: Password must be at least 6 characters
-    maxLength: Password must be at most 20 characters
-    invalid: Password contains invalid characters
+    minLength: Password must be at least 8 digits
+    maxLength: Password must be at most 20 digits
+    invalid: Password must contain only digits
     noChinese: Password cannot contain Chinese characters
   export:
     zipNotFound: "ZIP package not found: {path}"

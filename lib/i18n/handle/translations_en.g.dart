@@ -310,7 +310,7 @@ class _Translations$cpds$en extends Translations$cpds$zh {
 	@override String get goNow => 'Go now';
 	@override String get parse => 'Parse';
 	@override String get filePlaceholder => 'Select a communication package';
-	@override String get browseConfirm => 'Re-uploading a file will clear all data in Key Manager. Continue?';
+	@override String get browseConfirm => 'Re-uploading a file will clear communication parameter packages bound to key loaders. Continue?';
 	@override String get browseSourceTitle => 'Select file source';
 	@override String get browseSourceLocal => 'Local files';
 	@override String get browseSourceKeyLoader => 'Key loader files';
@@ -649,9 +649,9 @@ class _Translations$cpds$setPassword$en extends Translations$cpds$setPassword$zh
 	@override String get label => 'Password';
 	@override String get placeholder => 'Enter password';
 	@override String get required => 'Please enter a password';
-	@override String get minLength => 'Password must be at least 6 characters';
-	@override String get maxLength => 'Password must be at most 20 characters';
-	@override String get invalid => 'Password contains invalid characters';
+	@override String get minLength => 'Password must be at least 8 digits';
+	@override String get maxLength => 'Password must be at most 20 digits';
+	@override String get invalid => 'Password must contain only digits';
 	@override String get noChinese => 'Password cannot contain Chinese characters';
 }
 

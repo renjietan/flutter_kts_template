@@ -209,6 +209,57 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
     });
   }
 
+  Widget _buildActionCell(KeyLoaderDetailsEntity item) {
+    final t = Translations.of(context);
+    return Center(
+      child: Tooltip(
+        message: t.button.radioManager.delete,
+        child: GestureDetector(
+          onTap: () => _deleteSingle(item),
+          child: const Icon(
+            Icons.delete_outline,
+            size: 16,
+            color: Colors.white,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _deleteSingle(KeyLoaderDetailsEntity item) async {
+    final t = Translations.of(context);
+    try {
+      await KeyLoadersApi.deleteDetails('${item.id}');
+      if (!mounted) return;
+      _selectedIds.remove(item.id.toString());
+      setState(() {
+        _future = _load();
+      });
+      SimplePopup.success(t.common.OperationSuccess);
+    } catch (error) {
+      GlobalLogger.logError('delete key loader detail failed: $error');
+      SimplePopup.error(error.toString());
+    }
+  }
+
+  Future<void> _deleteSelected() async {
+    if (_selectedIds.isEmpty) return;
+    final t = Translations.of(context);
+    final ids = _selectedIds.toList();
+    try {
+      await KeyLoadersApi.deleteDetails(ids.join('、'));
+      if (!mounted) return;
+      _selectedIds.clear();
+      setState(() {
+        _future = _load();
+      });
+      SimplePopup.success(t.common.OperationSuccess);
+    } catch (error) {
+      GlobalLogger.logError('batch delete key loader details failed: $error');
+      SimplePopup.error(error.toString());
+    }
+  }
+
   /// USB 上传：连接注钥枪 → PAD_LIGHT 握手 → PAD_UPLOAD 协议发送 .pad 文件。
   /// 检查/申请注钥枪 USB 权限（仅 Android 需要；Windows 无授权弹窗）。
   Future<bool> _ensureUsbPermission() async {
@@ -1022,6 +1073,18 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
               ),
               const SizedBox(width: 4),
               BaseButton(
+                label: t.button.radioManager.delete,
+                width: 70,
+                colors: const [
+                  Color(0xFFF15B64),
+                  Color(0xFFF15B64),
+                  Color(0xFFF15B64),
+                  Color(0xFFF15B64),
+                ],
+                onPressed: _selectedIds.isEmpty ? null : _deleteSelected,
+              ),
+              const SizedBox(width: 4),
+              BaseButton(
                 label: t.button.injectEncrypt.export,
                 width: 70,
                 isLoading: _exporting,
@@ -1092,6 +1155,7 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
     BuildContext context,
   ) {
     final t = Translations.of(context);
+    final zh = Localizations.localeOf(context).languageCode == 'zh';
     final radios = _radios;
 
     return [
@@ -1100,6 +1164,13 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
         flex: 2,
         cellBuilder: TextCellBuilder.text<KeyLoaderDetailsEntity>(
           (item) => item.dcPackageName,
+        ),
+      ),
+      ColumnDefinition<KeyLoaderDetailsEntity>(
+        label: zh ? '别名' : 'Alias',
+        flex: 1,
+        cellBuilder: TextCellBuilder.text<KeyLoaderDetailsEntity>(
+          (item) => item.dcPackageAlias ?? '',
         ),
       ),
       ColumnDefinition<KeyLoaderDetailsEntity>(
@@ -1163,6 +1234,14 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
         cellBuilder: TextCellBuilder.text<KeyLoaderDetailsEntity>(
           (item) => item.SN ?? '',
         ),
+      ),
+      ColumnDefinition<KeyLoaderDetailsEntity>(
+        label: t.tableColumn.base.actions,
+        size: const ColumnSize.fixed(72),
+        headerBuilder: (label) => Center(
+          child: Text(label, style: _theme.getHeaderTextStyle()),
+        ),
+        cellBuilder: _buildActionCell,
       ),
     ];
   }
