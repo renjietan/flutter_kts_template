@@ -6,12 +6,14 @@ class SimpleFormTextField extends StatefulWidget {
   final FormFieldConfig field;
   final Color? fillColor;
   final double? labelFontSize;
+  final double contentPadding;
 
   const SimpleFormTextField({
     super.key,
     required this.field,
     this.fillColor = const Color(0x9921262C),
     this.labelFontSize = 14,
+    this.contentPadding = 10,
   });
 
   @override
@@ -34,7 +36,10 @@ class _SimpleFormTextFieldState extends State<SimpleFormTextField> {
       decoration: InputDecoration(
         labelText: widget.field.hintText ?? widget.field.label,
         isDense: true,
-        contentPadding: EdgeInsets.symmetric(vertical: 14, horizontal: 14),
+        contentPadding: EdgeInsets.symmetric(
+          vertical: widget.contentPadding,
+          horizontal: 14,
+        ),
         labelStyle: TextStyle(
           color: Colors.white,
           fontSize: (widget.labelFontSize ?? 13),
@@ -82,6 +87,8 @@ class FormFieldConfig {
   final TextEditingController? textEditingController;
   final bool readonly;
   final bool enabled;
+  final bool required;
+  final String? labelHelpText;
 
   // 新增字段类型
   final FormFieldType fieldType;
@@ -102,6 +109,8 @@ class FormFieldConfig {
     this.textEditingController,
     this.readonly = false,
     this.enabled = true,
+    this.required = false,
+    this.labelHelpText,
     this.fieldType = FormFieldType.text, // 默认为文本输入
     this.items,
     this.labelBuilder,

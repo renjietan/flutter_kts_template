@@ -60,6 +60,12 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
   List<RadiosEntity> _radios = [];
   bool _exporting = false;
   bool _usbDisconnected = false;
+  bool _exportCancelled = false;
+  bool _exportCompleted = false;
+  String? _exportOutPath;
+  final List<String> _exportTarPaths = [];
+  String? _exportPackagePath;
+  String? _exportPadPath;
   final ScrollController _tableScrollController = ScrollController();
 
   @override
@@ -157,7 +163,10 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
     if (mounted) {
       setState(() {
         _allData = result;
-        final totalPages = (_allData.length / _pageSize).ceil().clamp(1, 999999);
+        final totalPages = (_allData.length / _pageSize).ceil().clamp(
+          1,
+          999999,
+        );
         if (_currentPage > totalPages) {
           _currentPage = totalPages;
         }
@@ -219,7 +228,7 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
           child: const Icon(
             Icons.delete_outline,
             size: 16,
-            color: Colors.white,
+            color: Color(0xFFF15B64),
           ),
         ),
       ),
@@ -228,6 +237,31 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
 
   Future<void> _deleteSingle(KeyLoaderDetailsEntity item) async {
     final t = Translations.of(context);
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: const Color(0xFF20262D),
+        title: Text(
+          t.tips.title,
+          style: const TextStyle(color: Colors.white, fontSize: 17),
+        ),
+        content: Text(
+          t.tips.keyLoaders.confirmDelete,
+          style: const TextStyle(color: Colors.white70, fontSize: 13),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(t.tips.cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(t.common.confirm),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
     try {
       await KeyLoadersApi.deleteDetails('${item.id}');
       if (!mounted) return;
@@ -245,6 +279,31 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
   Future<void> _deleteSelected() async {
     if (_selectedIds.isEmpty) return;
     final t = Translations.of(context);
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: const Color(0xFF20262D),
+        title: Text(
+          t.tips.title,
+          style: const TextStyle(color: Colors.white, fontSize: 17),
+        ),
+        content: Text(
+          t.tips.keyLoaders.confirmDelete,
+          style: const TextStyle(color: Colors.white70, fontSize: 13),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(t.tips.cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(t.common.confirm),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
     final ids = _selectedIds.toList();
     try {
       await KeyLoadersApi.deleteDetails(ids.join('、'));
@@ -256,6 +315,20 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
       SimplePopup.success(t.common.OperationSuccess);
     } catch (error) {
       GlobalLogger.logError('batch delete key loader details failed: $error');
+      SimplePopup.error(error.toString());
+    }
+  }
+
+  Future<void> _clearRadio(KeyLoaderDetailsEntity item) async {
+    item.radioId = null;
+    item.consumer = null;
+    item.location = null;
+    item.SN = null;
+    try {
+      await KeyLoadersApi.updateOneDetail(item.id, data: item.toJson());
+      if (mounted) setState(() {});
+    } catch (error) {
+      GlobalLogger.logError('clear key loader detail radio failed: $error');
       SimplePopup.error(error.toString());
     }
   }
@@ -295,6 +368,7 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
 
     // 点亮步骤条中的「USB」节点（索引 4）。
     controller?.setStep(4);
+    if (_exportCancelled) return false;
 
     _UsbLineReader? reader;
     StreamSubscription<void>? disconnectSub;
@@ -311,7 +385,10 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
         controller?.appendStep(usb.terminated, terminated: true);
         return false;
       }
+      if (_exportCancelled) return false;
       controller?.addLine(usb.detailConnectSuccess, number: '4-1');
+
+      await manager.drainInput();
 
       reader = _UsbLineReader(manager.listenData())..start();
       disconnectSub = manager.onDisconnected.listen((_) {
@@ -322,6 +399,7 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
       // 4-2 握手
       controller?.addLine(usb.detailHandshakeStart, number: '4-2');
       await _writeUsb(manager, Uint8List.fromList(utf8.encode('PAD_LIGHT\n')));
+      if (_exportCancelled) return false;
       final lightResult = await _waitReplyResult(reader);
       if (_handleUsbDisconnected(
         lightResult,
@@ -355,6 +433,7 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
       // 4-3 准备
       controller?.addLine(usb.detailReadyStart, number: '4-3');
       await _writeUsb(manager, Uint8List.fromList(utf8.encode('PAD_UPLOAD\n')));
+      if (_exportCancelled) return false;
       final readyResult = await _waitReplyResult(
         reader,
         successValues: const {'READY\n'},
@@ -424,6 +503,7 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
       const chunkSize = 4 * 1024;
       final chunkCount = (fileBytes.length + chunkSize - 1) ~/ chunkSize;
       for (var index = 0; index < chunkCount; index++) {
+        if (_exportCancelled) return false;
         final start = index * chunkSize;
         var end = start + chunkSize;
         if (end > fileBytes.length) end = fileBytes.length;
@@ -439,6 +519,7 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
           await _writeUsb(manager, packet);
 
           ackResult = await _waitForAck(reader, index);
+          if (_exportCancelled) return false;
           if (ackResult == _UsbReplyResult.ok ||
               ackResult == _UsbReplyResult.disconnected) {
             break;
@@ -468,6 +549,7 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
       // 8、发送整个文件内容的 16 字节 MD5，然后等待 FILE_OK。
       final md5Bytes = md5.convert(fileBytes).bytes;
       await _writeUsb(manager, Uint8List.fromList(md5Bytes));
+      if (_exportCancelled) return false;
       final result = await _waitReplyResult(reader);
 
       if (_handleUsbDisconnected(result, controller, usb, failColor, '4-5')) {
@@ -610,6 +692,12 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
   }
 
   Future<void> _runExport() async {
+    _exportCancelled = false;
+    _exportCompleted = false;
+    _exportOutPath = null;
+    _exportTarPaths.clear();
+    _exportPackagePath = null;
+    _exportPadPath = null;
     final selectedRows = _allData
         .where((item) => _selectedIds.contains(item.id.toString()))
         .toList();
@@ -623,6 +711,7 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
     if (!await _ensureUsbPermission()) {
       return;
     }
+    if (_exportCancelled) return;
 
     if (selectedRows.any((item) => item.radioId == null)) {
       SimplePopup.error(t.cpds.export.radioRequired);
@@ -635,7 +724,7 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
       builder: (dialogContext) => const SetPasswordDialog(),
     );
     if (!mounted) return;
-    if (password == null) return;
+    if (password == null || _exportCancelled) return;
 
     final selectedJson = selectedRows.map((item) => item.toJson()).toList();
     GlobalLogger.logInfo(
@@ -648,7 +737,8 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
       t.cpds.exportProgress.stepPack,
       t.cpds.exportProgress.stepMerge,
       t.cpds.exportProgress.stepEncrypt,
-      if (Platform.isAndroid || Platform.isWindows) t.cpds.usbProgress.stepUsb,
+      if (Platform.isAndroid || Platform.isWindows)
+        t.button.injectEncrypt.export,
     ]);
     showDialog<void>(
       context: context,
@@ -665,22 +755,82 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
       password,
       controller,
     );
-    if (!mounted) return;
+    if (!mounted || _exportCancelled) return;
     if (padPath == null) return;
+    if (_exportCancelled) return;
 
     if (Platform.isAndroid || Platform.isWindows) {
-      await _usbUploadPads([padPath], controller: controller);
+      _exportCompleted = await _usbUploadPads([
+        padPath,
+      ], controller: controller);
     } else {
       // 其它平台无 USB 阶段，直接标记完成。
       controller.appendStep(t.cpds.usbProgress.completed);
+      _exportCompleted = true;
     }
   }
 
-  void _closeProgressDialog() {
-    if (!mounted) return;
-    final navigator = Navigator.of(context, rootNavigator: true);
-    if (navigator.canPop()) {
-      navigator.pop();
+  Future<void> _closeProgressDialog() async {
+    _exportCancelled = true;
+    await _resetUsbState();
+    await _cleanupExportFiles();
+  }
+
+  Future<void> _resetUsbState() async {
+    final manager = getKeyLoaderUsbBulkManager();
+    try {
+      await manager.disconnect();
+    } catch (e) {
+      GlobalLogger.logWarn('USB_DISCONNECT_ERROR $e');
+    }
+    _usbDisconnected = false;
+  }
+
+  Future<void> _cleanupExportFiles() async {
+    if (!_exportCompleted) {
+      final padPath = _exportPadPath;
+      if (padPath != null) {
+        await _deleteIfExists(padPath);
+      }
+      final packagePath = _exportPackagePath;
+      if (packagePath != null) {
+        await _deleteIfExists(packagePath);
+      }
+    }
+    for (final tarPath in List<String>.from(_exportTarPaths)) {
+      await _deleteIfExists(tarPath);
+    }
+    _exportTarPaths.clear();
+    final outPath = _exportOutPath;
+    if (outPath != null) {
+      await _deleteDirectoryIfExists(outPath);
+    }
+    _exportOutPath = null;
+    _exportPackagePath = null;
+    _exportPadPath = null;
+  }
+
+  Future<void> _deleteIfExists(String path) async {
+    final file = File(path);
+    try {
+      if (await file.exists()) {
+        await file.delete();
+        GlobalLogger.logInfo('EXPORT_CLEANUP_FILE $path');
+      }
+    } catch (e) {
+      GlobalLogger.logWarn('EXPORT_CLEANUP_FILE_FAILED $path $e');
+    }
+  }
+
+  Future<void> _deleteDirectoryIfExists(String path) async {
+    final directory = Directory(path);
+    try {
+      if (await directory.exists()) {
+        await directory.delete(recursive: true);
+        GlobalLogger.logInfo('EXPORT_CLEANUP_DIR $path');
+      }
+    } catch (e) {
+      GlobalLogger.logWarn('EXPORT_CLEANUP_DIR_FAILED $path $e');
     }
   }
 
@@ -696,9 +846,11 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
     // 步骤 0：开始
     controller.setStep(0);
     controller.addLine(t.cpds.exportProgress.detailStart, number: '0');
+    if (_exportCancelled) return null;
 
     try {
       final uploadPath = await DirectoryManager.instance.getUploadsPath();
+      if (_exportCancelled) return null;
       final zipPath = await _findLatestZip(uploadPath);
       if (zipPath == null) {
         SimplePopup.error(t.cpds.export.zipNotFound(path: uploadPath));
@@ -708,20 +860,24 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
       GlobalLogger.logInfo('EXPORT_ZIP $zipPath');
 
       final outPath = p.withoutExtension(zipPath);
+      _exportOutPath = outPath;
       await extractFileToDisk(
         zipPath,
         outPath,
         password: AppConfig.zipPassword,
       );
+      if (_exportCancelled) return null;
       GlobalLogger.logInfo('EXPORT_EXTRACTED $outPath');
 
       final savePath = await DirectoryManager.instance.getZipCache();
+      await _clearZipCache(savePath);
       final resourceEntries = _resourceEntries(outPath);
       final tarPaths = <String>[];
 
       // 步骤 1：打包（tar）
       controller.addLine(t.cpds.exportProgress.detailStartPack, number: '1');
       for (var i = 0; i < selectedRows.length; i++) {
+        if (_exportCancelled) return null;
         final row = selectedRows[i];
         final tarPath = await _exportOneRow(
           row,
@@ -729,7 +885,9 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
           savePath,
           resourceEntries,
         );
+        if (_exportCancelled) return null;
         if (tarPath != null) {
+          _exportTarPaths.add(tarPath);
           tarPaths.add(tarPath);
           controller.addLine(
             t.cpds.exportProgress.detailPackSuccess(index: i + 1),
@@ -747,6 +905,7 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
       controller.setStep(1);
 
       if (tarPaths.isNotEmpty) {
+        if (_exportCancelled) return null;
         final zipEntries = tarPaths
             .map((tarPath) => ArchiveEntry(sourcePath: tarPath, innerDir: ''))
             .toList();
@@ -767,10 +926,12 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
             zipName: 'UAE_$curTime',
             type: ArchiveEncoderType.zip,
           );
+          if (_exportCancelled) return null;
         } catch (_) {
           controller.setLineColor(mergeLineId, failColor);
           rethrow;
         }
+        _exportPackagePath = packagePath;
         GlobalLogger.logInfo('EXPORT_ZIP_PACKAGE $packagePath');
         controller.setStep(2);
 
@@ -781,10 +942,12 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
         );
         try {
           padPath = await _encryptZipToPad(packagePath, password, curTime);
+          if (_exportCancelled) return null;
         } catch (_) {
           controller.setLineColor(encryptLineId, failColor);
           rethrow;
         }
+        _exportPadPath = padPath;
         if (padPath != null) {
           controller.setStep(3);
         } else {
@@ -830,6 +993,20 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
     return padPath;
   }
 
+  Future<void> _clearZipCache(String dirPath) async {
+    final dir = Directory(dirPath);
+    if (!await dir.exists()) return;
+
+    await for (final entity in dir.list(recursive: false)) {
+      try {
+        await entity.delete(recursive: true);
+        GlobalLogger.logInfo('EXPORT_ZIP_CACHE_CLEARED ${entity.path}');
+      } catch (e) {
+        GlobalLogger.logWarn('EXPORT_ZIP_CACHE_CLEAR_FAILED ${entity.path} $e');
+      }
+    }
+  }
+
   Future<Uint8List> _encryptWithPassphrase(
     Uint8List data,
     String password, {
@@ -854,11 +1031,6 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
     String savePath,
     List<ArchiveEntry> resourceEntries,
   ) async {
-    final netNodeFilePath = p.join(
-      outPath,
-      '4_net_node',
-      '${row.netNodePackageName}.json',
-    );
     final dcFilePath = p.join(
       outPath,
       '3_device_config',
@@ -867,20 +1039,12 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
 
     final entries = <ArchiveEntry>[...resourceEntries];
 
-    final netNodeFile = File(netNodeFilePath);
-    if (await netNodeFile.exists()) {
-      final netNodeContent = await netNodeFile.readAsString();
-      GlobalLogger.logInfo(
-        'EXPORT_NET_NODE[${row.netNodePackageName}] $netNodeContent',
-      );
-      entries.add(
-        ArchiveEntry(sourcePath: netNodeFilePath, innerDir: '4_net_node'),
-      );
-    } else {
-      _notifyMissingFile(
-        '${row.netNodePackageName} - ${row.dcPackageName} - '
-        '4_net_node/${row.netNodePackageName}.json',
-      );
+    var radioAlias = '';
+    for (final radio in _radios) {
+      if (radio.id == row.radioId) {
+        radioAlias = radio.alias;
+        break;
+      }
     }
 
     final dcFile = File(dcFilePath);
@@ -892,7 +1056,17 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
         '${const JsonEncoder.withIndent('  ').convert(dcJson)}',
       );
       entries.add(
-        ArchiveEntry(sourcePath: dcFilePath, innerDir: '3_device_config'),
+        ArchiveEntry(
+          sourcePath: dcFilePath,
+          innerDir: '3_device_config',
+          transform: (originalBytes) {
+            final json = jsonDecode(utf8.decode(originalBytes));
+            if (json is Map) {
+              json['Alias'] = radioAlias;
+            }
+            return Uint8List.fromList(utf8.encode(jsonEncode(json)));
+          },
+        ),
       );
 
       final channels = dcJson['Channels'];
@@ -935,7 +1109,7 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
       return null;
     }
 
-    final zipName = '${row.SN ?? ''}-${row.consumer ?? ''}';
+    final zipName = '${row.SN ?? ''}-$radioAlias';
     final tarPath = await FileTools.filesToZipFormPath(
       entries: entries,
       outputPath: savePath,
@@ -1001,10 +1175,7 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
           child: TableContextualBar(
             selectedCount: _selectedIds.length,
             normalToolbar: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 12,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               child: Row(
                 children: [
                   const Spacer(),
@@ -1201,6 +1372,8 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
             hint: t.cpds.saveDialog.selectPlaceholder,
             value: hasCurrentRadio ? item.radioId : null,
             items: radioOptions,
+            height: 32,
+            onClear: () => _clearRadio(item),
             onChanged: (value) {
               if (item.radioId == value) return;
               item.radioId = value;
@@ -1213,13 +1386,6 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
             },
           );
         },
-      ),
-      ColumnDefinition<KeyLoaderDetailsEntity>(
-        label: t.tableColumn.injectEncrypt.consumer,
-        flex: 2,
-        cellBuilder: TextCellBuilder.text<KeyLoaderDetailsEntity>(
-          (item) => item.consumer ?? '',
-        ),
       ),
       ColumnDefinition<KeyLoaderDetailsEntity>(
         label: t.tableColumn.injectEncrypt.location,
@@ -1238,9 +1404,8 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
       ColumnDefinition<KeyLoaderDetailsEntity>(
         label: t.tableColumn.base.actions,
         size: const ColumnSize.fixed(72),
-        headerBuilder: (label) => Center(
-          child: Text(label, style: _theme.getHeaderTextStyle()),
-        ),
+        headerBuilder: (label) =>
+            Center(child: Text(label, style: _theme.getHeaderTextStyle())),
         cellBuilder: _buildActionCell,
       ),
     ];

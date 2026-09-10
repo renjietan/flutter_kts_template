@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:composable_data_table/composable_data_table.dart';
 import 'package:flutter_kts_template/components/button/base.button.dart';
 import 'package:flutter_kts_template/components/loading/simple.loading.dart';
 import 'package:flutter_kts_template/core/cpds/model/cpds_enums.dart';
 import 'package:flutter_kts_template/core/cpds/model/cpds_models.dart';
 import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 
+import '../../../theme/table.theme.dart';
 import 'cpds_network_interface_bar.dart';
 import 'cpds_progress_bar.dart';
 import 'cpds_status_badge.dart';
@@ -528,6 +530,26 @@ class _CpdsFutureWarriorPanelState extends State<CpdsFutureWarriorPanel> {
     return result;
   }
 
+  bool get _allSelected =>
+      widget.devices.isNotEmpty &&
+      _selectedKeys.length == widget.devices.length;
+
+  void _toggleSelectAll() {
+    setState(() {
+      if (_allSelected) {
+        _selectedKeys.clear();
+      } else {
+        _selectedKeys
+          ..clear()
+          ..addAll(widget.devices.map((device) => device.key));
+      }
+    });
+  }
+
+  void _clearSelection() {
+    setState(_selectedKeys.clear);
+  }
+
   String _groupTitle(BuildContext context, CpdsDeviceType type) {
     final t = Translations.of(context);
     return switch (type) {
@@ -551,6 +573,49 @@ class _CpdsFutureWarriorPanelState extends State<CpdsFutureWarriorPanel> {
     final total = widget.devices.length;
     final selectedCount = _selectedKeys.length;
     final groups = _groupedDevices();
+    final tableTheme = getThemePreset(ThemePreset.dark);
+    final saveButton = BaseButton(
+      label: t.button.radioManager.save,
+      width: 80,
+      height: 32,
+      isLoading: _saving,
+      onPressed: _saving ? null : _handleSave,
+    );
+    final normalToolbar = SizedBox(
+      height: 48,
+      child: Row(
+        children: [
+          Container(width: 4, height: 32, color: const Color(0xFF00A2E9)),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  t.tree.futureWarrior,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+                Text(
+                  zh
+                      ? '已勾选 $selectedCount/$total'
+                      : 'Selected $selectedCount/$total',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Color(0xFFB7BCC6),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          saveButton,
+        ],
+      ),
+    );
 
     return Container(
       color: const Color(0xFF0E1114),
@@ -558,44 +623,67 @@ class _CpdsFutureWarriorPanelState extends State<CpdsFutureWarriorPanel> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          SizedBox(
-            height: 48,
-            child: Row(
-              children: [
-                Container(width: 4, height: 32, color: const Color(0xFF00A2E9)),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        t.tree.futureWarrior,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
-                      ),
-                      Text(
-                        zh
-                            ? '已勾选 $selectedCount/$total'
-                            : 'Selected $selectedCount/$total',
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Color(0xFFB7BCC6),
-                        ),
-                      ),
-                    ],
+          DataTablePlusThemeProvider(
+            theme: tableTheme,
+            child: TableContextualBar(
+              selectedCount: selectedCount,
+              normalToolbar: normalToolbar,
+              selectedCountTemplate: '{count} ${t.checkbox.selected}',
+              selectAllWidget: OutlinedButton(
+                onPressed: _toggleSelectAll,
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: tableTheme.accentColor,
+                  side: BorderSide(
+                    color: tableTheme.accentColor.withValues(alpha: 0.4),
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 10,
+                  ),
+                  minimumSize: const Size(0, 36),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                BaseButton(
-                  label: t.button.radioManager.save,
-                  width: 80,
-                  height: 32,
-                  isLoading: _saving,
-                  onPressed: _saving ? null : _handleSave,
+                child: Text(
+                  _allSelected
+                      ? t.checkbox.DeselectAll
+                      : t.checkbox.SelectAll(count: total),
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
+              ),
+              actions: [
+                OutlinedButton.icon(
+                  onPressed: _clearSelection,
+                  icon: Icon(
+                    Icons.close,
+                    size: 16,
+                    color: tableTheme.textSecondaryColor,
+                  ),
+                  label: Text(
+                    t.button.radioManager.clear,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: tableTheme.textSecondaryColor,
+                    ),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size(0, 36),
+                    side: BorderSide(color: tableTheme.borderColor),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 10,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                saveButton,
               ],
             ),
           ),
@@ -677,9 +765,7 @@ class _FutureWarriorDeviceRow extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: const BoxDecoration(
-          border: Border(
-            bottom: BorderSide(color: Color(0xFF353A41)),
-          ),
+          border: Border(bottom: BorderSide(color: Color(0xFF353A41))),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,

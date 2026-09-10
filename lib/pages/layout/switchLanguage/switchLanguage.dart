@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../i18n/handle/translations.g.dart';
+import '../../../utils/shared.dart';
 
 class SwitchLanguage extends StatefulWidget {
   const SwitchLanguage({super.key});
@@ -11,17 +12,23 @@ class SwitchLanguage extends StatefulWidget {
 
 class _SwitchLanguageState extends State<SwitchLanguage> {
   late String currentLocale;
-  void _toggleLocale() {
+  Future<void> _toggleLocale() async {
     if (currentLocale == "zh") {
-      LocaleSettings.setLocale(AppLocale.en);
-      setState(() {
-        currentLocale = "en";
-      });
+      await LocaleSettings.setLocale(AppLocale.en);
+      await Shared.saveLocale(AppLocale.en.languageCode);
+      if (mounted) {
+        setState(() {
+          currentLocale = "en";
+        });
+      }
     } else {
-      LocaleSettings.setLocale(AppLocale.zh);
-      setState(() {
-        currentLocale = "zh";
-      });
+      await LocaleSettings.setLocale(AppLocale.zh);
+      await Shared.saveLocale(AppLocale.zh.languageCode);
+      if (mounted) {
+        setState(() {
+          currentLocale = "zh";
+        });
+      }
     }
   }
 

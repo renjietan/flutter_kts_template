@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:archive/archive.dart';
 import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
@@ -10,8 +11,13 @@ import 'package:path/path.dart' as p;
 class ArchiveEntry {
   final String sourcePath; // 磁盘上的真实文件路径
   final String innerDir; // 它在归档里的文件夹路径，例如 "3_device_config"
+  final Uint8List Function(Uint8List bytes)? transform;
 
-  ArchiveEntry({required this.sourcePath, required this.innerDir});
+  ArchiveEntry({
+    required this.sourcePath,
+    required this.innerDir,
+    this.transform,
+  });
 }
 
 enum ArchiveEncoderType { zip, tar, tarGz }
@@ -113,7 +119,8 @@ class FileTools {
         GlobalLogger.logWarn("${file.path} 不存在");
         continue;
       }
-      final bytes = await file.readAsBytes();
+      final originalBytes = await file.readAsBytes();
+      final bytes = entry.transform?.call(originalBytes) ?? originalBytes;
       final fileName = file.uri.pathSegments.last;
       final innerPath = entry.innerDir.isEmpty
           ? fileName

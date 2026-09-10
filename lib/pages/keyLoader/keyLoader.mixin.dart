@@ -47,11 +47,40 @@ mixin KeyLoaderMixin on State<KeyLoaderPager> {
     });
   }
 
-  void delete(KeyLoadersEntity data) {
+  Future<void> delete(KeyLoadersEntity data) async {
+    if (!await _confirmDelete()) return;
     KeyLoadersApi.delete("${data.id}").then((res) {
       SimplePopup.success(t.common.OperationSuccess);
       getList();
     });
+  }
+
+  Future<bool> _confirmDelete() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: const Color(0xFF20262D),
+        title: Text(
+          t.tips.title,
+          style: const TextStyle(color: Colors.white, fontSize: 17),
+        ),
+        content: Text(
+          t.tips.keyLoaders.confirmDelete,
+          style: const TextStyle(color: Colors.white70, fontSize: 13),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(t.tips.cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(t.common.confirm),
+          ),
+        ],
+      ),
+    );
+    return confirmed ?? false;
   }
 
   void update(KeyLoadersEntity? data, Map<String, dynamic> v) {
@@ -89,6 +118,7 @@ mixin KeyLoaderMixin on State<KeyLoaderPager> {
           label: t.Form.injectEncrypt.name.label,
           hintText: t.Form.injectEncrypt.name.placeholder,
           textEditingController: nameTextEditController,
+          required: true,
           validators: [
             FormBuilderValidators.required(
               errorText: t.Form.injectEncrypt.name.validate,

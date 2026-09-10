@@ -14,6 +14,8 @@ class SimpleDropdown<T> extends StatelessWidget {
 
   final Color? menuItemsColor;
 
+  final VoidCallback? onClear;
+
   const SimpleDropdown({
     super.key,
     required this.value,
@@ -23,6 +25,7 @@ class SimpleDropdown<T> extends StatelessWidget {
     required this.onChanged,
     this.height = 40,
     this.menuItemsColor,
+    this.onClear,
   });
 
   @override
@@ -38,7 +41,7 @@ class SimpleDropdown<T> extends StatelessWidget {
         borderRadius: BorderRadius.circular(theme.borderRadiusSmall),
       ),
       child: Row(
-        mainAxisSize: MainAxisSize.min,
+        mainAxisSize: MainAxisSize.max,
         children: [
           if (label != null)
             Text(
@@ -70,6 +73,18 @@ class SimpleDropdown<T> extends StatelessWidget {
               ),
             ),
           ),
+          if (onClear != null)
+            InkWell(
+              onTap: onClear,
+              child: Padding(
+                padding: const EdgeInsets.only(left: 8),
+                child: Icon(
+                  Icons.close,
+                  size: 16,
+                  color: theme.textMutedColor,
+                ),
+              ),
+            ),
         ],
       ),
     );

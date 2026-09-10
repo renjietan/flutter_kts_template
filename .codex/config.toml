@@ -1,0 +1,20 @@
+# 项目级 Codex 配置：功能迭代开发所需 MCP。
+# 与全局 ~/.codex/config.toml 中的同名服务器保持一致，按服务名合并，不覆盖全局。
+
+[mcp_servers.context7]
+type = "stdio"
+command = "npx"
+args = ["-y", "@upstash/context7-mcp@latest"]
+enabled = true
+
+[mcp_servers.playwright]
+type = "stdio"
+command = "npx"
+args = ["-y", "@playwright/mcp@latest", "--extension"]
+enabled = true
+
+[mcp_servers.sequential-thinking]
+type = "stdio"
+command = "npx"
+args = ["-y", "@modelcontextprotocol/server-sequential-thinking"]
+enabled = true

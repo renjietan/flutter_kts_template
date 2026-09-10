@@ -98,6 +98,7 @@ button:
     createRadio: Create Radio
     resetRadio: Reset
     edit: Edit
+    editRadio: Edit Radio
     delete: Delete
     clear: Clear
     search: Search
@@ -123,22 +124,23 @@ TextField:
 Form:
   radioManager:
     alias:
-      placeholder: Please enter radio alias
-      validate: Radio alias cannot be empty!
-      invalid: Only Chinese/English characters and numbers are allowed
+      placeholder: 1-12 units of Chinese, English, digits, spaces, Arabic, or ASCII symbols
+      validate: Please enter radio alias
+      invalid: Alias contains unsupported characters
+      invalidLength: Alias length must be 1-12 units
+      help: Chinese or Arabic characters count as 2 units; English letters, digits, spaces, and ASCII symbols count as 1 unit. Total length is 1-12 units.
     sn:
-      placeholder: Please enter radio sn
-      validate: Radio sn cannot be empty!
-      invalid: Only Chinese/English characters and numbers are allowed
-      maxLength: SN cannot exceed 50 characters
+      placeholder: 10 letters or digits
+      validate: Please enter SN
+      invalid: SN must be 10 letters or digits
     location:
-      placeholder: Please enter radio location
+      placeholder: Up to 50 letters, numbers, spaces, or "_"
       validate: Radio location cannot be empty!
+      invalid: Up to 50 letters, numbers, spaces, or "_"
     consumer:
-      placeholder: Please enter radio consumer
+      placeholder: 5-30 letters, numbers, spaces, or "_"
       validate: Radio consumer cannot be empty!
-      invalid: Only Chinese/English characters and numbers are allowed
-      maxLength: Consumer cannot exceed 8 characters
+      invalid: 5-30 letters, numbers, spaces, or "_"
   injectEncrypt:
     name:
       label: Key loader
@@ -273,7 +275,7 @@ cpds:
     required: Please enter a password
     minLength: Password must be at least 8 digits
     maxLength: Password must be at most 20 digits
-    invalid: Password must contain only digits
+    invalid: Only 8 digits are allowed
     noChinese: Password cannot contain Chinese characters
   export:
     zipNotFound: "ZIP package not found: {path}"

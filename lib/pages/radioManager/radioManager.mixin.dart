@@ -1,5 +1,6 @@
 import 'package:composable_data_table/composable_data_table.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' as material;
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_kts_template/components/button/base.button.dart';
 import 'package:flutter_kts_template/components/dialog/simple.form.dialog.dart';
@@ -77,7 +78,8 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
     });
   }
 
-  void delete(RadiosEntity data) {
+  Future<void> delete(RadiosEntity data) async {
+    if (!await _confirmDelete()) return;
     RadiosManagerApi.delete("${data.id}").then((res) {
       _clearRadioBindings([data.id]);
       SimplePopup.success(t.common.OperationSuccess);
@@ -85,7 +87,8 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
     });
   }
 
-  void patchDelete() {
+  Future<void> patchDelete() async {
+    if (!await _confirmDelete()) return;
     String idsStr = selectedIds.join("、");
     RadiosManagerApi.delete(idsStr).then((res) {
       final ids = selectedIds
@@ -97,6 +100,34 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
       clearSelection();
       getList();
     });
+  }
+
+  Future<bool> _confirmDelete() async {
+    final confirmed = await material.showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: const Color(0xFF20262D),
+        title: Text(
+          t.tips.title,
+          style: const TextStyle(color: Colors.white, fontSize: 17),
+        ),
+        content: Text(
+          t.tips.keyLoaders.confirmDelete,
+          style: const TextStyle(color: Colors.white70, fontSize: 13),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(t.tips.cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(t.common.confirm),
+          ),
+        ],
+      ),
+    );
+    return confirmed ?? false;
   }
 
   void update(RadiosEntity? data, Map<String, dynamic> v) {
@@ -128,6 +159,56 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
         DatabaseManager.instance.put<KeyLoaderDetailsEntity>(detail);
       }
     }
+  }
+
+  bool _isAliasCharAllowed(int code) {
+    if ((code >= 0x30 && code <= 0x39) ||
+        (code >= 0x41 && code <= 0x5A) ||
+        (code >= 0x61 && code <= 0x7A) ||
+        code == 0x20 ||
+        _isChinese(code) ||
+        _isArabicLetter(code) ||
+        _isAsciiHalfWidthSymbol(code)) {
+      return true;
+    }
+    return false;
+  }
+
+  int _aliasUnits(String value) {
+    var units = 0;
+    for (final code in value.runes) {
+      units += _isAliasWide(code) ? 2 : 1;
+    }
+    return units;
+  }
+
+  bool _isAliasWide(int code) => _isChinese(code) || _isArabicLetter(code);
+
+  bool _isChinese(int code) {
+    return (code >= 0x3400 && code <= 0x4DBF) ||
+        (code >= 0x4E00 && code <= 0x9FFF) ||
+        (code >= 0xF900 && code <= 0xFAFF);
+  }
+
+  bool _isArabicLetter(int code) {
+    return (code >= 0x0621 && code <= 0x063A) ||
+        (code >= 0x0641 && code <= 0x064A) ||
+        (code >= 0x066E && code <= 0x06D3) ||
+        code == 0x06D5 ||
+        (code >= 0x06EE && code <= 0x06EF) ||
+        (code >= 0x06FA && code <= 0x06FC) ||
+        code == 0x06FF ||
+        (code >= 0x0750 && code <= 0x077F) ||
+        (code >= 0x08A0 && code <= 0x08FF) ||
+        (code >= 0xFB50 && code <= 0xFDFF) ||
+        (code >= 0xFE70 && code <= 0xFEFF);
+  }
+
+  bool _isAsciiHalfWidthSymbol(int code) {
+    return (code >= 0x21 && code <= 0x2F) ||
+        (code >= 0x3A && code <= 0x40) ||
+        (code >= 0x5B && code <= 0x60) ||
+        (code >= 0x7B && code <= 0x7E);
   }
 
   void _updateRadioBindings(
@@ -223,12 +304,6 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
         cellBuilder: TextCellBuilder.text<RadiosEntity>((u) => u.alias),
       ),
       ColumnDefinition<RadiosEntity>(
-        label: t.tableColumn.radioManager.consumer,
-        description: t.tableColumn.radioManager.consumer_desc,
-        flex: 1,
-        cellBuilder: TextCellBuilder.text<RadiosEntity>((u) => u.consumer),
-      ),
-      ColumnDefinition<RadiosEntity>(
         label: t.tableColumn.radioManager.location,
         description: t.tableColumn.radioManager.location_desc,
         flex: 1,
@@ -250,11 +325,7 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
       // mainAxisSize: MainAxisSize.min,
       children: [
         IconButton(
-          icon: Icon(
-            Icons.edit_outlined,
-            size: 16,
-            color: isDark ? Colors.white : Colors.orange,
-          ),
+          icon: Icon(Icons.edit_outlined, size: 16, color: Color(0xFF00A2E9)),
           tooltip: t.button.radioManager.edit,
           onPressed: () {
             showDialog(DialogTypeEnum.edit, data);
@@ -268,11 +339,7 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
         ),
         SizedBox(width: 10),
         IconButton(
-          icon: Icon(
-            Icons.delete_outline,
-            size: 16,
-            color: isDark ? Colors.white : Colors.red,
-          ),
+          icon: Icon(Icons.delete_outline, size: 16, color: Color(0xFFF15B64)),
           tooltip: t.button.radioManager.delete,
           onPressed: () {
             delete(data);
@@ -312,45 +379,41 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
   }
 
   Future<void> showDialog(DialogTypeEnum type, RadiosEntity? rowData) async {
+    final isEdit = type == DialogTypeEnum.edit;
     SimpleFormDialog(
-      title: t.button.radioManager.createRadio,
-      confirmText: t.button.radioManager.createRadio,
+      title: isEdit
+          ? t.button.radioManager.editRadio
+          : t.button.radioManager.createRadio,
+      confirmText: isEdit
+          ? t.button.radioManager.editRadio
+          : t.button.radioManager.createRadio,
+      twoColumn: true,
+      dialogWidth: MediaQuery.sizeOf(context).width * 0.7,
       fields: [
         FormFieldConfig(
           name: 'alias',
           label: t.tableColumn.radioManager.alias,
           hintText: t.Form.radioManager.alias.placeholder,
           textEditingController: aliasTextEditController,
+          required: true,
+          labelHelpText: t.Form.radioManager.alias.help,
           validators: [
             FormBuilderValidators.required(
               errorText: t.Form.radioManager.alias.validate,
             ),
-            FormBuilderValidators.match(
-              RegExp(r'^[\u4e00-\u9fa5a-zA-Z0-9]+$'),
-              errorText: t.Form.radioManager.alias.invalid,
-              checkNullOrEmpty: false,
-            ),
-          ],
-        ),
-        FormFieldConfig(
-          name: 'consumer',
-          label: t.tableColumn.radioManager.consumer,
-          hintText: t.Form.radioManager.consumer.placeholder,
-          textEditingController: consumerTextEditController,
-          validators: [
-            FormBuilderValidators.required(
-              errorText: t.Form.radioManager.consumer.validate,
-            ),
-            FormBuilderValidators.match(
-              RegExp(r'^[\u4e00-\u9fa5a-zA-Z0-9]+$'),
-              errorText: t.Form.radioManager.consumer.invalid,
-              checkNullOrEmpty: false,
-            ),
-            FormBuilderValidators.maxLength(
-              8,
-              errorText: t.Form.radioManager.consumer.maxLength,
-              checkNullOrEmpty: false,
-            ),
+            (value) {
+              if (value == null || value.isEmpty) return null;
+              final units = _aliasUnits(value);
+              if (units < 1 || units > 12) {
+                return t.Form.radioManager.alias.invalidLength;
+              }
+              for (final code in value.runes) {
+                if (!_isAliasCharAllowed(code)) {
+                  return t.Form.radioManager.alias.invalid;
+                }
+              }
+              return null;
+            },
           ],
         ),
         FormFieldConfig(
@@ -359,8 +422,10 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
           hintText: t.Form.radioManager.location.placeholder,
           textEditingController: locationTextEditController,
           validators: [
-            FormBuilderValidators.required(
-              errorText: t.Form.radioManager.location.validate,
+            FormBuilderValidators.match(
+              RegExp(r'^[a-zA-Z0-9 _]{0,50}$'),
+              errorText: t.Form.radioManager.location.invalid,
+              checkNullOrEmpty: false,
             ),
           ],
         ),
@@ -369,18 +434,14 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
           label: t.tableColumn.radioManager.sn,
           hintText: t.Form.radioManager.sn.placeholder,
           textEditingController: snTextEditController,
+          required: true,
           validators: [
             FormBuilderValidators.required(
               errorText: t.Form.radioManager.sn.validate,
             ),
             FormBuilderValidators.match(
-              RegExp(r'^[\u4e00-\u9fa5a-zA-Z0-9]+$'),
+              RegExp(r'^[a-zA-Z0-9]{10}$'),
               errorText: t.Form.radioManager.sn.invalid,
-              checkNullOrEmpty: false,
-            ),
-            FormBuilderValidators.maxLength(
-              50,
-              errorText: t.Form.radioManager.sn.maxLength,
               checkNullOrEmpty: false,
             ),
           ],

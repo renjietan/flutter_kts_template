@@ -2,7 +2,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_kts_template/config/config.dart';
-import 'package:flutter_kts_template/core/cpds/service/cpds_manager.dart';
 import 'package:flutter_kts_template/core/databaseManager/databaseManager.dart';
 import 'package:flutter_kts_template/core/express.dart';
 import 'package:flutter_kts_template/router/router.dart';
@@ -23,7 +22,15 @@ class DefaultApp {
   static void run() async {
     WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
     FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
-    LocaleSettings.useDeviceLocale();
+    await Shared.init();
+    final savedLocale = Shared.getLocale();
+    if (savedLocale == AppLocale.en.languageCode) {
+      await LocaleSettings.setLocale(AppLocale.en);
+    } else if (savedLocale == AppLocale.zh.languageCode) {
+      await LocaleSettings.setLocale(AppLocale.zh);
+    } else {
+      await LocaleSettings.useDeviceLocale();
+    }
     SystemChrome.setSystemUIOverlayStyle(
       const SystemUiOverlayStyle(
         systemNavigationBarColor: Color(0xFF5AA6FD),
@@ -34,12 +41,8 @@ class DefaultApp {
         statusBarBrightness: Brightness.light,
       ),
     );
-    // 初始化缓存
-    await Shared.init();
     await DatabaseManager.init();
     await Express.start();
-    await CpdsManager.instance.restoreLastPackage();
-
     String userInfo = Shared.getUserInfo() ?? '';
     userInfo = "123";
     runApp(

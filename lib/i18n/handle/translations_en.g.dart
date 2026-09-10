@@ -492,6 +492,7 @@ class _Translations$button$radioManager$en extends Translations$button$radioMana
 	@override String get createRadio => 'Create Radio';
 	@override String get resetRadio => 'Reset';
 	@override String get edit => 'Edit';
+	@override String get editRadio => 'Edit Radio';
 	@override String get delete => 'Delete';
 	@override String get clear => 'Clear';
 	@override String get search => 'Search';
@@ -651,7 +652,7 @@ class _Translations$cpds$setPassword$en extends Translations$cpds$setPassword$zh
 	@override String get required => 'Please enter a password';
 	@override String get minLength => 'Password must be at least 8 digits';
 	@override String get maxLength => 'Password must be at most 20 digits';
-	@override String get invalid => 'Password must contain only digits';
+	@override String get invalid => 'Only 8 digits are allowed';
 	@override String get noChinese => 'Password cannot contain Chinese characters';
 }
 
@@ -754,9 +755,11 @@ class _Translations$Form$radioManager$alias$en extends Translations$Form$radioMa
 	final TranslationsEn _root; // ignore: unused_field
 
 	// Translations
-	@override String get placeholder => 'Please enter radio alias';
-	@override String get validate => 'Radio alias cannot be empty!';
-	@override String get invalid => 'Only Chinese/English characters and numbers are allowed';
+	@override String get placeholder => '1-12 units of Chinese, English, digits, spaces, Arabic, or ASCII symbols';
+	@override String get validate => 'Please enter radio alias';
+	@override String get invalid => 'Alias contains unsupported characters';
+	@override String get invalidLength => 'Alias length must be 1-12 units';
+	@override String get help => 'Chinese or Arabic characters count as 2 units; English letters, digits, spaces, and ASCII symbols count as 1 unit. Total length is 1-12 units.';
 }
 
 // Path: Form.radioManager.sn
@@ -766,9 +769,9 @@ class _Translations$Form$radioManager$sn$en extends Translations$Form$radioManag
 	final TranslationsEn _root; // ignore: unused_field
 
 	// Translations
-	@override String get placeholder => 'Please enter radio sn';
-	@override String get validate => 'Radio sn cannot be empty!';
-	@override String get invalid => 'Only Chinese/English characters and numbers are allowed';
+	@override String get placeholder => '10 letters or digits';
+	@override String get validate => 'Please enter SN';
+	@override String get invalid => 'SN must be 10 letters or digits';
 	@override String get maxLength => 'SN cannot exceed 50 characters';
 }
 
@@ -779,8 +782,9 @@ class _Translations$Form$radioManager$location$en extends Translations$Form$radi
 	final TranslationsEn _root; // ignore: unused_field
 
 	// Translations
-	@override String get placeholder => 'Please enter radio location';
+	@override String get placeholder => 'Up to 50 letters, numbers, spaces, or "_"';
 	@override String get validate => 'Radio location cannot be empty!';
+	@override String get invalid => 'Up to 50 letters, numbers, spaces, or "_"';
 }
 
 // Path: Form.radioManager.consumer
@@ -790,9 +794,9 @@ class _Translations$Form$radioManager$consumer$en extends Translations$Form$radi
 	final TranslationsEn _root; // ignore: unused_field
 
 	// Translations
-	@override String get placeholder => 'Please enter radio consumer';
+	@override String get placeholder => '5-30 letters, numbers, spaces, or "_"';
 	@override String get validate => 'Radio consumer cannot be empty!';
-	@override String get invalid => 'Only Chinese/English characters and numbers are allowed';
+	@override String get invalid => '5-30 letters, numbers, spaces, or "_"';
 	@override String get maxLength => 'Consumer cannot exceed 8 characters';
 }
 

@@ -1,5 +1,10 @@
 // layout/main_layout.dart
+import 'dart:async';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_kts_template/components/loading/simple.loading.dart';
+import 'package:flutter_kts_template/core/utils/director.dart';
 import 'package:flutter_kts_template/pages/layout/sideMenu/sideMenu.dart';
 import 'package:flutter_kts_template/pages/layout/switchLanguage/switchLanguage.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -18,6 +23,56 @@ class MainLayout extends StatelessWidget {
       index,
       initialLocation: (index == 2) || (index == navigationShell.currentIndex),
     );
+  }
+
+  Future<void> _clearTempFiles() async {
+    final dir = Directory(await DirectoryManager.instance.getZipCache());
+    if (!await dir.exists()) return;
+    await for (final entity in dir.list()) {
+      if (entity is File) {
+        try {
+          await entity.delete();
+        } catch (_) {}
+      }
+    }
+    SimplePopup.success('操作成功');
+  }
+
+  Future<void> _clearCache() async {
+    final dir = Directory(await DirectoryManager.instance.getUploadsPath());
+    if (!await dir.exists()) return;
+
+    final pcFiles = <File>[];
+    final zipFiles = <File>[];
+    await for (final entity in dir.list()) {
+      if (entity is! File) continue;
+      final lower = entity.path.toLowerCase();
+      if (lower.endsWith('.pc')) {
+        pcFiles.add(entity);
+      } else if (lower.endsWith('.zip')) {
+        zipFiles.add(entity);
+      }
+    }
+
+    void sortDesc(List<File> files) {
+      files.sort(
+        (a, b) => b.statSync().modified.compareTo(a.statSync().modified),
+      );
+    }
+
+    Future<void> deleteExceptFirst(List<File> files) async {
+      if (files.length <= 1) return;
+      sortDesc(files);
+      for (final file in files.sublist(1)) {
+        try {
+          await file.delete();
+        } catch (_) {}
+      }
+    }
+
+    await deleteExceptFirst(pcFiles);
+    await deleteExceptFirst(zipFiles);
+    SimplePopup.success('操作成功');
   }
 
   @override
@@ -67,6 +122,28 @@ class MainLayout extends StatelessWidget {
               //   ),
               // ),
               SwitchLanguage(),
+              PopupMenuButton<_LayoutSettingAction>(
+                icon: const Icon(Icons.settings, color: Colors.white),
+                tooltip: '设置',
+                onSelected: (action) {
+                  switch (action) {
+                    case _LayoutSettingAction.clearTemp:
+                      unawaited(_clearTempFiles());
+                    case _LayoutSettingAction.clearCache:
+                      unawaited(_clearCache());
+                  }
+                },
+                itemBuilder: (context) => const [
+                  PopupMenuItem(
+                    value: _LayoutSettingAction.clearTemp,
+                    child: Text('清除临时文件'),
+                  ),
+                  PopupMenuItem(
+                    value: _LayoutSettingAction.clearCache,
+                    child: Text('清除缓存'),
+                  ),
+                ],
+              ),
             ],
           ),
         ),
@@ -99,3 +176,5 @@ class MainLayout extends StatelessWidget {
     );
   }
 }
+
+enum _LayoutSettingAction { clearTemp, clearCache }

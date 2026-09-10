@@ -121,6 +121,13 @@ class WinUsbBulkManager implements KeyLoaderUsbBulkManager {
         return false;
       }
 
+      try {
+        winUsbFlushPipe(_interfaceHandle, _inPipeId);
+        GlobalLogger.logInfo('WinUsbBulkManager: input pipe flushed before read');
+      } catch (e) {
+        GlobalLogger.logWarn('WinUsbBulkManager: flush input failed $e');
+      }
+
       setPipeTimeout(_interfaceHandle, _outPipeId, _writeTimeoutMs);
 
       _connected = true;
@@ -163,6 +170,26 @@ class WinUsbBulkManager implements KeyLoaderUsbBulkManager {
   Future<void> disconnect() async {
     _connected = false;
     await _teardown();
+  }
+
+  @override
+  Future<void> flushInput() async {
+    if (!_connected || _interfaceHandle == 0 || _inPipeId == 0) return;
+    try {
+      winUsbFlushPipe(_interfaceHandle, _inPipeId);
+      GlobalLogger.logInfo('WinUsbBulkManager: input pipe flushed');
+    } catch (e) {
+      GlobalLogger.logWarn('WinUsbBulkManager: flush input failed $e');
+    }
+  }
+
+  @override
+  Future<void> drainInput({
+    Duration duration = const Duration(milliseconds: 250),
+  }) async {
+    final sub = listenData().listen((_) {});
+    await Future<void>.delayed(duration);
+    await sub.cancel();
   }
 
   bool _startReadLoop() {

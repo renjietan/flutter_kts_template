@@ -66,8 +66,8 @@ class RadioManagerController {
     final radiosBox = db.box<RadiosEntity>();
 
     final alias = (params["alias"] ?? "").toString();
-    final consumer = (params["consumer"] ?? "").toString();
     final sn = (params["sn"] ?? "").toString();
+    params["consumer"] = "";
 
     if (radiosBox
             .query(RadiosEntity_.alias.equals(alias))
@@ -75,13 +75,6 @@ class RadioManagerController {
             .findFirst() !=
         null) {
       return ApiResponse.error(message: t.entity.aliasDuplicate);
-    }
-    if (radiosBox
-            .query(RadiosEntity_.consumer.equals(consumer))
-            .build()
-            .findFirst() !=
-        null) {
-      return ApiResponse.error(message: t.entity.consumerDuplicate);
     }
     if (radiosBox.query(RadiosEntity_.sn.equals(sn)).build().findFirst() !=
         null) {
@@ -108,8 +101,8 @@ class RadioManagerController {
     params["createdAt"] = parseDateTime(radiosEntity.createdAt);
 
     final alias = (params["alias"] ?? "").toString();
-    final consumer = (params["consumer"] ?? "").toString();
     final sn = (params["sn"] ?? "").toString();
+    params["consumer"] = "";
 
     if (radiosBox
             .query(
@@ -121,17 +114,6 @@ class RadioManagerController {
             .findFirst() !=
         null) {
       return ApiResponse.error(message: t.entity.aliasDuplicate);
-    }
-    if (radiosBox
-            .query(
-              RadiosEntity_.consumer
-                  .equals(consumer)
-                  .and(RadiosEntity_.id.notEquals(uId)),
-            )
-            .build()
-            .findFirst() !=
-        null) {
-      return ApiResponse.error(message: t.entity.consumerDuplicate);
     }
     if (radiosBox
             .query(

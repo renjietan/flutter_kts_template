@@ -28,6 +28,18 @@ class Shared {
 
   static const String _cpdsNetworkInterfaceKey = 'cpds.networkInterface';
   static const String _cpdsLastSourcePathKey = 'cpds.lastSourcePath';
+  static const String _appLocaleKey = 'app.locale';
+
+  static String? getLocale() {
+    return _spf?.getString(_appLocaleKey);
+  }
+
+  static Future<bool> saveLocale(String code) {
+    if (code.isEmpty) {
+      return _spf?.remove(_appLocaleKey) ?? Future.value(false);
+    }
+    return _spf!.setString(_appLocaleKey, code);
+  }
 
   static String? getCpdsNetworkInterface() {
     return _spf?.getString(_cpdsNetworkInterfaceKey);

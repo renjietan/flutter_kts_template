@@ -22,9 +22,12 @@ Future<void> SimpleFormDialog({
   Color? fieldFillColor = const Color(0x9921262C),
   Color? fieldBorderColor = Colors.white,
   double borderRadius = 10,
-  double titleFontSize = 16,
-  double labelFontSize = 16,
-  double fieldLabelFontSize = 16,
+  double titleFontSize = 14,
+  double labelFontSize = 14,
+  double fieldLabelFontSize = 13,
+  double fieldContentPadding = 10,
+  double? dialogWidth,
+  bool twoColumn = false,
   bool clickMaskDismiss = false,
   Color maskColor = const Color(0x1AFFFFFF),
 }) async {
@@ -65,21 +68,33 @@ Future<void> SimpleFormDialog({
       ),
       actionsAlignment: MainAxisAlignment.center,
       content: SizedBox(
-        width: 320,
+        width: dialogWidth ?? 320,
         child: FormBuilder(
           key: formKey,
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: 15),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: _buildFormFields(
-                fields,
-                labelColor!,
-                fieldFillColor!,
-                fieldBorderColor!,
-                fieldLabelFontSize,
-              ),
-            ),
+            child: twoColumn
+                ? _buildTwoColumnFields(
+                    context,
+                    fields,
+                    labelColor!,
+                    fieldFillColor!,
+                    fieldBorderColor!,
+                    fieldLabelFontSize,
+                    fieldContentPadding,
+                  )
+                : Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: _buildFormFields(
+                      context,
+                      fields,
+                      labelColor!,
+                      fieldFillColor!,
+                      fieldBorderColor!,
+                      fieldLabelFontSize,
+                      fieldContentPadding,
+                    ),
+                  ),
           ),
         ),
       ),
@@ -104,11 +119,13 @@ Future<void> SimpleFormDialog({
 
 /// 构建表单字段列表（支持任意数量）
 List<Widget> _buildFormFields(
+  BuildContext context,
   List<FormFieldConfig> fields,
   Color labelColor,
   Color fillColor,
   Color borderColor,
   double labelFontSize,
+  double contentPadding,
 ) {
   final List<Widget> widgets = [];
   for (int i = 0; i < fields.length; i++) {
@@ -117,11 +134,7 @@ List<Widget> _buildFormFields(
       Container(
         alignment: Alignment.centerLeft,
         margin: EdgeInsetsGeometry.only(top: i == 0 ? 0 : 20, bottom: 20),
-        child: Text(
-          field.label,
-          textAlign: TextAlign.left,
-          style: TextStyle(color: labelColor, fontSize: labelFontSize),
-        ),
+        child: _buildFieldLabel(context, field, labelColor, labelFontSize),
       ),
     );
     // 添加输入框
@@ -131,6 +144,7 @@ List<Widget> _buildFormFields(
           field: field,
           fillColor: fillColor,
           labelFontSize: labelFontSize,
+          contentPadding: contentPadding,
         ),
       );
     } else {
@@ -186,4 +200,203 @@ List<Widget> _buildFormFields(
   // 最后加一个底部间距
   widgets.add(SizedBox(height: 60));
   return widgets;
+}
+
+Widget _buildTwoColumnFields(
+  BuildContext context,
+  List<FormFieldConfig> fields,
+  Color labelColor,
+  Color fillColor,
+  Color borderColor,
+  double labelFontSize,
+  double contentPadding,
+) {
+  final rows = <Widget>[];
+  for (var i = 0; i < fields.length; i += 2) {
+    final first = _buildFieldItem(
+      context,
+      fields[i],
+      labelColor,
+      fillColor,
+      borderColor,
+      labelFontSize,
+      contentPadding,
+    );
+    final second = i + 1 < fields.length
+        ? _buildFieldItem(
+            context,
+            fields[i + 1],
+            labelColor,
+            fillColor,
+            borderColor,
+            labelFontSize,
+            contentPadding,
+          )
+        : const SizedBox();
+    rows.add(
+      Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(child: first),
+          const SizedBox(width: 16),
+          Expanded(child: second),
+        ],
+      ),
+    );
+    rows.add(const SizedBox(height: 14));
+  }
+  rows.add(const SizedBox(height: 48));
+  return Column(mainAxisSize: MainAxisSize.min, children: rows);
+}
+
+Widget _buildFieldItem(
+  BuildContext context,
+  FormFieldConfig field,
+  Color labelColor,
+  Color fillColor,
+  Color borderColor,
+  double labelFontSize,
+  double contentPadding,
+) {
+  final label = _buildFieldLabel(context, field, labelColor, labelFontSize);
+
+  final input = field.fieldType == FormFieldType.text
+      ? SimpleFormTextField(
+          field: field,
+          fillColor: fillColor,
+          labelFontSize: labelFontSize,
+          contentPadding: contentPadding,
+        )
+      : SimpleFormSelectField<dynamic>(
+          items: field.items ?? [],
+          labelBuilder: field.labelBuilder ?? (v) => v,
+          initialValue: field.initialValue,
+          onChanged: field.onChanged,
+          decoration: InputDecoration(
+            labelText: field.hintText ?? field.label,
+            isDense: true,
+            contentPadding: EdgeInsets.symmetric(
+              vertical: contentPadding,
+              horizontal: 12,
+            ),
+            labelStyle: TextStyle(color: Colors.white, fontSize: labelFontSize),
+            hintStyle: TextStyle(color: Colors.white, fontSize: labelFontSize),
+            filled: true,
+            fillColor: fillColor,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(5),
+              borderSide: BorderSide(color: Color(0xFF404040)),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(5),
+              borderSide: BorderSide(color: Color(0xFF404040)),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(5),
+              borderSide: BorderSide(color: Color(0xFF64B5F6)),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(5),
+              borderSide: const BorderSide(color: Colors.red),
+            ),
+            focusedErrorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: Colors.red, width: 2),
+            ),
+          ),
+          validator: field.validators != null
+              ? (value) {
+                  for (var validator in field.validators!) {
+                    final error = validator(value?.toString() ?? '');
+                    if (error != null) return error;
+                  }
+                  return null;
+                }
+              : null,
+        );
+
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      Container(
+        alignment: Alignment.centerLeft,
+        margin: const EdgeInsets.only(bottom: 14),
+        child: label,
+      ),
+      input,
+    ],
+  );
+}
+
+Widget _buildFieldLabel(
+  BuildContext context,
+  FormFieldConfig field,
+  Color labelColor,
+  double labelFontSize,
+) {
+  final text = field.required
+      ? Text.rich(
+          TextSpan(
+            children: [
+              const TextSpan(
+                text: '* ',
+                style: TextStyle(color: Colors.red),
+              ),
+              TextSpan(
+                text: field.label,
+                style: TextStyle(color: labelColor, fontSize: labelFontSize),
+              ),
+            ],
+          ),
+        )
+      : Text(
+          field.label,
+          textAlign: TextAlign.left,
+          style: TextStyle(color: labelColor, fontSize: labelFontSize),
+        );
+
+  final helpText = field.labelHelpText;
+  if (helpText == null || helpText.isEmpty) return text;
+
+  return Row(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      text,
+      const SizedBox(width: 6),
+      GestureDetector(
+        onTap: () {
+          showDialog<void>(
+            context: context,
+            builder: (dialogContext) => AlertDialog(
+              backgroundColor: const Color(0xFF20262D),
+              title: const Text(
+                '提示',
+                style: TextStyle(color: Colors.white, fontSize: 17),
+              ),
+              content: Text(
+                helpText,
+                style: const TextStyle(color: Colors.white70, fontSize: 13),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(),
+                  child: const Text('确定'),
+                ),
+              ],
+            ),
+          );
+        },
+        child: Container(
+          width: 16,
+          height: 16,
+          alignment: Alignment.center,
+          decoration: const BoxDecoration(
+            color: Color(0xFF00A2E9),
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(Icons.priority_high, color: Colors.white, size: 12),
+        ),
+      ),
+    ],
+  );
 }

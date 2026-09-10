@@ -408,6 +408,7 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
           label: t.Form.paramsInject.deviceIp.text,
           hintText: t.Form.paramsInject.deviceIp.validatorText,
           textEditingController: dtc.dialog.deviceIP,
+          required: true,
           validators: [
             FormBuilderValidators.required(
               errorText: t.Form.paramsInject.deviceIp.validatorText,
@@ -461,6 +462,7 @@ mixin ParamsInjectMixin<T extends StatefulWidget> on State<T> {
               labelBuilder: (v) => v.name,
               label: t.Form.paramsInject.selectKeyLoader.text,
               hintText: t.Form.paramsInject.selectKeyLoader.placeholder,
+              required: true,
               validators: [
                 FormBuilderValidators.required(errorText: t.TextField.select),
               ],

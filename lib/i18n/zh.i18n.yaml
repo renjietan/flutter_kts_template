@@ -98,6 +98,7 @@ button:
     createRadio: 添加电台
     resetRadio: 重置
     edit: 编辑
+    editRadio: 编辑电台
     delete: 删除
     clear: 清除
     search: 搜索
@@ -123,22 +124,23 @@ TextField:
 Form:
   radioManager:
     alias:
-      placeholder: 请输入电台别名
-      validate: 电台别名不可为空
-      invalid: 仅允许输入中英文字符和数字
+      placeholder: 12个单位的中文、英文、数字、空格、阿拉伯语、半角符号
+      validate: 请输入电台别名
+      invalid: 别名包含不支持的字符
+      invalidLength: 别名长度应为1-12个单位
+      help: 中文或阿拉伯语每个字符计2个单位；英文、数字、空格和半角符号每个字符计1个单位。别名总长度为1～12个单位。
     sn:
-      placeholder: 请输入电台SN号
-      validate: 电台SN号不可为空
-      invalid: 仅允许输入中英文字符和数字
-      maxLength: SN不可超过50个字符
+      placeholder: 10位英文字母或数字
+      validate: 请输入SN号
+      invalid: SN必须为10位字母或数字
     location:
-      placeholder: 请输入电台位置
+      placeholder: 不超出50位的英文字母、数字、空格、符号"_"
       validate: 电台位置不可为空
+      invalid: 不超出50位的英文字母、数字、空格、符号"_"
     consumer:
-      placeholder: 请输入电台使用人
+      placeholder: 5-30位英文字母、数字、空格、符号"_"
       validate: 电台使用人不可为空
-      invalid: 仅允许输入中英文字符和数字
-      maxLength: 使用人不可超过8个字符
+      invalid: 5-30位英文字母、数字、空格、符号"_"
   injectEncrypt:
     name:
       label: 名称
@@ -273,7 +275,7 @@ cpds:
     required: 请输入密码
     minLength: 密码长度至少8位
     maxLength: 密码长度不能超过20位
-    invalid: 密码仅允许输入数字
+    invalid: 只允许输入八位数字
     noChinese: 密码不能包含中文
   export:
     zipNotFound: "【{path}】找不到 ZIP 包"

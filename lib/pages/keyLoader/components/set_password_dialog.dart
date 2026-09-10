@@ -24,11 +24,9 @@ class _SetPasswordDialogState extends State<SetPasswordDialog> {
     final text = value ?? '';
     final t = Translations.of(context);
     if (text.isEmpty) return t.cpds.setPassword.required;
-    if (!RegExp(r'^\d+$').hasMatch(text)) {
+    if (!RegExp(r'^\d{8}$').hasMatch(text)) {
       return t.cpds.setPassword.invalid;
     }
-    if (text.length < 8) return t.cpds.setPassword.minLength;
-    if (text.length > 20) return t.cpds.setPassword.maxLength;
     return null;
   }
 

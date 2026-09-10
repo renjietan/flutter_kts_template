@@ -220,6 +220,7 @@ class CpdsSessionRunner {
     machine.setSendProgress(chunks.length, chunks.length, indexes.length, true);
     _updated();
     for (final index in indexes) {
+      if (_cancelled || _terminal) return;
       if (index < 0 || index >= chunks.length) continue;
       final packet = _packet(21, {
         1: index,
@@ -227,6 +228,14 @@ class CpdsSessionRunner {
         3: CpdFixed32(_crc32(chunks[index])),
       });
       await transport.send(packet);
+      await Future<void>.delayed(
+        Duration(
+          microseconds: max(
+            1,
+            (chunks[index].length * 8 * 1000000) ~/ 1000000,
+          ),
+        ),
+      );
     }
     await transport.send(start);
     await transport.send(end);

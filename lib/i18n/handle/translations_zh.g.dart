@@ -787,6 +787,9 @@ class Translations$button$radioManager$zh {
 	/// zh: '编辑'
 	String get edit => '编辑';
 
+	/// zh: '编辑电台'
+	String get editRadio => '编辑电台';
+
 	/// zh: '删除'
 	String get delete => '删除';
 
@@ -1051,8 +1054,8 @@ class Translations$cpds$setPassword$zh {
 	/// zh: '密码长度不能超过20位'
 	String get maxLength => '密码长度不能超过20位';
 
-	/// zh: '密码仅允许输入数字'
-	String get invalid => '密码仅允许输入数字';
+	/// zh: '只允许输入八位数字'
+	String get invalid => '只允许输入八位数字';
 
 	/// zh: '密码不能包含中文'
 	String get noChinese => '密码不能包含中文';
@@ -1270,14 +1273,20 @@ class Translations$Form$radioManager$alias$zh {
 
 	// Translations
 
+	/// zh: '12个单位的中文、英文、数字、空格、阿拉伯语、半角符号'
+	String get placeholder => '12个单位的中文、英文、数字、空格、阿拉伯语、半角符号';
+
 	/// zh: '请输入电台别名'
-	String get placeholder => '请输入电台别名';
+	String get validate => '请输入电台别名';
 
-	/// zh: '电台别名不可为空'
-	String get validate => '电台别名不可为空';
+	/// zh: '别名包含不支持的字符'
+	String get invalid => '别名包含不支持的字符';
 
-	/// zh: '仅允许输入中英文字符和数字'
-	String get invalid => '仅允许输入中英文字符和数字';
+	/// zh: '别名长度应为1-12个单位'
+	String get invalidLength => '别名长度应为1-12个单位';
+
+	/// zh: '中文或阿拉伯语每个字符计2个单位；英文、数字、空格和半角符号每个字符计1个单位。别名总长度为1～12个单位。'
+	String get help => '中文或阿拉伯语每个字符计2个单位；英文、数字、空格和半角符号每个字符计1个单位。别名总长度为1～12个单位。';
 }
 
 // Path: Form.radioManager.sn
@@ -1288,14 +1297,14 @@ class Translations$Form$radioManager$sn$zh {
 
 	// Translations
 
-	/// zh: '请输入电台SN号'
-	String get placeholder => '请输入电台SN号';
+	/// zh: '10位英文字母或数字'
+	String get placeholder => '10位英文字母或数字';
 
-	/// zh: '电台SN号不可为空'
-	String get validate => '电台SN号不可为空';
+	/// zh: '请输入SN号'
+	String get validate => '请输入SN号';
 
-	/// zh: '仅允许输入中英文字符和数字'
-	String get invalid => '仅允许输入中英文字符和数字';
+	/// zh: 'SN必须为10位字母或数字'
+	String get invalid => 'SN必须为10位字母或数字';
 
 	/// zh: 'SN不可超过50个字符'
 	String get maxLength => 'SN不可超过50个字符';
@@ -1309,11 +1318,14 @@ class Translations$Form$radioManager$location$zh {
 
 	// Translations
 
-	/// zh: '请输入电台位置'
-	String get placeholder => '请输入电台位置';
+	/// zh: '不超出50位的英文字母、数字、空格、符号"_"'
+	String get placeholder => '不超出50位的英文字母、数字、空格、符号"_"';
 
 	/// zh: '电台位置不可为空'
 	String get validate => '电台位置不可为空';
+
+	/// zh: '不超出50位的英文字母、数字、空格、符号"_"'
+	String get invalid => '不超出50位的英文字母、数字、空格、符号"_"';
 }
 
 // Path: Form.radioManager.consumer
@@ -1324,14 +1336,14 @@ class Translations$Form$radioManager$consumer$zh {
 
 	// Translations
 
-	/// zh: '请输入电台使用人'
-	String get placeholder => '请输入电台使用人';
+	/// zh: '5-30位英文字母、数字、空格、符号"_"'
+	String get placeholder => '5-30位英文字母、数字、空格、符号"_"';
 
 	/// zh: '电台使用人不可为空'
 	String get validate => '电台使用人不可为空';
 
-	/// zh: '仅允许输入中英文字符和数字'
-	String get invalid => '仅允许输入中英文字符和数字';
+	/// zh: '5-30位英文字母、数字、空格、符号"_"'
+	String get invalid => '5-30位英文字母、数字、空格、符号"_"';
 
 	/// zh: '使用人不可超过8个字符'
 	String get maxLength => '使用人不可超过8个字符';

@@ -84,6 +84,20 @@ class AndroidUsbBulkManager implements KeyLoaderUsbBulkManager {
     _disconnectStream = null;
   }
 
+  @override
+  Future<void> flushInput() async {
+    // Android 原生 USB 读取线程在断开时会清理缓冲；当前先保持空实现。
+  }
+
+  @override
+  Future<void> drainInput({
+    Duration duration = const Duration(milliseconds: 250),
+  }) async {
+    final sub = listenData().listen((_) {});
+    await Future<void>.delayed(duration);
+    await sub.cancel();
+  }
+
   /// 监听 bulk IN 收到的数据。
   @override
   Stream<Uint8List> listenData() {

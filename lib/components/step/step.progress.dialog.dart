@@ -11,7 +11,7 @@ class StepProgressDialog extends StatefulWidget {
   });
 
   final StepProgressController controller;
-  final VoidCallback? onClose;
+  final Future<void> Function()? onClose;
 
   @override
   State<StepProgressDialog> createState() => _StepProgressDialogState();
@@ -25,6 +25,7 @@ class _StepProgressDialogState extends State<StepProgressDialog> {
 
   final ScrollController _scrollController = ScrollController();
   bool _allowPop = false;
+  bool _closing = false;
 
   @override
   void initState() {
@@ -49,13 +50,27 @@ class _StepProgressDialogState extends State<StepProgressDialog> {
     });
   }
 
-  void _handleClose() {
+  Future<void> _handleClose() async {
+    if (_closing) return;
+    setState(() {
+      _closing = true;
+    });
+    try {
+      await widget.onClose?.call();
+    } finally {
+      if (mounted) {
+        setState(() {
+          _closing = false;
+        });
+      }
+    }
+    if (!mounted) return;
     setState(() {
       _allowPop = true;
     });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        widget.onClose?.call();
+        Navigator.of(context).pop();
       }
     });
   }
@@ -84,7 +99,8 @@ class _StepProgressDialogState extends State<StepProgressDialog> {
                     label: Translations.of(context).common.close,
                     width: 96,
                     height: 32,
-                    onPressed: _handleClose,
+                    isLoading: _closing,
+                    onPressed: _closing ? null : _handleClose,
                   ),
                 ),
               ],

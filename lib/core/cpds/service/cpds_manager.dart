@@ -28,6 +28,7 @@ class CpdsManager {
 
   String? _uploadPath;
   String _uploadName = '';
+  String _transferFileName = '';
   int _uploadSize = 0;
   CpdsPackage? _package;
   String _selectedNodeId = '';
@@ -41,6 +42,8 @@ class CpdsManager {
   bool _active = false;
 
   Stream<CpdsApplicationState> get stateStream => _stateController.stream;
+
+  String? get uploadPath => _uploadPath;
 
   CpdsApplicationState state() {
     return CpdsApplicationState(
@@ -76,24 +79,24 @@ class CpdsManager {
     if (bytes.length > CpdsPackageParser.maxPackageBytes) {
       throw CpdsException(
         CpdsErrorCode.packageTooLarge,
-        params: {'actual': bytes.length, 'limit': CpdsPackageParser.maxPackageBytes},
+        params: {
+          'actual': bytes.length,
+          'limit': CpdsPackageParser.maxPackageBytes,
+        },
         message: 'package too large',
       );
     }
 
     final uploadDir = await DirectoryManager.instance.getUploadsPath();
-    final random = Random.secure();
-    final suffix = List.generate(
-      16,
-      (_) => random.nextInt(256).toRadixString(16).padLeft(2, '0'),
-    ).join();
-    final newPath = path.join(uploadDir, 'upload-$suffix.zip');
+
+    final newPath = path.join(uploadDir, fileName);
     final file = File(newPath);
     await file.writeAsBytes(bytes, flush: true);
 
     final oldPath = _uploadPath;
     _uploadPath = newPath;
     _uploadName = fileName;
+    _transferFileName = fileName;
     _uploadSize = bytes.length;
     _package = null;
     _selectedNodeId = '';
@@ -102,9 +105,7 @@ class CpdsManager {
     _machine = null;
     _runner = null;
     _active = false;
-    unawaited(
-      Shared.saveCpdsLastUpload(path: newPath, name: fileName),
-    );
+    unawaited(Shared.saveCpdsLastUpload(path: newPath, name: fileName));
     unawaited(Shared.saveCpdsSelectedNode(''));
     if (oldPath != null && oldPath != newPath) {
       _deleteQuietly(File(oldPath));
@@ -136,6 +137,11 @@ class CpdsManager {
     _active = false;
     _notify();
     return state();
+  }
+
+  void updateUploadName(String name) {
+    _uploadName = name;
+    _notify();
   }
 
   Future<CpdsApplicationState> parseSourcePath(String sourcePath) async {
@@ -173,12 +179,16 @@ class CpdsManager {
       if (stat.size > CpdsPackageParser.maxPackageBytes) {
         throw CpdsException(
           CpdsErrorCode.packageTooLarge,
-          params: {'actual': stat.size, 'limit': CpdsPackageParser.maxPackageBytes},
+          params: {
+            'actual': stat.size,
+            'limit': CpdsPackageParser.maxPackageBytes,
+          },
           message: 'package too large',
         );
       }
       _uploadPath = sourcePath;
       _uploadName = name;
+      _transferFileName = name;
       _uploadSize = stat.size;
       _package = null;
       _selectedNodeId = '';
@@ -289,6 +299,7 @@ class CpdsManager {
 
     _uploadPath = uploadPath;
     _uploadName = uploadName ?? path.basename(uploadPath);
+    _transferFileName = uploadName ?? path.basename(uploadPath);
     _uploadSize = file.lengthSync();
     _notify();
 
@@ -383,7 +394,7 @@ class CpdsManager {
       transport: transport,
       machine: machine,
       input: CpdsPackageInput(
-        fileName: _uploadName,
+        fileName: _transferFileName,
         filePath: uploadPath,
         fileSize: _uploadSize,
         sha256: Uint8List.fromList(sha),
@@ -405,14 +416,7 @@ class CpdsManager {
     _active = true;
     _notify();
 
-    unawaited(
-      _runDistribution(
-        runner,
-        machine,
-        transport,
-        decisionController,
-      ),
-    );
+    unawaited(_runDistribution(runner, machine, transport, decisionController));
   }
 
   Future<void> _runDistribution(
@@ -424,10 +428,7 @@ class CpdsManager {
     try {
       await runner.run();
     } catch (_) {
-      machine.failActive(
-        'TRANSFER',
-        CpdsErrorCode.networkInterfaceError,
-      );
+      machine.failActive('TRANSFER', CpdsErrorCode.networkInterfaceError);
     } finally {
       _session = machine.view();
       _active = false;

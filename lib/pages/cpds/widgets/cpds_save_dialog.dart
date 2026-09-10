@@ -49,11 +49,16 @@ class _CpdsFutureWarriorSaveDialogState
   StreamSubscription<AppLocale>? _localeSubscription;
   bool _closed = false;
   bool _saving = false;
+  Set<int> _boundRadioIds = {};
+  bool _radioOptionsLoading = false;
 
   @override
   void initState() {
     super.initState();
     _keyLoaders = List<KeyLoadersEntity>.from(widget.keyLoaders);
+    _selectedRadioId = {
+      for (final fwDevice in widget.devices) fwDevice.key: null,
+    };
     _loadRadios();
     _loadKeyLoaders();
     _localeSubscription = LocaleSettings.getLocaleStream().listen((_) {
@@ -73,9 +78,6 @@ class _CpdsFutureWarriorSaveDialogState
       if (!mounted) return;
       setState(() {
         _radios = response.data.list;
-        _selectedRadioId = {
-          for (final fwDevice in widget.devices) fwDevice.key: null,
-        };
       });
     } catch (error) {
       GlobalLogger.logError('load radios failed: $error');
@@ -91,6 +93,37 @@ class _CpdsFutureWarriorSaveDialogState
       });
     } catch (error) {
       GlobalLogger.logError('load key loaders failed: $error');
+    }
+  }
+
+  Future<void> _loadBoundRadioIds(int keyLoaderId) async {
+    final detailBox = DatabaseManager.instance.box<KeyLoaderDetailsEntity>();
+    final existing = detailBox
+        .query(KeyLoaderDetailsEntity_.keyLoaderId.equals(keyLoaderId))
+        .build()
+        .find();
+    final boundIds = {
+      for (final item in existing)
+        if (item.radioId != null) item.radioId!,
+    };
+    if (!mounted) return;
+    setState(() {
+      _boundRadioIds = boundIds;
+      _radioOptionsLoading = false;
+    });
+  }
+
+  Future<void> _onKeyLoaderChanged(int? value) async {
+    setState(() {
+      _selectedKeyLoaderId = value;
+      _boundRadioIds = {};
+      _radioOptionsLoading = value != null;
+      for (final fwDevice in widget.devices) {
+        _selectedRadioId[fwDevice.key] = null;
+      }
+    });
+    if (value != null) {
+      await _loadBoundRadioIds(value);
     }
   }
 
@@ -114,6 +147,7 @@ class _CpdsFutureWarriorSaveDialogState
   }
 
   List<RadiosEntity> _availableRadiosFor(CpdsFutureWarriorDevice fwDevice) {
+    if (_selectedKeyLoaderId == null || _radioOptionsLoading) return const [];
     final selectedByOthers = <int>{};
     _selectedRadioId.forEach((key, id) {
       if (key != fwDevice.key && id != null) {
@@ -121,8 +155,82 @@ class _CpdsFutureWarriorSaveDialogState
       }
     });
     return _radios
-        .where((radio) => !selectedByOthers.contains(radio.id))
+        .where(
+          (radio) =>
+              !_boundRadioIds.contains(radio.id) &&
+              !selectedByOthers.contains(radio.id),
+        )
         .toList();
+  }
+
+  void _clearRadio(CpdsFutureWarriorDevice fwDevice) {
+    setState(() {
+      _selectedRadioId[fwDevice.key] = null;
+    });
+  }
+
+  Widget _buildRadioDropdown(CpdsFutureWarriorDevice fwDevice) {
+    final t = Translations.of(context);
+    final items = [
+      ..._availableRadiosFor(fwDevice).map(
+        (item) => DropdownMenuItem<int?>(
+          value: item.id,
+          child: Text(item.alias),
+        ),
+      ),
+    ];
+    return Container(
+      height: 32,
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
+      decoration: BoxDecoration(
+        color: const Color(0xFF282D33),
+        border: Border.all(color: const Color(0xFF353A41)),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<int?>(
+                value: _selectedRadioId[fwDevice.key],
+                isExpanded: true,
+                hint: Text(
+                  t.cpds.saveDialog.selectPlaceholder,
+                  style: const TextStyle(
+                    color: Colors.white54,
+                    fontSize: 13,
+                  ),
+                ),
+                icon: const Icon(
+                  Icons.keyboard_arrow_down,
+                  size: 18,
+                  color: Colors.white54,
+                ),
+                dropdownColor: const Color(0xFF282D33),
+                style: const TextStyle(color: Colors.white, fontSize: 13),
+                items: items,
+                onChanged: (value) {
+                  setState(() {
+                    _selectedRadioId[fwDevice.key] = value;
+                  });
+                },
+              ),
+            ),
+          ),
+          GestureDetector(
+            onTap: () => _clearRadio(fwDevice),
+            child: const Padding(
+              padding: EdgeInsets.only(left: 8),
+              child: Icon(
+                Icons.close,
+                size: 16,
+                color: Colors.white54,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   void _cancel() {
@@ -150,9 +258,9 @@ class _CpdsFutureWarriorSaveDialogState
         'deviceModel': fwDevice.device.model,
         'radioId': radio?.id,
         'radioAlias': radio?.alias ?? '',
-        'consumer': radio?.consumer ?? '',
-        'location': radio?.location ?? '',
-        'sn': radio?.sn ?? '',
+        'consumer': radio?.consumer,
+        'location': radio?.location,
+        'sn': radio?.sn,
       };
     }).toList();
 
@@ -200,6 +308,7 @@ class _CpdsFutureWarriorSaveDialogState
         'keyLoaderId': keyLoaderId,
         'parentIdPath': parentIdPath,
         'items': nonDuplicates,
+        'overwrites': duplicates,
       };
       GlobalLogger.logInfo('SAVE_JSON ${jsonEncode(json)}');
       widget.onSave(json);
@@ -301,11 +410,7 @@ class _CpdsFutureWarriorSaveDialogState
                         ),
                       )
                       .toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedKeyLoaderId = value;
-                    });
-                  },
+                  onChanged: _onKeyLoaderChanged,
                   validator: (value) => value == null
                       ? t.Form.paramsInject.selectKeyLoader.placeholder
                       : null,
@@ -381,16 +486,6 @@ class _CpdsFutureWarriorSaveDialogState
                               label: Padding(
                                 padding: const EdgeInsets.only(left: 8),
                                 child: Text(
-                                  t.tableColumn.injectEncrypt.consumer,
-                                  overflow: TextOverflow.ellipsis,
-                                  maxLines: 1,
-                                ),
-                              ),
-                            ),
-                            DataColumn(
-                              label: Padding(
-                                padding: const EdgeInsets.only(left: 8),
-                                child: Text(
                                   t.tableColumn.injectEncrypt.location,
                                   overflow: TextOverflow.ellipsis,
                                   maxLines: 1,
@@ -452,36 +547,7 @@ class _CpdsFutureWarriorSaveDialogState
                                 DataCell(
                                   Padding(
                                     padding: const EdgeInsets.only(left: 8),
-                                    child: DropdownButton<int?>(
-                                      value: _selectedRadioId[fwDevice.key],
-                                      hint: Text(
-                                        t.cpds.saveDialog.selectPlaceholder,
-                                      ),
-                                      items: [
-                                        ..._availableRadiosFor(fwDevice).map(
-                                          (item) => DropdownMenuItem<int?>(
-                                            value: item.id,
-                                            child: Text(item.alias),
-                                          ),
-                                        ),
-                                      ],
-                                      onChanged: (value) {
-                                        setState(() {
-                                          _selectedRadioId[fwDevice.key] =
-                                              value;
-                                        });
-                                      },
-                                    ),
-                                  ),
-                                ),
-                                DataCell(
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 8),
-                                    child: Text(
-                                      radio?.consumer ?? '--',
-                                      overflow: TextOverflow.ellipsis,
-                                      maxLines: 1,
-                                    ),
+                                    child: _buildRadioDropdown(fwDevice),
                                   ),
                                 ),
                                 DataCell(
@@ -611,8 +677,8 @@ class CpdsFutureWarriorDuplicateDialog extends StatelessWidget {
           children: [
             Text(
               zh
-                  ? '以下数据已存在，重复数据将不会重复保存：'
-                  : 'The following data already exists and will not be saved again:',
+                  ? '以下数据已存在，是否确认覆盖？'
+                  : 'The following data already exists. Overwrite?',
               style: const TextStyle(color: Colors.white70, fontSize: 13),
             ),
             const SizedBox(height: 12),

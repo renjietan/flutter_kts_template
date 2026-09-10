@@ -1,6 +1,9 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:typed_data';
+import 'dart:ui' show ImageFilter;
 
+import 'package:dage/dage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_kts_template/api/KeyLoaders.api.dart';
@@ -11,13 +14,16 @@ import 'package:flutter_kts_template/components/loading/simple.loading.dart';
 import 'package:flutter_kts_template/core/cpds/cpds_exception.dart';
 import 'package:flutter_kts_template/core/cpds/model/cpds_enums.dart';
 import 'package:flutter_kts_template/core/cpds/model/cpds_models.dart';
+import 'package:flutter_kts_template/core/cpds/service/cpds_manager.dart';
 import 'package:flutter_kts_template/core/databaseManager/databaseManager.dart';
 import 'package:flutter_kts_template/core/entities/keyLoaderDetails/keyLoaderDetailsEntity.dart';
 import 'package:flutter_kts_template/core/entities/keyLoaders/keyLoadersEntity.dart';
 import 'package:flutter_kts_template/core/entities/radios/radiosEntity.dart';
 import 'package:flutter_kts_template/core/rtc/managers/keyloader_usb_bulk_factory.dart';
+import 'package:flutter_kts_template/core/utils/director.dart';
 import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 import 'package:flutter_kts_template/logger/logger.dart';
+import 'package:flutter_kts_template/objectbox.g.dart';
 import 'package:flutter_kts_template/pages/cpds/widgets/cpds_key_loader_file_dialog.dart';
 import 'package:flutter_kts_template/pages/cpds/widgets/cpds_package_panel.dart';
 import 'package:flutter_kts_template/utils/files/pick_files/FileSelector.dart';
@@ -25,6 +31,7 @@ import 'package:flutter_kts_template/utils/provider/menu.provider.dart';
 import 'package:flutter_kts_template/utils/shared.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:path/path.dart' as p;
 import 'package:provider/provider.dart';
 
 import 'widgets/cpds_device_panel.dart';
@@ -45,6 +52,7 @@ class _CpdsPageState extends State<CpdsPage> {
   String _selectedInterfaceName = '';
   bool _automaticInterface = false;
   bool _interfacesLoading = false;
+  bool _suppressNetworkInterfaceDialogs = false;
   bool _uploading = false;
   bool _browseRunning = false;
   bool _distributing = false;
@@ -59,6 +67,7 @@ class _CpdsPageState extends State<CpdsPage> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _bootstrap();
+      _checkStartupPcFiles();
     });
   }
 
@@ -71,7 +80,12 @@ class _CpdsPageState extends State<CpdsPage> {
   Future<void> _bootstrap() async {
     try {
       _applyState(await CpdsApi.getState());
-      await _refreshNetworkInterfaces();
+      _suppressNetworkInterfaceDialogs = true;
+      try {
+        await _refreshNetworkInterfaces();
+      } finally {
+        _suppressNetworkInterfaceDialogs = false;
+      }
       _subscription = CpdsApi.subscribe(_applyState);
     } catch (error) {
       _showError(error);
@@ -184,20 +198,48 @@ class _CpdsPageState extends State<CpdsPage> {
     setState(() {
       _interfacesLoading = true;
     });
+    List<CpdsNetworkInterface> interfaces;
     try {
-      final interfaces = await CpdsApi.listNetworkInterfaces();
-      final stored = Shared.getCpdsNetworkInterface() ?? '';
-      var selectedName = '';
-      var automatic = false;
-      if (interfaces.length == 1) {
-        selectedName = interfaces.first.name;
-        automatic = true;
-      } else if (stored.isNotEmpty &&
-          interfaces.any((item) => item.name == stored)) {
-        selectedName = stored;
-      }
-
+      interfaces = await CpdsApi.listNetworkInterfaces();
+    } catch (error) {
       if (!mounted) return;
+      setState(() {
+        _interfaces = [];
+        _selectedInterfaceName = '';
+        _automaticInterface = false;
+        _interfacesLoading = false;
+      });
+      await Shared.saveCpdsNetworkInterface('');
+      if (!_suppressNetworkInterfaceDialogs) {
+        _showError(error);
+      }
+      return;
+    }
+
+    if (!mounted) return;
+    if (interfaces.isEmpty) {
+      setState(() {
+        _interfaces = const [];
+        _selectedInterfaceName = '';
+        _automaticInterface = false;
+        _interfacesLoading = false;
+      });
+      await Shared.saveCpdsNetworkInterface('');
+      return;
+    }
+
+    final stored = Shared.getCpdsNetworkInterface() ?? '';
+    var selectedName = '';
+    var automatic = false;
+    if (interfaces.length == 1) {
+      selectedName = interfaces.first.name;
+      automatic = true;
+    } else if (stored.isNotEmpty &&
+        interfaces.any((item) => item.name == stored)) {
+      selectedName = stored;
+    }
+
+    try {
       setState(() {
         _interfaces = interfaces;
         _selectedInterfaceName = selectedName;
@@ -213,7 +255,9 @@ class _CpdsPageState extends State<CpdsPage> {
         _automaticInterface = false;
       });
       await Shared.saveCpdsNetworkInterface('');
-      _showError(error);
+      if (!_suppressNetworkInterfaceDialogs) {
+        _showError(error);
+      }
     } finally {
       if (mounted) {
         setState(() {
@@ -262,17 +306,13 @@ class _CpdsPageState extends State<CpdsPage> {
       _uploading = true;
     });
     try {
-      final file = await FileSelector.pickFile(['zip']);
+      final file = await FileSelector.pickFile(['pc']);
       if (file == null) {
         SimplePopup.warn(placeholder);
         return;
       }
-      // 已在浏览前确认，选中文件后清空注钥数据。
-      _clearKeyLoaderData();
-      final state = await CpdsApi.uploadPackage(file);
-      _applyState(state);
-      // 上传成功后自动解析。
-      await _parse();
+      final pcFile = File(file.path!);
+      await _importPcFile(pcFile, clearKeyLoader: true);
     } catch (error) {
       _showError(error, title: browseFailedTitle);
     } finally {
@@ -281,6 +321,183 @@ class _CpdsPageState extends State<CpdsPage> {
           _uploading = false;
         });
       }
+    }
+  }
+
+  Future<void> _importPcFile(
+    File sourceFile, {
+    required bool clearKeyLoader,
+    bool frostedGlass = false,
+  }) async {
+    final zh = Localizations.localeOf(context).languageCode == 'zh';
+    final uploadsPath = await DirectoryManager.instance.getUploadsPath();
+    final destPath = p.join(uploadsPath, p.basename(sourceFile.path));
+    final stored = File(destPath);
+    if (sourceFile.path != destPath) {
+      await sourceFile.copy(destPath);
+    }
+
+    Uint8List? zipBytes;
+    final ok = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => _CpdsPcPasswordDialog(
+        frostedGlass: frostedGlass,
+        fileName: p.basename(stored.path),
+        onVerify: (password) async {
+          try {
+            zipBytes = await _decryptPc(stored, password);
+            return true;
+          } catch (e) {
+            GlobalLogger.logError('PC_DECRYPT_FAILED $e');
+            return false;
+          }
+        },
+      ),
+    );
+
+    if (ok != true || zipBytes == null) {
+      try {
+        if (await stored.exists()) await stored.delete();
+      } catch (_) {}
+      SimplePopup.error(
+        zh ? '文件已销毁，请重新选择文件' : 'File destroyed, please select again',
+      );
+      return;
+    }
+
+    if (clearKeyLoader) {
+      _clearKeyLoaderData();
+    }
+    final zipName = _txbzJsonUaeName(p.basename(stored.path));
+    await CpdsManager.instance.uploadPackage(zipName, zipBytes!);
+    await CpdsManager.instance.parsePackage();
+    CpdsManager.instance.updateUploadName(p.basename(stored.path));
+    _applyState(CpdsManager.instance.state());
+    final keepPaths = <String>[
+      stored.path,
+      if (CpdsManager.instance.uploadPath != null)
+        CpdsManager.instance.uploadPath!,
+    ];
+    await _deleteOtherUploadFiles(keepPaths);
+  }
+
+  Future<void> _deleteOtherUploadFiles(Iterable<String> keepPaths) async {
+    final uploadsPath = await DirectoryManager.instance.getUploadsPath();
+    final dir = Directory(uploadsPath);
+    if (!await dir.exists()) return;
+
+    final keep = keepPaths
+        .map((item) => p.normalize(item).toLowerCase())
+        .toSet();
+    await for (final entity in dir.list()) {
+      if (entity is! File) continue;
+      if (keep.contains(p.normalize(entity.path).toLowerCase())) continue;
+      try {
+        if (await entity.exists()) {
+          await entity.delete();
+          GlobalLogger.logInfo('CPDS_CLEAN_OTHER_UPLOAD ${entity.path}');
+        }
+      } catch (e) {
+        GlobalLogger.logWarn(
+          'CPDS_CLEAN_OTHER_UPLOAD_FAILED ${entity.path} $e',
+        );
+      }
+    }
+  }
+
+  String _txbzJsonUaeName(String sourceName) {
+    final match = RegExp(r'(\d{14})').firstMatch(sourceName);
+    final timestamp = match?.group(1) ?? _compactTimestamp(DateTime.now());
+    return 'txbz_json_UAE_$timestamp.zip';
+  }
+
+  String _compactTimestamp(DateTime value) {
+    String two(int n) => n.toString().padLeft(2, '0');
+    return '${value.year}${two(value.month)}${two(value.day)}'
+        '${two(value.hour)}${two(value.minute)}${two(value.second)}';
+  }
+
+  Future<Uint8List> _decryptPc(File file, String password) async {
+    final bytes = await file.readAsBytes();
+    final chunks = await decryptWithPassphrase(
+      Stream.value(bytes),
+      passphraseProvider: _PcPassphrase(password),
+    ).toList();
+    final builder = BytesBuilder(copy: false);
+    for (final chunk in chunks) {
+      builder.add(chunk);
+    }
+    return builder.takeBytes();
+  }
+
+  Future<void> _checkStartupPcFiles() async {
+    final zh = Localizations.localeOf(context).languageCode == 'zh';
+    try {
+      final uploadsPath = await DirectoryManager.instance.getUploadsPath();
+      final dir = Directory(uploadsPath);
+      if (!await dir.exists()) return;
+      final pcFiles = <File>[];
+      await for (final entity in dir.list()) {
+        if (entity is File && p.extension(entity.path).toLowerCase() == '.pc') {
+          pcFiles.add(entity);
+        }
+      }
+
+      if (pcFiles.isEmpty) {
+        if (!mounted) return;
+        final proceed = await showDialog<bool>(
+          context: context,
+          barrierDismissible: false,
+          builder: (dialogContext) => AlertDialog(
+            backgroundColor: const Color(0xFF20262D),
+            title: Text(
+              Translations.of(dialogContext).tips.title,
+              style: const TextStyle(color: Colors.white, fontSize: 17),
+            ),
+            content: Text(
+              zh ? '本地暂无可加载文件，是否立即选择？' : 'No local file to load. Select now?',
+              style: const TextStyle(color: Colors.white70, fontSize: 13),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(false),
+                child: Text(Translations.of(dialogContext).tips.cancel),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.of(dialogContext).pop(true),
+                child: Text(Translations.of(dialogContext).common.confirm),
+              ),
+            ],
+          ),
+        );
+        if (proceed == true && mounted) {
+          await _runBrowseFromSource();
+        }
+        return;
+      }
+
+      pcFiles.sort((a, b) {
+        return b.statSync().modified.compareTo(a.statSync().modified);
+      });
+      await _importPcFile(
+        pcFiles.first,
+        clearKeyLoader: false,
+        frostedGlass: true,
+      );
+    } catch (e) {
+      GlobalLogger.logError('STARTUP_PC_CHECK_FAILED $e');
+    }
+  }
+
+  Future<void> _runBrowseFromSource() async {
+    final source = await _chooseBrowseSource();
+    if (!mounted || source == null) return;
+    switch (source) {
+      case _CpdsBrowseSource.local:
+        await _browseLocal();
+      case _CpdsBrowseSource.keyLoader:
+        await _browseKeyLoader();
     }
   }
 
@@ -316,10 +533,7 @@ class _CpdsPageState extends State<CpdsPage> {
                 style: const TextStyle(color: Colors.white70),
               ),
             ),
-            FilledButton(
-              onPressed: () => close(true),
-              child: Text(t.tips.ok),
-            ),
+            FilledButton(onPressed: () => close(true), child: Text(t.tips.ok)),
           ],
         );
       },
@@ -329,22 +543,6 @@ class _CpdsPageState extends State<CpdsPage> {
   /// 仅清空注钥枪绑定的设备明细（子表），保留注钥枪列表（父表）。
   void _clearKeyLoaderData() {
     DatabaseManager.instance.removeAll<KeyLoaderDetailsEntity>();
-  }
-
-  Future<void> _parse() async {
-    if (_state.upload == null || _state.active) return;
-    final t = Translations.of(context);
-    try {
-      final state = await CpdsApi.parsePackage();
-      _applyState(state);
-      SimplePopup.success(t.cpds.keyLoaderParseSuccess);
-    } catch (error) {
-      GlobalLogger.logError('PARSE_FAILED $error');
-      final detail = error is CpdsException
-          ? CpdsMessages.errorCode(context, error.code, params: error.params)
-          : error.toString();
-      SimplePopup.error('${t.cpds.keyLoaderParseFailed}：$detail');
-    }
   }
 
   Future<void> _selectNode(String nodeId) async {
@@ -415,9 +613,10 @@ class _CpdsPageState extends State<CpdsPage> {
       // Android 需先申请 USB 权限；其它平台直接放行。
       if (Platform.isAndroid) {
         if (!await manager.hasPermission()) {
-          final granted = await manager
-              .requestPermission()
-              .timeout(const Duration(seconds: 30), onTimeout: () => false);
+          final granted = await manager.requestPermission().timeout(
+            const Duration(seconds: 30),
+            onTimeout: () => false,
+          );
           if (!granted) {
             SimplePopup.error(t.cpds.keyLoaderPermissionDenied);
             return;
@@ -434,7 +633,12 @@ class _CpdsPageState extends State<CpdsPage> {
       );
       if (selected != null) {
         GlobalLogger.logInfo('KEY_LOADER_SELECTED $selected');
-        // TODO: 后续从注钥枪读取所选文件并作为通信包上传。
+        if (!mounted) return;
+        try {
+          _applyState(await CpdsApi.getState());
+        } catch (error) {
+          _showError(error);
+        }
       }
     } catch (error) {
       _showError(error);
@@ -523,17 +727,46 @@ class _CpdsPageState extends State<CpdsPage> {
     final keyLoaderId = json['keyLoaderId'] as int?;
     final parentIdPath = json['parentIdPath'] as String? ?? '';
     final items = (json['items'] as List? ?? const []);
+    final overwrites = (json['overwrites'] as List? ?? const []);
 
     if (keyLoaderId == null) {
       return;
     }
 
-    if (items.isEmpty) {
-      SimplePopup.warn('无新增数据');
-      return;
+    for (final rawItem in overwrites) {
+      if (rawItem is! Map) continue;
+      final item = Map<String, dynamic>.from(rawItem);
+      final netNodePackageName = item['netNodePackageName']?.toString() ?? '';
+      final dcPackageName = item['dcPackageName']?.toString() ?? '';
+      final detailBox = DatabaseManager.instance.box<KeyLoaderDetailsEntity>();
+      final existing = detailBox
+          .query(
+            KeyLoaderDetailsEntity_.keyLoaderId
+                .equals(keyLoaderId)
+                .and(
+                  KeyLoaderDetailsEntity_.netNodePackageName.equals(
+                    netNodePackageName,
+                  ),
+                )
+                .and(
+                  KeyLoaderDetailsEntity_.dcPackageName.equals(dcPackageName),
+                )
+                .and(KeyLoaderDetailsEntity_.parentIdPath.equals(parentIdPath)),
+          )
+          .build()
+          .findFirst();
+      if (existing == null) continue;
+      existing.dcPackageAlias = item['deviceAlias']?.toString();
+      existing.radioId = item['radioId'] as int?;
+      existing.consumer = item['consumer']?.toString();
+      existing.location = item['location']?.toString();
+      existing.SN = item['sn']?.toString();
+      existing.parentIdPath = parentIdPath;
+      existing.updatedAt = now;
+      detailBox.put(existing);
     }
 
-    // 仅新增本次勾选的数据，重复数据已在前置流程中过滤，不再清空已有明细。
+    // 重复数据按上面的逻辑覆盖，非重复数据继续新增。
 
     for (final rawItem in items) {
       if (rawItem is! Map) continue;
@@ -667,6 +900,171 @@ class _CpdsPageState extends State<CpdsPage> {
   }
 }
 
+class _PcPassphrase extends PassphraseProvider {
+  _PcPassphrase(this.password);
+
+  final String password;
+
+  @override
+  Future<String> passphrase() async => password;
+}
+
+class _CpdsPcPasswordDialog extends StatefulWidget {
+  const _CpdsPcPasswordDialog({
+    required this.onVerify,
+    required this.fileName,
+    this.frostedGlass = false,
+  });
+
+  final Future<bool> Function(String password) onVerify;
+  final String fileName;
+  final bool frostedGlass;
+
+  @override
+  State<_CpdsPcPasswordDialog> createState() => _CpdsPcPasswordDialogState();
+}
+
+class _CpdsPcPasswordDialogState extends State<_CpdsPcPasswordDialog> {
+  final _formKey = GlobalKey<FormState>();
+  final _controller = TextEditingController();
+  bool _obscure = true;
+  bool _loading = false;
+  int _attempt = 0;
+  String? _errorText;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  String? _validate(String? value) {
+    final text = value ?? '';
+    final zh = Localizations.localeOf(context).languageCode == 'zh';
+    if (text.isEmpty) return zh ? '密码不可为空' : 'Password cannot be empty';
+    if (text.characters.length > 100) {
+      return zh ? '密码长度不能超过100个字符' : 'Password cannot exceed 100 characters';
+    }
+    return null;
+  }
+
+  Future<void> _submit() async {
+    if (_loading) return;
+    if (!(_formKey.currentState?.validate() ?? false)) return;
+    setState(() {
+      _loading = true;
+      _errorText = null;
+    });
+
+    final ok = await widget.onVerify(_controller.text);
+    if (!mounted) return;
+    if (ok) {
+      Navigator.of(context).pop(true);
+      return;
+    }
+
+    _attempt++;
+    _controller.clear();
+    if (_attempt >= 3) {
+      Navigator.of(context).pop(false);
+      return;
+    }
+    final remaining = 3 - _attempt;
+    final zh = Localizations.localeOf(context).languageCode == 'zh';
+    setState(() {
+      _loading = false;
+      _errorText = zh
+          ? '密码错误，还剩 $remaining 次机会'
+          : 'Wrong password, $remaining attempts left';
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final zh = Localizations.localeOf(context).languageCode == 'zh';
+    final dialog = AlertDialog(
+      backgroundColor: const Color(0xFF20262D),
+      title: Text(
+        zh ? '输入注钥包密码' : 'Enter keyloader password',
+        style: const TextStyle(color: Colors.white, fontSize: 17),
+      ),
+      content: SizedBox(
+        width: 420,
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextFormField(
+                controller: _controller,
+                obscureText: _obscure,
+                autofocus: true,
+                validator: _validate,
+                onFieldSubmitted: (_) => _submit(),
+                style: const TextStyle(color: Colors.white, fontSize: 14),
+                decoration: InputDecoration(
+                  labelText: zh ? '密码' : 'Password',
+                  hintText: zh
+                      ? '请输入 ${widget.fileName} 文件密钥'
+                      : 'Enter key for ${widget.fileName}',
+                  labelStyle: const TextStyle(color: Colors.white70),
+                  hintStyle: const TextStyle(color: Colors.white38),
+                  suffixIcon: IconButton(
+                    onPressed: () => setState(() => _obscure = !_obscure),
+                    icon: Icon(
+                      _obscure ? Icons.visibility_off : Icons.visibility,
+                      color: Colors.white70,
+                    ),
+                  ),
+                  filled: true,
+                  fillColor: const Color(0xFF282D33),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+              ),
+              if (_errorText != null) ...[
+                const SizedBox(height: 8),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    _errorText!,
+                    style: const TextStyle(
+                      color: Color(0xFFF15B64),
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+      actions: [
+        FilledButton(
+          onPressed: _loading ? null : _submit,
+          child: _loading
+              ? const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
+                )
+              : Text(Translations.of(context).common.confirm),
+        ),
+      ],
+    );
+
+    if (!widget.frostedGlass) return dialog;
+    return BackdropFilter(
+      filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+      child: dialog,
+    );
+  }
+}
+
 enum _CpdsBrowseSource { local, keyLoader }
 
 class _CpdsBrowseSourceDialog extends StatefulWidget {
@@ -733,9 +1131,7 @@ class _CpdsBrowseSourceDialogState extends State<_CpdsBrowseSourceDialog> {
           color: selected ? const Color(0xFF0E1114) : Colors.transparent,
           borderRadius: BorderRadius.circular(4),
           border: Border.all(
-            color: selected
-                ? const Color(0xFF00A2E9)
-                : const Color(0x26FFFFFF),
+            color: selected ? const Color(0xFF00A2E9) : const Color(0x26FFFFFF),
           ),
         ),
         child: Row(
