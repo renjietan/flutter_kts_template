@@ -116,11 +116,7 @@ class _CpdsPackagePanelState extends State<CpdsPackagePanel> {
     return InputDecoration(
       hintText: t.TextField.search,
       hintStyle: const TextStyle(color: Colors.white38),
-      prefixIcon: const Icon(
-        Icons.search,
-        size: 18,
-        color: Colors.white54,
-      ),
+      prefixIcon: const Icon(Icons.search, size: 18, color: Colors.white54),
       filled: true,
       fillColor: const Color(0xFF282D33),
       contentPadding: EdgeInsets.zero,
@@ -207,7 +203,7 @@ class _CpdsPackagePanelState extends State<CpdsPackagePanel> {
                 const SizedBox(width: 8),
                 BaseButton(
                   label: t.cpds.browse,
-                  width: 100,
+                  minWidth: 100,
                   height: 32,
                   icon: HyIcons.wenjian,
                   isLoading: widget.uploading,
@@ -261,8 +257,7 @@ class _CpdsPackagePanelState extends State<CpdsPackagePanel> {
                         _searchBoxWidth = constraints.maxWidth;
                         return SizedBox(
                           height: 36,
-                          child: defaultTargetPlatform ==
-                                  TargetPlatform.android
+                          child: defaultTargetPlatform == TargetPlatform.android
                               ? TextField(
                                   controller: _searchController,
                                   readOnly: true,
@@ -292,9 +287,7 @@ class _CpdsPackagePanelState extends State<CpdsPackagePanel> {
                     child: rows.isEmpty
                         ? Center(
                             child: Text(
-                              searching
-                                  ? t.common.noData
-                                  : t.cpds.nodesEmpty,
+                              searching ? t.common.noData : t.cpds.nodesEmpty,
                               style: const TextStyle(
                                 color: Colors.white38,
                                 fontSize: 13,
@@ -357,7 +350,8 @@ class _CpdsTreeRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isSelectable = item.kind == CpdsTreeItemKind.node ||
+    final isSelectable =
+        item.kind == CpdsTreeItemKind.node ||
         item.kind == CpdsTreeItemKind.futureWarrior;
 
     if (isSelectable) {
@@ -366,7 +360,7 @@ class _CpdsTreeRow extends StatelessWidget {
         onTap: onTap,
         child: Container(
           height: 32,
-          padding: EdgeInsets.only(left: 12.0 + item.depth * 24),
+          padding: EdgeInsetsDirectional.only(start: 12.0 + item.depth * 24),
           color: selected ? const Color(0xFF004098) : Colors.transparent,
           child: _buildRowBody(),
         ),
@@ -380,7 +374,7 @@ class _CpdsTreeRow extends StatelessWidget {
         onTap: onTap,
         child: Container(
           height: 32,
-          padding: EdgeInsets.only(left: 12.0 + item.depth * 24),
+          padding: EdgeInsetsDirectional.only(start: 12.0 + item.depth * 24),
           child: _buildRowBody(),
         ),
       ),
@@ -397,7 +391,9 @@ class _CpdsTreeRow extends StatelessWidget {
               ? Icon(
                   expanded
                       ? Icons.expand_more
-                      : Icons.chevron_right,
+                      : (LocaleSettings.currentLocale.languageCode == 'ar'
+                            ? Icons.chevron_left
+                            : Icons.chevron_right),
                   size: 18,
                   color: Colors.white70,
                 )
@@ -427,20 +423,12 @@ class _CpdsTreeRow extends StatelessWidget {
             const Positioned(
               left: 0,
               top: 0,
-              child: Icon(
-                HyIcons.ren,
-                size: 16,
-                color: Colors.white70,
-              ),
+              child: Icon(HyIcons.ren, size: 16, color: Colors.white70),
             ),
             Positioned(
               left: 6,
               top: 0,
-              child: Icon(
-                HyIcons.ren,
-                size: 16,
-                color: Colors.white70,
-              ),
+              child: Icon(HyIcons.ren, size: 16, color: Colors.white70),
             ),
           ],
         ),
@@ -461,10 +449,7 @@ class _CpdsTreeRow extends StatelessWidget {
 }
 
 class _CpdsSearchDialog extends StatefulWidget {
-  const _CpdsSearchDialog({
-    required this.initialValue,
-    required this.width,
-  });
+  const _CpdsSearchDialog({required this.initialValue, required this.width});
 
   final String initialValue;
   final double width;

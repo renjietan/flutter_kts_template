@@ -10,6 +10,7 @@ import '../../../theme/table.theme.dart';
 import 'cpds_network_interface_bar.dart';
 import 'cpds_progress_bar.dart';
 import 'cpds_status_badge.dart';
+import 'package:flutter_kts_template/pages/cpds/widgets/cpds_messages.dart';
 
 class CpdsDevicePanel extends StatelessWidget {
   const CpdsDevicePanel({
@@ -184,7 +185,7 @@ class CpdsDevicePanel extends StatelessWidget {
                 ),
                 BaseButton(
                   label: t.cpds.refresh,
-                  width: 72,
+                  minWidth: 72,
                   height: 32,
                   isLoading: interfacesLoading,
                   onPressed: state.active || interfacesLoading
@@ -194,7 +195,7 @@ class CpdsDevicePanel extends StatelessWidget {
                 const SizedBox(width: 8),
                 BaseButton(
                   label: t.cpds.distribute,
-                  width: 88,
+                  minWidth: 88,
                   height: 32,
                   isLoading: distributing,
                   onPressed:
@@ -491,8 +492,9 @@ class _CpdsFutureWarriorPanelState extends State<CpdsFutureWarriorPanel> {
 
   Future<void> _handleSave() async {
     if (_selectedKeys.isEmpty) {
-      final zh = Localizations.localeOf(context).languageCode == 'zh';
-      SimplePopup.warn(zh ? '请勾选' : 'Please select');
+      SimplePopup.warn(
+        CpdsMessages.tr(context, '请勾选', 'Please select', 'يرجى الاختيار'),
+      );
       return;
     }
     setState(() => _saving = true);
@@ -569,14 +571,13 @@ class _CpdsFutureWarriorPanelState extends State<CpdsFutureWarriorPanel> {
   @override
   Widget build(BuildContext context) {
     final t = Translations.of(context);
-    final zh = Localizations.localeOf(context).languageCode == 'zh';
     final total = widget.devices.length;
     final selectedCount = _selectedKeys.length;
     final groups = _groupedDevices();
     final tableTheme = getThemePreset(ThemePreset.dark);
     final saveButton = BaseButton(
       label: t.button.radioManager.save,
-      width: 80,
+      minWidth: 80,
       height: 32,
       isLoading: _saving,
       onPressed: _saving ? null : _handleSave,
@@ -601,9 +602,15 @@ class _CpdsFutureWarriorPanelState extends State<CpdsFutureWarriorPanel> {
                   ),
                 ),
                 Text(
-                  zh
-                      ? '已勾选 $selectedCount/$total'
-                      : 'Selected $selectedCount/$total',
+                  CpdsMessages.digits(
+                    context,
+                    CpdsMessages.tr(
+                      context,
+                      '已勾选 $selectedCount/$total',
+                      'Selected $selectedCount/$total',
+                      'تم تحديد $selectedCount/$total',
+                    ),
+                  ),
                   style: const TextStyle(
                     fontSize: 12,
                     color: Color(0xFFB7BCC6),
@@ -759,7 +766,6 @@ class _FutureWarriorDeviceRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final device = fwDevice.device;
-    final zh = Localizations.localeOf(context).languageCode == 'zh';
     return InkWell(
       onTap: () => onChanged(!selected),
       child: Container(
@@ -805,7 +811,7 @@ class _FutureWarriorDeviceRow extends StatelessWidget {
                 const SizedBox(width: 56),
                 Expanded(
                   child: Text(
-                    '${zh ? '网络节点ID' : 'Net Node ID'}：${fwDevice.nodeId}',
+                    '${CpdsMessages.tr(context, '网络节点ID', 'Net Node ID', 'معرف عقدة الشبكة')}：${fwDevice.nodeId}',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(color: Colors.white54, fontSize: 12),
@@ -819,7 +825,7 @@ class _FutureWarriorDeviceRow extends StatelessWidget {
                 const SizedBox(width: 56),
                 Expanded(
                   child: Text(
-                    '${zh ? '网络节点名称' : 'Net Node Name'}：'
+                    '${CpdsMessages.tr(context, '网络节点名称', 'Net Node Name', 'اسم عقدة الشبكة')}：'
                     '${fwDevice.nodeName}',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -938,7 +944,11 @@ class _DeviceGroupHeader extends StatelessWidget {
           child: Row(
             children: [
               Icon(
-                expanded ? Icons.arrow_drop_down : Icons.arrow_right,
+                expanded
+                    ? Icons.arrow_drop_down
+                    : (Directionality.of(context) == TextDirection.rtl
+                          ? Icons.arrow_left
+                          : Icons.arrow_right),
                 size: 16,
                 color: Colors.white70,
               ),
@@ -1025,10 +1035,12 @@ class _DeviceRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = Translations.of(context);
     final name = _deviceDisplayName(context, row.device);
-    final nodeIdLabel = Localizations.localeOf(context).languageCode == 'zh'
-        ? '节点ID'
-        : 'Node ID';
-    final zh = Localizations.localeOf(context).languageCode == 'zh';
+    final nodeIdLabel = CpdsMessages.tr(
+      context,
+      '节点ID',
+      'Node ID',
+      'معرف العقدة',
+    );
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: const BoxDecoration(
@@ -1065,7 +1077,7 @@ class _DeviceRow extends StatelessWidget {
                 const SizedBox(width: 16),
                 Expanded(
                   child: Text(
-                    '${zh ? '别名' : 'Alias'}: '
+                    '${CpdsMessages.tr(context, '别名', 'Alias', 'الاسم المستعار')}: '
                     '${row.device.alias.isEmpty ? '--' : row.device.alias}',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,

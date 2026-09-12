@@ -24,7 +24,7 @@ class UserRoutes extends BaseRouteGroup {
     router.get('/<id>', (Request request, String id) {
       // 模拟用户不存在的情况
       if (id == '999') {
-        return ApiResponse.notFound(message: 'User not found');
+        return ApiResponse.notFound(message: '用户不存在');
       }
       return ApiResponse.success(data: {'userId': id, 'name': 'User $id'});
     });

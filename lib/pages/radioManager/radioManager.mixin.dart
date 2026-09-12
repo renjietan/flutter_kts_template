@@ -205,6 +205,19 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
   }
 
   bool _isAsciiHalfWidthSymbol(int code) {
+    // 文件名非法字符：\ / : * ? " < > |
+    const invalidFileNameSymbols = {
+      0x22,
+      0x2A,
+      0x2F,
+      0x3A,
+      0x3C,
+      0x3E,
+      0x3F,
+      0x5C,
+      0x7C,
+    };
+    if (invalidFileNameSymbols.contains(code)) return false;
     return (code >= 0x21 && code <= 0x2F) ||
         (code >= 0x3A && code <= 0x40) ||
         (code >= 0x5B && code <= 0x60) ||
@@ -269,7 +282,7 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
         ),
         BaseButton(
           label: t.button.radioManager.createRadio,
-          width: 110,
+          minWidth: 110,
           onPressed: () {
             aliasTextEditController.text = "";
             consumerTextEditController.text = "";
@@ -406,6 +419,11 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
               final units = _aliasUnits(value);
               if (units < 1 || units > 12) {
                 return t.Form.radioManager.alias.invalidLength;
+              }
+              if (value != value.trim() ||
+                  value.startsWith('.') ||
+                  value.endsWith('.')) {
+                return t.Form.radioManager.alias.invalid;
               }
               for (final code in value.runes) {
                 if (!_isAliasCharAllowed(code)) {

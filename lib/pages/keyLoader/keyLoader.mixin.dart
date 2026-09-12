@@ -111,7 +111,7 @@ mixin KeyLoaderMixin on State<KeyLoaderPager> {
       confirmText: isCreate
           ? t.button.injectEncrypt.create
           : t.button.radioManager.save,
-      confirmBtnWidth: 160,
+      confirmBtnMinWidth: 160,
       fields: [
         FormFieldConfig(
           name: 'name',

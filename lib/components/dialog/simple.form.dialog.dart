@@ -6,6 +6,7 @@ import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 
 import '../TextField/simple.form.textfield.dart';
 import '../button/base.button.dart';
+import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 
 /// 表单字段配置模型
 
@@ -14,8 +15,8 @@ Future<void> SimpleFormDialog({
   required String title,
   required List<FormFieldConfig> fields,
   required void Function(Map<String, dynamic> formData) onConfirm,
-  String confirmText = '确认',
-  double? confirmBtnWidth = 150,
+  String? confirmText,
+  double? confirmBtnMinWidth = 150,
   Color? backgroundColor = Colors.black,
   Color? titleColor = Colors.white,
   Color? labelColor = Colors.white,
@@ -100,8 +101,8 @@ Future<void> SimpleFormDialog({
       ),
       actions: [
         BaseButton(
-          width: confirmBtnWidth,
-          label: confirmText,
+          minWidth: confirmBtnMinWidth,
+          label: confirmText ?? context.t.common.confirm,
           onPressed: () {
             // 验证通过，获取表单数据
             if (formKey.currentState?.saveAndValidate() ?? false) {
@@ -369,8 +370,8 @@ Widget _buildFieldLabel(
             context: context,
             builder: (dialogContext) => AlertDialog(
               backgroundColor: const Color(0xFF20262D),
-              title: const Text(
-                '提示',
+              title: Text(
+                context.t.tips.title,
                 style: TextStyle(color: Colors.white, fontSize: 17),
               ),
               content: Text(
@@ -380,7 +381,7 @@ Widget _buildFieldLabel(
               actions: [
                 TextButton(
                   onPressed: () => Navigator.of(dialogContext).pop(),
-                  child: const Text('确定'),
+                  child: Text(context.t.tips.ok),
                 ),
               ],
             ),

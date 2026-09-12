@@ -329,7 +329,6 @@ class _CpdsPageState extends State<CpdsPage> {
     required bool clearKeyLoader,
     bool frostedGlass = false,
   }) async {
-    final zh = Localizations.localeOf(context).languageCode == 'zh';
     final uploadsPath = await DirectoryManager.instance.getUploadsPath();
     final destPath = p.join(uploadsPath, p.basename(sourceFile.path));
     final stored = File(destPath);
@@ -361,7 +360,7 @@ class _CpdsPageState extends State<CpdsPage> {
         if (await stored.exists()) await stored.delete();
       } catch (_) {}
       SimplePopup.error(
-        zh ? '文件已销毁，请重新选择文件' : 'File destroyed, please select again',
+        CpdsMessages.tr(context, '文件已销毁，请重新选择文件', 'File destroyed, please select again', 'الملف مدمر، يرجى إعادة الاختيار'),
       );
       return;
     }
@@ -432,7 +431,6 @@ class _CpdsPageState extends State<CpdsPage> {
   }
 
   Future<void> _checkStartupPcFiles() async {
-    final zh = Localizations.localeOf(context).languageCode == 'zh';
     try {
       final uploadsPath = await DirectoryManager.instance.getUploadsPath();
       final dir = Directory(uploadsPath);
@@ -456,7 +454,7 @@ class _CpdsPageState extends State<CpdsPage> {
               style: const TextStyle(color: Colors.white, fontSize: 17),
             ),
             content: Text(
-              zh ? '本地暂无可加载文件，是否立即选择？' : 'No local file to load. Select now?',
+              CpdsMessages.tr(context, '本地暂无可加载文件，是否立即选择？', 'No local file to load. Select now?', 'لا يوجد ملف محلي قابل للتحميل. هل تريد الاختيار الآن؟'),
               style: const TextStyle(color: Colors.white70, fontSize: 13),
             ),
             actions: [
@@ -787,7 +785,7 @@ class _CpdsPageState extends State<CpdsPage> {
       DatabaseManager.instance.put<KeyLoaderDetailsEntity>(detail);
     }
 
-    SimplePopup.success('保存成功');
+    SimplePopup.success(t.common.saveSuccess);
   }
 
   void _showError(Object error, {String? title}) {
@@ -940,10 +938,9 @@ class _CpdsPcPasswordDialogState extends State<_CpdsPcPasswordDialog> {
 
   String? _validate(String? value) {
     final text = value ?? '';
-    final zh = Localizations.localeOf(context).languageCode == 'zh';
-    if (text.isEmpty) return zh ? '密码不可为空' : 'Password cannot be empty';
+    if (text.isEmpty) return CpdsMessages.tr(context, '密码不可为空', 'Password cannot be empty', 'كلمة المرور لا يمكن أن تكون فارغة');
     if (text.characters.length > 100) {
-      return zh ? '密码长度不能超过100个字符' : 'Password cannot exceed 100 characters';
+      return CpdsMessages.tr(context, '密码长度不能超过100个字符', 'Password cannot exceed 100 characters', 'لا يمكن أن تتجاوز كلمة المرور 100 حرف');
     }
     return null;
   }
@@ -970,22 +967,26 @@ class _CpdsPcPasswordDialogState extends State<_CpdsPcPasswordDialog> {
       return;
     }
     final remaining = 3 - _attempt;
-    final zh = Localizations.localeOf(context).languageCode == 'zh';
     setState(() {
       _loading = false;
-      _errorText = zh
-          ? '密码错误，还剩 $remaining 次机会'
-          : 'Wrong password, $remaining attempts left';
+      _errorText = CpdsMessages.digits(
+        context,
+        CpdsMessages.tr(
+          context,
+          '密码错误，还剩 $remaining 次机会',
+          'Wrong password, $remaining attempts left',
+          'كلمة المرور خاطئة، تبقى $remaining محاولات',
+        ),
+      );
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final zh = Localizations.localeOf(context).languageCode == 'zh';
     final dialog = AlertDialog(
       backgroundColor: const Color(0xFF20262D),
       title: Text(
-        zh ? '输入注钥包密码' : 'Enter keyloader password',
+        CpdsMessages.tr(context, '输入注钥包密码', 'Enter keyloader password', 'أدخل كلمة مرور حزمة المفاتيح'),
         style: const TextStyle(color: Colors.white, fontSize: 17),
       ),
       content: SizedBox(
@@ -1003,10 +1004,12 @@ class _CpdsPcPasswordDialogState extends State<_CpdsPcPasswordDialog> {
                 onFieldSubmitted: (_) => _submit(),
                 style: const TextStyle(color: Colors.white, fontSize: 14),
                 decoration: InputDecoration(
-                  labelText: zh ? '密码' : 'Password',
-                  hintText: zh
-                      ? '请输入 ${widget.fileName} 文件密钥'
-                      : 'Enter key for ${widget.fileName}',
+                  labelText: CpdsMessages.tr(context, '密码', 'Password', 'كلمة المرور'),
+                  hintText: CpdsMessages.tr(
+                      context,
+                      '请输入 ${widget.fileName} 文件密钥',
+                      'Enter key for ${widget.fileName}',
+                      'أدخل مفتاح الملف ${widget.fileName}'),
                   labelStyle: const TextStyle(color: Colors.white70),
                   hintStyle: const TextStyle(color: Colors.white38),
                   suffixIcon: IconButton(

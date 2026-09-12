@@ -119,15 +119,15 @@ class CpdsDiscoveryMismatchDialog extends StatelessWidget {
   }
 
   String _deviceTypeTitle(BuildContext context) =>
-      CpdsMessages.isZh(context) ? '设备类型' : 'Device type';
+      CpdsMessages.tr(context, '设备类型', 'Device type', 'نوع الجهاز');
   String _expectedTitle(BuildContext context) =>
-      CpdsMessages.isZh(context) ? '期望' : 'Expected';
+      CpdsMessages.tr(context, '期望', 'Expected', 'المتوقع');
   String _discoveredTitle(BuildContext context) =>
-      CpdsMessages.isZh(context) ? '发现' : 'Discovered';
+      CpdsMessages.tr(context, '发现', 'Discovered', 'المكتشف');
   String _missingTitle(BuildContext context) =>
-      CpdsMessages.isZh(context) ? '缺失' : 'Missing';
+      CpdsMessages.tr(context, '缺失', 'Missing', 'المفقود');
   String _extraTitle(BuildContext context) =>
-      CpdsMessages.isZh(context) ? '额外' : 'Extra';
+      CpdsMessages.tr(context, '额外', 'Extra', 'الإضافي');
 }
 
 class CpdsResultDialog extends StatelessWidget {
@@ -290,12 +290,15 @@ class CpdsResultDialog extends StatelessWidget {
     int ignored,
     int offline,
   ) {
-    final zh = CpdsMessages.isZh(context);
-    if (zh) {
-      return '成功 $success，失败 $failed，未发现 $missing，忽略 $ignored，掉线 $offline';
-    }
-    return '$success completed, $failed failed, $missing undiscovered, '
-        '$ignored ignored, $offline offline';
+    return CpdsMessages.digits(
+      context,
+      CpdsMessages.tr(
+        context,
+        '成功 $success，失败 $failed，未发现 $missing，忽略 $ignored，掉线 $offline',
+        '$success completed, $failed failed, $missing undiscovered, $ignored ignored, $offline offline',
+        'نجح $success، فشل $failed، لم يُكتشف $missing، تم التجاهل $ignored، غير متصل $offline',
+      ),
+    );
   }
 
   String _deviceLine(BuildContext context, CpdsDevice device, String esn) {
@@ -306,17 +309,17 @@ class CpdsResultDialog extends StatelessWidget {
   }
 
   String _completedTitle(BuildContext context) =>
-      CpdsMessages.isZh(context) ? '成功完成' : 'Completed devices';
+      CpdsMessages.tr(context, '成功完成', 'Completed devices', 'الأجهزة المكتملة');
   String _missingTitle(BuildContext context) =>
-      CpdsMessages.isZh(context) ? '未发现设备' : 'Undiscovered devices';
+      CpdsMessages.tr(context, '未发现设备', 'Undiscovered devices', 'الأجهزة غير المكتشفة');
   String _ignoredTitle(BuildContext context) =>
-      CpdsMessages.isZh(context) ? '已忽略设备' : 'Ignored devices';
+      CpdsMessages.tr(context, '已忽略设备', 'Ignored devices', 'الأجهزة المتجاهلة');
   String _failedTitle(BuildContext context) =>
-      CpdsMessages.isZh(context) ? '失败明细' : 'Failure details';
+      CpdsMessages.tr(context, '失败明细', 'Failure details', 'تفاصيل الفشل');
   String _offlineTitle(BuildContext context) =>
-      CpdsMessages.isZh(context) ? '掉线设备' : 'Offline devices';
+      CpdsMessages.tr(context, '掉线设备', 'Offline devices', 'الأجهزة غير المتصلة');
   String _noCompletedTitle(BuildContext context) =>
-      CpdsMessages.isZh(context) ? '无成功设备' : 'No completed devices';
+      CpdsMessages.tr(context, '无成功设备', 'No completed devices', 'لا توجد أجهزة مكتملة');
 }
 
 class CpdsErrorDialog extends StatelessWidget {

@@ -12,6 +12,7 @@ import 'package:go_router/go_router.dart';
 import 'package:unified_popups/unified_popups.dart';
 
 import '../../config/config.dart';
+import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 
 class MainLayout extends StatelessWidget {
   final StatefulNavigationShell navigationShell;
@@ -35,7 +36,7 @@ class MainLayout extends StatelessWidget {
         } catch (_) {}
       }
     }
-    SimplePopup.success('操作成功');
+    SimplePopup.success(t.common.OperationSuccess);
   }
 
   Future<void> _clearCache() async {
@@ -72,7 +73,7 @@ class MainLayout extends StatelessWidget {
 
     await deleteExceptFirst(pcFiles);
     await deleteExceptFirst(zipFiles);
-    SimplePopup.success('操作成功');
+    SimplePopup.success(t.common.OperationSuccess);
   }
 
   @override
@@ -124,7 +125,7 @@ class MainLayout extends StatelessWidget {
               SwitchLanguage(),
               PopupMenuButton<_LayoutSettingAction>(
                 icon: const Icon(Icons.settings, color: Colors.white),
-                tooltip: '设置',
+                tooltip: context.t.layout.settings,
                 onSelected: (action) {
                   switch (action) {
                     case _LayoutSettingAction.clearTemp:
@@ -133,14 +134,14 @@ class MainLayout extends StatelessWidget {
                       unawaited(_clearCache());
                   }
                 },
-                itemBuilder: (context) => const [
+                itemBuilder: (context) => [
                   PopupMenuItem(
                     value: _LayoutSettingAction.clearTemp,
-                    child: Text('清除临时文件'),
+                    child: Text(context.t.layout.clearTempFiles),
                   ),
                   PopupMenuItem(
                     value: _LayoutSettingAction.clearCache,
-                    child: Text('清除缓存'),
+                    child: Text(context.t.layout.clearCache),
                   ),
                 ],
               ),

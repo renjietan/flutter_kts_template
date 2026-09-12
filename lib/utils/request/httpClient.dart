@@ -157,7 +157,7 @@ class DioClient {
       // return response.data;
       return BaseResponse<T>(
         code: data["code"],
-        message: data["message"],
+        message: localizeBackendMessage(data['message']?.toString() ?? ''),
         data: fromJson == null ? data["data"] : fromJson(data["data"]),
       );
     } else {
@@ -187,10 +187,10 @@ class DioClient {
           tipException = ConnectionTimeoutException(t.common.connectionTimeout);
         case DioExceptionType.badResponse:
           final code = error.response?.statusCode ?? -1;
-          final msg =
-              (error.response?.data ?? {})["message"] ??
+          final rawMsg = (error.response?.data ?? {})["message"]?.toString() ??
               error.response?.statusMessage ??
               t.common.serverError;
+          final msg = localizeBackendMessage(rawMsg);
           tipException = HttpException(code, msg);
         default:
           tipException = UnknownException(
@@ -258,4 +258,35 @@ class UnknownException implements Exception {
   UnknownException(this.message);
   @override
   String toString() => message;
+}
+
+/// 把后端返回的「中文原文 message」映射为当前语言，供界面展示；
+/// 控制端（LogInterceptor 打印原始响应体）仍显示中文原文。
+String localizeBackendMessage(String raw) {
+  switch (raw) {
+    case '操作成功':
+      return t.common.OperationSuccess;
+    case '无数据':
+      return t.common.noData;
+    case '名称不可重复':
+      return t.entity.sameName;
+    case '电台别名已存在':
+      return t.entity.aliasDuplicate;
+    case 'SN已存在':
+      return t.entity.snDuplicate;
+    case '上传成功':
+      return t.uploads.success;
+    case '上传失败':
+      return t.uploads.failed;
+    case '请求失败':
+      return t.common.requestError;
+    case '新增成功':
+      return t.common.addSuccess;
+    case '缺少通信参数包文件':
+      return t.cpds.packageFileMissing;
+    case '文件字节为空':
+      return t.cpds.fileBytesEmpty;
+    default:
+      return raw;
+  }
 }

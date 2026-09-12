@@ -4,11 +4,7 @@ import 'package:flutter_kts_template/components/step/step.progress.model.dart';
 import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 
 class StepProgressDialog extends StatefulWidget {
-  const StepProgressDialog({
-    super.key,
-    required this.controller,
-    this.onClose,
-  });
+  const StepProgressDialog({super.key, required this.controller, this.onClose});
 
   final StepProgressController controller;
   final Future<void> Function()? onClose;
@@ -44,9 +40,7 @@ class _StepProgressDialogState extends State<StepProgressDialog> {
     if (!mounted) return;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted || !_scrollController.hasClients) return;
-      _scrollController.jumpTo(
-        _scrollController.position.maxScrollExtent,
-      );
+      _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
     });
   }
 
@@ -97,7 +91,7 @@ class _StepProgressDialogState extends State<StepProgressDialog> {
                 Center(
                   child: BaseButton(
                     label: Translations.of(context).common.close,
-                    width: 96,
+                    minWidth: 96,
                     height: 32,
                     isLoading: _closing,
                     onPressed: _closing ? null : _handleClose,
@@ -187,10 +181,7 @@ class _StepProgressDialogState extends State<StepProgressDialog> {
           Text(
             widget.controller.stepLabels[index],
             textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 12,
-              color: labelColor,
-            ),
+            style: TextStyle(fontSize: 12, color: labelColor),
           ),
         ],
       ),
@@ -223,10 +214,7 @@ class _StepProgressDialogState extends State<StepProgressDialog> {
                     if (line.number != null)
                       Text(
                         '[${line.number}] ',
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: _dim,
-                        ),
+                        style: const TextStyle(fontSize: 12, color: _dim),
                       ),
                     Expanded(
                       child: Text(

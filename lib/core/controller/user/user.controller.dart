@@ -5,6 +5,7 @@ import '../../databaseManager/databaseManager.dart';
 import '../../entities/book/bookEntity.dart';
 import '../../entities/user/userEntity.dart';
 import '../../utils/response.dart';
+import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 
 class UserController {
   static Response getList(Request request) {
@@ -34,6 +35,6 @@ class UserController {
       // 它内部包含了 Stream（响应体的流），这违反了传递限制，因此抛出 unsendable object 异常。
       return id;
     }, params);
-    return ApiResponse.success(data: id, message: "新增成功");
+    return ApiResponse.success(data: id, message: AppLocale.zh.translations.common.addSuccess);
   }
 }

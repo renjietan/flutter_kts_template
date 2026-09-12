@@ -18,3 +18,11 @@ type = "stdio"
 command = "npx"
 args = ["-y", "@modelcontextprotocol/server-sequential-thinking"]
 enabled = true
+[mcp_servers.deepl]
+type = "stdio"
+command = "npx"
+args = ["-y", "deepl-mcp-server"]
+enabled = true
+
+[mcp_servers.deepl.env]
+DEEPL_API_KEY = "b408e868-e806-4511-9a77-91e14b8dcc75:fx"

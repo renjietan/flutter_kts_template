@@ -6,6 +6,7 @@ import 'package:flutter_kts_template/core/cpds/model/cpds_enums.dart';
 import 'package:flutter_kts_template/core/cpds/service/cpds_manager.dart';
 import 'package:shelf/shelf.dart';
 import 'package:shelf_essentials/shelf_essentials.dart';
+import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 
 class CpdsController {
   static Future<Response> getState(Request request) async {
@@ -20,7 +21,7 @@ class CpdsController {
         throw CpdsException(
           CpdsErrorCode.invalidPackage,
           params: {'field': 'package'},
-          message: 'package file is missing',
+          message: AppLocale.zh.translations.cpds.packageFileMissing,
         );
       }
       final bytes = Uint8List.fromList(await file.readAsBytes());
@@ -35,7 +36,7 @@ class CpdsController {
       throw CpdsException(
         CpdsErrorCode.storageIoError,
         params: {'cause': error.toString()},
-        message: 'upload failed',
+        message: AppLocale.zh.translations.uploads.failed,
       );
     }
   }

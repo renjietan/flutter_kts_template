@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_kts_template/components/DropDown/SimpleDarkDropdown/simple.dark.dropdown.item.dart';
+import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 
 /// 深色主题下拉框，适配桌面端与手机端
 /// - 桌面端：点击后在字段下方弹出菜单
@@ -349,7 +350,7 @@ class _MobileSheet<T> extends StatelessWidget {
             child: Row(
               children: [
                 Text(
-                  hintText ?? '请选择',
+                  hintText ?? context.t.common.pleaseSelect,
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,

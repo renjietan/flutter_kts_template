@@ -19,6 +19,9 @@ common:
   serverError: 服务器异常
   UnknowError: 未知错误
   preview: 预览
+  addSuccess: 新增成功
+  pleaseSelect: 请选择
+  saveSuccess: 保存成功
 permission:
   no: 暂无访问权限,是否立即前往【设置】？
   cancel: 操作已取消
@@ -128,7 +131,10 @@ Form:
       validate: 请输入电台别名
       invalid: 别名包含不支持的字符
       invalidLength: 别名长度应为1-12个单位
-      help: 中文或阿拉伯语每个字符计2个单位；英文、数字、空格和半角符号每个字符计1个单位。别名总长度为1～12个单位。
+      help: |
+        1、中文或阿拉伯语每个字符计2个单位；英文、数字、空格和半角符号每个字符计1个单位。别名总长度为1～12个单位。
+        2、仅允许中文、阿拉伯语、英文字母、数字、空格及半角符号。
+        3、不能包含 \ / : * ? " < > |；不能以空格或句点开头或结尾；不能仅为 . 或 ..。
     sn:
       placeholder: 10位英文字母或数字
       validate: 请输入SN号
@@ -162,6 +168,21 @@ entity:
   aliasDuplicate: 电台别名已存在
   consumerDuplicate: 使用人已存在
   snDuplicate: SN已存在
+usb:
+  deviceInserted: "USB 设备插入: {address}"
+  deviceRemoved: "USB 设备拔出: {address}"
+  deviceNotFound: "未找到 USB 设备: {address}"
+  createPortFailed: 创建 USB 端口失败
+  openPortFailed: 打开 USB 端口失败
+  deviceConnected: USB 设备连接成功
+  noAvailableConnection: 无可用的 USB 连接
+  winUsbNotFound: 未找到 WinUSB 设备
+  endpointNotFound: "端点未找到: {epOut} {epIn}"
+  winUsbConnected: WinUSB 设备连接成功
+  winUsbDisconnected: WinUSB 设备已断开
+  winUsbNotConnected: WinUSB 未连接
+  noWinUsbConnection: 无可用的 WinUSB 连接
+  noOutPipe: 无可用的 OUT 管道
 udp:
   loginFail: 身份认证失败
   loginTimeout: 身份认证超时
@@ -174,15 +195,26 @@ errorMiddle:
   errorArg: 无效参数,{error}
 platform:
   webNotReadFile: The current page isn’t set up for file handling
+layout:
+  settings: 设置
+  clearTempFiles: 清除临时文件
+  clearCache: 清除缓存
+  confirmExit: 确认退出
+  leavePagePrompt: 您确定要离开此页面吗？
+
 settings:
   zh: 中文
   en: 英文
+  arEg: 阿拉伯语（东）
+  arMa: 阿拉伯语（西）
 cpds:
   fileTitle: 文件解析
   browse: 浏览
   goNow: 立即前往
   parse: 解析
   filePlaceholder: 请选择通信参数包
+  packageFileMissing: 缺少通信参数包文件
+  fileBytesEmpty: 文件字节为空
   browseConfirm: 重新上传文件，将清除注钥枪绑定的通信参数包，确认是否继续？
   browseSourceTitle: 选择文件来源
   browseSourceLocal: 本地文件列表

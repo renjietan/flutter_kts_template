@@ -32,6 +32,7 @@ import 'package:path/path.dart' as p;
 import 'package:provider/provider.dart';
 
 import 'set_password_dialog.dart';
+import 'package:flutter_kts_template/pages/cpds/widgets/cpds_messages.dart';
 
 class KeyLoaderDetailsTable extends StatefulWidget {
   const KeyLoaderDetailsTable({
@@ -347,7 +348,7 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
       onTimeout: () => false,
     );
     if (!granted) {
-      SimplePopup.error('未授予 USB 权限');
+      SimplePopup.error(t.cpds.keyLoaderPermissionDenied);
       return false;
     }
     return true;
@@ -1181,7 +1182,7 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
                   const Spacer(),
                   BaseButton(
                     label: t.button.injectEncrypt.export,
-                    width: 70,
+                    minWidth: 70,
                     isLoading: _exporting,
                     onPressed: _exporting ? null : () => _exportSelected(),
                   ),
@@ -1245,7 +1246,7 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
               const SizedBox(width: 4),
               BaseButton(
                 label: t.button.radioManager.delete,
-                width: 70,
+                minWidth: 70,
                 colors: const [
                   Color(0xFFF15B64),
                   Color(0xFFF15B64),
@@ -1257,7 +1258,7 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
               const SizedBox(width: 4),
               BaseButton(
                 label: t.button.injectEncrypt.export,
-                width: 70,
+                minWidth: 70,
                 isLoading: _exporting,
                 onPressed: _exporting ? null : () => _exportSelected(),
               ),
@@ -1326,7 +1327,6 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
     BuildContext context,
   ) {
     final t = Translations.of(context);
-    final zh = Localizations.localeOf(context).languageCode == 'zh';
     final radios = _radios;
 
     return [
@@ -1338,7 +1338,7 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
         ),
       ),
       ColumnDefinition<KeyLoaderDetailsEntity>(
-        label: zh ? '别名' : 'Alias',
+        label: CpdsMessages.tr(context, '别名', 'Alias', 'الاسم المستعار'),
         flex: 1,
         cellBuilder: TextCellBuilder.text<KeyLoaderDetailsEntity>(
           (item) => item.dcPackageAlias ?? '',

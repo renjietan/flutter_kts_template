@@ -11,59 +11,65 @@ class SwitchLanguage extends StatefulWidget {
 }
 
 class _SwitchLanguageState extends State<SwitchLanguage> {
-  late String currentLocale;
-  Future<void> _toggleLocale() async {
-    if (currentLocale == "zh") {
-      await LocaleSettings.setLocale(AppLocale.en);
-      await Shared.saveLocale(AppLocale.en.languageCode);
-      if (mounted) {
-        setState(() {
-          currentLocale = "en";
-        });
-      }
-    } else {
-      await LocaleSettings.setLocale(AppLocale.zh);
-      await Shared.saveLocale(AppLocale.zh.languageCode);
-      if (mounted) {
-        setState(() {
-          currentLocale = "zh";
-        });
-      }
+  late AppLocale currentLocale;
+
+  String _localeKey(AppLocale locale) {
+    final cc = locale.countryCode;
+    return cc == null ? locale.languageCode : '${locale.languageCode}_$cc';
+  }
+
+  String _label(AppLocale locale) {
+    switch (locale) {
+      case AppLocale.zh:
+        return t.settings.zh;
+      case AppLocale.en:
+        return t.settings.en;
+      case AppLocale.arEg:
+        return t.settings.arEg;
+      case AppLocale.arMa:
+        return t.settings.arMa;
+    }
+  }
+
+  Future<void> _selectLocale(AppLocale locale) async {
+    await LocaleSettings.setLocale(locale);
+    await Shared.saveLocale(_localeKey(locale));
+    if (mounted) {
+      setState(() {
+        currentLocale = locale;
+      });
     }
   }
 
   @override
   void didChangeDependencies() {
-    // TODO: implement initState
     super.didChangeDependencies();
-    currentLocale = TranslationProvider.of(context).locale.languageCode;
+    currentLocale = TranslationProvider.of(context).locale;
   }
 
   @override
   Widget build(BuildContext context) {
-    return ElevatedButton(
-      style: ElevatedButton.styleFrom(
-        shape: CircleBorder(),
-        padding: EdgeInsets.all(16),
-        minimumSize: Size(80, 80),
-        backgroundColor: Colors.transparent,
-        iconColor: Colors.white70,
-        foregroundColor: Colors.transparent,
-        overlayColor: Colors.transparent,
-        surfaceTintColor: Colors.transparent,
-        shadowColor: Colors.transparent,
-      ),
-      onPressed: _toggleLocale,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.language),
-          SizedBox(width: 5),
-          Text(
-            currentLocale == "zh" ? t.settings.zh : t.settings.en,
-            style: TextStyle(color: Colors.white),
-          ),
-        ],
+    return PopupMenuButton<AppLocale>(
+      onSelected: _selectLocale,
+      itemBuilder: (context) => [
+        PopupMenuItem(value: AppLocale.zh, child: Text(_label(AppLocale.zh))),
+        PopupMenuItem(value: AppLocale.en, child: Text(_label(AppLocale.en))),
+        PopupMenuItem(value: AppLocale.arEg, child: Text(_label(AppLocale.arEg))),
+        PopupMenuItem(value: AppLocale.arMa, child: Text(_label(AppLocale.arMa))),
+      ],
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.language, color: Colors.white70),
+            const SizedBox(width: 5),
+            Text(
+              _label(currentLocale),
+              style: const TextStyle(color: Colors.white),
+            ),
+          ],
+        ),
       ),
     );
   }

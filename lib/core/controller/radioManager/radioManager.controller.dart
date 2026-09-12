@@ -74,15 +74,15 @@ class RadioManagerController {
             .build()
             .findFirst() !=
         null) {
-      return ApiResponse.error(message: t.entity.aliasDuplicate);
+      return ApiResponse.error(message: AppLocale.zh.translations.entity.aliasDuplicate);
     }
     if (radiosBox.query(RadiosEntity_.sn.equals(sn)).build().findFirst() !=
         null) {
-      return ApiResponse.error(message: t.entity.snDuplicate);
+      return ApiResponse.error(message: AppLocale.zh.translations.entity.snDuplicate);
     }
     RadiosEntity radio = RadiosEntity.fromJson(params);
     int id = radiosBox.put(radio);
-    return ApiResponse.success(data: id, message: t.common.OperationSuccess);
+    return ApiResponse.success(data: id, message: AppLocale.zh.translations.common.OperationSuccess);
   }
 
   static Future<Response> update(Request request) async {
@@ -96,7 +96,7 @@ class RadioManagerController {
 
     RadiosEntity? radiosEntity = radiosBox.get(uId);
     if (radiosEntity == null) {
-      return ApiResponse.error(message: t.common.noData);
+      return ApiResponse.error(message: AppLocale.zh.translations.common.noData);
     }
     params["createdAt"] = parseDateTime(radiosEntity.createdAt);
 
@@ -113,7 +113,7 @@ class RadioManagerController {
             .build()
             .findFirst() !=
         null) {
-      return ApiResponse.error(message: t.entity.aliasDuplicate);
+      return ApiResponse.error(message: AppLocale.zh.translations.entity.aliasDuplicate);
     }
     if (radiosBox
             .query(
@@ -124,11 +124,11 @@ class RadioManagerController {
             .build()
             .findFirst() !=
         null) {
-      return ApiResponse.error(message: t.entity.snDuplicate);
+      return ApiResponse.error(message: AppLocale.zh.translations.entity.snDuplicate);
     }
     radiosEntity = RadiosEntity.fromJson(params);
     int id = radiosBox.put(radiosEntity);
-    return ApiResponse.success(data: id, message: t.common.OperationSuccess);
+    return ApiResponse.success(data: id, message: AppLocale.zh.translations.common.OperationSuccess);
   }
 
   static Future<Response> delete(Request request) async {
@@ -136,6 +136,6 @@ class RadioManagerController {
     List<int> ids = getIds(request.context["path"] as List<String>?);
     var box = db.box<RadiosEntity>();
     int data = box.removeMany(ids);
-    return ApiResponse.success(data: data, message: t.common.OperationSuccess);
+    return ApiResponse.success(data: data, message: AppLocale.zh.translations.common.OperationSuccess);
   }
 }

@@ -50,9 +50,11 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 	late final Translations$TextField$zh TextField = Translations$TextField$zh.internal(_root);
 	late final Translations$Form$zh Form = Translations$Form$zh.internal(_root);
 	late final Translations$entity$zh entity = Translations$entity$zh.internal(_root);
+	late final Translations$usb$zh usb = Translations$usb$zh.internal(_root);
 	late final Translations$udp$zh udp = Translations$udp$zh.internal(_root);
 	late final Translations$errorMiddle$zh errorMiddle = Translations$errorMiddle$zh.internal(_root);
 	late final Translations$platform$zh platform = Translations$platform$zh.internal(_root);
+	late final Translations$layout$zh layout = Translations$layout$zh.internal(_root);
 	late final Translations$settings$zh settings = Translations$settings$zh.internal(_root);
 	late final Translations$cpds$zh cpds = Translations$cpds$zh.internal(_root);
 }
@@ -120,6 +122,15 @@ class Translations$common$zh {
 
 	/// zh: '预览'
 	String get preview => '预览';
+
+	/// zh: '新增成功'
+	String get addSuccess => '新增成功';
+
+	/// zh: '请选择'
+	String get pleaseSelect => '请选择';
+
+	/// zh: '保存成功'
+	String get saveSuccess => '保存成功';
 }
 
 // Path: permission
@@ -347,6 +358,57 @@ class Translations$entity$zh {
 	String get snDuplicate => 'SN已存在';
 }
 
+// Path: usb
+class Translations$usb$zh {
+	Translations$usb$zh.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// zh: 'USB 设备插入: {address}'
+	String deviceInserted({required Object address}) => 'USB 设备插入: ${address}';
+
+	/// zh: 'USB 设备拔出: {address}'
+	String deviceRemoved({required Object address}) => 'USB 设备拔出: ${address}';
+
+	/// zh: '未找到 USB 设备: {address}'
+	String deviceNotFound({required Object address}) => '未找到 USB 设备: ${address}';
+
+	/// zh: '创建 USB 端口失败'
+	String get createPortFailed => '创建 USB 端口失败';
+
+	/// zh: '打开 USB 端口失败'
+	String get openPortFailed => '打开 USB 端口失败';
+
+	/// zh: 'USB 设备连接成功'
+	String get deviceConnected => 'USB 设备连接成功';
+
+	/// zh: '无可用的 USB 连接'
+	String get noAvailableConnection => '无可用的 USB 连接';
+
+	/// zh: '未找到 WinUSB 设备'
+	String get winUsbNotFound => '未找到 WinUSB 设备';
+
+	/// zh: '端点未找到: {epOut} {epIn}'
+	String endpointNotFound({required Object epOut, required Object epIn}) => '端点未找到: ${epOut} ${epIn}';
+
+	/// zh: 'WinUSB 设备连接成功'
+	String get winUsbConnected => 'WinUSB 设备连接成功';
+
+	/// zh: 'WinUSB 设备已断开'
+	String get winUsbDisconnected => 'WinUSB 设备已断开';
+
+	/// zh: 'WinUSB 未连接'
+	String get winUsbNotConnected => 'WinUSB 未连接';
+
+	/// zh: '无可用的 WinUSB 连接'
+	String get noWinUsbConnection => '无可用的 WinUSB 连接';
+
+	/// zh: '无可用的 OUT 管道'
+	String get noOutPipe => '无可用的 OUT 管道';
+}
+
 // Path: udp
 class Translations$udp$zh {
 	Translations$udp$zh.internal(this._root);
@@ -401,6 +463,30 @@ class Translations$platform$zh {
 	String get webNotReadFile => 'The current page isn’t set up for file handling';
 }
 
+// Path: layout
+class Translations$layout$zh {
+	Translations$layout$zh.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// zh: '设置'
+	String get settings => '设置';
+
+	/// zh: '清除临时文件'
+	String get clearTempFiles => '清除临时文件';
+
+	/// zh: '清除缓存'
+	String get clearCache => '清除缓存';
+
+	/// zh: '确认退出'
+	String get confirmExit => '确认退出';
+
+	/// zh: '您确定要离开此页面吗？'
+	String get leavePagePrompt => '您确定要离开此页面吗？';
+}
+
 // Path: settings
 class Translations$settings$zh {
 	Translations$settings$zh.internal(this._root);
@@ -414,6 +500,12 @@ class Translations$settings$zh {
 
 	/// zh: '英文'
 	String get en => '英文';
+
+	/// zh: '阿拉伯语（东）'
+	String get arEg => '阿拉伯语（东）';
+
+	/// zh: '阿拉伯语（西）'
+	String get arMa => '阿拉伯语（西）';
 }
 
 // Path: cpds
@@ -438,6 +530,12 @@ class Translations$cpds$zh {
 
 	/// zh: '请选择通信参数包'
 	String get filePlaceholder => '请选择通信参数包';
+
+	/// zh: '缺少通信参数包文件'
+	String get packageFileMissing => '缺少通信参数包文件';
+
+	/// zh: '文件字节为空'
+	String get fileBytesEmpty => '文件字节为空';
 
 	/// zh: '重新上传文件，将清除注钥枪绑定的通信参数包，确认是否继续？'
 	String get browseConfirm => '重新上传文件，将清除注钥枪绑定的通信参数包，确认是否继续？';
@@ -1285,8 +1383,8 @@ class Translations$Form$radioManager$alias$zh {
 	/// zh: '别名长度应为1-12个单位'
 	String get invalidLength => '别名长度应为1-12个单位';
 
-	/// zh: '中文或阿拉伯语每个字符计2个单位；英文、数字、空格和半角符号每个字符计1个单位。别名总长度为1～12个单位。'
-	String get help => '中文或阿拉伯语每个字符计2个单位；英文、数字、空格和半角符号每个字符计1个单位。别名总长度为1～12个单位。';
+	/// zh: '1、中文或阿拉伯语每个字符计2个单位；英文、数字、空格和半角符号每个字符计1个单位。别名总长度为1～12个单位。 2、仅允许中文、阿拉伯语、英文字母、数字、空格及半角符号。 3、不能包含 \ / : * ? " < > |；不能以空格或句点开头或结尾；不能仅为 . 或 ..。 '
+	String get help => '1、中文或阿拉伯语每个字符计2个单位；英文、数字、空格和半角符号每个字符计1个单位。别名总长度为1～12个单位。\n2、仅允许中文、阿拉伯语、英文字母、数字、空格及半角符号。\n3、不能包含 \ / : * ? " < > |；不能以空格或句点开头或结尾；不能仅为 . 或 ..。\n';
 }
 
 // Path: Form.radioManager.sn
@@ -1305,9 +1403,6 @@ class Translations$Form$radioManager$sn$zh {
 
 	/// zh: 'SN必须为10位字母或数字'
 	String get invalid => 'SN必须为10位字母或数字';
-
-	/// zh: 'SN不可超过50个字符'
-	String get maxLength => 'SN不可超过50个字符';
 }
 
 // Path: Form.radioManager.location
@@ -1344,9 +1439,6 @@ class Translations$Form$radioManager$consumer$zh {
 
 	/// zh: '5-30位英文字母、数字、空格、符号"_"'
 	String get invalid => '5-30位英文字母、数字、空格、符号"_"';
-
-	/// zh: '使用人不可超过8个字符'
-	String get maxLength => '使用人不可超过8个字符';
 }
 
 // Path: Form.injectEncrypt.name

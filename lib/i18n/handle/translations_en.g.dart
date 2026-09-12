@@ -48,9 +48,11 @@ class TranslationsEn extends Translations with BaseTranslations<AppLocale, Trans
 	@override late final _Translations$TextField$en TextField = _Translations$TextField$en._(_root);
 	@override late final _Translations$Form$en Form = _Translations$Form$en._(_root);
 	@override late final _Translations$entity$en entity = _Translations$entity$en._(_root);
+	@override late final _Translations$usb$en usb = _Translations$usb$en._(_root);
 	@override late final _Translations$udp$en udp = _Translations$udp$en._(_root);
 	@override late final _Translations$errorMiddle$en errorMiddle = _Translations$errorMiddle$en._(_root);
 	@override late final _Translations$platform$en platform = _Translations$platform$en._(_root);
+	@override late final _Translations$layout$en layout = _Translations$layout$en._(_root);
 	@override late final _Translations$settings$en settings = _Translations$settings$en._(_root);
 	@override late final _Translations$cpds$en cpds = _Translations$cpds$en._(_root);
 }
@@ -87,6 +89,9 @@ class _Translations$common$en extends Translations$common$zh {
 	@override String get serverError => 'Server error';
 	@override String get UnknowError => 'Unknown error';
 	@override String get preview => 'Preview';
+	@override String get addSuccess => 'Created successfully';
+	@override String get pleaseSelect => 'Please select';
+	@override String get saveSuccess => 'Saved successfully';
 }
 
 // Path: permission
@@ -251,6 +256,29 @@ class _Translations$entity$en extends Translations$entity$zh {
 	@override String get snDuplicate => 'SN already exists';
 }
 
+// Path: usb
+class _Translations$usb$en extends Translations$usb$zh {
+	_Translations$usb$en._(TranslationsEn root) : this._root = root, super.internal(root);
+
+	final TranslationsEn _root; // ignore: unused_field
+
+	// Translations
+	@override String deviceInserted({required Object address}) => 'USB device inserted: ${address}';
+	@override String deviceRemoved({required Object address}) => 'USB device removed: ${address}';
+	@override String deviceNotFound({required Object address}) => 'USB device not found: ${address}';
+	@override String get createPortFailed => 'Failed to create USB port';
+	@override String get openPortFailed => 'Failed to open USB port';
+	@override String get deviceConnected => 'USB device connected';
+	@override String get noAvailableConnection => 'No available USB connection';
+	@override String get winUsbNotFound => 'WinUSB device not found';
+	@override String endpointNotFound({required Object epOut, required Object epIn}) => 'Endpoint not found: ${epOut} ${epIn}';
+	@override String get winUsbConnected => 'WinUSB device connected';
+	@override String get winUsbDisconnected => 'WinUSB device disconnected';
+	@override String get winUsbNotConnected => 'WinUSB not connected';
+	@override String get noWinUsbConnection => 'No available WinUSB connection';
+	@override String get noOutPipe => 'No available OUT pipe';
+}
+
 // Path: udp
 class _Translations$udp$en extends Translations$udp$zh {
 	_Translations$udp$en._(TranslationsEn root) : this._root = root, super.internal(root);
@@ -287,6 +315,20 @@ class _Translations$platform$en extends Translations$platform$zh {
 	@override String get webNotReadFile => 'web 平台无法根据路径处理文件';
 }
 
+// Path: layout
+class _Translations$layout$en extends Translations$layout$zh {
+	_Translations$layout$en._(TranslationsEn root) : this._root = root, super.internal(root);
+
+	final TranslationsEn _root; // ignore: unused_field
+
+	// Translations
+	@override String get settings => 'Settings';
+	@override String get clearTempFiles => 'Clear temporary files';
+	@override String get clearCache => 'Clear cache';
+	@override String get confirmExit => 'Confirm exit';
+	@override String get leavePagePrompt => 'Are you sure you want to leave this page?';
+}
+
 // Path: settings
 class _Translations$settings$en extends Translations$settings$zh {
 	_Translations$settings$en._(TranslationsEn root) : this._root = root, super.internal(root);
@@ -296,6 +338,8 @@ class _Translations$settings$en extends Translations$settings$zh {
 	// Translations
 	@override String get zh => 'Chinese';
 	@override String get en => 'English';
+	@override String get arEg => 'Arabic (East)';
+	@override String get arMa => 'Arabic (West)';
 }
 
 // Path: cpds
@@ -310,6 +354,8 @@ class _Translations$cpds$en extends Translations$cpds$zh {
 	@override String get goNow => 'Go now';
 	@override String get parse => 'Parse';
 	@override String get filePlaceholder => 'Select a communication package';
+	@override String get packageFileMissing => 'Communication parameter package file is missing';
+	@override String get fileBytesEmpty => 'File bytes are empty';
 	@override String get browseConfirm => 'Re-uploading a file will clear communication parameter packages bound to key loaders. Continue?';
 	@override String get browseSourceTitle => 'Select file source';
 	@override String get browseSourceLocal => 'Local files';
@@ -759,7 +805,7 @@ class _Translations$Form$radioManager$alias$en extends Translations$Form$radioMa
 	@override String get validate => 'Please enter radio alias';
 	@override String get invalid => 'Alias contains unsupported characters';
 	@override String get invalidLength => 'Alias length must be 1-12 units';
-	@override String get help => 'Chinese or Arabic characters count as 2 units; English letters, digits, spaces, and ASCII symbols count as 1 unit. Total length is 1-12 units.';
+	@override String get help => '1. Chinese or Arabic characters count as 2 units each; English letters, digits, spaces, and half-width symbols count as 1 unit each. Total length is 1-12 units.\n2. Only Chinese, Arabic, English letters, digits, spaces, and half-width symbols are allowed.\n3. The characters \ / : * ? " < > | are not allowed; the value must not start or end with a space or dot, and must not be "." or "..".\n';
 }
 
 // Path: Form.radioManager.sn
@@ -772,7 +818,6 @@ class _Translations$Form$radioManager$sn$en extends Translations$Form$radioManag
 	@override String get placeholder => '10 letters or digits';
 	@override String get validate => 'Please enter SN';
 	@override String get invalid => 'SN must be 10 letters or digits';
-	@override String get maxLength => 'SN cannot exceed 50 characters';
 }
 
 // Path: Form.radioManager.location
@@ -797,7 +842,6 @@ class _Translations$Form$radioManager$consumer$en extends Translations$Form$radi
 	@override String get placeholder => '5-30 letters, numbers, spaces, or "_"';
 	@override String get validate => 'Radio consumer cannot be empty!';
 	@override String get invalid => '5-30 letters, numbers, spaces, or "_"';
-	@override String get maxLength => 'Consumer cannot exceed 8 characters';
 }
 
 // Path: Form.injectEncrypt.name

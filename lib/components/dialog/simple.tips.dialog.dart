@@ -16,6 +16,8 @@ void SimpleTipsDialog(
       var closed = false;
       return AlertDialog(
         title: Text(title.isEmpty ? t.tips.title : title),
+        actionsOverflowDirection: VerticalDirection.down,
+        actionsOverflowAlignment: OverflowBarAlignment.end,
         content: Text(contentText),
         actions: <Widget>[
           TextButton(

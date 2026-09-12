@@ -39,7 +39,7 @@ class _FileUploadsState extends State<FileUploads> with FileUploadsMixin {
       trailingActions: [
         BaseButton(
           label: t.button.radioManager.browse,
-          width: 100,
+          minWidth: 100,
           icon: HyIcons.wenjian,
           isLoading: isUploadLoading,
           onPressed: () {
@@ -48,7 +48,7 @@ class _FileUploadsState extends State<FileUploads> with FileUploadsMixin {
         ),
         Container(
           // FlareButton 没有边框可供配置,所以在 FlareButton  外围套了一层 container,此 container 只作边框使用
-          width: 70,
+          constraints: const BoxConstraints(minWidth: 70),
           height: 34,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(5),
@@ -57,7 +57,7 @@ class _FileUploadsState extends State<FileUploads> with FileUploadsMixin {
           child: Center(
             child: BaseButton(
               label: t.button.radioManager.parse,
-              width: 66,
+              minWidth: 66,
               height: 30,
               isLoading: isUploadLoading,
               colors: const [

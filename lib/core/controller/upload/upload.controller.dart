@@ -28,9 +28,9 @@ class UploadController {
       GlobalLogger.logDebug(
         "文件存储路径:$filePath; \ncontent-type: ${uploadedFile.contentType}",
       );
-      return ApiResponse.success(message: "上传成功", data: filePath);
+      return ApiResponse.success(message: AppLocale.zh.translations.uploads.success, data: filePath);
     } else {
-      return Response.badRequest(body: '上传失败');
+      return Response.badRequest(body: AppLocale.zh.translations.uploads.failed);
     }
   }
 
@@ -52,7 +52,7 @@ class UploadController {
       GlobalLogger.logDebug(
         "文件存储路径:$filePath; \ncontent-type: ${uploadedFile.contentType}",
       );
-      return ApiResponse.success(message: t.uploads.success, data: filePath);
+      return ApiResponse.success(message: AppLocale.zh.translations.uploads.success, data: filePath);
     } else {
       return Response.badRequest(body: t.uploads.failed);
     }

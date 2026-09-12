@@ -15,6 +15,7 @@ import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 import 'package:flutter_kts_template/logger/logger.dart';
 import 'package:flutter_kts_template/objectbox.g.dart';
 import 'package:flutter_kts_template/theme/table.theme.dart';
+import 'package:flutter_kts_template/pages/cpds/widgets/cpds_messages.dart';
 
 class CpdsFutureWarriorSaveDialog extends StatefulWidget {
   const CpdsFutureWarriorSaveDialog({
@@ -371,7 +372,6 @@ class _CpdsFutureWarriorSaveDialogState
   @override
   Widget build(BuildContext context) {
     final t = Translations.of(context);
-    final zh = Localizations.localeOf(context).languageCode == 'zh';
     return AlertDialog(
       backgroundColor: const Color(0xFF20262D),
       title: Text(
@@ -456,7 +456,7 @@ class _CpdsFutureWarriorSaveDialogState
                               label: Padding(
                                 padding: const EdgeInsets.only(left: 8),
                                 child: Text(
-                                  zh ? '别名' : 'Alias',
+                                  CpdsMessages.tr(context, '别名', 'Alias', 'الاسم المستعار'),
                                   overflow: TextOverflow.ellipsis,
                                   maxLines: 1,
                                 ),
@@ -658,7 +658,6 @@ class CpdsFutureWarriorDuplicateDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = Translations.of(context);
-    final zh = Localizations.localeOf(context).languageCode == 'zh';
     return AlertDialog(
       backgroundColor: const Color(0xFF20262D),
       title: Text(
@@ -676,9 +675,11 @@ class CpdsFutureWarriorDuplicateDialog extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              zh
-                  ? '以下数据已存在，是否确认覆盖？'
-                  : 'The following data already exists. Overwrite?',
+              CpdsMessages.tr(
+                  context,
+                  '以下数据已存在，是否确认覆盖？',
+                  'The following data already exists. Overwrite?',
+                  'البيانات التالية موجودة بالفعل. هل تريد الكتابة فوقها؟'),
               style: const TextStyle(color: Colors.white70, fontSize: 13),
             ),
             const SizedBox(height: 12),
@@ -698,7 +699,7 @@ class CpdsFutureWarriorDuplicateDialog extends StatelessWidget {
                         _headerCell(t.pager.radioManager.netNode),
                         _headerCell(
                           '${t.tableColumn.injectEncrypt.parameterPacket}'
-                          '${zh ? '别名' : ' Alias'}',
+                          '${CpdsMessages.tr(context, '别名', ' Alias', 'الاسم المستعار')}',
                         ),
                         _headerCell(
                           t.tableColumn.injectEncrypt.parameterPacket,

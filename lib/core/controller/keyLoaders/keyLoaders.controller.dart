@@ -63,11 +63,11 @@ class KeyLoadersController {
         .build()
         .findFirst();
     if (tempEntries != null) {
-      return ApiResponse.error(message: t.entity.sameName);
+      return ApiResponse.error(message: AppLocale.zh.translations.entity.sameName);
     }
     KeyLoadersEntity data = KeyLoadersEntity.fromJson(params);
     int id = box.put(data);
-    return ApiResponse.success(data: id, message: t.common.OperationSuccess);
+    return ApiResponse.success(data: id, message: AppLocale.zh.translations.common.OperationSuccess);
   }
 
   static Future<Response> update(Request request) async {
@@ -80,7 +80,7 @@ class KeyLoadersController {
 
     KeyLoadersEntity? entities = box.get(uId);
     if (entities == null) {
-      return ApiResponse.error(message: t.common.noData);
+      return ApiResponse.error(message: AppLocale.zh.translations.common.noData);
     }
     KeyLoadersEntity? tempEntries = box
         .query(
@@ -91,12 +91,12 @@ class KeyLoadersController {
         .build()
         .findFirst();
     if (tempEntries != null) {
-      return ApiResponse.error(message: t.entity.sameName);
+      return ApiResponse.error(message: AppLocale.zh.translations.entity.sameName);
     }
     entities.name = params["name"];
     entities.updatedAt = DateTime.now();
     int id = box.put(entities);
-    return ApiResponse.success(data: id, message: t.common.OperationSuccess);
+    return ApiResponse.success(data: id, message: AppLocale.zh.translations.common.OperationSuccess);
   }
 
   static Response getDetails(Request request) {
@@ -137,7 +137,7 @@ class KeyLoadersController {
       entitles.add(temp);
     }
     List<int> ids = box.putMany(entitles);
-    return ApiResponse.success(data: ids, message: t.common.OperationSuccess);
+    return ApiResponse.success(data: ids, message: AppLocale.zh.translations.common.OperationSuccess);
   }
 
   static Future<Response> updateDetail(Request request) async {
@@ -151,7 +151,7 @@ class KeyLoadersController {
         .build()
         .findFirst();
     if (entity == null) {
-      return ApiResponse.error(message: t.common.noData);
+      return ApiResponse.error(message: AppLocale.zh.translations.common.noData);
     }
     entity.radioId = params["radioId"];
     entity.consumer = params["consumer"];
@@ -162,7 +162,7 @@ class KeyLoadersController {
     entity.updatedAt = DateTime.now();
     entity.keyLoaderId = params["keyLoaderId"];
     int id = box.put(entity);
-    return ApiResponse.success(data: id, message: t.common.OperationSuccess);
+    return ApiResponse.success(data: id, message: AppLocale.zh.translations.common.OperationSuccess);
   }
 
   static Future<Response> delete(Request request) async {
@@ -177,7 +177,7 @@ class KeyLoadersController {
           .build();
       keyLoaderDetailBox.remove();
     }
-    return ApiResponse.success(data: data, message: t.common.OperationSuccess);
+    return ApiResponse.success(data: data, message: AppLocale.zh.translations.common.OperationSuccess);
   }
 
   static Future<Response> deleteDetails(Request request) async {
@@ -185,6 +185,6 @@ class KeyLoadersController {
     List<int> ids = getIds(request.context["path"] as List<String>?);
     final box = db.box<KeyLoaderDetailsEntity>();
     int data = box.removeMany(ids);
-    return ApiResponse.success(data: data, message: t.common.OperationSuccess);
+    return ApiResponse.success(data: data, message: AppLocale.zh.translations.common.OperationSuccess);
   }
 }

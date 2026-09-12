@@ -1,20 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 
 mixin LayoutMixin<T extends StatefulWidget> on State<T> {
   Future<bool> showBackDialog(BuildContext context) async {
     return await showDialog<bool>(
           context: context,
           builder: (context) => AlertDialog(
-            title: const Text('确认退出'),
-            content: const Text('您确定要离开此页面吗？'),
+            title: Text(context.t.layout.confirmExit),
+            content: Text(context.t.layout.leavePagePrompt),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(false),
-                child: const Text('取消'),
+                child: Text(context.t.common.cancel),
               ),
               TextButton(
                 onPressed: () => Navigator.of(context).pop(true),
-                child: const Text('确定'),
+                child: Text(context.t.tips.ok),
               ),
             ],
           ),

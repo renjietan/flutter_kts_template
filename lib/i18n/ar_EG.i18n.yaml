@@ -1,0 +1,363 @@
+app:
+  title: تطبيقي
+  appbar:
+    paramsInject: حقن المعلمات
+    radioManager: إدارة أجهزة الراديو
+    keyManager: إدارة تحميل المفاتيح
+common:
+  confirm: تأكيد
+  cancel: إلغاء
+  close: إغلاق
+  noData: لا توجد بيانات
+  OperationSuccess: تمت العملية بنجاح
+  OperationError: فشلت العملية
+  requestError: فشل الطلب
+  requestCancel: تم إلغاء الطلب
+  requestTimeout: انتهت مهلة الشبكة، يرجى المحاولة لاحقًا
+  connectionTimeout: انتهت مهلة الاتصال بالشبكة
+  sendTimeout: انتهت مهلة الإرسال
+  serverError: خطأ في الخادم
+  UnknowError: خطأ غير معروف
+  preview: معاينة
+  addSuccess: تمت الإضافة بنجاح
+  pleaseSelect: يرجى الاختيار
+  saveSuccess: تم الحفظ بنجاح
+permission:
+  no: لا يوجد إذن وصول، هل تريد الانتقال إلى الإعدادات الآن؟
+  cancel: تم إلغاء العملية
+uploads:
+  success: تم الرفع بنجاح
+  successWithPath: "تم الرفع بنجاح؛ المسار: {path}!"
+  cancel: تم إلغاء العملية
+  failed: فشل الرفع
+  emptyPath: لا يمكن أن يكون مسار الملف فارغًا
+  emptyData: لا يمكن أن تكون بيانات الملف فارغة
+  existPath: مسار الملف غير موجود
+  selectedFolderDialogTitle: يرجى اختيار مجلد
+  selectedAllow: يدعم حاليًا ملفات ZIP والمجلدات فقط
+tree:
+  empty: "<فارغ>"
+  futureWarrior: "محارب المستقبل"
+json:
+  serialization: تنسيق المعلومات المستلمة غير مألوف
+pageable:
+  pageSizeMin: يجب أن يكون pageSize أكبر من أو يساوي 1
+  pageSizeMax: لا يمكن أن يتجاوز pageSize 100
+  pageMin: يجب أن يكون page أكبر من أو يساوي 1
+  paramsValidateError: "فشل التحقق من المعلمات: {errors}"
+  keywordValidateError: "لا يمكن أن يتجاوز نص الكلمة المفتاحية {count} حرفًا"
+pager:
+  injectParams:
+    futureSoldier: محارب المستقبل
+    networkCard: بطاقة شبكة الأعمال
+    steps:
+      discovery: الاكتشاف
+      authentication: المصادقة
+      transfer: النقل
+      parse: التحليل
+      finish: الإنهاء
+  radioManager:
+    title: إدارة أجهزة الراديو
+    netNode: عقدة الشبكة
+    fileParse: تحليل الملف
+  injectEncrypt:
+    paramPairing: إقران المعلمات
+    keyLoaderManager: إدارة جهاز تحميل المفاتيح
+tips:
+  title: تلميح
+  cancel: إلغاء
+  ok: موافق
+  paramsInject:
+    noKeyLoader: لا يوجد جهاز مفاتيح متاح حاليًا، يرجى الإضافة ثم المحاولة مرة أخرى
+    noRadio: لا يوجد جهاز راديو متاح حاليًا، يرجى الإضافة ثم المحاولة مرة أخرى
+    selectRadios: يرجى تحديد أجهزة الراديو
+    gotoConfig: اكتمل الربط، هل تريد الانتقال إلى الإعداد الآن؟
+  keyLoaders:
+    delete: حذف
+    confirmDelete: هل أنت متأكد من الحذف؟
+tableColumn:
+  base:
+    actions: الإجراءات
+  radioManager:
+    alias: الاسم المستعار للجهاز
+    alias_desc: اسم مستعار مخصص لجهاز الراديو
+    consumer: المستخدم
+    consumer_desc: مستخدم جهاز الراديو
+    location: الموقع
+    location_desc: موقع جهاز الراديو
+    sn: SN
+    sn_desc: رقم SN لجهاز الراديو
+    columnInfo: معلومات الأعمدة المعروضة
+  injectEncrypt:
+    parameterPacket: حزمة معلمات الاتصال
+    radio: جهاز الراديو المقترن
+    consumer: المستخدم
+    location: الموقع
+    SN: SN
+button:
+  radioManager:
+    createRadio: إضافة جهاز راديو
+    resetRadio: إعادة تعيين
+    edit: تعديل
+    editRadio: تعديل جهاز الراديو
+    delete: حذف
+    clear: مسح
+    search: بحث
+    save: حفظ
+    browse: استعراض
+    parse: تحليل
+  paramsInject:
+    inject: حقن
+    bind: ربط
+    refresh: تحديث
+    issue: توزيع
+  injectEncrypt:
+    export: تصدير
+    create: جديد
+    createKeyLoader: إضافة جهاز تحميل مفاتيح
+checkbox:
+  DeselectAll: إلغاء تحديد الكل
+  SelectAll: تحديد الكل ({count})
+  selected: محدد
+TextField:
+  search: "بحث......"
+  select: "اختيار......"
+Form:
+  radioManager:
+    alias:
+      placeholder: 12 وحدة من الصينية أو الإنجليزية أو الأرقام أو المسافات أو العربية أو رموز نصف العرض
+      validate: يرجى إدخال الاسم المستعار للجهاز
+      invalid: يحتوي الاسم المستعار على أحرف غير مدعومة
+      invalidLength: يجب أن يكون طول الاسم المستعار من 1 إلى 12 وحدة
+      help: |
+        1. تحسب كل حرف صيني أو عربي كوحدتين؛ ويحسب كل حرف إنجليزي أو رقم أو مسافة أو رمز نصف عرض كوحدة واحدة. الطول الإجمالي للاسم المستعار من 1 إلى 12 وحدة.
+        2. يُسمح فقط بالصينية والعربية والأحرف الإنجليزية والأرقام والمسافات ورموز نصف العرض.
+        3. لا يمكن أن يحتوي على \ / : * ? " < > |؛ ولا يمكن أن يبدأ أو ينتهي بمسافة أو نقطة؛ ولا يمكن أن يكون . أو .. فقط.
+    sn:
+      placeholder: 10 أحرف أو أرقام إنجليزية
+      validate: يرجى إدخال رقم SN
+      invalid: يجب أن يكون SN مكونًا من 10 أحرف أو أرقام
+    location:
+      placeholder: حتى 50 حرفًا إنجليزيًا أو رقمًا أو مسافة أو رمز "_"
+      validate: لا يمكن أن يكون موقع جهاز الراديو فارغًا
+      invalid: حتى 50 حرفًا إنجليزيًا أو رقمًا أو مسافة أو رمز "_"
+    consumer:
+      placeholder: من 5 إلى 30 حرفًا إنجليزيًا أو رقمًا أو مسافة أو رمز "_"
+      validate: لا يمكن أن يكون مستخدم جهاز الراديو فارغًا
+      invalid: من 5 إلى 30 حرفًا إنجليزيًا أو رقمًا أو مسافة أو رمز "_"
+  injectEncrypt:
+    name:
+      label: الاسم
+      placeholder: يرجى إدخال اسم تحميل المفتاح
+      validate: يرجى إدخال اسم تحميل المفتاح
+  paramsInject:
+    text: تحميل المفتاح
+    deviceType:
+      text: نوع الجهاز
+      validatorText: يرجى إدخال نوع الجهاز
+    deviceIp:
+      text: عنوان IP للجهاز
+      validatorText: يرجى إدخال عنوان IP صالح
+    selectKeyLoader:
+      text: "جهاز تحميل المفاتيح"
+      placeholder: "يرجى الاختيار"
+entity:
+  sameName: لا يمكن تكرار الاسم
+  aliasDuplicate: الاسم المستعار للجهاز موجود بالفعل
+  consumerDuplicate: المستخدم موجود بالفعل
+  snDuplicate: رقم SN موجود بالفعل
+usb:
+  deviceInserted: "تم إدخال جهاز USB: {address}"
+  deviceRemoved: "تم فصل جهاز USB: {address}"
+  deviceNotFound: "لم يتم العثور على جهاز USB: {address}"
+  createPortFailed: فشل إنشاء منفذ USB
+  openPortFailed: فشل فتح منفذ USB
+  deviceConnected: تم الاتصال بجهاز USB
+  noAvailableConnection: لا يوجد اتصال USB متاح
+  winUsbNotFound: لم يتم العثور على جهاز WinUSB
+  endpointNotFound: "لم يتم العثور على نقطة النهاية: {epOut} {epIn}"
+  winUsbConnected: تم الاتصال بجهاز WinUSB
+  winUsbDisconnected: تم فصل جهاز WinUSB
+  winUsbNotConnected: WinUSB غير متصل
+  noWinUsbConnection: لا يوجد اتصال WinUSB متاح
+  noOutPipe: لا توجد قناة OUT متاحة
+udp:
+  loginFail: فشلت المصادقة
+  loginTimeout: انتهت مهلة المصادقة
+  closed: تم إغلاق الخدمة المحلية
+  pingFail: فشل استجابة نبضات القلب
+  pingTimeout: انتهت مهلة طلب نبضات القلب
+  fileFail: فشل نقل الملف
+errorMiddle:
+  error500: حدث خطأ غير متوقع، يرجى المحاولة لاحقًا
+  errorArg: "معامل غير صالح، {error}"
+platform:
+  webNotReadFile: الصفحة الحالية غير مُهيأة للتعامل مع الملفات
+layout:
+  settings: الإعدادات
+  clearTempFiles: مسح الملفات المؤقتة
+  clearCache: مسح ذاكرة التخزين المؤقت
+  confirmExit: تأكيد الخروج
+  leavePagePrompt: هل أنت متأكد من مغادرة هذه الصفحة؟
+
+settings:
+  zh: الصينية
+  en: الإنجليزية
+  arEg: العربية (شرق)
+  arMa: العربية (غرب)
+cpds:
+  fileTitle: تحليل الملف
+  browse: استعراض
+  goNow: الانتقال الآن
+  parse: تحليل
+  filePlaceholder: يرجى اختيار حزمة معلمات الاتصال
+  packageFileMissing: ملف حزمة معلمات الاتصال مفقود
+  fileBytesEmpty: بايتات الملف فارغة
+  browseConfirm: سيؤدي إعادة تحميل الملف إلى مسح حزمة معلمات الاتصال المرتبطة بجهاز تحميل المفاتيح، هل تريد المتابعة؟
+  browseSourceTitle: اختيار مصدر الملف
+  browseSourceLocal: قائمة الملفات المحلية
+  browseSourceKeyLoader: قائمة ملفات جهاز تحميل المفاتيح
+  keyLoaderPermissionDenied: لم يتم منح إذن USB
+  keyLoaderConnectSuccess: تم الاتصال بجهاز تحميل المفاتيح بنجاح
+  keyLoaderConnectFailed: فشل الاتصال بجهاز تحميل المفاتيح
+  keyLoaderStepConnect: الاتصال بجهاز تحميل المفاتيح
+  keyLoaderStepList: الحصول على قائمة الملفات
+  keyLoaderStepSelect: اختيار الملف
+  keyLoaderStepSelected: تم اختيار الملف
+  keyLoaderListEmpty: لا توجد ملفات
+  keyLoaderListError: فشل الحصول على قائمة الملفات
+  keyLoaderListTimeout: انتهت مهلة الحصول على قائمة الملفات
+  keyLoaderStepPassword: التحقق من كلمة المرور
+  keyLoaderStepDownload: تنزيل
+  keyLoaderStepReady: جاهز
+  keyLoaderStepComplete: اكتمل
+  keyLoaderNext: التالي
+  keyLoaderPrev: السابق
+  keyLoaderDecryptTimeout: انتهت المهلة
+  keyLoaderDecryptFail: فشل التحقق
+  keyLoaderDecryptFailRemaining: "كلمة المرور خاطئة، تبقى {n} محاولات"
+  keyLoaderDecryptCleared: تم تدمير المفتاح بسبب أخطاء متعددة في كلمة المرور
+  keyLoaderDecryptErr: الملف تالف
+  keyLoaderStepDecrypt: فك التشفير
+  keyLoaderStepParse: التحليل
+  keyLoaderFileCorrupted: الملف غير مكتمل وتالف
+  keyLoaderDownloadTimeout: انتهت مهلة استقبال الملف، يرجى إعادة توصيل جهاز تحميل المفاتيح
+  keyLoaderDeviceRemoved: تم فصل جهاز USB
+  keyLoaderDecryptFailed: فشل فك التشفير
+  keyLoaderSuccess: اكتمل التنزيل
+  keyLoaderReadyTimeout: انتهت مهلة الاستجابة
+  keyLoaderVerifyFailed: "فشل: فشل التحقق"
+  keyLoaderParseSuccess: نجح التحليل
+  keyLoaderParseFailed: فشل التحليل
+  nodesTitle: عقد الشبكة
+  nodesEmpty: يتم عرض العقد بعد تحليل حزمة الاتصال
+  currentTitle: العقدة الحالية
+  online: "متصل {online}/{expected}"
+  noSelection: يرجى اختيار عقدة شبكة
+  networkInterfaceLabel: بطاقة شبكة الأعمال
+  networkInterfacePlaceholder: يرجى اختيار بطاقة شبكة سلكية
+  networkInterfaceOption: "{name} · {ip}"
+  automatic: تحديد تلقائي
+  refresh: تحديث
+  distribute: توزيع
+  unsupported: سيتم تنفيذ آلة حالة التوزيع الكاملة في المرحلة التالية
+  stages:
+    discovery: الاكتشاف
+    authentication: المصادقة
+    transfer: النقل
+    parse: التحليل
+    complete: الإكمال
+  statuses:
+    pending: لم يبدأ
+    discovered: تم الاكتشاف
+    authenticated: تمت المصادقة
+    receiving: قيد الاستقبال
+    waitingParse: في انتظار نتيجة التحليل
+    completed: اكتمل
+    failed: فشل
+    ignored: تم التجاهل
+  device:
+    esn: ESN
+    ip: عنوان IP الحالي
+    emptyValue: "--"
+  deviceTypes:
+    server: Server
+    hf: HF
+    multiBandRadio: MMR200
+    multiBandHandheld: PMR200
+    ccu: CCU-Main
+    ccuAudio: CCU-Audio
+    ccuGroup: CCU
+    vehInter: VehInter
+    iec: IEC
+    smallHandheld: Small Handheld
+    unknown: جهاز غير معروف
+  saveDialog:
+    nameLabel: الاسم
+    nameHint: يرجى إدخال الاسم
+    nameRequired: يرجى إدخال الاسم
+    nameInvalid: يحتوي الاسم على أحرف غير قانونية
+    selectPlaceholder: يرجى الاختيار
+  setPassword:
+    title: تعيين كلمة المرور
+    label: كلمة المرور
+    placeholder: أدخل كلمة المرور
+    required: يرجى إدخال كلمة المرور
+    minLength: يجب ألا يقل طول كلمة المرور عن 8 أحرف
+    maxLength: يجب ألا يتجاوز طول كلمة المرور 20 حرفًا
+    invalid: يُسمح فقط بإدخال ثمانية أرقام
+    noChinese: لا يمكن أن تحتوي كلمة المرور على الصينية
+  export:
+    zipNotFound: "لا يمكن العثور على حزمة ZIP: 【{path}】"
+    fileNotFound: "لا يمكن العثور على: 【{path}】"
+    failed: "【فشل التصدير】{error}"
+    radioRequired: توجد صفوف محددة بدون جهاز راديو مقترن، يرجى الاختيار أولاً
+    noSelection: يرجى تحديد الصفوف المطلوب تصديرها أولاً
+  exportProgress:
+    stepStart: البدء
+    stepPack: التعبئة
+    stepMerge: الدمج
+    stepEncrypt: التشفير
+    detailStart: البدء
+    detailStartPack: بدء الضغط في حزمة tar
+    detailPackSuccess: "تم ضغط الحزمة رقم {index} بنجاح"
+    detailPackFail: "فشل ضغط الحزمة رقم {index}"
+    detailMerge: بدء الدمج لدمج الحزم المتعددة في حزمة ZIP
+    detailEncrypt: تشفير حزمة ZIP
+  usbProgress:
+    stepPermission: الإذن
+    stepConnect: الاتصال
+    stepHandshake: المصافحة
+    stepReady: التحضير
+    stepTransfer: النقل
+    stepComplete: الإكمال
+    stepUsb: جهاز تحميل المفاتيح
+    completed: اكتمل
+    terminated: تم الإنهاء
+    detailPermissionStart: التحقق من إذن USB
+    detailConnectStart: الاتصال بجهاز تحميل المفاتيح
+    detailConnectSuccess: نجح الاتصال
+    detailConnectFail: فشل الاتصال
+    detailHandshakeStart: إرسال PAD_LIGHT وانتظار FILE_OK
+    detailHandshakeSuccess: نجحت المصافحة
+    detailHandshakeTimeout: انتهت مهلة المصافحة
+    detailHandshakeFail: فشلت المصافحة
+    detailReadyStart: إرسال PAD_UPLOAD وانتظار READY
+    detailReadySuccess: الجهاز جاهز
+    detailReadyTimeout: انتهت مهلة التحضير
+    detailReadyFail: فشل التحضير
+    detailTransferStart: الإرسال على شكل حزم
+    detailTransferTimeout: انتهت مهلة استقبال الملف، يرجى إعادة توصيل جهاز تحميل المفاتيح
+    detailComplete: استلم جهاز تحميل المفاتيح بنجاح
+    detailVerifyTimeout: انتهت مهلة التحقق
+    detailVerifyFail: فشل التحقق
+    detailVerifySaveFail: فشل الحفظ
+    detailExportComplete: "اكتمل: تم تصدير الملف"
+    detailPacketSuccess: "تم إرسال الحزمة {index} بنجاح"
+    detailPacketFail: "فشل إرسال الحزمة {index}"
+    detailPacketTimeout: "انتهت مهلة إرسال الحزمة {index}"
+    detailMd5Error: "فشل التحقق من MD5 للحزمة {index}"
+    detailSaveError: "فشل حفظ الحزمة {index}"
+    detailError: خطأ في نقل USB
+    detailDeviceRemoved: تم فصل جهاز USB
+    detailKeyLoadSuccess: نجح تحميل المفتاح

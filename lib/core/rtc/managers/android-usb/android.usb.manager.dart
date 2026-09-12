@@ -8,6 +8,7 @@ import 'package:flutter_kts_template/core/rtc/tools/rtc.event.dart';
 import 'package:flutter_kts_template/core/rtc/tools/rtc.event.type.dart';
 import 'package:flutter_kts_template/core/rtc/tools/rtc.receive.dart';
 import 'package:flutter_kts_template/logger/logger.dart';
+import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 import 'package:usb_serial/usb_serial.dart';
 
 /// Android USB 串口通信管理器。
@@ -119,7 +120,7 @@ class AndroidUsbManager implements RtcAbstract {
           RtcEvent(
             type: RtcEventType.info,
             remotePeer: address,
-            msg: 'USB 设备插入: $address',
+            msg: t.usb.deviceInserted(address: address),
           ),
         );
       }
@@ -133,7 +134,7 @@ class AndroidUsbManager implements RtcAbstract {
           RtcEvent(
             type: RtcEventType.disConnect,
             remotePeer: address,
-            msg: 'USB 设备拔出: $address',
+            msg: t.usb.deviceRemoved(address: address),
           ),
         );
       }
@@ -169,7 +170,7 @@ class AndroidUsbManager implements RtcAbstract {
           RtcEvent(
             type: RtcEventType.error,
             remotePeer: addressStr,
-            msg: '未找到 USB 设备: $addressStr',
+            msg: t.usb.deviceNotFound(address: addressStr),
           ),
         );
         return;
@@ -183,7 +184,7 @@ class AndroidUsbManager implements RtcAbstract {
           RtcEvent(
             type: RtcEventType.error,
             remotePeer: addressStr,
-            msg: '创建 USB 端口失败',
+            msg: t.usb.createPortFailed,
           ),
         );
         return;
@@ -196,7 +197,7 @@ class AndroidUsbManager implements RtcAbstract {
           RtcEvent(
             type: RtcEventType.error,
             remotePeer: addressStr,
-            msg: '打开 USB 端口失败',
+            msg: t.usb.openPortFailed,
           ),
         );
         return;
@@ -245,7 +246,7 @@ class AndroidUsbManager implements RtcAbstract {
         RtcEvent(
           type: RtcEventType.created,
           remotePeer: addressStr,
-          msg: 'USB 设备连接成功',
+          msg: t.usb.deviceConnected,
         ),
       );
     } catch (e) {
@@ -312,7 +313,7 @@ class AndroidUsbManager implements RtcAbstract {
       if (port == null) {
         GlobalLogger.logError('无可用的 USB 连接，写入失败');
         _onEventController.sink.add(
-          RtcEvent(type: RtcEventType.error, msg: '无可用的 USB 连接'),
+          RtcEvent(type: RtcEventType.error, msg: t.usb.noAvailableConnection),
         );
         return;
       }

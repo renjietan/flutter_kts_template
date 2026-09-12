@@ -1,4 +1,5 @@
 import 'package:flutter_kts_template/core/cpds/model/cpds_models.dart';
+import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 
 /// CPDS 树节点的类型。
 enum CpdsTreeItemKind {
@@ -76,11 +77,11 @@ class CpdsVisibleRow {
 List<CpdsTreeItem> buildCpdsPackageTree(
   List<CpdsUnit> units,
   Map<String, CpdsNode> nodesById, {
-  String futureWarriorLabel = '未来战士',
+  String? futureWarriorLabel,
 }) {
   return units
       .map(
-        (unit) => _buildUnit(unit, nodesById, 0, futureWarriorLabel),
+        (unit) => _buildUnit(unit, nodesById, 0, futureWarriorLabel ?? t.tree.futureWarrior),
       )
       .toList();
 }

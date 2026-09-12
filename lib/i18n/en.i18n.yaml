@@ -19,6 +19,9 @@ common:
   serverError: Server error
   UnknowError: Unknown error
   preview: Preview
+  addSuccess: Created successfully
+  pleaseSelect: Please select
+  saveSuccess: Saved successfully
 permission:
   no: No permission, Go to settings now？
   cancel: Operation has been cancelled
@@ -128,7 +131,10 @@ Form:
       validate: Please enter radio alias
       invalid: Alias contains unsupported characters
       invalidLength: Alias length must be 1-12 units
-      help: Chinese or Arabic characters count as 2 units; English letters, digits, spaces, and ASCII symbols count as 1 unit. Total length is 1-12 units.
+      help: |
+        1. Chinese or Arabic characters count as 2 units each; English letters, digits, spaces, and half-width symbols count as 1 unit each. Total length is 1-12 units.
+        2. Only Chinese, Arabic, English letters, digits, spaces, and half-width symbols are allowed.
+        3. The characters \ / : * ? " < > | are not allowed; the value must not start or end with a space or dot, and must not be "." or "..".
     sn:
       placeholder: 10 letters or digits
       validate: Please enter SN
@@ -162,6 +168,21 @@ entity:
   aliasDuplicate: Radio alias already exists
   consumerDuplicate: Consumer already exists
   snDuplicate: SN already exists
+usb:
+  deviceInserted: "USB device inserted: {address}"
+  deviceRemoved: "USB device removed: {address}"
+  deviceNotFound: "USB device not found: {address}"
+  createPortFailed: Failed to create USB port
+  openPortFailed: Failed to open USB port
+  deviceConnected: USB device connected
+  noAvailableConnection: No available USB connection
+  winUsbNotFound: WinUSB device not found
+  endpointNotFound: "Endpoint not found: {epOut} {epIn}"
+  winUsbConnected: WinUSB device connected
+  winUsbDisconnected: WinUSB device disconnected
+  winUsbNotConnected: WinUSB not connected
+  noWinUsbConnection: No available WinUSB connection
+  noOutPipe: No available OUT pipe
 udp:
   loginFail: Authentication failed
   loginTimeout: Authentication timeout
@@ -174,15 +195,26 @@ errorMiddle:
   errorArg: Invalid argument,{error}
 platform:
   webNotReadFile: web 平台无法根据路径处理文件
+layout:
+  settings: Settings
+  clearTempFiles: Clear temporary files
+  clearCache: Clear cache
+  confirmExit: Confirm exit
+  leavePagePrompt: Are you sure you want to leave this page?
+
 settings:
   zh: Chinese
   en: English
+  arEg: Arabic (East)
+  arMa: Arabic (West)
 cpds:
   fileTitle: File parse
   browse: Browse
   goNow: Go now
   parse: Parse
   filePlaceholder: Select a communication package
+  packageFileMissing: Communication parameter package file is missing
+  fileBytesEmpty: File bytes are empty
   browseConfirm: Re-uploading a file will clear communication parameter packages bound to key loaders. Continue?
   browseSourceTitle: Select file source
   browseSourceLocal: Local files

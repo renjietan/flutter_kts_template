@@ -3,10 +3,10 @@
 /// Source: lib/i18n
 /// To regenerate, run: `dart run slang`
 ///
-/// Locales: 2
-/// Strings: 542 (271 per locale)
+/// Locales: 4
+/// Strings: 1216 (304 per locale)
 ///
-/// Built on 2026-09-03 at 10:04 UTC
+/// Built on 2026-09-12 at 11:33 UTC
 
 // coverage:ignore-file
 // ignore_for_file: type=lint, unused_import
@@ -19,6 +19,8 @@ import 'package:slang_flutter/slang_flutter.dart';
 export 'package:slang_flutter/slang_flutter.dart';
 
 import 'translations_en.g.dart' deferred as l_en;
+import 'translations_ar_EG.g.dart' deferred as l_ar_EG;
+import 'translations_ar_MA.g.dart' deferred as l_ar_MA;
 part 'translations_zh.g.dart';
 
 /// Supported locales.
@@ -29,7 +31,9 @@ part 'translations_zh.g.dart';
 /// - if (LocaleSettings.currentLocale == AppLocale.zh) // locale check
 enum AppLocale with BaseAppLocale<AppLocale, Translations> {
 	zh(languageCode: 'zh'),
-	en(languageCode: 'en');
+	en(languageCode: 'en'),
+	arEg(languageCode: 'ar', countryCode: 'EG'),
+	arMa(languageCode: 'ar', countryCode: 'MA');
 
 	const AppLocale({
 		required this.languageCode,
@@ -61,6 +65,20 @@ enum AppLocale with BaseAppLocale<AppLocale, Translations> {
 					cardinalResolver: cardinalResolver,
 					ordinalResolver: ordinalResolver,
 				);
+			case AppLocale.arEg:
+				await l_ar_EG.loadLibrary();
+				return l_ar_EG.TranslationsArEg(
+					overrides: overrides,
+					cardinalResolver: cardinalResolver,
+					ordinalResolver: ordinalResolver,
+				);
+			case AppLocale.arMa:
+				await l_ar_MA.loadLibrary();
+				return l_ar_MA.TranslationsArMa(
+					overrides: overrides,
+					cardinalResolver: cardinalResolver,
+					ordinalResolver: ordinalResolver,
+				);
 		}
 	}
 
@@ -79,6 +97,18 @@ enum AppLocale with BaseAppLocale<AppLocale, Translations> {
 				);
 			case AppLocale.en:
 				return l_en.TranslationsEn(
+					overrides: overrides,
+					cardinalResolver: cardinalResolver,
+					ordinalResolver: ordinalResolver,
+				);
+			case AppLocale.arEg:
+				return l_ar_EG.TranslationsArEg(
+					overrides: overrides,
+					cardinalResolver: cardinalResolver,
+					ordinalResolver: ordinalResolver,
+				);
+			case AppLocale.arMa:
+				return l_ar_MA.TranslationsArMa(
 					overrides: overrides,
 					cardinalResolver: cardinalResolver,
 					ordinalResolver: ordinalResolver,

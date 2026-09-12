@@ -9,6 +9,7 @@ import 'package:flutter_kts_template/core/rtc/tools/rtc.event.dart';
 import 'package:flutter_kts_template/core/rtc/tools/rtc.event.type.dart';
 import 'package:flutter_kts_template/core/rtc/tools/rtc.receive.dart';
 import 'package:flutter_kts_template/logger/logger.dart';
+import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 
 /// Windows WinUSB 通信管理器。
 ///
@@ -132,7 +133,7 @@ class WinUsbManager implements RtcAbstract {
           RtcEvent(
             type: RtcEventType.error,
             remotePeer: addressStr,
-            msg: '未找到 WinUSB 设备',
+            msg: t.usb.winUsbNotFound,
           ),
         );
         return;
@@ -190,8 +191,10 @@ class WinUsbManager implements RtcAbstract {
           RtcEvent(
             type: RtcEventType.error,
             remotePeer: addressStr,
-            msg: '端点未找到: EpOut=0x${_outPipeId.toRadixString(16)} '
-                'EpIn=0x${_inPipeId.toRadixString(16)}',
+            msg: t.usb.endpointNotFound(
+              epOut: 'EpOut=0x${_outPipeId.toRadixString(16)}',
+              epIn: 'EpIn=0x${_inPipeId.toRadixString(16)}',
+            ),
           ),
         );
         return;
@@ -214,7 +217,7 @@ class WinUsbManager implements RtcAbstract {
         RtcEvent(
           type: RtcEventType.created,
           remotePeer: addressStr,
-          msg: 'WinUSB 设备连接成功',
+          msg: t.usb.winUsbConnected,
         ),
       );
     } catch (e) {
@@ -293,7 +296,7 @@ class WinUsbManager implements RtcAbstract {
           RtcEvent(
             type: RtcEventType.disConnect,
             remotePeer: address,
-            msg: 'WinUSB 设备已断开',
+            msg: t.usb.winUsbDisconnected,
           ),
         );
       }
@@ -341,7 +344,7 @@ class WinUsbManager implements RtcAbstract {
             RtcEvent(
               type: RtcEventType.error,
               remotePeer: addressStr,
-              msg: 'WinUSB 未连接',
+              msg: t.usb.winUsbNotConnected,
             ),
           );
           return;
@@ -351,7 +354,7 @@ class WinUsbManager implements RtcAbstract {
         if (!_connected) {
           GlobalLogger.logError('无可用的 WinUSB 连接，写入失败');
           _onEventController.sink.add(
-            RtcEvent(type: RtcEventType.error, msg: '无可用的 WinUSB 连接'),
+            RtcEvent(type: RtcEventType.error, msg: t.usb.noWinUsbConnection),
           );
           return;
         }
@@ -361,7 +364,7 @@ class WinUsbManager implements RtcAbstract {
       if (outPipeId == 0) {
         GlobalLogger.logError('WinUSB 无可用的 OUT 管道');
         _onEventController.sink.add(
-          RtcEvent(type: RtcEventType.error, msg: '无可用的 OUT 管道'),
+          RtcEvent(type: RtcEventType.error, msg: t.usb.noOutPipe),
         );
         return;
       }

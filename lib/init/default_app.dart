@@ -24,12 +24,21 @@ class DefaultApp {
     FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
     await Shared.init();
     final savedLocale = Shared.getLocale();
-    if (savedLocale == AppLocale.en.languageCode) {
-      await LocaleSettings.setLocale(AppLocale.en);
-    } else if (savedLocale == AppLocale.zh.languageCode) {
-      await LocaleSettings.setLocale(AppLocale.zh);
-    } else {
-      await LocaleSettings.useDeviceLocale();
+    switch (savedLocale) {
+      case 'en':
+        await LocaleSettings.setLocale(AppLocale.en);
+        break;
+      case 'zh':
+        await LocaleSettings.setLocale(AppLocale.zh);
+        break;
+      case 'ar_EG':
+        await LocaleSettings.setLocale(AppLocale.arEg);
+        break;
+      case 'ar_MA':
+        await LocaleSettings.setLocale(AppLocale.arMa);
+        break;
+      default:
+        await LocaleSettings.useDeviceLocale();
     }
     SystemChrome.setSystemUIOverlayStyle(
       const SystemUiOverlayStyle(

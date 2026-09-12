@@ -10,6 +10,7 @@ import 'package:flutter_kts_template/core/cpds/model/cpds_models.dart';
 import 'package:web_socket_channel/io.dart';
 
 import '../utils/request/httpClient.dart';
+import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 
 class CpdsApi {
   CpdsApi._();
@@ -27,7 +28,7 @@ class CpdsApi {
       throw CpdsException(
         CpdsErrorCode.invalidPackage,
         params: {'field': 'package'},
-        message: 'file bytes are empty',
+        message: AppLocale.zh.translations.cpds.fileBytesEmpty,
       );
     }
     final formData = FormData.fromMap({
@@ -128,7 +129,7 @@ class CpdsApi {
     return CpdsException(
       CpdsErrorCode.invalidMessage,
       params: {'cause': error.message ?? ''},
-      message: error.message ?? 'request failed',
+      message: error.message ?? AppLocale.zh.translations.common.requestError,
     );
   }
 
