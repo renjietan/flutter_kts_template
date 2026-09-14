@@ -37,7 +37,7 @@ uploads:
   selectedAllow: 当前仅支持 ZIP 和文件夹
 tree:
   empty: "<空>"
-  futureWarrior: "未来战士"
+  futureWarrior: "未来士兵"
 json:
   serialization: 收到的信息格式有点陌生
 pageable:
@@ -259,6 +259,7 @@ cpds:
   networkInterfaceLabel: 业务网卡
   networkInterfacePlaceholder: 请选择有线网卡
   networkInterfaceOption: "{name} · {ip}"
+  networkInterfaceNoLink: 无网络
   automatic: 自动选中
   refresh: 刷新
   distribute: 下发

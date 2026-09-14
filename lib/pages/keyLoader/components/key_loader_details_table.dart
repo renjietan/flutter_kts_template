@@ -25,6 +25,7 @@ import 'package:flutter_kts_template/core/utils/director.dart';
 import 'package:flutter_kts_template/core/utils/time.dart';
 import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 import 'package:flutter_kts_template/logger/logger.dart';
+import 'package:flutter_kts_template/pages/cpds/widgets/cpds_messages.dart';
 import 'package:flutter_kts_template/theme/table.theme.dart';
 import 'package:flutter_kts_template/utils/files/FileTools.dart';
 import 'package:flutter_kts_template/utils/provider/radios.provider.dart';
@@ -32,7 +33,6 @@ import 'package:path/path.dart' as p;
 import 'package:provider/provider.dart';
 
 import 'set_password_dialog.dart';
-import 'package:flutter_kts_template/pages/cpds/widgets/cpds_messages.dart';
 
 class KeyLoaderDetailsTable extends StatefulWidget {
   const KeyLoaderDetailsTable({
@@ -54,6 +54,8 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
   late final DataTablePlusTheme _theme;
   int _currentPage = 1;
   int _pageSize = 10;
+  String _keyword = '';
+  final TextEditingController _searchController = TextEditingController();
   List<KeyLoaderDetailsEntity> _allData = [];
   final Set<String> _selectedIds = {};
   Future<List<KeyLoaderDetailsEntity>>? _future;
@@ -91,6 +93,21 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
     });
   }
 
+  void _onSearch(String value) {
+    setState(() {
+      _keyword = value;
+      _currentPage = 1;
+    });
+  }
+
+  void _clearSearch() {
+    _searchController.clear();
+    setState(() {
+      _keyword = '';
+      _currentPage = 1;
+    });
+  }
+
   Future<void> _loadRadios() async {
     try {
       final response = await RadiosManagerApi.getAll();
@@ -107,6 +124,7 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
   void dispose() {
     _radiosProvider?.removeListener(_onRadiosChanged);
     _tableScrollController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -147,6 +165,8 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
       _currentPage = 1;
       _allData = [];
       _selectedIds.clear();
+      _searchController.clear();
+      _keyword = '';
     }
   }
 
@@ -176,14 +196,36 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
     return result;
   }
 
-  List<KeyLoaderDetailsEntity> get _pagedData {
-    final start = (_currentPage - 1) * _pageSize;
-    if (start >= _allData.length) return const [];
-    final end = (start + _pageSize).clamp(0, _allData.length);
-    return _allData.sublist(start, end);
+  String _radioAliasOf(int? radioId) {
+    if (radioId == null) return '';
+    for (final radio in _radios) {
+      if (radio.id == radioId) return radio.alias;
+    }
+    return '';
   }
 
-  int get _totalPages => (_allData.length / _pageSize).ceil().clamp(1, 999999);
+  List<KeyLoaderDetailsEntity> get _filteredData {
+    final kw = _keyword.trim().toLowerCase();
+    if (kw.isEmpty) return _allData;
+    return _allData.where((item) {
+      if (item.dcPackageName.toLowerCase().contains(kw)) return true;
+      if ((item.dcPackageAlias ?? '').toLowerCase().contains(kw)) return true;
+      if ((item.location ?? '').toLowerCase().contains(kw)) return true;
+      if ((item.SN ?? '').toLowerCase().contains(kw)) return true;
+      if (_radioAliasOf(item.radioId).toLowerCase().contains(kw)) return true;
+      return false;
+    }).toList();
+  }
+
+  List<KeyLoaderDetailsEntity> get _pagedData {
+    final data = _filteredData;
+    final start = (_currentPage - 1) * _pageSize;
+    if (start >= data.length) return const [];
+    final end = (start + _pageSize).clamp(0, data.length);
+    return data.sublist(start, end);
+  }
+
+  int get _totalPages => (_filteredData.length / _pageSize).ceil().clamp(1, 999999);
 
   bool get _allSelected =>
       _pagedData.isNotEmpty &&
@@ -1180,6 +1222,52 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
               child: Row(
                 children: [
                   const Spacer(),
+                  SizedBox(
+                    width: 220,
+                    height: 36,
+                    child: TextField(
+                      controller: _searchController,
+                      textInputAction: TextInputAction.search,
+                      onSubmitted: _onSearch,
+                      onChanged: (_) => setState(() {}),
+                      style: const TextStyle(color: Colors.white, fontSize: 13),
+                      decoration: InputDecoration(
+                        isDense: true,
+                        prefixIcon: const Icon(
+                          Icons.search,
+                          size: 18,
+                          color: Colors.white54,
+                        ),
+                        suffixIcon: _searchController.text.isEmpty
+                            ? null
+                            : IconButton(
+                                icon: const Icon(
+                                  Icons.clear,
+                                  size: 16,
+                                  color: Colors.white54,
+                                ),
+                                onPressed: _clearSearch,
+                              ),
+                        hintText: t.button.radioManager.search,
+                        hintStyle: const TextStyle(
+                          color: Colors.white38,
+                          fontSize: 13,
+                        ),
+                        filled: true,
+                        fillColor: const Color(0xFF1B2026),
+                        contentPadding: const EdgeInsets.symmetric(vertical: 8),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(6),
+                          borderSide: const BorderSide(color: Color(0xFF353A41)),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(6),
+                          borderSide: const BorderSide(color: Color(0xFF353A41)),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
                   BaseButton(
                     label: t.button.injectEncrypt.export,
                     minWidth: 70,
@@ -1280,6 +1368,22 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
                 return _buildEmpty(context);
               }
               _allData = snapshot.data ?? [];
+              if (_allData.isNotEmpty && _filteredData.isEmpty) {
+                return Center(
+                  child: Text(
+                    CpdsMessages.tr(
+                      context,
+                      '无搜索结果',
+                      'No search results',
+                      'لا توجد نتائج بحث',
+                    ),
+                    style: const TextStyle(
+                      color: Colors.white38,
+                      fontSize: 13,
+                    ),
+                  ),
+                );
+              }
               return Scrollbar(
                 controller: _tableScrollController,
                 child: SingleChildScrollView(
@@ -1308,7 +1412,7 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
           child: TablePagination(
             currentPage: _currentPage,
             totalPages: _totalPages,
-            totalItems: _allData.length,
+            totalItems: _filteredData.length,
             pageSize: _pageSize,
             pageSizeOptions: const [10, 20, 50, 100],
             onPageSizeChanged: (size) => setState(() {
@@ -1403,7 +1507,7 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
       ),
       ColumnDefinition<KeyLoaderDetailsEntity>(
         label: t.tableColumn.base.actions,
-        size: const ColumnSize.fixed(72),
+        flex: 1,
         headerBuilder: (label) =>
             Center(child: Text(label, style: _theme.getHeaderTextStyle())),
         cellBuilder: _buildActionCell,

@@ -61,7 +61,7 @@ void main() {
     // 默认全部展开。
     expect(find.text('u1'), findsOneWidget);
     expect(_treeText('n3'), findsOneWidget);
-    expect(find.text('未来战士（1）'), findsOneWidget);
+    expect(find.text('未来士兵（1）'), findsOneWidget);
     expect(find.text('n1'), findsNothing); // nodeType==1 已归入 CS
 
     // 收起 unit。
@@ -69,14 +69,14 @@ void main() {
     await tester.pump();
 
     expect(_treeText('n3'), findsNothing);
-    expect(find.text('未来战士（1）'), findsNothing);
+    expect(find.text('未来士兵（1）'), findsNothing);
 
     // 再展开 unit。
     await tester.tap(find.text('u1'));
     await tester.pump();
 
     expect(find.text('n3'), findsOneWidget);
-    expect(find.text('未来战士（1）'), findsOneWidget);
+    expect(find.text('未来士兵（1）'), findsOneWidget);
   });
 
   testWidgets('没有 nodeType==1 时不显示 CS', (tester) async {
@@ -88,7 +88,7 @@ void main() {
 
     // 默认展开，n3 可见。
     expect(_treeText('n3'), findsOneWidget);
-    expect(find.textContaining('未来战士'), findsNothing);
+    expect(find.textContaining('未来士兵'), findsNothing);
   });
 
   testWidgets('空 unit 是叶子，点击不展开也不报错', (tester) async {

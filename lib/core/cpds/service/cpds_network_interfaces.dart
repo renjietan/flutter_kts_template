@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'cpds_windows_link_status.dart';
+
 import '../cpds_exception.dart';
 import '../model/cpds_enums.dart';
 import '../model/cpds_models.dart';
@@ -14,13 +16,26 @@ class CpdsNetworkInterfaceService {
         includeLinkLocal: false,
         type: InternetAddressType.IPv4,
       );
+      final windowsLinkMap = Platform.isWindows
+          ? await _windowsLinkStatusMap()
+          : const <String, bool>{};
       final result = <CpdsNetworkInterface>[];
       for (final item in interfaces) {
         if (!_eligibleName(item.name)) continue;
         final ipv4 = _firstUsableIpv4(item);
         if (ipv4 == null) continue;
+        final linkUp = Platform.isWindows
+            ? (windowsLinkMap[ipv4] ?? true)
+            : Platform.isAndroid || Platform.isLinux
+                ? _linuxLinkUp(item.name)
+                : true;
         result.add(
-          CpdsNetworkInterface(name: item.name, index: item.index, ipv4: ipv4),
+          CpdsNetworkInterface(
+            name: item.name,
+            index: item.index,
+            ipv4: ipv4,
+            linkUp: linkUp,
+          ),
         );
       }
       result.sort((a, b) => a.name.compareTo(b.name));
@@ -41,6 +56,24 @@ class CpdsNetworkInterfaceService {
         message: 'unable to enumerate network interfaces',
       );
     }
+  }
+
+  static bool _linuxLinkUp(String name) {
+    try {
+      final carrier = File('/sys/class/net/$name/carrier');
+      if (carrier.existsSync()) {
+        return carrier.readAsStringSync().trim() == '1';
+      }
+      final operstate = File('/sys/class/net/$name/operstate');
+      if (operstate.existsSync()) {
+        return operstate.readAsStringSync().trim() == 'up';
+      }
+    } catch (_) {}
+    return true;
+  }
+
+  static Future<Map<String, bool>> _windowsLinkStatusMap() async {
+    return CpdsWindowsLinkStatus.load();
   }
 
   static bool _eligibleName(String name) {

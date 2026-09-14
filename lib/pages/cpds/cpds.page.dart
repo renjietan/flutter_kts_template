@@ -231,11 +231,11 @@ class _CpdsPageState extends State<CpdsPage> {
     final stored = Shared.getCpdsNetworkInterface() ?? '';
     var selectedName = '';
     var automatic = false;
-    if (interfaces.length == 1) {
+    if (interfaces.length == 1 && interfaces.first.linkUp) {
       selectedName = interfaces.first.name;
       automatic = true;
     } else if (stored.isNotEmpty &&
-        interfaces.any((item) => item.name == stored)) {
+        interfaces.any((item) => item.name == stored && item.linkUp)) {
       selectedName = stored;
     }
 

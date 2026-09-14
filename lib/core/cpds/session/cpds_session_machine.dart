@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:flutter_kts_template/logger/logger.dart';
+
 import '../model/cpds_enums.dart';
 import '../model/cpds_models.dart';
 import '../protocol/cpd_protocol.dart';
@@ -272,11 +274,29 @@ class CpdsSessionMachine {
   }
 
   void recordAuth(Map<int, dynamic> body) {
-    if (_state != CpdsActiveState.authenticating) return;
-    final client = _clientForIdentity(_message(body, 1));
-    if (client == null) return;
+    final identity = _message(body, 1);
+    final esn = _string(identity, 1);
+    final types = _enumList(identity, 2);
+    if (_state != CpdsActiveState.authenticating) {
+      GlobalLogger.logWarn(
+        'CPDS_AUTH_DROP_STATE state=$_state esn=$esn '
+        'types=${_typeNames(types)}',
+      );
+      return;
+    }
+    final client = _clientForIdentity(identity);
+    if (client == null) {
+      GlobalLogger.logWarn(
+        'CPDS_AUTH_DROP_IDENTITY esn=$esn '
+        'types=${_typeNames(types)} discovered=${_describeClients()}',
+      );
+      return;
+    }
     final result = CpdResult.fromValue(body[2]);
-    if (result == CpdResult.unspecified) return;
+    if (result == CpdResult.unspecified) {
+      GlobalLogger.logWarn('CPDS_AUTH_DROP_RESULT raw=${body[2]} esn=$esn');
+      return;
+    }
     if (result != CpdResult.success) {
       final code = CpdsErrorCode.fromValue(body[5]);
       _failClient(client, 'AUTHENTICATION', code);
@@ -542,8 +562,15 @@ class CpdsSessionMachine {
     _retransmitting = retransmitting;
   }
 
-  List<Map<int, dynamic>> get assignmentBodies =>
-      _assignments.map((item) => item.toBody()).toList();
+  List<Map<int, dynamic>> get pendingAssignmentBodies {
+    final result = <Map<int, dynamic>>[];
+    for (final assignment in _assignments) {
+      final client = _clients[assignment.esn];
+      if (client == null || client.authenticated || client.terminal) continue;
+      result.add(assignment.toBody());
+    }
+    return result;
+  }
 
   CpdsSessionView view() {
     final stageIndex = _stageIndexOf(_state);
@@ -670,12 +697,19 @@ class CpdsSessionMachine {
     }
   }
 
+  String _describeClients() => _clients.values
+      .map(
+        (client) =>
+            '${client.discovery.esn}:${_typeNames(client.discovery.deviceTypes)}',
+      )
+      .join(', ');
+
   _CpdsClientState? _clientForIdentity(Map<int, dynamic> identity) {
     final esn = _string(identity, 1);
     final client = _clients[esn];
     if (client == null) return null;
     final types = _enumList(identity, 2);
-    if (!_sameTypeOrder(client.discovery.deviceTypes, types)) return null;
+    if (!_sameTypeSet(client.discovery.deviceTypes, types)) return null;
     return client;
   }
 
@@ -907,16 +941,25 @@ int _int(Map<int, dynamic> map, int field) {
   return int.tryParse(value?.toString() ?? '') ?? 0;
 }
 
-bool _sameTypeOrder(
+bool _sameTypeSet(
   List<CpdsDeviceType> left,
   List<CpdsDeviceType> right,
 ) {
   if (left.length != right.length) return false;
-  for (var index = 0; index < left.length; index++) {
-    if (left[index] != right[index]) return false;
+  final counts = <CpdsDeviceType, int>{};
+  for (final type in left) {
+    counts[type] = (counts[type] ?? 0) + 1;
+  }
+  for (final type in right) {
+    final remaining = counts[type];
+    if (remaining == null || remaining == 0) return false;
+    counts[type] = remaining - 1;
   }
   return true;
 }
+
+String _typeNames(List<CpdsDeviceType> types) =>
+    types.map((type) => type.name).toList().toString();
 
 String suffix(String esn) => esn.length <= 6 ? esn : esn.substring(esn.length - 6);
 

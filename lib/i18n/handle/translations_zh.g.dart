@@ -195,8 +195,8 @@ class Translations$tree$zh {
 	/// zh: '<空>'
 	String get empty => '<空>';
 
-	/// zh: '未来战士'
-	String get futureWarrior => '未来战士';
+	/// zh: '未来士兵'
+	String get futureWarrior => '未来士兵';
 }
 
 // Path: json
@@ -668,6 +668,7 @@ class Translations$cpds$zh {
 
 	/// zh: '{name} · {ip}'
 	String networkInterfaceOption({required Object name, required Object ip}) => '${name} · ${ip}';
+	String get networkInterfaceNoLink => '无网络';
 
 	/// zh: '自动选中'
 	String get automatic => '自动选中';

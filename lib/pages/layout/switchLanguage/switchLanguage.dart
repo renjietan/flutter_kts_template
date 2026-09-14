@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_kts_template/logger/logger.dart';
 
 import '../../../i18n/handle/translations.g.dart';
 import '../../../utils/shared.dart';
@@ -21,12 +22,16 @@ class _SwitchLanguageState extends State<SwitchLanguage> {
   String _label(AppLocale locale) {
     switch (locale) {
       case AppLocale.zh:
+        GlobalLogger.logInfo(t.settings.zh);
         return t.settings.zh;
       case AppLocale.en:
+        GlobalLogger.logInfo(t.settings.en);
         return t.settings.en;
       case AppLocale.arEg:
+        GlobalLogger.logInfo(t.settings.arEg);
         return t.settings.arEg;
       case AppLocale.arMa:
+        GlobalLogger.logInfo(t.settings.arMa);
         return t.settings.arMa;
     }
   }
@@ -54,13 +59,21 @@ class _SwitchLanguageState extends State<SwitchLanguage> {
       itemBuilder: (context) => [
         PopupMenuItem(value: AppLocale.zh, child: Text(_label(AppLocale.zh))),
         PopupMenuItem(value: AppLocale.en, child: Text(_label(AppLocale.en))),
-        PopupMenuItem(value: AppLocale.arEg, child: Text(_label(AppLocale.arEg))),
-        PopupMenuItem(value: AppLocale.arMa, child: Text(_label(AppLocale.arMa))),
+        PopupMenuItem(
+          value: AppLocale.arEg,
+          child: Text(_label(AppLocale.arEg)),
+        ),
+        PopupMenuItem(
+          value: AppLocale.arMa,
+          child: Text(_label(AppLocale.arMa)),
+        ),
       ],
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 16),
         child: Row(
           mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             const Icon(Icons.language, color: Colors.white70),
             const SizedBox(width: 5),

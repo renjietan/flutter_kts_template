@@ -66,11 +66,34 @@ class CpdsNetworkInterfaceBar extends StatelessWidget {
                 ...interfaces.map(
                   (item) => DropdownMenuItem<String>(
                     value: item.name,
-                    child: Text(
-                      t.cpds.networkInterfaceOption(
-                        name: item.name,
-                        ip: item.ipv4,
-                      ),
+                    enabled: item.linkUp,
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            t.cpds.networkInterfaceOption(
+                              name: item.name,
+                              ip: item.ipv4,
+                            ),
+                          ),
+                        ),
+                        if (!item.linkUp) ...[
+                          const SizedBox(width: 8),
+                          const Icon(
+                            Icons.wifi_off,
+                            size: 14,
+                            color: Colors.redAccent,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            t.cpds.networkInterfaceNoLink,
+                            style: const TextStyle(
+                              color: Colors.redAccent,
+                              fontSize: 11,
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
                   ),
                 ),

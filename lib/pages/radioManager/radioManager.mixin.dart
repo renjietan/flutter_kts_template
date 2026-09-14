@@ -274,6 +274,15 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
               searchQuery = value;
             });
           },
+          onClear: () {
+            setState(() {
+              searchQuery = '';
+              searchFieldController.text = '';
+            });
+            SimplePopup.loading();
+            currentPage = 1;
+            getList();
+          },
           onSubmit: (value) {
             SimplePopup.loading();
             currentPage = 1;

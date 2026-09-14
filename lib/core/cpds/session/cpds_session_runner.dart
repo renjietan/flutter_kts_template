@@ -50,6 +50,7 @@ class CpdsSessionRunner {
   bool _cancelled = false;
   final Set<int> _pendingChunks = {};
   final Set<String> _requesters = {};
+  final Map<String, CpdPacket> _authPacketCache = {};
 
   Future<void> run() async {
     _packetSubscription = transport.packets.listen(_handlePacket);
@@ -93,11 +94,7 @@ class CpdsSessionRunner {
   }
 
   Future<void> _authenticate() async {
-    final assignments = machine.assignmentBodies;
-    final packets = <CpdPacket>[];
-    for (final assignment in assignments) {
-      packets.add(_packet(12, {1: [assignment]}));
-    }
+    var packets = _buildAuthPackets(machine.pendingAssignmentBodies);
     if (packets.isEmpty) {
       machine.failActive(
         'AUTHENTICATION',
@@ -111,6 +108,8 @@ class CpdsSessionRunner {
     while (!_cancelled && !_terminal) {
       await Future<void>.delayed(const Duration(seconds: 1));
       if (_cancelled || _terminal) return;
+      packets = _buildAuthPackets(machine.pendingAssignmentBodies);
+      if (packets.isEmpty) break;
       await _sendAll(packets);
       if (machine.state != CpdsActiveState.authenticating) {
         break;
@@ -119,6 +118,18 @@ class CpdsSessionRunner {
     }
     if (!_terminal) machine.finishAuthentication();
     _updated();
+  }
+
+  List<CpdPacket> _buildAuthPackets(List<Map<int, dynamic>> assignments) {
+    final packets = <CpdPacket>[];
+    for (final assignment in assignments) {
+      final key =
+          '${assignment[1]}:${assignment[2]}:${assignment[3]}:${assignment[4]}';
+      packets.add(
+        _authPacketCache.putIfAbsent(key, () => _packet(12, {1: [assignment]})),
+      );
+    }
+    return packets;
   }
 
   Future<void> _transfer() async {

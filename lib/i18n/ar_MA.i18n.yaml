@@ -37,7 +37,7 @@ uploads:
   selectedAllow: يدعم حاليًا ملفات ZIP والمجلدات فقط
 tree:
   empty: "<فارغ>"
-  futureWarrior: "محارب المستقبل"
+  futureWarrior: "جندي المستقبل"
 json:
   serialization: تنسيق المعلومات المستلمة غير مألوف
 pageable:
@@ -257,6 +257,7 @@ cpds:
   networkInterfaceLabel: بطاقة شبكة الأعمال
   networkInterfacePlaceholder: يرجى اختيار بطاقة شبكة سلكية
   networkInterfaceOption: "{name} · {ip}"
+  networkInterfaceNoLink: لا توجد شبكة
   automatic: تحديد تلقائي
   refresh: تحديث
   distribute: توزيع

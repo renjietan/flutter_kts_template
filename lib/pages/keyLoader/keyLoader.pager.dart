@@ -1,6 +1,5 @@
 import 'package:composable_data_table/composable_data_table.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_kts_template/components/dialog/simple.tips.dialog.dart';
 import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 import 'package:flutter_kts_template/router/router.dart';
 
@@ -51,15 +50,16 @@ class _InjectEncryptStickPagerState extends State<KeyLoaderPager>
 
   @override
   Widget build(BuildContext context) {
+    final rtl = Directionality.of(context) == TextDirection.rtl;
     return Row(
       children: [
         SizedBox(
-          width: 140,
+          width: rtl ? 200 : 140,
           child: Column(
             children: [
               Container(
                 height: 45,
-                padding: EdgeInsets.fromLTRB(10, 0, 6, 0),
+                padding: const EdgeInsetsDirectional.fromSTEB(10, 0, 6, 0),
                 decoration: BoxDecoration(
                   color: Colors.black,
                   border: Border(
@@ -84,11 +84,7 @@ class _InjectEncryptStickPagerState extends State<KeyLoaderPager>
                             showCustomDialog(DialogTypeEnum.create, null),
                         child: const Padding(
                           padding: EdgeInsets.all(6),
-                          child: Icon(
-                            Icons.add,
-                            size: 18,
-                            color: Colors.white,
-                          ),
+                          child: Icon(Icons.add, size: 18, color: Colors.white),
                         ),
                       ),
                     ),
@@ -102,9 +98,9 @@ class _InjectEncryptStickPagerState extends State<KeyLoaderPager>
                         itemCount: data.length,
                         itemBuilder: (BuildContext context, int index) {
                           return ListTile(
-                            contentPadding: EdgeInsetsGeometry.only(
-                              left: 10,
-                              right: 0,
+                            contentPadding: const EdgeInsetsDirectional.only(
+                              start: 10,
+                              end: 0,
                             ),
                             shape: Border(
                               bottom: BorderSide(
@@ -134,16 +130,7 @@ class _InjectEncryptStickPagerState extends State<KeyLoaderPager>
                                         data[index],
                                       );
                                     } else {
-                                      SimpleTipsDialog(
-                                        context,
-                                        title: t.tips.keyLoaders.delete,
-                                        contentText:
-                                            t.tips.keyLoaders.confirmDelete,
-                                        func: () {
-                                          delete(data[index]);
-                                        },
-                                      );
-                                      // delete(data[index]);
+                                      delete(data[index]);
                                     }
                                   },
                                   itemBuilder: (context) {

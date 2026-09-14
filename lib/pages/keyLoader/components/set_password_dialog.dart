@@ -15,9 +15,20 @@ class _SetPasswordDialogState extends State<SetPasswordDialog> {
   bool _obscurePassword = true;
 
   @override
+  void initState() {
+    super.initState();
+    _passwordController.addListener(_onPasswordChanged);
+  }
+
+  @override
   void dispose() {
+    _passwordController.removeListener(_onPasswordChanged);
     _passwordController.dispose();
     super.dispose();
+  }
+
+  void _onPasswordChanged() {
+    setState(() {});
   }
 
   String? _validate(String? value) {
@@ -55,7 +66,10 @@ class _SetPasswordDialogState extends State<SetPasswordDialog> {
           controller: _passwordController,
           obscureText: _obscurePassword,
           keyboardType: TextInputType.number,
-          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+          inputFormatters: [
+            FilteringTextInputFormatter.digitsOnly,
+            LengthLimitingTextInputFormatter(8),
+          ],
           style: const TextStyle(color: Colors.white, fontSize: 14),
           validator: _validate,
           decoration: InputDecoration(
@@ -63,18 +77,27 @@ class _SetPasswordDialogState extends State<SetPasswordDialog> {
             hintText: t.cpds.setPassword.placeholder,
             labelStyle: const TextStyle(color: Colors.white),
             hintStyle: const TextStyle(color: Colors.white38),
-            suffixIcon: IconButton(
-              icon: Icon(
-                _obscurePassword
-                    ? Icons.visibility_off_outlined
-                    : Icons.visibility_outlined,
-                color: Colors.white70,
-              ),
-              onPressed: () {
-                setState(() {
-                  _obscurePassword = !_obscurePassword;
-                });
-              },
+            suffixIcon: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  '${_passwordController.text.length}/8',
+                  style: const TextStyle(color: Colors.white54, fontSize: 12),
+                ),
+                IconButton(
+                  icon: Icon(
+                    _obscurePassword
+                        ? Icons.visibility_off_outlined
+                        : Icons.visibility_outlined,
+                    color: Colors.white70,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _obscurePassword = !_obscurePassword;
+                    });
+                  },
+                ),
+              ],
             ),
             filled: true,
             fillColor: const Color(0xFF282D33),

@@ -131,7 +131,7 @@ class Translations$tree$ar_EG extends Translations$tree$zh {
 
 	// Translations
 	@override String get empty => '<فارغ>';
-	@override String get futureWarrior => 'محارب المستقبل';
+	@override String get futureWarrior => 'جندي المستقبل';
 }
 
 // Path: json
@@ -400,6 +400,7 @@ class Translations$cpds$ar_EG extends Translations$cpds$zh {
 	@override String get networkInterfaceLabel => 'بطاقة شبكة الأعمال';
 	@override String get networkInterfacePlaceholder => 'يرجى اختيار بطاقة شبكة سلكية';
 	@override String networkInterfaceOption({required Object name, required Object ip}) => '${name} · ${ip}';
+	@override String get networkInterfaceNoLink => 'لا توجد شبكة';
 	@override String get automatic => 'تحديد تلقائي';
 	@override String get refresh => 'تحديث';
 	@override String get distribute => 'توزيع';

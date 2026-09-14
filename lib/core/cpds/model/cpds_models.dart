@@ -373,23 +373,27 @@ class CpdsNetworkInterface {
     required this.name,
     required this.index,
     required this.ipv4,
+    this.linkUp = true,
   });
 
   final String name;
   final int index;
   final String ipv4;
+  final bool linkUp;
 
   factory CpdsNetworkInterface.fromJson(Map<String, dynamic> json) =>
       CpdsNetworkInterface(
         name: json['name'] as String? ?? '',
         index: _asInt(json['index']),
         ipv4: json['ipv4'] as String? ?? '',
+        linkUp: json['linkUp'] as bool? ?? true,
       );
 
   Map<String, dynamic> toJson() => {
     'name': name,
     'index': index,
     'ipv4': ipv4,
+    'linkUp': linkUp,
   };
 }
 

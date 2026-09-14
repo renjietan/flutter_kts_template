@@ -131,7 +131,7 @@ class _Translations$tree$en extends Translations$tree$zh {
 
 	// Translations
 	@override String get empty => '<null>';
-	@override String get futureWarrior => 'Future warrior';
+	@override String get futureWarrior => 'Future soldier';
 }
 
 // Path: json
@@ -400,6 +400,7 @@ class _Translations$cpds$en extends Translations$cpds$zh {
 	@override String get networkInterfaceLabel => 'Business NIC';
 	@override String get networkInterfacePlaceholder => 'Select a wired interface';
 	@override String networkInterfaceOption({required Object name, required Object ip}) => '${name} · ${ip}';
+	@override String get networkInterfaceNoLink => 'No network';
 	@override String get automatic => 'Auto';
 	@override String get refresh => 'Refresh';
 	@override String get distribute => 'Distribute';

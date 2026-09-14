@@ -22,6 +22,7 @@ class SimpleFilterSearchField extends StatelessWidget {
   final TextInputType? keyboardType;
 
   final TextInputAction? textInputAction;
+  final VoidCallback? onClear;
 
   const SimpleFilterSearchField({
     super.key,
@@ -33,6 +34,7 @@ class SimpleFilterSearchField extends StatelessWidget {
     this.controller,
     this.keyboardType,
     this.textInputAction,
+    this.onClear,
     this.onSubmit,
   });
 
@@ -54,6 +56,15 @@ class SimpleFilterSearchField extends StatelessWidget {
           hintText: hint,
           hintStyle: TextStyle(color: theme.textMutedColor),
           prefixIcon: Icon(Icons.search, size: 18, color: theme.textMutedColor),
+          suffixIcon: (controller != null && controller!.text.isNotEmpty && onClear != null)
+              ? IconButton(
+                  icon: Icon(Icons.clear, size: 16, color: theme.textMutedColor),
+                  onPressed: () {
+                    controller!.clear();
+                    onClear!();
+                  },
+                )
+              : null,
           filled: true,
           fillColor: theme.backgroundColor,
           contentPadding: EdgeInsets.zero,

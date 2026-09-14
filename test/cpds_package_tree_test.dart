@@ -44,7 +44,7 @@ void main() {
 
       final cs = u.children[1];
       expect(cs.kind, CpdsTreeItemKind.futureWarrior);
-      expect(cs.title, '未来战士（2）');
+      expect(cs.title, '未来士兵（2）');
       expect(cs.children, isEmpty);
       expect(cs.unitId, 'u1');
     });
@@ -104,7 +104,7 @@ void main() {
       final cs1 = u1.children.singleWhere(
         (c) => c.kind == CpdsTreeItemKind.futureWarrior,
       );
-      expect(cs1.title, '未来战士（1）');
+      expect(cs1.title, '未来士兵（1）');
       expect(cs1.children, isEmpty);
       expect(cs1.unitId, 'u1');
 
@@ -114,7 +114,7 @@ void main() {
       final cs2 = u2.children.singleWhere(
         (c) => c.kind == CpdsTreeItemKind.futureWarrior,
       );
-      expect(cs2.title, '未来战士（1）');
+      expect(cs2.title, '未来士兵（1）');
       expect(cs2.children, isEmpty);
       expect(cs2.unitId, 'u2');
     });
@@ -161,7 +161,7 @@ void main() {
     });
 
     test('CS 标题不参与搜索', () {
-      expect(filterCpdsTree(tree, '未来战士'), isEmpty);
+      expect(filterCpdsTree(tree, '未来士兵'), isEmpty);
     });
 
     test('nodeType==1 节点已归入 CS，不再单独匹配', () {

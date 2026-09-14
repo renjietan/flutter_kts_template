@@ -158,6 +158,7 @@ class _RadioManagerPagerState extends State<RadioManagerPager>
               ],
             ),
           ),
+          const Divider(height: 1, thickness: 1, color: Color(0xFF353A41)),
           Expanded(
             child: SingleChildScrollView(
               child: DataTablePlusThemeProvider(
