@@ -39,18 +39,19 @@ enum CpdTransferStage {
 }
 
 enum CpdParseStage {
-  unspecified(0),
-  validate(1),
-  extract(2),
-  generate(3),
-  writeOutput(4),
-  snapshot(5),
-  skipped(6),
-  timeout(7);
+  unspecified(0, 'PARSE_STAGE_UNSPECIFIED'),
+  validate(1, 'PARSE_STAGE_VALIDATE'),
+  extract(2, 'PARSE_STAGE_EXTRACT'),
+  generate(3, 'PARSE_STAGE_GENERATE'),
+  writeOutput(4, 'PARSE_STAGE_WRITE_OUTPUT'),
+  snapshot(5, 'PARSE_STAGE_SNAPSHOT'),
+  skipped(6, 'PARSE_STAGE_SKIPPED'),
+  timeout(7, 'PARSE_STAGE_TIMEOUT');
 
-  const CpdParseStage(this.value);
+  const CpdParseStage(this.value, this.apiName);
 
   final int value;
+  final String apiName;
 
   static CpdParseStage fromValue(Object? value) {
     final parsed = value is int ? value : int.tryParse(value?.toString() ?? '');
@@ -132,7 +133,9 @@ class CpdProtocol {
       if (entry.key >= 10 && entry.key <= 31) {
         bodyField = entry.key;
         final raw = entry.value;
-        body = raw is Uint8List ? _ProtoReader.parseFields(raw) : <int, dynamic>{};
+        body = raw is Uint8List
+            ? _ProtoReader.parseFields(raw)
+            : <int, dynamic>{};
         break;
       }
     }
@@ -260,7 +263,9 @@ class _ProtoReader {
         offset += length.$1;
         _addValue(result, field, value);
       } else if (wireType == 5) {
-        final value = ByteData.sublistView(data).getUint32(offset, Endian.little);
+        final value = ByteData.sublistView(
+          data,
+        ).getUint32(offset, Endian.little);
         offset += 4;
         _addValue(result, field, value);
       } else {

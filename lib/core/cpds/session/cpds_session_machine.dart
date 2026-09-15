@@ -64,10 +64,8 @@ class _CpdsClientState {
 }
 
 class CpdsSessionMachine {
-  CpdsSessionMachine({
-    required this.nodeId,
-    required List<CpdsDevice> expected,
-  }) : _expected = List<CpdsDevice>.from(expected);
+  CpdsSessionMachine({required this.nodeId, required List<CpdsDevice> expected})
+    : _expected = List<CpdsDevice>.from(expected);
 
   final String nodeId;
   final List<CpdsDevice> _expected;
@@ -112,6 +110,10 @@ class CpdsSessionMachine {
     final key = '$esn:${hexEncode(nonce)}';
     final previous = _discoveries[key];
     if (previous != null) {
+      if (!_sameTypeSet(previous.deviceTypes, deviceTypes)) {
+        _discoveryMalformed = true;
+        return;
+      }
       previous.currentIp = currentIp;
       previous.subnetMask = subnetMask;
       return;
@@ -130,10 +132,7 @@ class CpdsSessionMachine {
       throw StateError('not in discovery');
     }
     if (_discoveryMalformed) {
-      _failGlobal(
-        CpdsErrorCode.invalidMessage,
-        const {'field': 'discoverRsp'},
-      );
+      _failGlobal(CpdsErrorCode.invalidMessage, const {'field': 'discoverRsp'});
       return;
     }
 
@@ -143,15 +142,16 @@ class CpdsSessionMachine {
     }
     for (final entry in byEsn.entries) {
       if (entry.value.length > 1) {
-        final instances = entry.value
-            .map((item) => hexEncode(item.instanceNonce))
-            .map((value) => value.substring(value.length - 8))
-            .toList()
-          ..sort();
-        _failGlobal(
-          CpdsErrorCode.esnConflict,
-          {'esnSuffix': suffix(entry.key), 'instances': instances.join(', ')},
-        );
+        final instances =
+            entry.value
+                .map((item) => hexEncode(item.instanceNonce))
+                .map((value) => value.substring(value.length - 8))
+                .toList()
+              ..sort();
+        _failGlobal(CpdsErrorCode.esnConflict, {
+          'esnSuffix': suffix(entry.key),
+          'instances': instances.join(', '),
+        });
         return;
       }
     }
@@ -169,8 +169,7 @@ class CpdsSessionMachine {
     final types = <CpdsDeviceType>{
       ...expectedByType.keys,
       ...clientsByType.keys,
-    }.toList()
-      ..sort((a, b) => a.value.compareTo(b.value));
+    }.toList()..sort((a, b) => a.value.compareTo(b.value));
 
     for (final type in types) {
       final expectedCount = expectedByType[type]?.length ?? 0;
@@ -194,7 +193,10 @@ class CpdsSessionMachine {
       final index = nextByType[device.type] ?? 0;
       if (index >= list.length) {
         _statuses.add(
-          CpdsDeviceStatusView(device: device, status: CpdsDeviceStatus.pending),
+          CpdsDeviceStatusView(
+            device: device,
+            status: CpdsDeviceStatus.pending,
+          ),
         );
         continue;
       }
@@ -229,7 +231,13 @@ class CpdsSessionMachine {
       for (final discovery in list.skip(start)) {
         _statuses.add(
           CpdsDeviceStatusView(
-            device: CpdsDevice(id: '', type: type, model: '', alias: '', ip: ''),
+            device: CpdsDevice(
+              id: '',
+              type: type,
+              model: '',
+              alias: '',
+              ip: '',
+            ),
             esnSuffix: suffix(discovery.esn),
             currentIp: discovery.currentIp,
             status: CpdsDeviceStatus.ignored,
@@ -299,6 +307,10 @@ class CpdsSessionMachine {
     }
     if (result != CpdResult.success) {
       final code = CpdsErrorCode.fromValue(body[5]);
+      if (code == CpdsErrorCode.unspecified) {
+        GlobalLogger.logWarn('CPDS_AUTH_DROP_ERROR_CODE esn=$esn');
+        return;
+      }
       _failClient(client, 'AUTHENTICATION', code);
       _failRemaining(client, 'AUTHENTICATION');
       _state = CpdsActiveState.failed;
@@ -306,12 +318,11 @@ class CpdsSessionMachine {
     }
     final node = _string(body, 3);
     final bindings = _messageList(body, 4);
-    if (node != nodeId || !_bindingsMatch(client.assignments, bindings)) {
-      _failClient(
-        client,
-        'AUTHENTICATION',
-        CpdsErrorCode.authBindingMissing,
-      );
+    final errorCode = CpdsErrorCode.fromValue(body[5]);
+    if (errorCode != CpdsErrorCode.unspecified ||
+        node != nodeId ||
+        !_bindingsMatch(client.assignments, bindings)) {
+      _failClient(client, 'AUTHENTICATION', CpdsErrorCode.authBindingMissing);
       _failRemaining(client, 'AUTHENTICATION');
       _state = CpdsActiveState.failed;
       return;
@@ -343,12 +354,32 @@ class CpdsSessionMachine {
   }
 
   void beginTransferWait(DateTime now) {
+    if (_state != CpdsActiveState.transferring &&
+        _state != CpdsActiveState.drainingAfterFailure) {
+      return;
+    }
     for (final client in _clients.values) {
       if (client.terminal || client.transferDone) continue;
       client.waitStarted ??= now;
       client.lastReply ??= now;
       client.highWaterAt ??= now;
     }
+  }
+
+  void setRetransmitting(String esn, bool active, DateTime now) {
+    final client = _clients[esn];
+    if (client == null || client.terminal || client.transferDone) return;
+    if (active) {
+      client.silencePaused ??= now;
+      return;
+    }
+    final paused = client.silencePaused;
+    if (paused == null) return;
+    final lastReply = client.lastReply;
+    if (lastReply != null) {
+      client.lastReply = lastReply.add(now.difference(paused));
+    }
+    client.silencePaused = null;
   }
 
   void recordTransferProgress(Map<int, dynamic> body) {
@@ -375,28 +406,30 @@ class CpdsSessionMachine {
   void recordTransferComplete(Map<int, dynamic> body) {
     final client = _clientForIdentity(_message(body, 1));
     if (client == null || client.terminal || client.transferDone) return;
+    client.lastReply = DateTime.now();
     final result = CpdResult.fromValue(body[2]);
     final stage = CpdTransferStage.fromValue(body[3]);
-    if (result == CpdResult.unspecified || stage == CpdTransferStage.unspecified) {
+    if (result == CpdResult.unspecified ||
+        stage == CpdTransferStage.unspecified) {
       return;
     }
     if (result != CpdResult.success) {
-      _failClient(
-        client,
-        'TRANSFER',
-        CpdsErrorCode.fromValue(body[5]),
-      );
+      final code = CpdsErrorCode.fromValue(body[5]);
+      if (code == CpdsErrorCode.unspecified) {
+        return;
+      }
+      _failClient(client, 'TRANSFER', code);
       _recalculateState();
       return;
     }
-    if (stage != CpdTransferStage.cacheReuse &&
-        stage != CpdTransferStage.verify) {
+    final errorCode = CpdsErrorCode.fromValue(body[5]);
+    if (errorCode != CpdsErrorCode.unspecified ||
+        (stage != CpdTransferStage.cacheReuse &&
+            stage != CpdTransferStage.verify)) {
       return;
     }
     client.transferDone = true;
-    client.parseDeadline = DateTime.now().add(
-      const Duration(seconds: 35),
-    );
+    client.parseDeadline = DateTime.now().add(const Duration(seconds: 35));
     _setClientStatus(
       client,
       CpdsDeviceStatus.waitingParse,
@@ -412,13 +445,27 @@ class CpdsSessionMachine {
     if (_totalChunks == 0) return false;
     final ranges = _messageList(body, 2);
     if (ranges.isEmpty) return false;
-    var missingCount = 0;
+    final normalized = <({int start, int end})>[];
     for (final range in ranges) {
       final start = _int(range, 1);
       final end = _int(range, 2);
       if (start > end || end >= _totalChunks) return false;
-      missingCount += end - start + 1;
+      normalized.add((start: start, end: end));
     }
+    normalized.sort((a, b) => a.start.compareTo(b.start));
+    var missingCount = 0;
+    var mergedStart = normalized.first.start;
+    var mergedEnd = normalized.first.end;
+    for (final range in normalized.skip(1)) {
+      if (range.start <= mergedEnd + 1) {
+        if (range.end > mergedEnd) mergedEnd = range.end;
+        continue;
+      }
+      missingCount += mergedEnd - mergedStart + 1;
+      mergedStart = range.start;
+      mergedEnd = range.end;
+    }
+    missingCount += mergedEnd - mergedStart + 1;
     final received = _totalChunks - missingCount;
     client.lastReply = DateTime.now();
     if (received > client.highWater) {
@@ -438,17 +485,29 @@ class CpdsSessionMachine {
 
   void recordParseComplete(Map<int, dynamic> body) {
     final client = _clientForIdentity(_message(body, 1));
-    if (client == null || client.terminal) return;
+    if (client == null) return;
+
     final result = CpdResult.fromValue(body[2]);
     final requestNode = _string(body, 3);
     final bindings = _messageList(body, 4);
     final typeResults = _messageList(body, 5);
-    if (result == CpdResult.unspecified ||
-        requestNode != nodeId ||
-        !_bindingsMatch(client.assignments, bindings) ||
-        typeResults.length != client.assignments.length) {
+    final errorCode = CpdsErrorCode.fromValue(body[6]);
+    final deviceTypes = _enumList(_message(body, 1), 2);
+
+    if (!_validParseComplete(
+      nodeId,
+      client.assignments,
+      deviceTypes,
+      result,
+      requestNode,
+      bindings,
+      typeResults,
+      errorCode,
+    )) {
       return;
     }
+    if (client.terminal) return;
+
     client.transferDone = true;
     if (result == CpdResult.success) {
       client.terminal = true;
@@ -461,48 +520,61 @@ class CpdsSessionMachine {
         success: true,
       );
     } else {
-      client.terminal = true;
-      client.success = false;
-      client.errorCode = CpdsErrorCode.fromValue(body[6]);
-      for (var index = 0; index < client.assignments.length; index++) {
-        final resultBody = typeResults[index];
-        final statusIndex = client.statusIndexes[index];
-        final typeResult = CpdResult.fromValue(resultBody[3]);
-        if (typeResult == CpdResult.success) {
-          _setStatusAt(
-            statusIndex,
-            CpdsDeviceStatus.completed,
-            progress: 100,
-            terminal: true,
-            success: true,
-          );
-        } else {
-          final code = CpdsErrorCode.fromValue(resultBody[5]);
-          _setStatusAt(
-            statusIndex,
-            CpdsDeviceStatus.failed,
-            progress: 100,
-            terminal: true,
-            success: false,
-            errorCode: code,
-          );
-          final assignment = client.assignments[index];
-          _failures.add(
-            CpdsFailure(
-              stage: 'PARSE',
-              deviceType: assignment.deviceType,
-              esnSuffix: suffix(client.discovery.esn),
-              deviceId: assignment.deviceId,
-              errorCode: code,
-              params: {
-                'parseStage': CpdParseStage.fromValue(resultBody[4]).value,
-              },
-            ),
-          );
-        }
-      }
+      _applyParseFailure(client, typeResults, errorCode);
     }
     _recalculateState();
+  }
+
+  void _applyParseFailure(
+    _CpdsClientState client,
+    List<Map<int, dynamic>> typeResults,
+    CpdsErrorCode errorCode,
+  ) {
+    client.terminal = true;
+    client.success = false;
+    client.errorCode = errorCode;
+    final resultsByType = <CpdsDeviceType, Map<int, dynamic>>{};
+    for (final resultBody in typeResults) {
+      resultsByType[CpdsDeviceType.fromValue(resultBody[1])] = resultBody;
+    }
+    for (var index = 0; index < client.assignments.length; index++) {
+      final assignment = client.assignments[index];
+      final statusIndex = client.statusIndexes[index];
+      final resultBody = resultsByType[assignment.deviceType];
+      if (resultBody == null) continue;
+      final typeResult = CpdResult.fromValue(resultBody[3]);
+      if (typeResult == CpdResult.success) {
+        _setStatusAt(
+          statusIndex,
+          CpdsDeviceStatus.completed,
+          progress: 100,
+          terminal: true,
+          success: true,
+        );
+      } else {
+        final code = CpdsErrorCode.fromValue(resultBody[5]);
+        _setStatusAt(
+          statusIndex,
+          CpdsDeviceStatus.failed,
+          progress: 100,
+          terminal: true,
+          success: false,
+          errorCode: code,
+        );
+        _failures.add(
+          CpdsFailure(
+            stage: 'PARSE',
+            deviceType: assignment.deviceType,
+            esnSuffix: suffix(client.discovery.esn),
+            deviceId: assignment.deviceId,
+            errorCode: code,
+            params: {
+              'parseStage': CpdParseStage.fromValue(resultBody[4]).apiName,
+            },
+          ),
+        );
+      }
+    }
   }
 
   void checkDeadlines(DateTime now) {
@@ -516,23 +588,16 @@ class CpdsSessionMachine {
         continue;
       }
       final lastReply = client.lastReply;
-      if (lastReply != null &&
+      if (client.silencePaused == null &&
+          lastReply != null &&
           now.difference(lastReply) > const Duration(seconds: 10)) {
-        _failClient(
-          client,
-          'TRANSFER',
-          CpdsErrorCode.transferSilenceTimeout,
-        );
+        _failClient(client, 'TRANSFER', CpdsErrorCode.transferSilenceTimeout);
         continue;
       }
       final highWaterAt = client.highWaterAt;
       if (highWaterAt != null &&
           now.difference(highWaterAt) > const Duration(seconds: 30)) {
-        _failClient(
-          client,
-          'TRANSFER',
-          CpdsErrorCode.transferNoProgress,
-        );
+        _failClient(client, 'TRANSFER', CpdsErrorCode.transferNoProgress);
       }
     }
     _recalculateState();
@@ -546,9 +611,7 @@ class CpdsSessionMachine {
       if (!client.terminal) _failClient(client, stage, code);
     }
     if (_clients.isEmpty) {
-      _failures.add(
-        CpdsFailure(stage: stage, errorCode: code),
-      );
+      _failures.add(CpdsFailure(stage: stage, errorCode: code));
       _state = CpdsActiveState.failed;
       return;
     }
@@ -673,7 +736,8 @@ class CpdsSessionMachine {
     }
     for (final client in _clients.values) {
       allTerminal = allTerminal && client.terminal;
-      allTransferDone = allTransferDone && (client.transferDone || client.terminal);
+      allTransferDone =
+          allTransferDone && (client.transferDone || client.terminal);
     }
     if (allTerminal) {
       final successCount = _clients.values.where((item) => item.success).length;
@@ -763,11 +827,7 @@ class CpdsSessionMachine {
     );
   }
 
-  void _failClient(
-    _CpdsClientState client,
-    String stage,
-    CpdsErrorCode code,
-  ) {
+  void _failClient(_CpdsClientState client, String stage, CpdsErrorCode code) {
     if (client.terminal) return;
     client.terminal = true;
     client.success = false;
@@ -805,11 +865,7 @@ class CpdsSessionMachine {
   void _failRemaining(_CpdsClientState except, String stage) {
     for (final client in _clients.values) {
       if (client != except && !client.terminal) {
-        _failClient(
-          client,
-          stage,
-          CpdsErrorCode.skippedAfterPreviousFailure,
-        );
+        _failClient(client, stage, CpdsErrorCode.skippedAfterPreviousFailure);
       }
     }
   }
@@ -817,11 +873,7 @@ class CpdsSessionMachine {
   void _failGlobal(CpdsErrorCode code, Map<String, dynamic> params) {
     _state = CpdsActiveState.failed;
     _failures.add(
-      CpdsFailure(
-        stage: 'DISCOVERY',
-        errorCode: code,
-        params: params,
-      ),
+      CpdsFailure(stage: 'DISCOVERY', errorCode: code, params: params),
     );
   }
 }
@@ -844,7 +896,77 @@ bool _validDiscovery(
   }
   if (hasCcuAudio && deviceTypes.length != 1) return false;
   if (_ipv4(currentIp) == null) return false;
-  if (_ipv4(subnetMask) == null) return false;
+  if (!_validSubnetMask(subnetMask)) return false;
+  return true;
+}
+
+bool _validParseComplete(
+  String nodeId,
+  List<_CpdsAssignment> assignments,
+  List<CpdsDeviceType> deviceTypes,
+  CpdResult result,
+  String requestNode,
+  List<Map<int, dynamic>> bindings,
+  List<Map<int, dynamic>> typeResults,
+  CpdsErrorCode errorCode,
+) {
+  if (result == CpdResult.unspecified ||
+      requestNode != nodeId ||
+      !_bindingsMatch(assignments, bindings) ||
+      typeResults.length != assignments.length) {
+    return false;
+  }
+
+  final expectedByType = <CpdsDeviceType, _CpdsAssignment>{};
+  for (final assignment in assignments) {
+    expectedByType[assignment.deviceType] = assignment;
+  }
+
+  for (var index = 0; index < deviceTypes.length; index++) {
+    if (index >= typeResults.length) return false;
+    final deviceType = deviceTypes[index];
+    final assignment = expectedByType[deviceType];
+    final resultBody = typeResults[index];
+    final typeResult = CpdResult.fromValue(resultBody[3]);
+    final typeDeviceType = CpdsDeviceType.fromValue(resultBody[1]);
+    final typeDeviceId = _string(resultBody, 2);
+    final stage = CpdParseStage.fromValue(resultBody[4]);
+    final typeErrorCode = CpdsErrorCode.fromValue(resultBody[5]);
+
+    if (assignment == null ||
+        typeDeviceType != deviceType ||
+        typeDeviceId != assignment.deviceId ||
+        typeResult == CpdResult.unspecified) {
+      return false;
+    }
+    if (typeResult == CpdResult.success) {
+      if (stage != CpdParseStage.unspecified ||
+          typeErrorCode != CpdsErrorCode.unspecified) {
+        return false;
+      }
+    } else if (stage == CpdParseStage.unspecified ||
+        typeErrorCode == CpdsErrorCode.unspecified) {
+      return false;
+    }
+  }
+
+  if (result == CpdResult.success) {
+    if (errorCode != CpdsErrorCode.unspecified) return false;
+    for (final resultBody in typeResults) {
+      if (CpdResult.fromValue(resultBody[3]) != CpdResult.success) {
+        return false;
+      }
+    }
+  } else {
+    if (errorCode == CpdsErrorCode.unspecified) return false;
+    var hasTypeFailure = false;
+    for (final resultBody in typeResults) {
+      hasTypeFailure =
+          hasTypeFailure ||
+          CpdResult.fromValue(resultBody[3]) == CpdResult.failed;
+    }
+    if (!hasTypeFailure) return false;
+  }
   return true;
 }
 
@@ -867,19 +989,15 @@ bool _bindingsMatch(
 List<CpdsDeviceType> _enumList(Map<int, dynamic> map, int field) {
   final value = map[field];
   if (value is CpdPackedEnums) {
-    return value.values
-        .map((item) => CpdsDeviceType.fromValue(item))
-        .toList();
+    return value.values.map((item) => CpdsDeviceType.fromValue(item)).toList();
   }
   if (value is Uint8List) {
-    return _parsePackedVarints(value)
-        .map((item) => CpdsDeviceType.fromValue(item))
-        .toList();
+    return _parsePackedVarints(
+      value,
+    ).map((item) => CpdsDeviceType.fromValue(item)).toList();
   }
   if (value is List) {
-    return value
-        .map((item) => CpdsDeviceType.fromValue(item))
-        .toList();
+    return value.map((item) => CpdsDeviceType.fromValue(item)).toList();
   }
   if (value != null) return [CpdsDeviceType.fromValue(value)];
   return const [];
@@ -941,10 +1059,7 @@ int _int(Map<int, dynamic> map, int field) {
   return int.tryParse(value?.toString() ?? '') ?? 0;
 }
 
-bool _sameTypeSet(
-  List<CpdsDeviceType> left,
-  List<CpdsDeviceType> right,
-) {
+bool _sameTypeSet(List<CpdsDeviceType> left, List<CpdsDeviceType> right) {
   if (left.length != right.length) return false;
   final counts = <CpdsDeviceType, int>{};
   for (final type in left) {
@@ -961,11 +1076,11 @@ bool _sameTypeSet(
 String _typeNames(List<CpdsDeviceType> types) =>
     types.map((type) => type.name).toList().toString();
 
-String suffix(String esn) => esn.length <= 6 ? esn : esn.substring(esn.length - 6);
+String suffix(String esn) =>
+    esn.length <= 6 ? esn : esn.substring(esn.length - 6);
 
-String hexEncode(Uint8List data) => data
-    .map((byte) => byte.toRadixString(16).padLeft(2, '0'))
-    .join();
+String hexEncode(Uint8List data) =>
+    data.map((byte) => byte.toRadixString(16).padLeft(2, '0')).join();
 
 InternetAddress? _ipv4(String value) {
   try {
@@ -974,4 +1089,20 @@ InternetAddress? _ipv4(String value) {
   } catch (_) {
     return null;
   }
+}
+
+bool _validSubnetMask(String value) {
+  final address = _ipv4(value);
+  if (address == null) return false;
+  var seenZero = false;
+  for (final byte in address.rawAddress) {
+    for (var bit = 7; bit >= 0; bit--) {
+      if ((byte & (1 << bit)) != 0) {
+        if (seenZero) return false;
+      } else {
+        seenZero = true;
+      }
+    }
+  }
+  return true;
 }

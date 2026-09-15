@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_kts_template/components/loading/simple.loading.dart';
 import 'package:flutter_kts_template/core/utils/director.dart';
+import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 import 'package:flutter_kts_template/pages/layout/sideMenu/sideMenu.dart';
 import 'package:flutter_kts_template/pages/layout/switchLanguage/switchLanguage.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -13,7 +14,6 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:unified_popups/unified_popups.dart';
 
 import '../../config/config.dart';
-import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 
 class MainLayout extends StatelessWidget {
   final StatefulNavigationShell navigationShell;
@@ -113,16 +113,10 @@ class MainLayout extends StatelessWidget {
             elevation: 0,
             foregroundColor: Colors.white,
             actions: [
-              // Padding(
-              //   padding: const EdgeInsets.only(right: 16.0),
-              //   child: Row(
-              //     children: [
-              //       Icon(Icons.info_outline, size: 20.w),
-              //       const SizedBox(width: 8),
-              //       const Text('v1.0'),
-              //     ],
-              //   ),
-              // ),
+              Padding(
+                padding: const EdgeInsetsDirectional.only(end: 12),
+                child: const _AppVersionLabel(),
+              ),
               SwitchLanguage(),
               PopupMenuButton<_LayoutSettingAction>(
                 icon: const Icon(Icons.settings, color: Colors.white),
@@ -145,10 +139,6 @@ class MainLayout extends StatelessWidget {
                     child: Text(context.t.layout.clearCache),
                   ),
                 ],
-              ),
-              Padding(
-                padding: const EdgeInsetsDirectional.only(end: 12),
-                child: const _AppVersionLabel(),
               ),
             ],
           ),
@@ -213,7 +203,6 @@ class _AppVersionLabelState extends State<_AppVersionLabel> {
           version.isEmpty ? '' : 'v$version',
           style: const TextStyle(
             color: Colors.white,
-            fontSize: 13,
             fontWeight: FontWeight.w400,
           ),
         );

@@ -96,10 +96,7 @@ class CpdsSessionRunner {
   Future<void> _authenticate() async {
     var packets = _buildAuthPackets(machine.pendingAssignmentBodies);
     if (packets.isEmpty) {
-      machine.failActive(
-        'AUTHENTICATION',
-        CpdsErrorCode.authBindingMissing,
-      );
+      machine.failActive('AUTHENTICATION', CpdsErrorCode.authBindingMissing);
       _updated();
       return;
     }
@@ -108,12 +105,12 @@ class CpdsSessionRunner {
     while (!_cancelled && !_terminal) {
       await Future<void>.delayed(const Duration(seconds: 1));
       if (_cancelled || _terminal) return;
-      packets = _buildAuthPackets(machine.pendingAssignmentBodies);
-      if (packets.isEmpty) break;
-      await _sendAll(packets);
       if (machine.state != CpdsActiveState.authenticating) {
         break;
       }
+      packets = _buildAuthPackets(machine.pendingAssignmentBodies);
+      if (packets.isEmpty) break;
+      await _sendAll(packets);
       if (DateTime.now().isAfter(deadline)) break;
     }
     if (!_terminal) machine.finishAuthentication();
@@ -126,7 +123,12 @@ class CpdsSessionRunner {
       final key =
           '${assignment[1]}:${assignment[2]}:${assignment[3]}:${assignment[4]}';
       packets.add(
-        _authPacketCache.putIfAbsent(key, () => _packet(12, {1: [assignment]})),
+        _authPacketCache.putIfAbsent(
+          key,
+          () => _packet(12, {
+            1: [assignment],
+          }),
+        ),
       );
     }
     return packets;
@@ -162,8 +164,14 @@ class CpdsSessionRunner {
     await transport.send(start);
     await transport.send(start);
 
+    var nextStartRefresh = DateTime.now().add(const Duration(seconds: 1));
     for (var index = 0; index < chunks.length; index++) {
       if (_cancelled || _terminal) return;
+      final now = DateTime.now();
+      if (!now.isBefore(nextStartRefresh)) {
+        await transport.send(start);
+        nextStartRefresh = now.add(const Duration(seconds: 1));
+      }
       final chunkPacket = _packet(21, {
         1: index,
         2: chunks[index],
@@ -174,10 +182,7 @@ class CpdsSessionRunner {
       _updated();
       await Future<void>.delayed(
         Duration(
-          microseconds: max(
-            1,
-            (chunks[index].length * 8 * 1000000) ~/ 1000000,
-          ),
+          microseconds: max(1, (chunks[index].length * 8 * 1000000) ~/ 1000000),
         ),
       );
     }
@@ -227,31 +232,48 @@ class CpdsSessionRunner {
     List<Uint8List> chunks,
   ) async {
     final indexes = _pendingChunks.toList()..sort();
+    final requesters = _requesters.toList();
     _pendingChunks.clear();
-    machine.setSendProgress(chunks.length, chunks.length, indexes.length, true);
-    _updated();
-    for (final index in indexes) {
-      if (_cancelled || _terminal) return;
-      if (index < 0 || index >= chunks.length) continue;
-      final packet = _packet(21, {
-        1: index,
-        2: chunks[index],
-        3: CpdFixed32(_crc32(chunks[index])),
-      });
-      await transport.send(packet);
-      await Future<void>.delayed(
-        Duration(
-          microseconds: max(
-            1,
-            (chunks[index].length * 8 * 1000000) ~/ 1000000,
-          ),
-        ),
-      );
+    _requesters.clear();
+    for (final esn in requesters) {
+      machine.setRetransmitting(esn, true, DateTime.now());
     }
-    await transport.send(start);
-    await transport.send(end);
-    machine.setSendProgress(chunks.length, chunks.length, 0, false);
-    _updated();
+    try {
+      machine.setSendProgress(
+        chunks.length,
+        chunks.length,
+        indexes.length,
+        true,
+      );
+      _updated();
+      for (final index in indexes) {
+        if (_cancelled || _terminal) return;
+        if (index < 0 || index >= chunks.length) continue;
+        final packet = _packet(21, {
+          1: index,
+          2: chunks[index],
+          3: CpdFixed32(_crc32(chunks[index])),
+        });
+        await transport.send(packet);
+        await Future<void>.delayed(
+          Duration(
+            microseconds: max(
+              1,
+              (chunks[index].length * 8 * 1000000) ~/ 1000000,
+            ),
+          ),
+        );
+      }
+      await transport.send(start);
+      await transport.send(end);
+    } finally {
+      final now = DateTime.now();
+      for (final esn in requesters) {
+        machine.setRetransmitting(esn, false, now);
+      }
+      machine.setSendProgress(chunks.length, chunks.length, 0, false);
+      _updated();
+    }
   }
 
   void _handlePacket(CpdPacket packet) {
@@ -315,11 +337,8 @@ class CpdsSessionRunner {
   }
 
   void _addMissingRanges(Map<int, dynamic> body) {
-    final rawRanges = body[2];
-    final ranges = rawRanges is List ? rawRanges : [rawRanges];
-    for (final raw in ranges) {
-      final range = _asMessage(raw);
-      if (range == null) continue;
+    final ranges = _messageList(body, 2);
+    for (final range in ranges) {
       final start = _int(range, 1);
       final end = _int(range, 2);
       for (var index = start; index <= end; index++) {
@@ -347,13 +366,11 @@ class CpdsSessionRunner {
 
   Future<bool> _waitDecision() {
     _decisionCompleter = Completer<bool>();
-    _decisionSubscription = discoveryDecision.listen(
-      (proceed) {
-        if (!_decisionCompleter!.isCompleted) {
-          _decisionCompleter!.complete(proceed);
-        }
-      },
-    );
+    _decisionSubscription = discoveryDecision.listen((proceed) {
+      if (!_decisionCompleter!.isCompleted) {
+        _decisionCompleter!.complete(proceed);
+      }
+    });
     return _decisionCompleter!.future;
   }
 
@@ -439,19 +456,15 @@ int _int(Map<int, dynamic> map, int field) {
 List<CpdsDeviceType> _enumList(Map<int, dynamic> map, int field) {
   final value = map[field];
   if (value is CpdPackedEnums) {
-    return value.values
-        .map((item) => CpdsDeviceType.fromValue(item))
-        .toList();
+    return value.values.map((item) => CpdsDeviceType.fromValue(item)).toList();
   }
   if (value is Uint8List) {
-    return _parsePackedVarints(value)
-        .map((item) => CpdsDeviceType.fromValue(item))
-        .toList();
+    return _parsePackedVarints(
+      value,
+    ).map((item) => CpdsDeviceType.fromValue(item)).toList();
   }
   if (value is List) {
-    return value
-        .map((item) => CpdsDeviceType.fromValue(item))
-        .toList();
+    return value.map((item) => CpdsDeviceType.fromValue(item)).toList();
   }
   if (value != null) return [CpdsDeviceType.fromValue(value)];
   return const [];
@@ -483,4 +496,20 @@ Map<int, dynamic>? _asMessage(Object? value) {
   if (value is Map<int, dynamic>) return value;
   if (value is Map) return Map<int, dynamic>.from(value);
   return null;
+}
+
+List<Map<int, dynamic>> _messageList(Map<int, dynamic> map, int field) {
+  final value = map[field];
+  if (value is Uint8List) {
+    final single = _asMessage(value);
+    return single == null ? const [] : [single];
+  }
+  if (value is List) {
+    return value
+        .map((item) => _asMessage(item))
+        .whereType<Map<int, dynamic>>()
+        .toList();
+  }
+  final single = _asMessage(value);
+  return single == null ? const [] : [single];
 }

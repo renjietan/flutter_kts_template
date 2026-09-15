@@ -3,7 +3,6 @@ import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 
-import 'package:crypto/crypto.dart';
 import 'package:flutter_kts_template/config/config.dart';
 import 'package:flutter_kts_template/core/utils/director.dart';
 import 'package:flutter_kts_template/utils/shared.dart';
@@ -16,6 +15,7 @@ import '../parser/cpds_package_parser.dart';
 import '../protocol/cpds_udp_transport.dart';
 import '../session/cpds_session_machine.dart';
 import '../session/cpds_session_runner.dart';
+import 'cpds_disk_space.dart';
 import 'cpds_network_interfaces.dart';
 
 class CpdsManager {
@@ -31,6 +31,7 @@ class CpdsManager {
   String _transferFileName = '';
   int _uploadSize = 0;
   CpdsPackage? _package;
+  Uint8List? _packageSha256;
   String _selectedNodeId = '';
   String _selectedFutureWarriorUnitId = '';
   String _interfaceName = '';
@@ -86,8 +87,17 @@ class CpdsManager {
         message: 'package too large',
       );
     }
+    _ensureIdle();
 
     final uploadDir = await DirectoryManager.instance.getUploadsPath();
+    final available = await freeBytes(uploadDir);
+    if (available != null && available < bytes.length) {
+      throw CpdsException(
+        CpdsErrorCode.insufficientStorage,
+        params: {'required': bytes.length, 'available': available},
+        message: 'insufficient storage',
+      );
+    }
 
     final newPath = path.join(uploadDir, fileName);
     final file = File(newPath);
@@ -99,6 +109,7 @@ class CpdsManager {
     _transferFileName = fileName;
     _uploadSize = bytes.length;
     _package = null;
+    _packageSha256 = null;
     _selectedNodeId = '';
     _selectedFutureWarriorUnitId = '';
     _session = null;
@@ -115,6 +126,7 @@ class CpdsManager {
   }
 
   Future<CpdsApplicationState> parsePackage() async {
+    _ensureIdle();
     final uploadPath = _uploadPath;
     if (uploadPath == null) {
       throw CpdsException(
@@ -123,12 +135,25 @@ class CpdsManager {
         message: 'no uploaded package',
       );
     }
-    final package = await CpdsPackageParser.parseFile(
+
+    final (package, sha) = await CpdsPackageParser.parseFileWithHash(
       uploadPath,
       _uploadName,
       password: AppConfig.zipPassword,
     );
+
+    final available = await freeBytes(path.dirname(uploadPath));
+    final required = package.requiredWorkspace;
+    if (available != null && available < required) {
+      throw CpdsException(
+        CpdsErrorCode.insufficientStorage,
+        params: {'required': required, 'available': available},
+        message: 'insufficient storage',
+      );
+    }
+
     _package = package;
+    _packageSha256 = sha;
     _selectedNodeId = '';
     _selectedFutureWarriorUnitId = '';
     _session = null;
@@ -145,6 +170,7 @@ class CpdsManager {
   }
 
   Future<CpdsApplicationState> parseSourcePath(String sourcePath) async {
+    _ensureIdle();
     final type = FileSystemEntity.typeSync(sourcePath, followLinks: false);
     if (type == FileSystemEntityType.directory) {
       final package = await CpdsPackageParser.parseDirectory(
@@ -155,6 +181,7 @@ class CpdsManager {
       _uploadName = path.basename(sourcePath);
       _uploadSize = 0;
       _package = package;
+      _packageSha256 = null;
       _selectedNodeId = '';
       _selectedFutureWarriorUnitId = '';
       _session = null;
@@ -191,6 +218,7 @@ class CpdsManager {
       _transferFileName = name;
       _uploadSize = stat.size;
       _package = null;
+      _packageSha256 = null;
       _selectedNodeId = '';
       _selectedFutureWarriorUnitId = '';
       _session = null;
@@ -207,6 +235,7 @@ class CpdsManager {
   }
 
   CpdsApplicationState selectNode(String nodeId) {
+    _ensureIdle();
     final package = _package;
     if (package == null) {
       throw CpdsException(
@@ -234,6 +263,7 @@ class CpdsManager {
   }
 
   CpdsApplicationState selectFutureWarrior(String unitId) {
+    _ensureIdle();
     final package = _package;
     if (package == null) {
       throw CpdsException(
@@ -273,6 +303,7 @@ class CpdsManager {
   }
 
   Future<CpdsApplicationState> selectNetworkInterface(String name) async {
+    _ensureIdle();
     if (name.isNotEmpty) {
       final interfaces = await listNetworkInterfaces();
       if (!interfaces.any((item) => item.name == name)) {
@@ -304,12 +335,13 @@ class CpdsManager {
     _notify();
 
     try {
-      final package = await CpdsPackageParser.parseFile(
+      final (package, sha) = await CpdsPackageParser.parseFileWithHash(
         uploadPath,
         _uploadName,
         password: AppConfig.zipPassword,
       );
       _package = package;
+      _packageSha256 = sha;
       final lastNode = Shared.getCpdsLastSelectedNode() ?? '';
       if (lastNode.isNotEmpty &&
           package.nodes.any((node) => node.id == lastNode)) {
@@ -321,6 +353,7 @@ class CpdsManager {
       }
     } catch (_) {
       _package = null;
+      _packageSha256 = null;
       _selectedNodeId = '';
       _selectedFutureWarriorUnitId = '';
     }
@@ -379,8 +412,14 @@ class CpdsManager {
       );
     }
 
-    final bytes = await File(uploadPath).readAsBytes();
-    final sha = sha256.convert(bytes).bytes;
+    final sha = _packageSha256;
+    if (sha == null) {
+      throw CpdsException(
+        CpdsErrorCode.invalidPackage,
+        params: {'field': 'sha256'},
+        message: 'package hash is not frozen',
+      );
+    }
     final sessionId = _randomUuid();
     final machine = CpdsSessionMachine(
       nodeId: _selectedNodeId,
@@ -397,7 +436,7 @@ class CpdsManager {
         fileName: _transferFileName,
         filePath: uploadPath,
         fileSize: _uploadSize,
-        sha256: Uint8List.fromList(sha),
+        sha256: sha,
         expandedSize: package.expandedSize,
         requiredWorkspace: package.requiredWorkspace,
       ),
@@ -490,6 +529,15 @@ class CpdsManager {
       if (file.existsSync()) file.deleteSync();
     } catch (_) {
       // Best-effort cleanup only.
+    }
+  }
+
+  void _ensureIdle() {
+    if (_active) {
+      throw CpdsException(
+        CpdsErrorCode.busy,
+        message: 'distribution already running',
+      );
     }
   }
 

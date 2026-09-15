@@ -65,7 +65,7 @@ class ScriptBuilder {
 AppId=${config.id}
 AppName=${config.name}
 UninstallDisplayName=${config.name}
-UninstallDisplayIcon={app}\\${config.exePubspecName}
+UninstallDisplayIcon={app}\\${config.exeName}
 AppVersion=${config.version}
 AppPublisher=${config.publisher}
 AppPublisherURL=${config.url}
@@ -128,8 +128,13 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
         section += 'Source: "$filePath\\*"; DestDir: "{app}\\$fileName"; '
             'Flags: ignoreversion recursesubdirs createallsubdirs\n';
       } else {
-        section += 'Source: "$filePath"; DestDir: "{app}"; '
-            'Flags: ignoreversion\n';
+        if (p.basename(filePath) == config.exePubspecName) {
+          section += 'Source: "$filePath"; DestDir: "{app}"; '
+              'DestName: "${config.exeName}"; Flags: ignoreversion\n';
+        } else {
+          section += 'Source: "$filePath"; DestDir: "{app}"; '
+              'Flags: ignoreversion\n';
+        }
       }
     }
 
@@ -172,8 +177,8 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
   String _icons() {
     return '''
 [Icons]
-Name: "{autoprograms}\\${config.name}"; Filename: "{app}\\${config.exePubspecName}"
-Name: "{autodesktop}\\${config.name}"; Filename: "{app}\\${config.exePubspecName}"; Tasks: desktopicon
+Name: "{autoprograms}\\${config.name}"; Filename: "{app}\\${config.exeName}"
+Name: "{autodesktop}\\${config.name}"; Filename: "{app}\\${config.exeName}"; Tasks: desktopicon
 \n''';
   }
 
@@ -181,7 +186,11 @@ Name: "{autodesktop}\\${config.name}"; Filename: "{app}\\${config.exePubspecName
   String _run() {
     return '''
 [Run]
-Filename: "{app}\\${config.exePubspecName}"; Description: "{cm:LaunchProgram,{#StringChange('${config.name}', '&', '&&')}}"; Flags: nowait postinstall skipifsilent
+Filename: "{sys}\\netsh.exe"; Parameters: "advfirewall firewall delete rule name=""${config.name}-UDP"" protocol=UDP dir=in"; Flags: runhidden
+Filename: "{sys}\\netsh.exe"; Parameters: "advfirewall firewall add rule name=""${config.name}-UDP"" dir=in action=allow program=""{app}\\${config.exeName}"" protocol=UDP profile=any"; Flags: runhidden
+Filename: "{sys}\\netsh.exe"; Parameters: "advfirewall firewall delete rule name=""${config.name}-TCP"" protocol=TCP dir=in"; Flags: runhidden
+Filename: "{sys}\\netsh.exe"; Parameters: "advfirewall firewall add rule name=""${config.name}-TCP"" dir=in action=allow program=""{app}\\${config.exeName}"" protocol=TCP profile=any"; Flags: runhidden
+Filename: "{app}\\${config.exeName}"; Description: "{cm:LaunchProgram,{#StringChange('${config.name}', '&', '&&')}}"; Flags: nowait postinstall skipifsilent
 \n''';
   }
 

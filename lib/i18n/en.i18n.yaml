@@ -127,14 +127,14 @@ TextField:
 Form:
   radioManager:
     alias:
-      placeholder: 1-12 units of Chinese, English, digits, spaces, Arabic, or ASCII symbols
+      placeholder: "50 characters: English letters, Arabic, digits, half-width punctuation and symbols, spaces"
       validate: Please enter radio alias
       invalid: Alias contains unsupported characters
-      invalidLength: Alias length must be 1-12 units
+      invalidLength: Alias length must not exceed 50 characters
       help: |
-        1. Chinese or Arabic characters count as 2 units each; English letters, digits, spaces, and half-width symbols count as 1 unit each. Total length is 1-12 units.
-        2. Only Chinese, Arabic, English letters, digits, spaces, and half-width symbols are allowed.
-        3. The characters \ / : * ? " < > | are not allowed; the value must not start or end with a space or dot, and must not be "." or "..".
+        1. Up to 50 characters; English letters, Arabic, digits, half-width punctuation and symbols, and spaces are allowed.
+        2. Cannot end with a space or a dot.
+        3. Cannot contain \ / : * ? " < > |.
     sn:
       placeholder: 10 letters or digits
       validate: Please enter SN

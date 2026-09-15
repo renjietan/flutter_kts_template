@@ -12,6 +12,7 @@ import 'package:flutter_kts_template/core/entities/keyLoaderDetails/keyLoaderDet
 import 'package:flutter_kts_template/logger/logger.dart';
 import 'package:flutter_kts_template/objectbox.g.dart';
 import 'package:flutter_kts_template/pages/radioManager/radioManager.pager.dart';
+import 'package:flutter_kts_template/utils/arabic_digits.dart';
 import 'package:flutter_kts_template/utils/enum/dialog_enum.dart';
 import 'package:flutter_kts_template/utils/provider/radios.provider.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
@@ -163,66 +164,34 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
   }
 
   bool _isAliasCharAllowed(int code) {
-    if ((code >= 0x30 && code <= 0x39) ||
-        (code >= 0x41 && code <= 0x5A) ||
-        (code >= 0x61 && code <= 0x7A) ||
-        code == 0x20 ||
-        _isChinese(code) ||
-        _isArabicLetter(code) ||
-        _isAsciiHalfWidthSymbol(code)) {
+    // half-width space
+    if (code == 0x20) return true;
+    // printable ASCII except \ / : * ? " < > |
+    if (code >= 0x21 && code <= 0x7E) {
+      const forbidden = {
+        0x22, // "
+        0x2A, // *
+        0x2F, // /
+        0x3A, // :
+        0x3C, // <
+        0x3E, // >
+        0x3F, // ?
+        0x5C, // backslash
+        0x7C, // |
+      };
+      if (forbidden.contains(code)) return false;
       return true;
     }
-    return false;
-  }
-
-  int _aliasUnits(String value) {
-    var units = 0;
-    for (final code in value.runes) {
-      units += _isAliasWide(code) ? 2 : 1;
+    // Arabic letters and diacritics U+0621~U+063A, U+0640~U+065F
+    if ((code >= 0x0621 && code <= 0x063A) ||
+        (code >= 0x0640 && code <= 0x065F)) {
+      return true;
     }
-    return units;
-  }
-
-  bool _isAliasWide(int code) => _isChinese(code) || _isArabicLetter(code);
-
-  bool _isChinese(int code) {
-    return (code >= 0x3400 && code <= 0x4DBF) ||
-        (code >= 0x4E00 && code <= 0x9FFF) ||
-        (code >= 0xF900 && code <= 0xFAFF);
-  }
-
-  bool _isArabicLetter(int code) {
-    return (code >= 0x0621 && code <= 0x063A) ||
-        (code >= 0x0641 && code <= 0x064A) ||
-        (code >= 0x066E && code <= 0x06D3) ||
-        code == 0x06D5 ||
-        (code >= 0x06EE && code <= 0x06EF) ||
-        (code >= 0x06FA && code <= 0x06FC) ||
-        code == 0x06FF ||
-        (code >= 0x0750 && code <= 0x077F) ||
-        (code >= 0x08A0 && code <= 0x08FF) ||
-        (code >= 0xFB50 && code <= 0xFDFF) ||
-        (code >= 0xFE70 && code <= 0xFEFF);
-  }
-
-  bool _isAsciiHalfWidthSymbol(int code) {
-    // 文件名非法字符：\ / : * ? " < > |
-    const invalidFileNameSymbols = {
-      0x22,
-      0x2A,
-      0x2F,
-      0x3A,
-      0x3C,
-      0x3E,
-      0x3F,
-      0x5C,
-      0x7C,
-    };
-    if (invalidFileNameSymbols.contains(code)) return false;
-    return (code >= 0x21 && code <= 0x2F) ||
-        (code >= 0x3A && code <= 0x40) ||
-        (code >= 0x5B && code <= 0x60) ||
-        (code >= 0x7B && code <= 0x7E);
+    // Arabic digits U+0660~U+0669
+    if (code >= 0x0660 && code <= 0x0669) return true;
+    // Arabic punctuation U+060C, U+061B, U+061F
+    if (code == 0x060C || code == 0x061B || code == 0x061F) return true;
+    return false;
   }
 
   void _updateRadioBindings(
@@ -421,26 +390,18 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
           textEditingController: aliasTextEditController,
           required: true,
           labelHelpText: t.Form.radioManager.alias.help,
-          inputFormatters: [
-            TextInputFormatter.withFunction((oldValue, newValue) {
-              if (_aliasUnits(newValue.text) > 12) return oldValue;
-              return newValue;
-            }),
-          ],
-          counterTextBuilder: (value) => '${_aliasUnits(value)}/12',
+          inputFormatters: [LengthLimitingTextInputFormatter(50)],
+          counterTextBuilder: (value) => localizeDigits(context, '${value.length}/50'),
           validators: [
             FormBuilderValidators.required(
               errorText: t.Form.radioManager.alias.validate,
             ),
             (value) {
               if (value == null || value.isEmpty) return null;
-              final units = _aliasUnits(value);
-              if (units < 1 || units > 12) {
+              if (value.length > 50) {
                 return t.Form.radioManager.alias.invalidLength;
               }
-              if (value != value.trim() ||
-                  value.startsWith('.') ||
-                  value.endsWith('.')) {
+              if (value.endsWith(' ') || value.endsWith('.')) {
                 return t.Form.radioManager.alias.invalid;
               }
               for (final code in value.runes) {
@@ -458,7 +419,7 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
           hintText: t.Form.radioManager.location.placeholder,
           textEditingController: locationTextEditController,
           inputFormatters: [LengthLimitingTextInputFormatter(50)],
-          counterTextBuilder: (value) => '${value.length}/50',
+          counterTextBuilder: (value) => localizeDigits(context, '${value.length}/50'),
           validators: [
             FormBuilderValidators.match(
               RegExp(r'^[a-zA-Z0-9 _]{0,50}$'),
@@ -474,7 +435,7 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
           textEditingController: snTextEditController,
           required: true,
           inputFormatters: [LengthLimitingTextInputFormatter(10)],
-          counterTextBuilder: (value) => '${value.length}/10',
+          counterTextBuilder: (value) => localizeDigits(context, '${value.length}/10'),
           validators: [
             FormBuilderValidators.required(
               errorText: t.Form.radioManager.sn.validate,

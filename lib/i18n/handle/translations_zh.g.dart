@@ -668,6 +668,8 @@ class Translations$cpds$zh {
 
 	/// zh: '{name} · {ip}'
 	String networkInterfaceOption({required Object name, required Object ip}) => '${name} · ${ip}';
+
+	/// zh: '无网络'
 	String get networkInterfaceNoLink => '无网络';
 
 	/// zh: '自动选中'
@@ -1372,8 +1374,8 @@ class Translations$Form$radioManager$alias$zh {
 
 	// Translations
 
-	/// zh: '12个单位的中文、英文、数字、空格、阿拉伯语、半角符号'
-	String get placeholder => '12个单位的中文、英文、数字、空格、阿拉伯语、半角符号';
+	/// zh: '50个字符：英文字母、阿拉伯语、数字、半角标点及符号、空格'
+	String get placeholder => '50个字符：英文字母、阿拉伯语、数字、半角标点及符号、空格';
 
 	/// zh: '请输入电台别名'
 	String get validate => '请输入电台别名';
@@ -1381,11 +1383,11 @@ class Translations$Form$radioManager$alias$zh {
 	/// zh: '别名包含不支持的字符'
 	String get invalid => '别名包含不支持的字符';
 
-	/// zh: '别名长度应为1-12个单位'
-	String get invalidLength => '别名长度应为1-12个单位';
+	/// zh: '别名长度不能超过50个字符'
+	String get invalidLength => '别名长度不能超过50个字符';
 
-	/// zh: '1、中文或阿拉伯语每个字符计2个单位；英文、数字、空格和半角符号每个字符计1个单位。别名总长度为1～12个单位。 2、仅允许中文、阿拉伯语、英文字母、数字、空格及半角符号。 3、不能包含 \ / : * ? " < > |；不能以空格或句点开头或结尾；不能仅为 . 或 ..。 '
-	String get help => '1、中文或阿拉伯语每个字符计2个单位；英文、数字、空格和半角符号每个字符计1个单位。别名总长度为1～12个单位。\n2、仅允许中文、阿拉伯语、英文字母、数字、空格及半角符号。\n3、不能包含 \ / : * ? " < > |；不能以空格或句点开头或结尾；不能仅为 . 或 ..。\n';
+	/// zh: '1、最多50个字符，可输入英文字母、阿拉伯语、数字、半角标点及符号、空格。 2、不能以空格或点结尾。 3、不能包含 \ / : * ? " < > |。 '
+	String get help => '1、最多50个字符，可输入英文字母、阿拉伯语、数字、半角标点及符号、空格。\n2、不能以空格或点结尾。\n3、不能包含 \ / : * ? " < > |。\n';
 }
 
 // Path: Form.radioManager.sn

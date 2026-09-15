@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:archive/archive.dart';
+import 'package:crypto/crypto.dart';
 import 'package:path/path.dart' as path;
 
 import '../cpds_exception.dart';
@@ -25,8 +26,20 @@ class CpdsPackageParser {
     String filePath,
     String originalName, {
     String? password,
+  }) async {
+    final (package, _) = await parseFileWithHash(
+      filePath,
+      originalName,
+      password: password,
+    );
+    return package;
   }
-  ) async {
+
+  static Future<(CpdsPackage, Uint8List)> parseFileWithHash(
+    String filePath,
+    String originalName, {
+    String? password,
+  }) async {
     _validateFileName(originalName);
     final file = File(filePath);
     if (!await file.exists()) {
@@ -54,17 +67,21 @@ class CpdsPackageParser {
     }
 
     final bytes = await file.readAsBytes();
+    final digest = sha256.convert(bytes).bytes;
     final archive = _decodeZip(bytes, password: password);
     final contents = _inspectArchive(archive, stat.size);
     final package = _parseBusinessFiles(contents);
 
-    return CpdsPackage(
-      fileName: originalName,
-      fileSize: stat.size,
-      expandedSize: contents.expandedSize,
-      requiredWorkspace: _estimateWorkspace(stat.size, contents.expandedSize),
-      units: package.units,
-      nodes: package.nodes,
+    return (
+      CpdsPackage(
+        fileName: originalName,
+        fileSize: stat.size,
+        expandedSize: contents.expandedSize,
+        requiredWorkspace: _estimateWorkspace(stat.size, contents.expandedSize),
+        units: package.units,
+        nodes: package.nodes,
+      ),
+      Uint8List.fromList(digest),
     );
   }
 
@@ -89,10 +106,7 @@ class CpdsPackageParser {
       fileName: originalName,
       fileSize: fileSize,
       expandedSize: contents.expandedSize,
-      requiredWorkspace: _estimateWorkspace(
-        fileSize,
-        contents.expandedSize,
-      ),
+      requiredWorkspace: _estimateWorkspace(fileSize, contents.expandedSize),
       units: package.units,
       nodes: package.nodes,
     );
@@ -181,7 +195,11 @@ class CpdsPackageParser {
     if (archive.files.length > maxEntries) {
       throw CpdsException(
         CpdsErrorCode.invalidZipSize,
-        params: {'field': 'entries', 'actual': archive.files.length, 'limit': maxEntries},
+        params: {
+          'field': 'entries',
+          'actual': archive.files.length,
+          'limit': maxEntries,
+        },
       );
     }
 
@@ -212,20 +230,34 @@ class CpdsPackageParser {
       if (entry.size > maxEntryBytes) {
         throw CpdsException(
           CpdsErrorCode.invalidZipSize,
-          params: {'field': 'entrySize', 'path': safeName, 'actual': entry.size, 'limit': maxEntryBytes},
+          params: {
+            'field': 'entrySize',
+            'path': safeName,
+            'actual': entry.size,
+            'limit': maxEntryBytes,
+          },
         );
       }
       if (contents.expandedSize + entry.size > maxExpandedBytes) {
         throw CpdsException(
           CpdsErrorCode.invalidZipSize,
-          params: {'field': 'expandedSize', 'actual': contents.expandedSize + entry.size, 'limit': maxExpandedBytes},
+          params: {
+            'field': 'expandedSize',
+            'actual': contents.expandedSize + entry.size,
+            'limit': maxExpandedBytes,
+          },
         );
       }
       contents.expandedSize += entry.size;
-      if (packageSize == 0 || contents.expandedSize > packageSize * maxExpansionRatio) {
+      if (packageSize == 0 ||
+          contents.expandedSize > packageSize * maxExpansionRatio) {
         throw CpdsException(
           CpdsErrorCode.invalidZipSize,
-          params: {'field': 'expansionRatio', 'actual': contents.expandedSize, 'limit': packageSize * maxExpansionRatio},
+          params: {
+            'field': 'expansionRatio',
+            'actual': contents.expandedSize,
+            'limit': packageSize * maxExpansionRatio,
+          },
         );
       }
 
@@ -233,7 +265,12 @@ class CpdsPackageParser {
       if (bytes.length != entry.size) {
         throw CpdsException(
           CpdsErrorCode.invalidZipSize,
-          params: {'field': 'readZipEntry', 'path': safeName, 'actual': bytes.length, 'limit': entry.size},
+          params: {
+            'field': 'readZipEntry',
+            'path': safeName,
+            'actual': bytes.length,
+            'limit': entry.size,
+          },
         );
       }
       contents.files[safeName] = bytes;
@@ -263,9 +300,7 @@ class CpdsPackageParser {
       );
     }
     final cleaned = path.posix.normalize(raw);
-    if (cleaned == '.' ||
-        cleaned == '..' ||
-        cleaned.startsWith('../')) {
+    if (cleaned == '.' || cleaned == '..' || cleaned.startsWith('../')) {
       throw CpdsException(
         CpdsErrorCode.invalidPackage,
         params: {'field': 'unsafeZipPath', 'path': raw},
@@ -450,9 +485,9 @@ class CpdsPackageParser {
         );
       }
     }
-    final subUnits = _listOfMaps(ref['SubUnits'])
-        .map((item) => _buildUnit(item, unitFiles, nodes))
-        .toList();
+    final subUnits = _listOfMaps(
+      ref['SubUnits'],
+    ).map((item) => _buildUnit(item, unitFiles, nodes)).toList();
     return CpdsUnit(
       id: unitId,
       name: unitName,
@@ -596,10 +631,22 @@ class CpdsPackageParser {
     );
 
     final radioMappings = <MapEntry<String, (String, String, CpdsDeviceType)>>[
-      MapEntry('MMR200', ('dc_MMR200_', 'MMR200', CpdsDeviceType.multiBandRadio)),
-      MapEntry('PMR200', ('dc_PMR200_', 'PMR200', CpdsDeviceType.multiBandHandheld)),
+      MapEntry('MMR200', (
+        'dc_MMR200_',
+        'MMR200',
+        CpdsDeviceType.multiBandRadio,
+      )),
+      MapEntry('PMR200', (
+        'dc_PMR200_',
+        'PMR200',
+        CpdsDeviceType.multiBandHandheld,
+      )),
       MapEntry('MR9360', ('dc_MR9360_', 'MR9360', CpdsDeviceType.hf)),
-      MapEntry('PRR206', ('dc_PRR206_', 'PRR206', CpdsDeviceType.smallHandheld)),
+      MapEntry('PRR206', (
+        'dc_PRR206_',
+        'PRR206',
+        CpdsDeviceType.smallHandheld,
+      )),
     ];
     final knownRadio = radioMappings.map((e) => e.key).toSet();
     for (final mapping in radioMappings) {

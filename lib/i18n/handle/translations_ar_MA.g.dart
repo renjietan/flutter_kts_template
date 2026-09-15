@@ -802,11 +802,11 @@ class Translations$Form$radioManager$alias$ar_MA extends Translations$Form$radio
 	final TranslationsArMa _root; // ignore: unused_field
 
 	// Translations
-	@override String get placeholder => '12 وحدة من الصينية أو الإنجليزية أو الأرقام أو المسافات أو العربية أو رموز نصف العرض';
+	@override String get placeholder => '50 حرفًا: الحروف الإنجليزية والعربية والأرقام وعلامات الترقيم والرموز نصف العرض والمسافات';
 	@override String get validate => 'يرجى إدخال الاسم المستعار للجهاز';
 	@override String get invalid => 'يحتوي الاسم المستعار على أحرف غير مدعومة';
-	@override String get invalidLength => 'يجب أن يكون طول الاسم المستعار من 1 إلى 12 وحدة';
-	@override String get help => '1. تحسب كل حرف صيني أو عربي كوحدتين؛ ويحسب كل حرف إنجليزي أو رقم أو مسافة أو رمز نصف عرض كوحدة واحدة. الطول الإجمالي للاسم المستعار من 1 إلى 12 وحدة.\n2. يُسمح فقط بالصينية والعربية والأحرف الإنجليزية والأرقام والمسافات ورموز نصف العرض.\n3. لا يمكن أن يحتوي على \ / : * ? " < > |؛ ولا يمكن أن يبدأ أو ينتهي بمسافة أو نقطة؛ ولا يمكن أن يكون . أو .. فقط.\n';
+	@override String get invalidLength => 'يجب ألا يتجاوز طول الاسم المستعار 50 حرفًا';
+	@override String get help => '1. حتى 50 حرفًا؛ يُسمح بإدخال الحروف الإنجليزية والعربية والأرقام وعلامات الترقيم والرموز نصف العرض والمسافات.\n2. لا يمكن أن ينتهي بمسافة أو نقطة.\n3. لا يمكن أن يحتوي على \ / : * ? " < > |.\n';
 }
 
 // Path: Form.radioManager.sn

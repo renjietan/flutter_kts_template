@@ -5,7 +5,7 @@ publish_to: 'none'
 
 # Android 版本声明规则 https://developer.android.com/studio/publish/versioning
 # IOS 版本声明规则 https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
-version: 0.1.2+0
+version: 0.1.2+1
 
 environment:
   sdk: ^3.10.9

@@ -802,11 +802,11 @@ class _Translations$Form$radioManager$alias$en extends Translations$Form$radioMa
 	final TranslationsEn _root; // ignore: unused_field
 
 	// Translations
-	@override String get placeholder => '1-12 units of Chinese, English, digits, spaces, Arabic, or ASCII symbols';
+	@override String get placeholder => '50 characters: English letters, Arabic, digits, half-width punctuation and symbols, spaces';
 	@override String get validate => 'Please enter radio alias';
 	@override String get invalid => 'Alias contains unsupported characters';
-	@override String get invalidLength => 'Alias length must be 1-12 units';
-	@override String get help => '1. Chinese or Arabic characters count as 2 units each; English letters, digits, spaces, and half-width symbols count as 1 unit each. Total length is 1-12 units.\n2. Only Chinese, Arabic, English letters, digits, spaces, and half-width symbols are allowed.\n3. The characters \ / : * ? " < > | are not allowed; the value must not start or end with a space or dot, and must not be "." or "..".\n';
+	@override String get invalidLength => 'Alias length must not exceed 50 characters';
+	@override String get help => '1. Up to 50 characters; English letters, Arabic, digits, half-width punctuation and symbols, and spaces are allowed.\n2. Cannot end with a space or a dot.\n3. Cannot contain \ / : * ? " < > |.\n';
 }
 
 // Path: Form.radioManager.sn
