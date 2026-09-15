@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_kts_template/logger/logger.dart';
 
 import '../../../i18n/handle/translations.g.dart';
 import '../../../utils/shared.dart';
@@ -22,16 +21,12 @@ class _SwitchLanguageState extends State<SwitchLanguage> {
   String _label(AppLocale locale) {
     switch (locale) {
       case AppLocale.zh:
-        GlobalLogger.logInfo(t.settings.zh);
         return t.settings.zh;
       case AppLocale.en:
-        GlobalLogger.logInfo(t.settings.en);
         return t.settings.en;
       case AppLocale.arEg:
-        GlobalLogger.logInfo(t.settings.arEg);
         return t.settings.arEg;
       case AppLocale.arMa:
-        GlobalLogger.logInfo(t.settings.arMa);
         return t.settings.arMa;
     }
   }

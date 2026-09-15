@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_kts_template/components/loading/simple.loading.dart';
 import 'package:flutter_kts_template/core/entities/radios/radiosEntity.dart';
 import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:flutter_kts_template/pages/radioManager/radioManager.mixin.dart';
 
 import '../../theme/table.theme.dart';
@@ -25,6 +26,24 @@ class _RadioManagerPagerState extends State<RadioManagerPager>
     with AutomaticKeepAliveClientMixin, RadioManagerMixin {
   @override
   bool get wantKeepAlive => true;
+
+  AppLocale? _lastLocale;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final locale = TranslationProvider.of(context).locale;
+    if (_lastLocale != null && _lastLocale != locale) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        SmartDialog.dismiss();
+        aliasTextEditController.clear();
+        locationTextEditController.clear();
+        snTextEditController.clear();
+      });
+    }
+    _lastLocale = locale;
+  }
 
   DataTablePlusTheme get _transparentTableTheme => DataTablePlusTheme(
     backgroundColor: Colors.transparent,

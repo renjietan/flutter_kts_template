@@ -30,7 +30,7 @@ Future<void> SimpleFormDialog({
   double? dialogWidth,
   bool twoColumn = false,
   bool clickMaskDismiss = false,
-  Color maskColor = const Color(0x1AFFFFFF),
+  Color maskColor = Colors.black54,
 }) async {
   final formKey = GlobalKey<FormBuilderState>();
   SmartDialog.show(
@@ -133,7 +133,7 @@ List<Widget> _buildFormFields(
     final field = fields[i];
     widgets.add(
       Container(
-        alignment: Alignment.centerLeft,
+        alignment: AlignmentDirectional.centerStart,
         margin: EdgeInsetsGeometry.only(top: i == 0 ? 0 : 20, bottom: 20),
         child: _buildFieldLabel(context, field, labelColor, labelFontSize),
       ),
@@ -320,7 +320,7 @@ Widget _buildFieldItem(
     crossAxisAlignment: CrossAxisAlignment.stretch,
     children: [
       Container(
-        alignment: Alignment.centerLeft,
+        alignment: AlignmentDirectional.centerStart,
         margin: const EdgeInsets.only(bottom: 14),
         child: label,
       ),
@@ -349,10 +349,11 @@ Widget _buildFieldLabel(
               ),
             ],
           ),
+          textAlign: TextAlign.start,
         )
       : Text(
           field.label,
-          textAlign: TextAlign.left,
+          textAlign: TextAlign.start,
           style: TextStyle(color: labelColor, fontSize: labelFontSize),
         );
 

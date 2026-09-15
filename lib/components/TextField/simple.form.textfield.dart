@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 
@@ -22,7 +23,26 @@ class SimpleFormTextField extends StatefulWidget {
 
 class _SimpleFormTextFieldState extends State<SimpleFormTextField> {
   @override
+  void initState() {
+    super.initState();
+    widget.field.textEditingController?.addListener(_onChanged);
+  }
+
+  @override
+  void dispose() {
+    widget.field.textEditingController?.removeListener(_onChanged);
+    super.dispose();
+  }
+
+  void _onChanged() {
+    if (mounted) setState(() {});
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final counter = widget.field.counterTextBuilder?.call(
+      widget.field.textEditingController?.text ?? '',
+    );
     return FormBuilderTextField(
       name: widget.field.name,
       controller: widget.field.textEditingController,
@@ -30,6 +50,7 @@ class _SimpleFormTextFieldState extends State<SimpleFormTextField> {
       keyboardType: widget.field.keyboardType,
       enabled: widget.field.enabled,
       readOnly: widget.field.readonly,
+      inputFormatters: widget.field.inputFormatters,
       validator: widget.field.validators != null
           ? FormBuilderValidators.compose(widget.field.validators!)
           : null,
@@ -48,6 +69,8 @@ class _SimpleFormTextFieldState extends State<SimpleFormTextField> {
           color: Colors.white,
           fontSize: (widget.labelFontSize ?? 13),
         ),
+        suffixText: counter,
+        suffixStyle: const TextStyle(color: Colors.white54, fontSize: 12),
         filled: true,
         fillColor: widget.fillColor,
         border: OutlineInputBorder(
@@ -90,6 +113,9 @@ class FormFieldConfig {
   final bool required;
   final String? labelHelpText;
 
+  final List<TextInputFormatter>? inputFormatters;
+  final String? Function(String value)? counterTextBuilder;
+
   // 新增字段类型
   final FormFieldType fieldType;
 
@@ -111,6 +137,8 @@ class FormFieldConfig {
     this.enabled = true,
     this.required = false,
     this.labelHelpText,
+    this.inputFormatters,
+    this.counterTextBuilder,
     this.fieldType = FormFieldType.text, // 默认为文本输入
     this.items,
     this.labelBuilder,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_kts_template/components/button/base.button.dart';
 import 'package:flutter_kts_template/components/step/step.progress.model.dart';
 import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
+import 'package:flutter_kts_template/utils/arabic_digits.dart';
 
 class StepProgressDialog extends StatefulWidget {
   const StepProgressDialog({super.key, required this.controller, this.onClose});
@@ -169,7 +170,7 @@ class _StepProgressDialogState extends State<StepProgressDialog> {
             ),
             alignment: Alignment.center,
             child: Text(
-              '$index',
+              localizeDigits(context, '$index'),
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
@@ -213,7 +214,7 @@ class _StepProgressDialogState extends State<StepProgressDialog> {
                   children: [
                     if (line.number != null)
                       Text(
-                        '[${line.number}] ',
+                        '[${localizeDigits(context, line.number ?? '')}] ',
                         style: const TextStyle(fontSize: 12, color: _dim),
                       ),
                     Expanded(

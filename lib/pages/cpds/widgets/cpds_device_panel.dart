@@ -5,6 +5,7 @@ import 'package:flutter_kts_template/components/loading/simple.loading.dart';
 import 'package:flutter_kts_template/core/cpds/model/cpds_enums.dart';
 import 'package:flutter_kts_template/core/cpds/model/cpds_models.dart';
 import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
+import 'package:flutter_kts_template/utils/arabic_digits.dart';
 
 import '../../../theme/table.theme.dart';
 import 'cpds_network_interface_bar.dart';
@@ -885,7 +886,7 @@ class _StageStep extends StatelessWidget {
               border: Border.all(color: circleBorder),
             ),
             child: Text(
-              '${index + 1}',
+              localizeDigits(context, '${index + 1}'),
               style: TextStyle(fontSize: 11, color: numberColor),
             ),
           ),

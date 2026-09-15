@@ -1,6 +1,7 @@
 import 'package:composable_data_table/composable_data_table.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:flutter_kts_template/router/router.dart';
 
 import '../../components/text/text.title.dart';
@@ -24,6 +25,22 @@ class KeyLoaderPager extends StatefulWidget {
 
 class _InjectEncryptStickPagerState extends State<KeyLoaderPager>
     with KeyLoaderMixin {
+
+  AppLocale? _lastLocale;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final locale = TranslationProvider.of(context).locale;
+    if (_lastLocale != null && _lastLocale != locale) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        SmartDialog.dismiss();
+        nameTextEditController.clear();
+      });
+    }
+    _lastLocale = locale;
+  }
   @override
   void initState() {
     super.initState();

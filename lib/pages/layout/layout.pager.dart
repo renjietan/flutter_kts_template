@@ -9,6 +9,7 @@ import 'package:flutter_kts_template/pages/layout/sideMenu/sideMenu.dart';
 import 'package:flutter_kts_template/pages/layout/switchLanguage/switchLanguage.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:go_router/go_router.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:unified_popups/unified_popups.dart';
 
 import '../../config/config.dart';
@@ -145,6 +146,10 @@ class MainLayout extends StatelessWidget {
                   ),
                 ],
               ),
+              Padding(
+                padding: const EdgeInsetsDirectional.only(end: 12),
+                child: const _AppVersionLabel(),
+              ),
             ],
           ),
         ),
@@ -179,3 +184,40 @@ class MainLayout extends StatelessWidget {
 }
 
 enum _LayoutSettingAction { clearTemp, clearCache }
+
+class _AppVersionLabel extends StatefulWidget {
+  const _AppVersionLabel();
+
+  @override
+  State<_AppVersionLabel> createState() => _AppVersionLabelState();
+}
+
+class _AppVersionLabelState extends State<_AppVersionLabel> {
+  late final Future<PackageInfo> _future = PackageInfo.fromPlatform();
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<PackageInfo>(
+      future: _future,
+      builder: (context, snapshot) {
+        final info = snapshot.data;
+        var version = '';
+        if (info != null) {
+          version = info.version;
+          final build = info.buildNumber;
+          if (build.isNotEmpty) {
+            version = '$version.$build';
+          }
+        }
+        return Text(
+          version.isEmpty ? '' : 'v$version',
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 13,
+            fontWeight: FontWeight.w400,
+          ),
+        );
+      },
+    );
+  }
+}

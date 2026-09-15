@@ -1,6 +1,7 @@
 import 'package:composable_data_table/composable_data_table.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/material.dart' as material;
+import 'package:flutter/services.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_kts_template/components/button/base.button.dart';
 import 'package:flutter_kts_template/components/dialog/simple.form.dialog.dart';
@@ -411,6 +412,7 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
           : t.button.radioManager.createRadio,
       twoColumn: true,
       dialogWidth: MediaQuery.sizeOf(context).width * 0.7,
+      maskColor: Colors.black54,
       fields: [
         FormFieldConfig(
           name: 'alias',
@@ -419,6 +421,13 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
           textEditingController: aliasTextEditController,
           required: true,
           labelHelpText: t.Form.radioManager.alias.help,
+          inputFormatters: [
+            TextInputFormatter.withFunction((oldValue, newValue) {
+              if (_aliasUnits(newValue.text) > 12) return oldValue;
+              return newValue;
+            }),
+          ],
+          counterTextBuilder: (value) => '${_aliasUnits(value)}/12',
           validators: [
             FormBuilderValidators.required(
               errorText: t.Form.radioManager.alias.validate,
@@ -448,6 +457,8 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
           label: t.tableColumn.radioManager.location,
           hintText: t.Form.radioManager.location.placeholder,
           textEditingController: locationTextEditController,
+          inputFormatters: [LengthLimitingTextInputFormatter(50)],
+          counterTextBuilder: (value) => '${value.length}/50',
           validators: [
             FormBuilderValidators.match(
               RegExp(r'^[a-zA-Z0-9 _]{0,50}$'),
@@ -462,6 +473,8 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
           hintText: t.Form.radioManager.sn.placeholder,
           textEditingController: snTextEditController,
           required: true,
+          inputFormatters: [LengthLimitingTextInputFormatter(10)],
+          counterTextBuilder: (value) => '${value.length}/10',
           validators: [
             FormBuilderValidators.required(
               errorText: t.Form.radioManager.sn.validate,
