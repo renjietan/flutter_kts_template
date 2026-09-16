@@ -19,6 +19,7 @@ void main() {
     await Express.stop();
     GlobalLogger.logWTF("3、服务已停止");
     await UdpManager().disconnect();
+    GlobalLogger.flushSync();
     exit(0);
   });
 }

@@ -12,6 +12,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:unified_popups/unified_popups.dart';
 
 import '../i18n/handle/translations.g.dart';
+import '../logger/logger.dart';
 import '../main.dart';
 import '../utils/keyboard_shortcut_recovery.dart';
 import '../utils/provider/provider.dart';
@@ -22,6 +23,7 @@ class DefaultApp {
   static void run() async {
     WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
     FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
+    await GlobalLogger.init();
     await Shared.init();
     final savedLocale = Shared.getLocale();
     switch (savedLocale) {

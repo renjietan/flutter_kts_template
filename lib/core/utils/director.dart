@@ -43,6 +43,10 @@ class DirectoryManager {
     return dir.path;
   }
 
+  Future<Directory> getLogsDirectory() async {
+    return getUploadsDirectory(subDir: "logs");
+  }
+
   Future<String> getDataBasePath() async {
     final dir = await getUploadsDirectory(
       subDir: AppConfig.dataBaseConfig.name,

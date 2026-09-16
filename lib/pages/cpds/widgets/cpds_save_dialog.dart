@@ -176,7 +176,7 @@ class _CpdsFutureWarriorSaveDialogState
       ..._availableRadiosFor(fwDevice).map(
         (item) => DropdownMenuItem<int?>(
           value: item.id,
-          child: Text(item.alias),
+          child: Text(item.alias, overflow: TextOverflow.ellipsis, maxLines: 1),
         ),
       ),
     ];
@@ -443,6 +443,7 @@ class _CpdsFutureWarriorSaveDialogState
                           columnSpacing: 8,
                           columns: [
                             DataColumn(
+                              columnWidth: FlexColumnWidth(1.0),
                               label: Padding(
                                 padding: const EdgeInsets.only(left: 8),
                                 child: Text(
@@ -453,6 +454,7 @@ class _CpdsFutureWarriorSaveDialogState
                               ),
                             ),
                             DataColumn(
+                              columnWidth: FlexColumnWidth(1.3),
                               label: Padding(
                                 padding: const EdgeInsets.only(left: 8),
                                 child: Text(
@@ -463,6 +465,7 @@ class _CpdsFutureWarriorSaveDialogState
                               ),
                             ),
                             DataColumn(
+                              columnWidth: FlexColumnWidth(1.3),
                               label: Padding(
                                 padding: const EdgeInsets.only(left: 8),
                                 child: Text(
@@ -473,6 +476,7 @@ class _CpdsFutureWarriorSaveDialogState
                               ),
                             ),
                             DataColumn(
+                              columnWidth: FlexColumnWidth(1.6),
                               label: Padding(
                                 padding: const EdgeInsets.only(left: 8),
                                 child: Text(
@@ -483,6 +487,7 @@ class _CpdsFutureWarriorSaveDialogState
                               ),
                             ),
                             DataColumn(
+                              columnWidth: FlexColumnWidth(1.0),
                               label: Padding(
                                 padding: const EdgeInsets.only(left: 8),
                                 child: Text(
@@ -493,6 +498,7 @@ class _CpdsFutureWarriorSaveDialogState
                               ),
                             ),
                             DataColumn(
+                              columnWidth: FlexColumnWidth(1.0),
                               label: Padding(
                                 padding: const EdgeInsets.only(left: 8),
                                 child: Text(

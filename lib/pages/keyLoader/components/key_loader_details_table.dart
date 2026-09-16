@@ -724,7 +724,10 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
       _exporting = true;
     });
     try {
-      await _runExport();
+      await GlobalLogger.runWithCategory(
+        LogCategory.exportParamsPacket,
+        () => _runExport(),
+      );
     } finally {
       if (mounted) {
         setState(() {
@@ -1465,7 +1468,7 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
               .map(
                 (radio) => DropdownMenuItem<int?>(
                   value: radio.id,
-                  child: Text(radio.alias),
+                  child: Text(radio.alias, overflow: TextOverflow.ellipsis, maxLines: 1),
                 ),
               )
               .toList();

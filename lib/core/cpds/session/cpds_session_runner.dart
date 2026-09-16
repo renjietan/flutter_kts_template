@@ -50,7 +50,6 @@ class CpdsSessionRunner {
   bool _cancelled = false;
   final Set<int> _pendingChunks = {};
   final Set<String> _requesters = {};
-  final Map<String, CpdPacket> _authPacketCache = {};
 
   Future<void> run() async {
     _packetSubscription = transport.packets.listen(_handlePacket);
@@ -63,6 +62,9 @@ class CpdsSessionRunner {
         machine.resolveDiscoveryMismatch(proceed);
         _updated();
         if (_terminal) return;
+        if (proceed) {
+          await _refreshDiscovery();
+        }
       }
 
       await _authenticate();
@@ -93,8 +95,14 @@ class CpdsSessionRunner {
     _updated();
   }
 
+  Future<void> _refreshDiscovery() async {
+    final message = _packet(10, const {});
+    await transport.send(message);
+    await transport.send(message);
+  }
+
   Future<void> _authenticate() async {
-    var packets = _buildAuthPackets(machine.pendingAssignmentBodies);
+    final packets = _buildAuthPackets(machine.assignmentBodies);
     if (packets.isEmpty) {
       machine.failActive('AUTHENTICATION', CpdsErrorCode.authBindingMissing);
       _updated();
@@ -108,8 +116,6 @@ class CpdsSessionRunner {
       if (machine.state != CpdsActiveState.authenticating) {
         break;
       }
-      packets = _buildAuthPackets(machine.pendingAssignmentBodies);
-      if (packets.isEmpty) break;
       await _sendAll(packets);
       if (DateTime.now().isAfter(deadline)) break;
     }
@@ -119,19 +125,49 @@ class CpdsSessionRunner {
 
   List<CpdPacket> _buildAuthPackets(List<Map<int, dynamic>> assignments) {
     final packets = <CpdPacket>[];
+    var current = <Map<int, dynamic>>[];
+    var messageId = _uuid();
+
     for (final assignment in assignments) {
-      final key =
-          '${assignment[1]}:${assignment[2]}:${assignment[3]}:${assignment[4]}';
-      packets.add(
-        _authPacketCache.putIfAbsent(
-          key,
-          () => _packet(12, {
-            1: [assignment],
-          }),
-        ),
-      );
+      final candidate = [...current, assignment];
+      if (_authPacketFits(messageId, candidate)) {
+        current = candidate;
+        continue;
+      }
+      if (current.isNotEmpty) {
+        packets.add(_authPacket(messageId, current));
+      }
+      messageId = _uuid();
+      current = [assignment];
+    }
+    if (current.isNotEmpty) {
+      packets.add(_authPacket(messageId, current));
     }
     return packets;
+  }
+
+  CpdPacket _authPacket(
+    Uint8List messageId,
+    List<Map<int, dynamic>> assignments,
+  ) {
+    return CpdPacket(
+      sessionId: machine.sessionId,
+      messageId: messageId,
+      bodyField: 12,
+      body: {1: assignments},
+    );
+  }
+
+  bool _authPacketFits(
+    Uint8List messageId,
+    List<Map<int, dynamic>> assignments,
+  ) {
+    try {
+      CpdProtocol.encodePacket(_authPacket(messageId, assignments));
+      return true;
+    } on StateError {
+      return false;
+    }
   }
 
   Future<void> _transfer() async {

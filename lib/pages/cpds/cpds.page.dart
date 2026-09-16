@@ -586,7 +586,9 @@ class _CpdsPageState extends State<CpdsPage> {
       CpdsActiveState.failed,
     );
     try {
-      _applyState(await CpdsApi.startDistribution());
+      await GlobalLogger.runWithCategory(LogCategory.udpDistribution, () async {
+        _applyState(await CpdsApi.startDistribution());
+      });
     } catch (error) {
       _showError(error, title: distributionFailedTitle);
     } finally {
@@ -624,10 +626,13 @@ class _CpdsPageState extends State<CpdsPage> {
 
       // 弹窗内完成：连接注钥枪 → 获取文件列表 → 文件选择。
       if (!mounted) return;
-      final selected = await showDialog<String>(
-        context: context,
-        barrierDismissible: false,
-        builder: (dialogContext) => const CpdsKeyLoaderFileDialog(),
+      final selected = await GlobalLogger.runWithCategory(
+        LogCategory.importParamsPacket,
+        () => showDialog<String>(
+          context: context,
+          barrierDismissible: false,
+          builder: (dialogContext) => const CpdsKeyLoaderFileDialog(),
+        ),
       );
       if (selected != null) {
         GlobalLogger.logInfo('KEY_LOADER_SELECTED $selected');

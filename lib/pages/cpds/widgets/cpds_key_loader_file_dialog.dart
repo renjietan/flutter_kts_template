@@ -69,6 +69,7 @@ class _CpdsKeyLoaderFileDialogState extends State<CpdsKeyLoaderFileDialog> {
   _UsbByteReader? _byteReader;
   StreamSubscription<void>? _byteDisconnectSub;
   bool _cancelled = false;
+  bool _cancelLoading = false;
   bool _completeCleanupRunning = false;
   bool _completeCleanupDone = false;
   String? _padPath;
@@ -107,6 +108,13 @@ class _CpdsKeyLoaderFileDialogState extends State<CpdsKeyLoaderFileDialog> {
         GlobalLogger.logWarn('KEY_LOADER_USB_DISCONNECT_ERROR $e');
       }
     }
+  }
+
+  void _setCancelLoading(bool value) {
+    if (!mounted || _cancelLoading == value) return;
+    setState(() {
+      _cancelLoading = value;
+    });
   }
 
   Future<void> _cleanupGeneratedFiles() async {
@@ -188,30 +196,35 @@ class _CpdsKeyLoaderFileDialogState extends State<CpdsKeyLoaderFileDialog> {
       _step = _CpdsStep.ready;
     });
     await _writeUsb(manager, Uint8List.fromList(utf8.encode('PAD_LIGHT\n')));
+    _setCancelLoading(true);
     try {
-      final readyLine = await reader.nextLine(
-        timeout: const Duration(seconds: 3),
-      );
-      if (!mounted) return;
-      if (readyLine != 'FILE_OK\n') {
+      try {
+        final readyLine = await reader.nextLine(
+          timeout: const Duration(seconds: 3),
+        );
+        if (!mounted) return;
+        if (readyLine != 'FILE_OK\n') {
+          setState(() {
+            _error = t.cpds.keyLoaderReadyTimeout;
+            _readyFailed = true;
+          });
+          await _cleanupUsbAndReaders();
+          return;
+        }
+      } on TimeoutException {
+        if (!mounted) return;
         setState(() {
           _error = t.cpds.keyLoaderReadyTimeout;
           _readyFailed = true;
         });
         await _cleanupUsbAndReaders();
         return;
+      } on StateError {
+        // 弹窗已关闭。
+        return;
       }
-    } on TimeoutException {
-      if (!mounted) return;
-      setState(() {
-        _error = t.cpds.keyLoaderReadyTimeout;
-        _readyFailed = true;
-      });
-      await _cleanupUsbAndReaders();
-      return;
-    } on StateError {
-      // 弹窗已关闭。
-      return;
+    } finally {
+      _setCancelLoading(false);
     }
 
     // 步骤 3：获取文件列表。
@@ -219,21 +232,26 @@ class _CpdsKeyLoaderFileDialogState extends State<CpdsKeyLoaderFileDialog> {
       _step = _CpdsStep.list;
     });
     await _writeUsb(manager, Uint8List.fromList(utf8.encode('PAD_LIST\n')));
+    _setCancelLoading(true);
 
     String? line;
     try {
-      line = await reader.nextLine(timeout: const Duration(seconds: 3));
-    } on TimeoutException {
-      if (!mounted) return;
-      setState(() {
-        _error = t.cpds.keyLoaderListTimeout;
-        _listFailed = true;
-      });
-      await _cleanupUsbAndReaders();
-      return;
-    } on StateError {
-      // 弹窗已关闭（reader 已 stop），无需处理。
-      return;
+      try {
+        line = await reader.nextLine(timeout: const Duration(seconds: 3));
+      } on TimeoutException {
+        if (!mounted) return;
+        setState(() {
+          _error = t.cpds.keyLoaderListTimeout;
+          _listFailed = true;
+        });
+        await _cleanupUsbAndReaders();
+        return;
+      } on StateError {
+        // 弹窗已关闭（reader 已 stop），无需处理。
+        return;
+      }
+    } finally {
+      _setCancelLoading(false);
     }
 
     if (!mounted) return;
@@ -320,55 +338,61 @@ class _CpdsKeyLoaderFileDialogState extends State<CpdsKeyLoaderFileDialog> {
 
     // 1. 发送 PAD_DECRYPT，等待 READY。
     await _writeUsb(manager, Uint8List.fromList(utf8.encode('PAD_DECRYPT\n')));
-
+    _setCancelLoading(true);
     try {
-      final readyLine = await reader.nextLine(
-        timeout: const Duration(seconds: 3),
-      );
-      if (!mounted || !_verifying) return;
-      if (readyLine != 'READY\n') {
+      try {
+        final readyLine = await reader.nextLine(
+          timeout: const Duration(seconds: 3),
+        );
+        if (!mounted || !_verifying) return;
+        if (readyLine != 'READY\n') {
+          setState(() {
+            _verifying = false;
+            _decryptFailed = true;
+            _passwordError = t.cpds.keyLoaderDecryptFail;
+          });
+          return;
+        }
+      } on TimeoutException {
+        if (!mounted || !_verifying) return;
         setState(() {
           _verifying = false;
           _decryptFailed = true;
-          _passwordError = t.cpds.keyLoaderDecryptFail;
+          _passwordError = t.cpds.keyLoaderDecryptTimeout;
         });
         return;
+      } on StateError {
+        // 已取消或弹窗关闭。
+        return;
       }
-    } on TimeoutException {
-      if (!mounted || !_verifying) return;
-      setState(() {
-        _verifying = false;
-        _decryptFailed = true;
-        _passwordError = t.cpds.keyLoaderDecryptTimeout;
-      });
-      return;
-    } on StateError {
-      // 已取消或弹窗关闭。
-      return;
-    }
 
-    // 2. 依次发送：文件名长度、文件名、密码长度、密码（不等待中间回复）。
-    final fileNameBytes = utf8.encode(fileName);
-    final passwordBytes = utf8.encode(password);
-    await _writeUsb(manager, _u32le(fileNameBytes.length));
-    await _writeUsb(manager, Uint8List.fromList(fileNameBytes));
-    await _writeUsb(manager, _u32le(passwordBytes.length));
-    await _writeUsb(manager, Uint8List.fromList(passwordBytes));
+      // 2. 依次发送：文件名长度、文件名、密码长度、密码（不等待中间回复）。
+      final fileNameBytes = utf8.encode(fileName);
+      final passwordBytes = utf8.encode(password);
+      await _writeUsb(manager, _u32le(fileNameBytes.length));
+      await _writeUsb(manager, Uint8List.fromList(fileNameBytes));
+      await _writeUsb(manager, _u32le(passwordBytes.length));
+      await _writeUsb(manager, Uint8List.fromList(passwordBytes));
 
-    // 3. 等待解密结果。
-    try {
-      final line = await reader.nextLine(timeout: const Duration(seconds: 10));
-      if (!mounted || !_verifying) return;
-      _handleDecryptReply(line);
-    } on TimeoutException {
-      if (!mounted || !_verifying) return;
-      setState(() {
-        _verifying = false;
-        _decryptFailed = true;
-        _passwordError = t.cpds.keyLoaderDecryptTimeout;
-      });
-    } on StateError {
-      // 已取消或弹窗关闭。
+      // 3. 等待解密结果。
+      try {
+        final line = await reader.nextLine(
+          timeout: const Duration(seconds: 15),
+        );
+        if (!mounted || !_verifying) return;
+        _handleDecryptReply(line);
+      } on TimeoutException {
+        if (!mounted || !_verifying) return;
+        setState(() {
+          _verifying = false;
+          _decryptFailed = true;
+          _passwordError = t.cpds.keyLoaderDecryptTimeout;
+        });
+      } on StateError {
+        // 已取消或弹窗关闭。
+      }
+    } finally {
+      _setCancelLoading(false);
     }
   }
 
@@ -435,76 +459,81 @@ class _CpdsKeyLoaderFileDialogState extends State<CpdsKeyLoaderFileDialog> {
       // 1. 发送 PAD_DOWN，等待 READY。
       await _writeUsb(manager, Uint8List.fromList(utf8.encode('PAD_DOWN\n')));
       if (_cancelled) return;
+      late final ({Uint8List content, Uint8List md5}) received;
+      _setCancelLoading(true);
       try {
-        final readyLine = await reader.nextLine(
-          timeout: const Duration(seconds: 3),
-        );
-        if (!mounted) return;
-        if (readyLine != 'READY\n') {
+        try {
+          final readyLine = await reader.nextLine(
+            timeout: const Duration(seconds: 3),
+          );
+          if (!mounted) return;
+          if (readyLine != 'READY\n') {
+            setState(() {
+              _downloading = false;
+              _downloadError = t.cpds.keyLoaderDecryptFail;
+            });
+            return;
+          }
+        } on TimeoutException {
+          if (!mounted) return;
           setState(() {
             _downloading = false;
-            _downloadError = t.cpds.keyLoaderDecryptFail;
+            _downloadError = t.cpds.keyLoaderDecryptTimeout;
+          });
+          return;
+        } on StateError {
+          return;
+        }
+
+        // READY 已确认，后续为二进制码流下载，停止行读取器避免缓存二进制数据。
+        _reader?.stop();
+        _reader = null;
+
+        // 2-3. 发送文件名长度 + 文件名。
+        final fileNameBytes = utf8.encode(fileName);
+        await _writeUsb(manager, _u32le(fileNameBytes.length));
+        await _writeUsb(manager, Uint8List.fromList(fileNameBytes));
+
+        // 4. 接收并组装文件（长度头 + 分块 + MD5）。
+        try {
+          received = await _receiveFile(manager);
+          if (_cancelled) return;
+        } on _DownloadTimeout {
+          if (!mounted) return;
+          setState(() {
+            _downloading = false;
+            _downloadFailed = true;
+            _downloadError = t.cpds.keyLoaderDownloadTimeout;
+          });
+          return;
+        } on _DownloadDisconnected {
+          if (!mounted) return;
+          setState(() {
+            _downloading = false;
+            _downloadFailed = true;
+            _downloadError = t.cpds.keyLoaderDeviceRemoved;
+          });
+          return;
+        } on StateError {
+          return;
+        }
+        if (!mounted) return;
+
+        // 5. 收到 MD5 后，发送 FILE_OK（无论校验结果，不等待回复），同时进行 MD5 校验。
+        await _writeUsb(manager, Uint8List.fromList(utf8.encode('FILE_OK\n')));
+        if (_cancelled || !mounted) return;
+        final computedMd5 = md5.convert(received.content).bytes;
+        if (!_listEquals(computedMd5, received.md5)) {
+          if (!mounted) return;
+          setState(() {
+            _downloading = false;
+            _downloadFailed = true;
+            _downloadError = t.cpds.keyLoaderVerifyFailed;
           });
           return;
         }
-      } on TimeoutException {
-        if (!mounted) return;
-        setState(() {
-          _downloading = false;
-          _downloadError = t.cpds.keyLoaderDecryptTimeout;
-        });
-        return;
-      } on StateError {
-        return;
-      }
-
-      // READY 已确认，后续为二进制码流下载，停止行读取器避免缓存二进制数据。
-      _reader?.stop();
-      _reader = null;
-
-      // 2-3. 发送文件名长度 + 文件名。
-      final fileNameBytes = utf8.encode(fileName);
-      await _writeUsb(manager, _u32le(fileNameBytes.length));
-      await _writeUsb(manager, Uint8List.fromList(fileNameBytes));
-
-      // 4. 接收并组装文件（长度头 + 分块 + MD5）。
-      final ({Uint8List content, Uint8List md5}) received;
-      try {
-        received = await _receiveFile(manager);
-        if (_cancelled) return;
-      } on _DownloadTimeout {
-        if (!mounted) return;
-        setState(() {
-          _downloading = false;
-          _downloadFailed = true;
-          _downloadError = t.cpds.keyLoaderDownloadTimeout;
-        });
-        return;
-      } on _DownloadDisconnected {
-        if (!mounted) return;
-        setState(() {
-          _downloading = false;
-          _downloadFailed = true;
-          _downloadError = t.cpds.keyLoaderDeviceRemoved;
-        });
-        return;
-      } on StateError {
-        return;
-      }
-      if (!mounted) return;
-
-      // 5. 收到 MD5 后，发送 FILE_OK（无论校验结果，不等待回复），同时进行 MD5 校验。
-      await _writeUsb(manager, Uint8List.fromList(utf8.encode('FILE_OK\n')));
-      if (_cancelled || !mounted) return;
-      final computedMd5 = md5.convert(received.content).bytes;
-      if (!_listEquals(computedMd5, received.md5)) {
-        if (!mounted) return;
-        setState(() {
-          _downloading = false;
-          _downloadFailed = true;
-          _downloadError = t.cpds.keyLoaderVerifyFailed;
-        });
-        return;
+      } finally {
+        _setCancelLoading(false);
       }
 
       // 6. 保存为设备列表中选择的原始文件名（保留 .pc / .pad 等后缀）。
@@ -557,10 +586,7 @@ class _CpdsKeyLoaderFileDialogState extends State<CpdsKeyLoaderFileDialog> {
         await CpdsManager.instance.parsePackage();
         if (!mounted) return;
         CpdsManager.instance.updateUploadName(fileName);
-        final keepPaths = <String>[
-          if (_padPath != null) _padPath!,
-          if (_uploadZipPath != null) _uploadZipPath!,
-        ];
+        final keepPaths = <String>[?_padPath, ?_uploadZipPath];
         await _deleteOtherUploadFiles(keepPaths);
         setState(() {
           _step = _CpdsStep.complete;
@@ -790,10 +816,31 @@ class _CpdsKeyLoaderFileDialogState extends State<CpdsKeyLoaderFileDialog> {
       actions: [
         if (_step != _CpdsStep.complete)
           TextButton(
-            onPressed: _cancel,
-            child: Text(
-              t.tips.cancel,
-              style: const TextStyle(color: Colors.white70),
+            onPressed: _cancelLoading ? null : _cancel,
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.white70,
+              disabledForegroundColor: Colors.white70,
+              side: const BorderSide(color: Color(0xFF00A2E9)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (_cancelLoading) ...[
+                  const SizedBox(
+                    width: 14,
+                    height: 14,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Color(0xFF00A2E9),
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                ],
+                Text(t.tips.cancel),
+              ],
             ),
           ),
         if (_step == _CpdsStep.select && _selectedFile != null)

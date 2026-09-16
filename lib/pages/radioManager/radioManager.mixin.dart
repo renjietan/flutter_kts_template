@@ -292,8 +292,8 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
       ColumnDefinition<RadiosEntity>(
         label: t.tableColumn.radioManager.alias,
         description: t.tableColumn.radioManager.alias_desc,
-        size: const ColumnSize.auto(),
-        cellBuilder: TextCellBuilder.text<RadiosEntity>((u) => u.alias),
+        flex: 1,
+        cellBuilder: TextCellBuilder.text<RadiosEntity>((u) => u.alias, maxLines: 1),
       ),
       ColumnDefinition<RadiosEntity>(
         label: t.tableColumn.radioManager.location,

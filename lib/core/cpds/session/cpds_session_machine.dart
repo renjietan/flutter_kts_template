@@ -625,14 +625,8 @@ class CpdsSessionMachine {
     _retransmitting = retransmitting;
   }
 
-  List<Map<int, dynamic>> get pendingAssignmentBodies {
-    final result = <Map<int, dynamic>>[];
-    for (final assignment in _assignments) {
-      final client = _clients[assignment.esn];
-      if (client == null || client.authenticated || client.terminal) continue;
-      result.add(assignment.toBody());
-    }
-    return result;
+  List<Map<int, dynamic>> get assignmentBodies {
+    return _assignments.map((assignment) => assignment.toBody()).toList();
   }
 
   CpdsSessionView view() {

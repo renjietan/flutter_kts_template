@@ -56,6 +56,7 @@ class SimpleDropdown<T> extends StatelessWidget {
             child: DropdownButtonHideUnderline(
               child: DropdownButton<T>(
                 value: value,
+                isExpanded: true,
                 hint: Text(
                   hint,
                   style: TextStyle(fontSize: 13, color: theme.textMutedColor),
