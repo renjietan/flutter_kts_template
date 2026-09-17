@@ -1155,7 +1155,14 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
       return null;
     }
 
-    final zipName = '${row.SN ?? ''}-$radioAlias';
+    final raw = row.dcPackageName.split('_')[1];
+    final mapped = switch (raw) {
+      'PMR200' => 'VHF_PMR200',
+      'MMR200' => 'VHF_MMR200',
+      'MR9360' => 'HF',
+      _ => raw,
+    };
+    final zipName = '${row.SN ?? ''}-$mapped-$radioAlias';
     final tarPath = await FileTools.filesToZipFormPath(
       entries: entries,
       outputPath: savePath,
