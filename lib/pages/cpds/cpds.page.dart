@@ -760,6 +760,7 @@ class _CpdsPageState extends State<CpdsPage> {
           .findFirst();
       if (existing == null) continue;
       existing.dcPackageAlias = item['deviceAlias']?.toString();
+      existing.downlinkIp = item['downlinkIp']?.toString();
       existing.radioId = item['radioId'] as int?;
       existing.consumer = item['consumer']?.toString();
       existing.location = item['location']?.toString();
@@ -778,6 +779,7 @@ class _CpdsPageState extends State<CpdsPage> {
         netNodePackageName: item['netNodePackageName']?.toString() ?? '',
         dcPackageName: item['dcPackageName']?.toString() ?? '',
         dcPackageAlias: item['deviceAlias']?.toString(),
+        downlinkIp: item['downlinkIp']?.toString(),
         keyLoaderId: keyLoaderId,
         radioId: item['radioId'] as int?,
         consumer: item['consumer']?.toString(),

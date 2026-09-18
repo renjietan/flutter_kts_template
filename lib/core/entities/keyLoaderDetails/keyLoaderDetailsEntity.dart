@@ -17,6 +17,8 @@ class KeyLoaderDetailsEntity {
 
   String? dcPackageAlias; // 3_device_config 中对应 JSON 的 Alias
 
+  String? downlinkIp; // 下发IP
+
   String? location; // 位置
 
   String? SN; // 电台SN号
@@ -41,6 +43,7 @@ class KeyLoaderDetailsEntity {
     required this.dcPackageName,
     required this.keyLoaderId,
     this.dcPackageAlias,
+    this.downlinkIp,
     this.radioId,
     this.consumer,
     this.location,

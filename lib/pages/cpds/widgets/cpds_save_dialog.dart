@@ -16,6 +16,7 @@ import 'package:flutter_kts_template/logger/logger.dart';
 import 'package:flutter_kts_template/objectbox.g.dart';
 import 'package:flutter_kts_template/theme/table.theme.dart';
 import 'package:flutter_kts_template/pages/cpds/widgets/cpds_messages.dart';
+import 'package:flutter_kts_template/pages/cpds/widgets/cpds_radio_picker.dart';
 
 String cpdsDetailKey(
   String netNodePackageName,
@@ -23,14 +24,8 @@ String cpdsDetailKey(
   String parentIdPath,
 ) => '$netNodePackageName\u0000$dcPackageName\u0000$parentIdPath';
 
-String cpdsRadioChangeLabel({
-  required String? originalAlias,
-  required String? changedAlias,
-}) {
-  String display(String? value) =>
-      (value == null || value.trim().isEmpty) ? '空' : value;
-  return '${display(originalAlias)} - ${display(changedAlias)}';
-}
+String cpdsDisplayDownlinkIp(String? value) =>
+    (value == null || value.trim().isEmpty) ? '--' : value;
 
 int? cpdsDefaultRadioIdForDevice({
   required CpdsFutureWarriorDevice device,
@@ -256,60 +251,65 @@ class _CpdsFutureWarriorSaveDialogState
     });
   }
 
-  Widget _buildRadioDropdown(CpdsFutureWarriorDevice fwDevice) {
+  Widget _buildRadioPicker(CpdsFutureWarriorDevice fwDevice) {
     final t = Translations.of(context);
-    final items = [
-      ..._availableRadiosFor(fwDevice).map(
-        (item) => DropdownMenuItem<int?>(
-          value: item.id,
-          child: Text(item.alias, overflow: TextOverflow.ellipsis, maxLines: 1),
-        ),
-      ),
-    ];
-    return Container(
-      height: 32,
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
-      decoration: BoxDecoration(
-        color: const Color(0xFF282D33),
-        border: Border.all(color: const Color(0xFF353A41)),
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: DropdownButtonHideUnderline(
-              child: DropdownButton<int?>(
-                value: _selectedRadioId[fwDevice.key],
-                isExpanded: true,
-                hint: Text(
-                  t.cpds.saveDialog.selectPlaceholder,
-                  style: const TextStyle(color: Colors.white54, fontSize: 13),
-                ),
-                icon: const Icon(
-                  Icons.keyboard_arrow_down,
-                  size: 18,
-                  color: Colors.white54,
-                ),
-                dropdownColor: const Color(0xFF282D33),
-                style: const TextStyle(color: Colors.white, fontSize: 13),
-                items: items,
-                onChanged: (value) {
-                  setState(() {
-                    _selectedRadioId[fwDevice.key] = value;
-                  });
-                },
-              ),
-            ),
+    return CpdsRadioPickerField(
+      selected: _radioFor(fwDevice),
+      hint: t.cpds.saveDialog.selectPlaceholder,
+      onTap: () => _openRadioPicker(fwDevice),
+      onClear: () => _clearRadio(fwDevice),
+    );
+  }
+
+  Future<void> _openRadioPicker(CpdsFutureWarriorDevice fwDevice) async {
+    if (_selectedKeyLoaderId == null) {
+      await _showSelectKeyLoaderFirstDialog();
+      return;
+    }
+    final selected = await showCpdsRadioSidePanel(
+      context: context,
+      radios: _availableRadiosFor(fwDevice),
+      selected: _radioFor(fwDevice),
+    );
+    if (selected == null || !mounted) return;
+    setState(() {
+      _selectedRadioId[fwDevice.key] = selected.id;
+    });
+  }
+
+  Future<void> _showSelectKeyLoaderFirstDialog() async {
+    final t = Translations.of(context);
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) {
+        var closed = false;
+        return AlertDialog(
+          backgroundColor: const Color(0xFF20262D),
+          title: Text(
+            t.tips.title,
+            style: const TextStyle(color: Colors.white, fontSize: 17),
           ),
-          GestureDetector(
-            onTap: () => _clearRadio(fwDevice),
-            child: const Padding(
-              padding: EdgeInsets.only(left: 8),
-              child: Icon(Icons.close, size: 16, color: Colors.white54),
+          content: Text(
+            CpdsMessages.tr(
+              dialogContext,
+              '请先选择注钥枪',
+              'Please select a key loader first',
+              'يرجى تحديد جهاز تحميل المفاتيح أولاً',
             ),
+            style: const TextStyle(color: Colors.white70, fontSize: 13),
           ),
-        ],
-      ),
+          actions: [
+            FilledButton(
+              onPressed: () {
+                if (closed) return;
+                closed = true;
+                Navigator.of(dialogContext).pop();
+              },
+              child: Text(t.common.confirm),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -334,6 +334,7 @@ class _CpdsFutureWarriorSaveDialogState
         'dcPackageName': fwDevice.device.id,
         'nodeName': fwDevice.nodeName,
         'deviceAlias': fwDevice.device.alias,
+        'downlinkIp': fwDevice.device.ip,
         'deviceType': fwDevice.device.type.value,
         'deviceModel': fwDevice.device.model,
         'radioId': radio?.id,
@@ -576,6 +577,22 @@ class _CpdsFutureWarriorSaveDialogState
                               ),
                             ),
                             DataColumn(
+                              columnWidth: FlexColumnWidth(1.2),
+                              label: Padding(
+                                padding: const EdgeInsets.only(left: 8),
+                                child: Text(
+                                  CpdsMessages.tr(
+                                    context,
+                                    '下发IP',
+                                    'Downlink IP',
+                                    'IP الإرسال',
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                ),
+                              ),
+                            ),
+                            DataColumn(
                               columnWidth: FlexColumnWidth(1.3),
                               label: Padding(
                                 padding: const EdgeInsets.only(left: 8),
@@ -655,6 +672,16 @@ class _CpdsFutureWarriorSaveDialogState
                                   Padding(
                                     padding: const EdgeInsets.only(left: 8),
                                     child: Text(
+                                      cpdsDisplayDownlinkIp(device.ip),
+                                      overflow: TextOverflow.ellipsis,
+                                      maxLines: 1,
+                                    ),
+                                  ),
+                                ),
+                                DataCell(
+                                  Padding(
+                                    padding: const EdgeInsets.only(left: 8),
+                                    child: Text(
                                       device.model,
                                       overflow: TextOverflow.ellipsis,
                                       maxLines: 1,
@@ -664,7 +691,7 @@ class _CpdsFutureWarriorSaveDialogState
                                 DataCell(
                                   Padding(
                                     padding: const EdgeInsets.only(left: 8),
-                                    child: _buildRadioDropdown(fwDevice),
+                                    child: _buildRadioPicker(fwDevice),
                                   ),
                                 ),
                                 DataCell(
@@ -772,6 +799,9 @@ class CpdsFutureWarriorDuplicateDialog extends StatelessWidget {
     );
   }
 
+  String _radioAliasOrDash(String? value) =>
+      (value == null || value.trim().isEmpty) ? '--' : value;
+
   @override
   Widget build(BuildContext context) {
     final t = Translations.of(context);
@@ -810,7 +840,8 @@ class CpdsFutureWarriorDuplicateDialog extends StatelessWidget {
                     0: FlexColumnWidth(1),
                     1: FlexColumnWidth(1),
                     2: FlexColumnWidth(1),
-                    3: FlexColumnWidth(1.6),
+                    3: FlexColumnWidth(1.2),
+                    4: FlexColumnWidth(1.2),
                   },
                   children: [
                     TableRow(
@@ -823,7 +854,22 @@ class CpdsFutureWarriorDuplicateDialog extends StatelessWidget {
                         _headerCell(
                           t.tableColumn.injectEncrypt.parameterPacket,
                         ),
-                        _headerCell(t.tableColumn.injectEncrypt.radio),
+                        _headerCell(
+                          CpdsMessages.tr(
+                            context,
+                            '配对电台(旧)',
+                            'Matching Radio (Old)',
+                            'جهاز الراديو المقترن (قديم)',
+                          ),
+                        ),
+                        _headerCell(
+                          CpdsMessages.tr(
+                            context,
+                            '配对电台(新)',
+                            'Matching Radio (New)',
+                            'جهاز الراديو المقترن (جديد)',
+                          ),
+                        ),
                       ],
                     ),
                     for (final item in duplicates)
@@ -833,11 +879,12 @@ class CpdsFutureWarriorDuplicateDialog extends StatelessWidget {
                           _bodyCell(item['deviceAlias']?.toString() ?? '--'),
                           _bodyCell(item['dcPackageName']?.toString() ?? '--'),
                           _bodyCell(
-                            cpdsRadioChangeLabel(
-                              originalAlias: item['originalRadioAlias']
-                                  ?.toString(),
-                              changedAlias: item['radioAlias']?.toString(),
+                            _radioAliasOrDash(
+                              item['originalRadioAlias']?.toString(),
                             ),
+                          ),
+                          _bodyCell(
+                            _radioAliasOrDash(item['radioAlias']?.toString()),
                           ),
                         ],
                       ),

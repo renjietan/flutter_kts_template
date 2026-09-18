@@ -195,7 +195,7 @@ final _entities = <obx_int.ModelEntity>[
   obx_int.ModelEntity(
     id: const obx_int.IdUid(7, 1813780709103220274),
     name: 'KeyLoaderDetailsEntity',
-    lastPropertyId: const obx_int.IdUid(14, 9112345678901234567),
+    lastPropertyId: const obx_int.IdUid(15, 4274463691773407178),
     flags: 0,
     properties: <obx_int.ModelProperty>[
       obx_int.ModelProperty(
@@ -267,6 +267,12 @@ final _entities = <obx_int.ModelEntity>[
       obx_int.ModelProperty(
         id: const obx_int.IdUid(14, 9112345678901234567),
         name: 'dcPackageAlias',
+        type: 9,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(15, 4274463691773407178),
+        name: 'downlinkIp',
         type: 9,
         flags: 0,
       ),
@@ -587,9 +593,6 @@ obx_int.ModelDefinition getObjectBoxModel() {
           object.netNodePackageName,
         );
         final dcPackageNameOffset = fbb.writeString(object.dcPackageName);
-        final dcPackageAliasOffset = object.dcPackageAlias == null
-            ? null
-            : fbb.writeString(object.dcPackageAlias!);
         final consumerOffset = object.consumer == null
             ? null
             : fbb.writeString(object.consumer!);
@@ -598,7 +601,13 @@ obx_int.ModelDefinition getObjectBoxModel() {
             : fbb.writeString(object.location!);
         final SNOffset = object.SN == null ? null : fbb.writeString(object.SN!);
         final parentIdPathOffset = fbb.writeString(object.parentIdPath);
-        fbb.startTable(14);
+        final dcPackageAliasOffset = object.dcPackageAlias == null
+            ? null
+            : fbb.writeString(object.dcPackageAlias!);
+        final downlinkIpOffset = object.downlinkIp == null
+            ? null
+            : fbb.writeString(object.downlinkIp!);
+        fbb.startTable(16);
         fbb.addInt64(0, object.id);
         fbb.addOffset(1, netNodePackageNameOffset);
         fbb.addOffset(2, dcPackageNameOffset);
@@ -611,6 +620,7 @@ obx_int.ModelDefinition getObjectBoxModel() {
         fbb.addOffset(11, SNOffset);
         fbb.addOffset(12, parentIdPathOffset);
         fbb.addOffset(13, dcPackageAliasOffset);
+        fbb.addOffset(14, downlinkIpOffset);
         fbb.finish(fbb.endTable());
         return object.id;
       },
@@ -635,6 +645,12 @@ obx_int.ModelDefinition getObjectBoxModel() {
           10,
           0,
         );
+        final dcPackageAliasParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGetNullable(buffer, rootOffset, 30);
+        final downlinkIpParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGetNullable(buffer, rootOffset, 32);
         final radioIdParam = const fb.Int64Reader().vTableGetNullable(
           buffer,
           rootOffset,
@@ -652,9 +668,6 @@ obx_int.ModelDefinition getObjectBoxModel() {
         final parentIdPathParam = const fb.StringReader(
           asciiOptimization: true,
         ).vTableGet(buffer, rootOffset, 28, '');
-        final dcPackageAliasParam = const fb.StringReader(
-          asciiOptimization: true,
-        ).vTableGetNullable(buffer, rootOffset, 30);
         final createdAtParam = DateTime.fromMillisecondsSinceEpoch(
           const fb.Int64Reader().vTableGet(buffer, rootOffset, 18, 0),
         );
@@ -665,8 +678,9 @@ obx_int.ModelDefinition getObjectBoxModel() {
           id: idParam,
           netNodePackageName: netNodePackageNameParam,
           dcPackageName: dcPackageNameParam,
-          dcPackageAlias: dcPackageAliasParam,
           keyLoaderId: keyLoaderIdParam,
+          dcPackageAlias: dcPackageAliasParam,
+          downlinkIp: downlinkIpParam,
           radioId: radioIdParam,
           consumer: consumerParam,
           location: locationParam,
@@ -860,8 +874,12 @@ class KeyLoaderDetailsEntity_ {
   );
 
   /// See [KeyLoaderDetailsEntity.dcPackageAlias].
-  static final dcPackageAlias =
-      obx.QueryStringProperty<KeyLoaderDetailsEntity>(
-        _entities[4].properties[11],
-      );
+  static final dcPackageAlias = obx.QueryStringProperty<KeyLoaderDetailsEntity>(
+    _entities[4].properties[11],
+  );
+
+  /// See [KeyLoaderDetailsEntity.downlinkIp].
+  static final downlinkIp = obx.QueryStringProperty<KeyLoaderDetailsEntity>(
+    _entities[4].properties[12],
+  );
 }

@@ -144,7 +144,7 @@
     },
     {
       "id": "7:1813780709103220274",
-      "lastPropertyId": "14:9112345678901234567",
+      "lastPropertyId": "15:4274463691773407178",
       "name": "KeyLoaderDetailsEntity",
       "properties": [
         {
@@ -206,6 +206,11 @@
         {
           "id": "14:9112345678901234567",
           "name": "dcPackageAlias",
+          "type": 9
+        },
+        {
+          "id": "15:4274463691773407178",
+          "name": "downlinkIp",
           "type": 9
         }
       ],

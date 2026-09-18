@@ -53,36 +53,6 @@ RadiosEntity _radio(int id, String alias) {
 }
 
 void main() {
-  group('cpdsRadioChangeLabel', () {
-    test('原始和更改后都有值时，用空格横杠连接', () {
-      expect(
-        cpdsRadioChangeLabel(originalAlias: '原始', changedAlias: '更改后'),
-        '原始 - 更改后',
-      );
-    });
-
-    test('原始为空时显示 空 - 更改后', () {
-      expect(
-        cpdsRadioChangeLabel(originalAlias: null, changedAlias: '更改后'),
-        '空 - 更改后',
-      );
-    });
-
-    test('更改后为空时显示 原始 - 空', () {
-      expect(
-        cpdsRadioChangeLabel(originalAlias: '原始', changedAlias: ''),
-        '原始 - 空',
-      );
-    });
-
-    test('两者都为空时显示 空 - 空', () {
-      expect(
-        cpdsRadioChangeLabel(originalAlias: null, changedAlias: null),
-        '空 - 空',
-      );
-    });
-  });
-
   group('cpdsDefaultRadioIdForDevice', () {
     test('重复行命中且原电台可用时，返回原 radioId', () {
       final result = cpdsDefaultRadioIdForDevice(
@@ -166,6 +136,30 @@ void main() {
 
       expect(result.map((radio) => radio.id), isNot(contains(22)));
       expect(result.map((radio) => radio.id), contains(20));
+    });
+  });
+
+  group('downlinkIp persistence contract', () {
+    test('KeyLoaderDetailsEntity 保存并序列化 downlinkIp', () {
+      final entity = KeyLoaderDetailsEntity(
+        netNodePackageName: 'node-1',
+        dcPackageName: 'device-1',
+        keyLoaderId: 10,
+        downlinkIp: '192.168.1.10',
+        createdAt: DateTime(2026, 1, 1),
+      );
+
+      final json = entity.toJson();
+      expect(json['downlinkIp'], '192.168.1.10');
+
+      final restored = KeyLoaderDetailsEntity.fromJson(json);
+      expect(restored.downlinkIp, '192.168.1.10');
+    });
+
+    test('cpdsDisplayDownlinkIp 空值时显示 --', () {
+      expect(cpdsDisplayDownlinkIp(null), '--');
+      expect(cpdsDisplayDownlinkIp(''), '--');
+      expect(cpdsDisplayDownlinkIp('192.168.1.10'), '192.168.1.10');
     });
   });
 }

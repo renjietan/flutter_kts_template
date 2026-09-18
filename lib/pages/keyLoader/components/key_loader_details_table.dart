@@ -10,7 +10,6 @@ import 'package:dage/dage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_kts_template/api/KeyLoaders.api.dart';
 import 'package:flutter_kts_template/api/RadiosManagerApi.dart';
-import 'package:flutter_kts_template/components/DropDown/simple.dropdown.dart';
 import 'package:flutter_kts_template/components/button/base.button.dart';
 import 'package:flutter_kts_template/components/loading/simple.loading.dart';
 import 'package:flutter_kts_template/components/step/step.progress.dialog.dart';
@@ -26,6 +25,8 @@ import 'package:flutter_kts_template/core/utils/time.dart';
 import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 import 'package:flutter_kts_template/logger/logger.dart';
 import 'package:flutter_kts_template/pages/cpds/widgets/cpds_messages.dart';
+import 'package:flutter_kts_template/pages/cpds/widgets/cpds_radio_picker.dart';
+import 'package:flutter_kts_template/pages/cpds/widgets/cpds_save_dialog.dart';
 import 'package:flutter_kts_template/theme/table.theme.dart';
 import 'package:flutter_kts_template/utils/files/FileTools.dart';
 import 'package:flutter_kts_template/utils/provider/radios.provider.dart';
@@ -374,6 +375,26 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
       GlobalLogger.logError('clear key loader detail radio failed: $error');
       SimplePopup.error(error.toString());
     }
+  }
+
+  Future<void> _openRadioPicker(
+    KeyLoaderDetailsEntity item,
+    List<RadiosEntity> availableRadios,
+    RadiosEntity? currentRadio,
+  ) async {
+    final selected = await showCpdsRadioSidePanel(
+      context: context,
+      radios: availableRadios,
+      selected: currentRadio,
+    );
+    if (selected == null || !mounted) return;
+    if (item.radioId == selected.id) return;
+    item.radioId = selected.id;
+    item.consumer = selected.consumer;
+    item.location = selected.location;
+    item.SN = selected.sn;
+    KeyLoadersApi.updateOneDetail(item.id, data: item.toJson());
+    setState(() {});
   }
 
   /// USB 上传：连接注钥枪 → PAD_LIGHT 握手 → PAD_UPLOAD 协议发送 .pad 文件。
@@ -1459,6 +1480,13 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
         ),
       ),
       ColumnDefinition<KeyLoaderDetailsEntity>(
+        label: CpdsMessages.tr(context, '下发IP', 'Downlink IP', 'IP الإرسال'),
+        flex: 1,
+        cellBuilder: TextCellBuilder.text<KeyLoaderDetailsEntity>(
+          (item) => cpdsDisplayDownlinkIp(item.downlinkIp),
+        ),
+      ),
+      ColumnDefinition<KeyLoaderDetailsEntity>(
         label: t.tableColumn.injectEncrypt.radio,
         size: const ColumnSize.fixed(160),
         cellBuilder: (item) {
@@ -1466,38 +1494,25 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
               .where((other) => other.id != item.id && other.radioId != null)
               .map((other) => other.radioId!)
               .toSet();
-          final radioOptions = radios
+          final availableRadios = radios
               .where(
                 (radio) =>
                     !usedRadioIds.contains(radio.id) ||
                     radio.id == item.radioId,
               )
-              .map(
-                (radio) => DropdownMenuItem<int?>(
-                  value: radio.id,
-                  child: Text(radio.alias, overflow: TextOverflow.ellipsis, maxLines: 1),
-                ),
-              )
               .toList();
-          final hasCurrentRadio = radios.any(
-            (radio) => radio.id == item.radioId,
-          );
-          return SimpleDropdown<int?>(
+          RadiosEntity? currentRadio;
+          for (final radio in radios) {
+            if (radio.id == item.radioId) {
+              currentRadio = radio;
+              break;
+            }
+          }
+          return CpdsRadioPickerField(
+            selected: currentRadio,
             hint: t.cpds.saveDialog.selectPlaceholder,
-            value: hasCurrentRadio ? item.radioId : null,
-            items: radioOptions,
-            height: 32,
+            onTap: () => _openRadioPicker(item, availableRadios, currentRadio),
             onClear: () => _clearRadio(item),
-            onChanged: (value) {
-              if (item.radioId == value) return;
-              item.radioId = value;
-              final radio = radios.firstWhere((r) => r.id == value);
-              item.consumer = radio.consumer;
-              item.location = radio.location;
-              item.SN = radio.sn;
-              KeyLoadersApi.updateOneDetail(item.id, data: item.toJson());
-              setState(() {});
-            },
           );
         },
       ),
