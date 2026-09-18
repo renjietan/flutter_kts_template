@@ -282,6 +282,10 @@ cpds:
   device:
     esn: ESN
     ip: 当前 IP
+    downCurrentIp: 下发IP(down)
+    downCurrentIp1: 下发IP(down1)
+    downCurrentIp2: 下发IP(down2)
+    subnetIp: 子网IP
     emptyValue: "--"
   deviceTypes:
     server: Server

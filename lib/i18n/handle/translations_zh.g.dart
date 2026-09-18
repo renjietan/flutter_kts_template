@@ -1058,6 +1058,17 @@ class Translations$cpds$device$zh {
 
 	/// zh: '当前 IP'
 	String get ip => '当前 IP';
+	/// zh: '下发IP(down)'
+	String get downCurrentIp => '下发IP(down)';
+
+	/// zh: '下发IP(down1)'
+	String get downCurrentIp1 => '下发IP(down1)';
+
+	/// zh: '下发IP(down2)'
+	String get downCurrentIp2 => '下发IP(down2)';
+
+	/// zh: '子网IP'
+	String get subnetIp => '子网IP';
 
 	/// zh: '--'
 	String get emptyValue => '--';

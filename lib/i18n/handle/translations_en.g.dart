@@ -649,6 +649,10 @@ class _Translations$cpds$device$en extends Translations$cpds$device$zh {
 	// Translations
 	@override String get esn => 'ESN';
 	@override String get ip => 'Current IP';
+	@override String get downCurrentIp => 'Distribute IP(down)';
+	@override String get downCurrentIp1 => 'Distribute IP(down1)';
+	@override String get downCurrentIp2 => 'Distribute IP(down2)';
+	@override String get subnetIp => 'Subnet IP';
 	@override String get emptyValue => '--';
 }
 

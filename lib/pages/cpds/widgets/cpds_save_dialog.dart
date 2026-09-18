@@ -17,6 +17,59 @@ import 'package:flutter_kts_template/objectbox.g.dart';
 import 'package:flutter_kts_template/theme/table.theme.dart';
 import 'package:flutter_kts_template/pages/cpds/widgets/cpds_messages.dart';
 
+String cpdsDetailKey(
+  String netNodePackageName,
+  String dcPackageName,
+  String parentIdPath,
+) => '$netNodePackageName\u0000$dcPackageName\u0000$parentIdPath';
+
+String cpdsRadioChangeLabel({
+  required String? originalAlias,
+  required String? changedAlias,
+}) {
+  String display(String? value) =>
+      (value == null || value.trim().isEmpty) ? '空' : value;
+  return '${display(originalAlias)} - ${display(changedAlias)}';
+}
+
+int? cpdsDefaultRadioIdForDevice({
+  required CpdsFutureWarriorDevice device,
+  required String parentIdPath,
+  required List<KeyLoaderDetailsEntity> existingDetails,
+  required Set<int> availableRadioIds,
+}) {
+  final key = cpdsDetailKey(device.nodeId, device.device.id, parentIdPath);
+  for (final detail in existingDetails) {
+    if (cpdsDetailKey(
+          detail.netNodePackageName,
+          detail.dcPackageName,
+          detail.parentIdPath,
+        ) ==
+        key) {
+      final radioId = detail.radioId;
+      if (radioId != null && availableRadioIds.contains(radioId)) {
+        return radioId;
+      }
+      return null;
+    }
+  }
+  return null;
+}
+
+List<RadiosEntity> cpdsAvailableRadios({
+  required List<RadiosEntity> radios,
+  required int? ownExistingRadioId,
+  required int? ownSelectedRadioId,
+  required Set<int> boundRadioIds,
+  required Set<int> selectedByOthers,
+}) {
+  return radios.where((radio) {
+    final id = radio.id;
+    if (id == ownExistingRadioId || id == ownSelectedRadioId) return true;
+    return !boundRadioIds.contains(id) && !selectedByOthers.contains(id);
+  }).toList();
+}
+
 class CpdsFutureWarriorSaveDialog extends StatefulWidget {
   const CpdsFutureWarriorSaveDialog({
     super.key,
@@ -44,6 +97,7 @@ class _CpdsFutureWarriorSaveDialogState
   List<RadiosEntity> _radios = [];
   List<KeyLoadersEntity> _keyLoaders = [];
   Map<String, int?> _selectedRadioId = {};
+  Map<String, int?> _existingRadioIdByDevice = {};
   int? _selectedKeyLoaderId;
   int _currentPage = 1;
   int _pageSize = 10;
@@ -52,6 +106,8 @@ class _CpdsFutureWarriorSaveDialogState
   bool _saving = false;
   Set<int> _boundRadioIds = {};
   bool _radioOptionsLoading = false;
+  Future<void>? _radiosFuture;
+  List<KeyLoaderDetailsEntity> _existingDetails = const [];
 
   @override
   void initState() {
@@ -60,7 +116,7 @@ class _CpdsFutureWarriorSaveDialogState
     _selectedRadioId = {
       for (final fwDevice in widget.devices) fwDevice.key: null,
     };
-    _loadRadios();
+    _radiosFuture = _loadRadios();
     _loadKeyLoaders();
     _localeSubscription = LocaleSettings.getLocaleStream().listen((_) {
       if (mounted) setState(() {});
@@ -103,6 +159,7 @@ class _CpdsFutureWarriorSaveDialogState
         .query(KeyLoaderDetailsEntity_.keyLoaderId.equals(keyLoaderId))
         .build()
         .find();
+    _existingDetails = List<KeyLoaderDetailsEntity>.from(existing);
     final boundIds = {
       for (final item in existing)
         if (item.radioId != null) item.radioId!,
@@ -118,14 +175,43 @@ class _CpdsFutureWarriorSaveDialogState
     setState(() {
       _selectedKeyLoaderId = value;
       _boundRadioIds = {};
+      _existingRadioIdByDevice = {};
       _radioOptionsLoading = value != null;
       for (final fwDevice in widget.devices) {
         _selectedRadioId[fwDevice.key] = null;
       }
     });
     if (value != null) {
+      await _radiosFuture;
       await _loadBoundRadioIds(value);
+      _applyExistingRadioDefaults();
     }
+  }
+
+  void _applyExistingRadioDefaults() {
+    if (!mounted) return;
+    final keyLoaderId = _selectedKeyLoaderId;
+    if (keyLoaderId == null || _radios.isEmpty || _existingDetails.isEmpty) {
+      return;
+    }
+    final availableRadioIds = {for (final radio in _radios) radio.id};
+    final parentIdPath = _findUnitPath(widget.units, widget.unitId).join('/');
+    final defaults = <String, int?>{};
+    final ownExisting = <String, int?>{};
+    for (final fwDevice in widget.devices) {
+      final radioId = cpdsDefaultRadioIdForDevice(
+        device: fwDevice,
+        parentIdPath: parentIdPath,
+        existingDetails: _existingDetails,
+        availableRadioIds: availableRadioIds,
+      );
+      defaults[fwDevice.key] = radioId;
+      ownExisting[fwDevice.key] = radioId;
+    }
+    setState(() {
+      _selectedRadioId.addAll(defaults);
+      _existingRadioIdByDevice = ownExisting;
+    });
   }
 
   int get _pageCount =>
@@ -155,13 +241,13 @@ class _CpdsFutureWarriorSaveDialogState
         selectedByOthers.add(id);
       }
     });
-    return _radios
-        .where(
-          (radio) =>
-              !_boundRadioIds.contains(radio.id) &&
-              !selectedByOthers.contains(radio.id),
-        )
-        .toList();
+    return cpdsAvailableRadios(
+      radios: _radios,
+      ownExistingRadioId: _existingRadioIdByDevice[fwDevice.key],
+      ownSelectedRadioId: _selectedRadioId[fwDevice.key],
+      boundRadioIds: _boundRadioIds,
+      selectedByOthers: selectedByOthers,
+    );
   }
 
   void _clearRadio(CpdsFutureWarriorDevice fwDevice) {
@@ -197,10 +283,7 @@ class _CpdsFutureWarriorSaveDialogState
                 isExpanded: true,
                 hint: Text(
                   t.cpds.saveDialog.selectPlaceholder,
-                  style: const TextStyle(
-                    color: Colors.white54,
-                    fontSize: 13,
-                  ),
+                  style: const TextStyle(color: Colors.white54, fontSize: 13),
                 ),
                 icon: const Icon(
                   Icons.keyboard_arrow_down,
@@ -222,11 +305,7 @@ class _CpdsFutureWarriorSaveDialogState
             onTap: () => _clearRadio(fwDevice),
             child: const Padding(
               padding: EdgeInsets.only(left: 8),
-              child: Icon(
-                Icons.close,
-                size: 16,
-                color: Colors.white54,
-              ),
+              child: Icon(Icons.close, size: 16, color: Colors.white54),
             ),
           ),
         ],
@@ -329,25 +408,52 @@ class _CpdsFutureWarriorSaveDialogState
         .query(KeyLoaderDetailsEntity_.keyLoaderId.equals(keyLoaderId))
         .build()
         .find();
-    final existingKeys = {
-      for (final row in existing)
-        _detailKey(row.netNodePackageName, row.dcPackageName, row.parentIdPath),
-    };
-    return items.where((item) {
-      final key = _detailKey(
-        item['netNodePackageName']?.toString() ?? '',
-        item['dcPackageName']?.toString() ?? '',
-        parentIdPath,
-      );
-      return existingKeys.contains(key);
-    }).toList();
+    final existingByKey = <String, KeyLoaderDetailsEntity>{};
+    for (final row in existing) {
+      existingByKey[_detailKey(
+            row.netNodePackageName,
+            row.dcPackageName,
+            row.parentIdPath,
+          )] =
+          row;
+    }
+    return items
+        .where((item) {
+          final key = _detailKey(
+            item['netNodePackageName']?.toString() ?? '',
+            item['dcPackageName']?.toString() ?? '',
+            parentIdPath,
+          );
+          return existingByKey.containsKey(key);
+        })
+        .map((item) {
+          final key = _detailKey(
+            item['netNodePackageName']?.toString() ?? '',
+            item['dcPackageName']?.toString() ?? '',
+            parentIdPath,
+          );
+          final existing = existingByKey[key];
+          return <String, dynamic>{
+            ...item,
+            'originalRadioAlias': _radioAliasById(existing?.radioId),
+          };
+        })
+        .toList();
   }
 
   String _detailKey(
     String netNodePackageName,
     String dcPackageName,
     String parentIdPath,
-  ) => '$netNodePackageName\u0000$dcPackageName\u0000$parentIdPath';
+  ) => cpdsDetailKey(netNodePackageName, dcPackageName, parentIdPath);
+
+  String? _radioAliasById(int? radioId) {
+    if (radioId == null) return null;
+    for (final radio in _radios) {
+      if (radio.id == radioId) return radio.alias;
+    }
+    return null;
+  }
 
   List<String> _findUnitPath(List<CpdsUnit> units, String unitId) {
     final path = <String>[];
@@ -458,7 +564,12 @@ class _CpdsFutureWarriorSaveDialogState
                               label: Padding(
                                 padding: const EdgeInsets.only(left: 8),
                                 child: Text(
-                                  CpdsMessages.tr(context, '别名', 'Alias', 'الاسم المستعار'),
+                                  CpdsMessages.tr(
+                                    context,
+                                    '别名',
+                                    'Alias',
+                                    'الاسم المستعار',
+                                  ),
                                   overflow: TextOverflow.ellipsis,
                                   maxLines: 1,
                                 ),
@@ -682,10 +793,11 @@ class CpdsFutureWarriorDuplicateDialog extends StatelessWidget {
           children: [
             Text(
               CpdsMessages.tr(
-                  context,
-                  '以下数据已存在，是否确认覆盖？',
-                  'The following data already exists. Overwrite?',
-                  'البيانات التالية موجودة بالفعل. هل تريد الكتابة فوقها؟'),
+                context,
+                '以下数据已存在，是否确认覆盖？',
+                'The following data already exists. Overwrite?',
+                'البيانات التالية موجودة بالفعل. هل تريد الكتابة فوقها؟',
+              ),
               style: const TextStyle(color: Colors.white70, fontSize: 13),
             ),
             const SizedBox(height: 12),
@@ -698,6 +810,7 @@ class CpdsFutureWarriorDuplicateDialog extends StatelessWidget {
                     0: FlexColumnWidth(1),
                     1: FlexColumnWidth(1),
                     2: FlexColumnWidth(1),
+                    3: FlexColumnWidth(1.6),
                   },
                   children: [
                     TableRow(
@@ -710,6 +823,7 @@ class CpdsFutureWarriorDuplicateDialog extends StatelessWidget {
                         _headerCell(
                           t.tableColumn.injectEncrypt.parameterPacket,
                         ),
+                        _headerCell(t.tableColumn.injectEncrypt.radio),
                       ],
                     ),
                     for (final item in duplicates)
@@ -718,6 +832,13 @@ class CpdsFutureWarriorDuplicateDialog extends StatelessWidget {
                           _bodyCell(item['nodeName']?.toString() ?? '--'),
                           _bodyCell(item['deviceAlias']?.toString() ?? '--'),
                           _bodyCell(item['dcPackageName']?.toString() ?? '--'),
+                          _bodyCell(
+                            cpdsRadioChangeLabel(
+                              originalAlias: item['originalRadioAlias']
+                                  ?.toString(),
+                              changedAlias: item['radioAlias']?.toString(),
+                            ),
+                          ),
                         ],
                       ),
                   ],

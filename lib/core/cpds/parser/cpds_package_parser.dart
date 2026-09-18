@@ -563,15 +563,25 @@ class CpdsPackageParser {
         final model = (config['File']?['Model']?.toString().isNotEmpty ?? false)
             ? config['File']!['Model'].toString()
             : modelName;
+        final (distributionIp1, distributionIp2) = _distributionIps(
+          config,
+          type,
+        );
         final device = CpdsDevice(
           id: deviceId,
           type: type,
           model: model,
           alias: _deviceAlias(config),
           ip: config['IP']?.toString() ?? '',
+          distributionIp1: distributionIp1,
+          distributionIp2: distributionIp2,
         );
         devices.add(device);
         for (final additional in additionalTypes) {
+          final (additionalIp1, additionalIp2) = _distributionIps(
+            config,
+            additional,
+          );
           devices.add(
             CpdsDevice(
               id: device.id,
@@ -579,6 +589,8 @@ class CpdsPackageParser {
               model: device.model,
               alias: device.alias,
               ip: device.ip,
+              distributionIp1: additionalIp1,
+              distributionIp2: additionalIp2,
             ),
           );
         }
@@ -736,6 +748,35 @@ class CpdsPackageParser {
   static String _deviceAlias(Map<String, dynamic> config) {
     final alias = config['Alias'] ?? config['alias'];
     return alias?.toString() ?? '';
+  }
+
+  static (String, String) _distributionIps(
+    Map<String, dynamic> config,
+    CpdsDeviceType type,
+  ) {
+    switch (type) {
+      case CpdsDeviceType.multiBandRadio:
+      case CpdsDeviceType.hf:
+      case CpdsDeviceType.multiBandHandheld:
+        return (config['IP']?.toString() ?? '', '');
+      case CpdsDeviceType.vehInter:
+        return (config['CTIP']?.toString() ?? '', '');
+      case CpdsDeviceType.ccu:
+        final control = _asMap(config['controlBoardIpConfig']);
+        final result = _asMap(control['result']);
+        return (
+          result['ip1']?.toString() ?? '',
+          result['ip2']?.toString() ?? '',
+        );
+      case CpdsDeviceType.ccuAudio:
+        final audio = _asMap(config['audioBoardIpConfig']);
+        final result = _asMap(audio['result']);
+        return (result['ip']?.toString() ?? '', '');
+      case CpdsDeviceType.server:
+        return (config['Ipv4Subnet']?.toString() ?? '', '');
+      default:
+        return ('', '');
+    }
   }
 
   static int _estimateWorkspace(int fileSize, int expandedSize) {

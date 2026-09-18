@@ -282,6 +282,10 @@ cpds:
   device:
     esn: ESN
     ip: Current IP
+    downCurrentIp: Distribute IP(down)
+    downCurrentIp1: Distribute IP(down1)
+    downCurrentIp2: Distribute IP(down2)
+    subnetIp: Subnet IP
     emptyValue: "--"
   deviceTypes:
     server: Server

@@ -31,9 +31,9 @@ class CpdsUnit {
     id: json['id'] as String? ?? '',
     name: json['name'] as String? ?? '',
     nodeIds: _stringList(json['nodeIds']),
-    subUnits: _listOfMaps(json['subUnits'])
-        .map((item) => CpdsUnit.fromJson(item))
-        .toList(),
+    subUnits: _listOfMaps(
+      json['subUnits'],
+    ).map((item) => CpdsUnit.fromJson(item)).toList(),
   );
 
   Map<String, dynamic> toJson() => {
@@ -51,6 +51,8 @@ class CpdsDevice {
     required this.model,
     required this.alias,
     required this.ip,
+    this.distributionIp1 = '',
+    this.distributionIp2 = '',
   });
 
   final String id;
@@ -58,6 +60,8 @@ class CpdsDevice {
   final String model;
   final String alias;
   final String ip;
+  final String distributionIp1;
+  final String distributionIp2;
 
   factory CpdsDevice.fromJson(Map<String, dynamic> json) => CpdsDevice(
     id: json['id'] as String? ?? '',
@@ -65,6 +69,8 @@ class CpdsDevice {
     model: json['model'] as String? ?? '',
     alias: json['alias'] as String? ?? '',
     ip: json['ip'] as String? ?? '',
+    distributionIp1: json['distributionIp1'] as String? ?? '',
+    distributionIp2: json['distributionIp2'] as String? ?? '',
   );
 
   Map<String, dynamic> toJson() => {
@@ -73,6 +79,8 @@ class CpdsDevice {
     'model': model,
     'alias': alias,
     'ip': ip,
+    'distributionIp1': distributionIp1,
+    'distributionIp2': distributionIp2,
   };
 
   String get key => '${type.value}:$id';
@@ -120,9 +128,9 @@ class CpdsNode {
     networkSegment: json['networkSegment'] as String? ?? '',
     nodeType: _asInt(json['nodeType']),
     model: json['model'] as String? ?? '',
-    devices: _listOfMaps(json['devices'])
-        .map((item) => CpdsDevice.fromJson(item))
-        .toList(),
+    devices: _listOfMaps(
+      json['devices'],
+    ).map((item) => CpdsDevice.fromJson(item)).toList(),
   );
 
   Map<String, dynamic> toJson() => {
@@ -158,12 +166,12 @@ class CpdsPackage {
     fileSize: _asInt(json['fileSize']),
     expandedSize: _asInt(json['expandedSize']),
     requiredWorkspace: _asInt(json['requiredWorkspace']),
-    units: _listOfMaps(json['units'])
-        .map((item) => CpdsUnit.fromJson(item))
-        .toList(),
-    nodes: _listOfMaps(json['nodes'])
-        .map((item) => CpdsNode.fromJson(item))
-        .toList(),
+    units: _listOfMaps(
+      json['units'],
+    ).map((item) => CpdsUnit.fromJson(item)).toList(),
+    nodes: _listOfMaps(
+      json['nodes'],
+    ).map((item) => CpdsNode.fromJson(item)).toList(),
   );
 
   Map<String, dynamic> toJson() => {
@@ -297,12 +305,12 @@ class CpdsSessionView {
         sessionId: json['sessionId'] as String? ?? '',
         activeState: CpdsActiveState.fromApiName(json['activeState']),
         nodeId: json['nodeId'] as String? ?? '',
-        devices: _listOfMaps(json['devices'])
-            .map((item) => CpdsDeviceStatusView.fromJson(item))
-            .toList(),
-        failures: _listOfMaps(json['failures'])
-            .map((item) => CpdsFailure.fromJson(item))
-            .toList(),
+        devices: _listOfMaps(
+          json['devices'],
+        ).map((item) => CpdsDeviceStatusView.fromJson(item)).toList(),
+        failures: _listOfMaps(
+          json['failures'],
+        ).map((item) => CpdsFailure.fromJson(item)).toList(),
         sentChunks: _asInt(json['sentChunks']),
         totalChunks: _asInt(json['totalChunks']),
         sendingProgress: _asInt(json['sendingProgress']),
@@ -421,10 +429,7 @@ Map<String, dynamic> _asMap(Object? value) {
   return const {};
 }
 
-T? _nullableMap<T>(
-  Object? value,
-  T Function(Map<String, dynamic>) parser,
-) {
+T? _nullableMap<T>(Object? value, T Function(Map<String, dynamic>) parser) {
   if (value == null) return null;
   return parser(_asMap(value));
 }

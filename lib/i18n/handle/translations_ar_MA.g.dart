@@ -649,6 +649,10 @@ class Translations$cpds$device$ar_MA extends Translations$cpds$device$zh {
 	// Translations
 	@override String get esn => 'ESN';
 	@override String get ip => 'عنوان IP الحالي';
+	@override String get downCurrentIp => 'عنوان IP التوزيع(down)';
+	@override String get downCurrentIp1 => 'عنوان IP التوزيع(down1)';
+	@override String get downCurrentIp2 => 'عنوان IP التوزيع(down2)';
+	@override String get subnetIp => 'عنوان IP للشبكة الفرعية';
 	@override String get emptyValue => '--';
 }
 

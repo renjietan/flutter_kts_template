@@ -280,6 +280,10 @@ cpds:
   device:
     esn: ESN
     ip: عنوان IP الحالي
+    downCurrentIp: عنوان IP التوزيع(down)
+    downCurrentIp1: عنوان IP التوزيع(down1)
+    downCurrentIp2: عنوان IP التوزيع(down2)
+    subnetIp: عنوان IP للشبكة الفرعية
     emptyValue: "--"
   deviceTypes:
     server: Server

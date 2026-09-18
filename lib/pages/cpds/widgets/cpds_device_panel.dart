@@ -812,7 +812,7 @@ class _FutureWarriorDeviceRow extends StatelessWidget {
                 const SizedBox(width: 56),
                 Expanded(
                   child: Text(
-                    '${CpdsMessages.tr(context, '网络节点ID', 'Net Node ID', 'معرف عقدة الشبكة')}：${fwDevice.nodeId}',
+                    '${CpdsMessages.tr(context, '网络节点ID', 'Net Node ID', 'معرف عقدة الشبكة')}: ${fwDevice.nodeId}',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(color: Colors.white54, fontSize: 12),
@@ -826,7 +826,7 @@ class _FutureWarriorDeviceRow extends StatelessWidget {
                 const SizedBox(width: 56),
                 Expanded(
                   child: Text(
-                    '${CpdsMessages.tr(context, '网络节点名称', 'Net Node Name', 'اسم عقدة الشبكة')}：'
+                    '${CpdsMessages.tr(context, '网络节点名称', 'Net Node Name', 'اسم عقدة الشبكة')}: '
                     '${fwDevice.nodeName}',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -835,9 +835,68 @@ class _FutureWarriorDeviceRow extends StatelessWidget {
                 ),
               ],
             ),
+            const SizedBox(height: 4),
+            _distributionIpRow(context, device),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _distributionIpRow(BuildContext context, CpdsDevice device) {
+    if (device.type == CpdsDeviceType.ccu) {
+      return Row(
+        children: [
+          const SizedBox(width: 56),
+          Expanded(
+            flex: 1,
+            child: Text(
+              '${CpdsMessages.tr(context, '下发IP(down1)', 'Distribute IP(down1)', 'عنوان IP التوزيع(down1)')}: '
+              '${device.distributionIp1.isEmpty ? '--' : device.distributionIp1}',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(color: Colors.white54, fontSize: 12),
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            flex: 1,
+            child: Text(
+              '${CpdsMessages.tr(context, '下发IP(down2)', 'Distribute IP(down2)', 'عنوان IP التوزيع(down2)')}: '
+              '${device.distributionIp2.isEmpty ? '--' : device.distributionIp2}',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(color: Colors.white54, fontSize: 12),
+            ),
+          ),
+        ],
+      );
+    }
+    final label = device.type == CpdsDeviceType.server
+        ? CpdsMessages.tr(
+            context,
+            '子网IP',
+            'Subnet IP',
+            'عنوان IP للشبكة الفرعية',
+          )
+        : CpdsMessages.tr(
+            context,
+            '下发IP(down)',
+            'Distribute IP(down)',
+            'عنوان IP التوزيع(down)',
+          );
+    return Row(
+      children: [
+        const SizedBox(width: 56),
+        Expanded(
+          child: Text(
+            '$label: ${device.distributionIp1.isEmpty ? '--' : device.distributionIp1}',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(color: Colors.white54, fontSize: 12),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -1098,6 +1157,8 @@ class _DeviceRow extends StatelessWidget {
               _Meta(label: t.cpds.device.ip, value: row.currentIp),
             ],
           ),
+          const SizedBox(height: 4),
+          _distributionIpRow(context, row),
           if (row.status == CpdsDeviceStatus.receiving) ...[
             const SizedBox(height: 8),
             CpdsProgressBar(value: row.progress),
@@ -1134,6 +1195,42 @@ class _DeviceRow extends StatelessWidget {
     }
     return device.model.isNotEmpty ? device.model : typeKey;
   }
+
+  Widget _distributionIpRow(BuildContext context, _DeviceRowData row) {
+    final t = Translations.of(context);
+    final device = row.device;
+    if (device.type == CpdsDeviceType.ccu) {
+      return Row(
+        children: [
+          const SizedBox(width: 16),
+          Expanded(
+            flex: 1,
+            child: _DistributionIpCell(
+              label: t.cpds.device.downCurrentIp1,
+              value: device.distributionIp1,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            flex: 1,
+            child: _DistributionIpCell(
+              label: t.cpds.device.downCurrentIp2,
+              value: device.distributionIp2,
+            ),
+          ),
+        ],
+      );
+    }
+    final label = device.type == CpdsDeviceType.server
+        ? t.cpds.device.subnetIp
+        : t.cpds.device.downCurrentIp;
+    return Row(
+      children: [
+        const SizedBox(width: 16),
+        _Meta(label: label, value: device.distributionIp1),
+      ],
+    );
+  }
 }
 
 class _Meta extends StatelessWidget {
@@ -1151,6 +1248,23 @@ class _Meta extends StatelessWidget {
         overflow: TextOverflow.ellipsis,
         style: const TextStyle(color: Colors.white54, fontSize: 12),
       ),
+    );
+  }
+}
+
+class _DistributionIpCell extends StatelessWidget {
+  const _DistributionIpCell({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      '$label: ${value.isEmpty ? '--' : value}',
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      style: const TextStyle(color: Colors.white54, fontSize: 12),
     );
   }
 }
