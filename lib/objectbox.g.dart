@@ -15,6 +15,7 @@ import 'package:objectbox/objectbox.dart' as obx;
 import 'package:objectbox_flutter_libs/objectbox_flutter_libs.dart';
 
 import 'core/entities/book/bookEntity.dart';
+import 'core/entities/installPackage/installPackageEntity.dart';
 import 'core/entities/keyLoaderDetails/keyLoaderDetailsEntity.dart';
 import 'core/entities/keyLoaders/keyLoadersEntity.dart';
 import 'core/entities/radios/radiosEntity.dart';
@@ -280,6 +281,46 @@ final _entities = <obx_int.ModelEntity>[
     relations: <obx_int.ModelRelation>[],
     backlinks: <obx_int.ModelBacklink>[],
   ),
+  obx_int.ModelEntity(
+    id: const obx_int.IdUid(8, 8700000000000000001),
+    name: 'InstallPackageEntity',
+    lastPropertyId: const obx_int.IdUid(5, 8750000000000000001),
+    flags: 0,
+    properties: <obx_int.ModelProperty>[
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(1, 8710000000000000001),
+        name: 'id',
+        type: 6,
+        flags: 1,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(2, 8720000000000000001),
+        name: 'version',
+        type: 9,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(3, 8730000000000000001),
+        name: 'fileName',
+        type: 9,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(4, 8740000000000000001),
+        name: 'remark',
+        type: 9,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(5, 8750000000000000001),
+        name: 'createdAt',
+        type: 10,
+        flags: 0,
+      ),
+    ],
+    relations: <obx_int.ModelRelation>[],
+    backlinks: <obx_int.ModelBacklink>[],
+  ),
 ];
 
 /// Shortcut for [obx.Store.new] that passes [getObjectBoxModel] and for Flutter
@@ -325,7 +366,7 @@ obx_int.ModelDefinition getObjectBoxModel() {
     // Typically, this is done with `dart run build_runner build`.
     generatorVersion: obx_int.GeneratorVersion.v2025_12_16,
     entities: _entities,
-    lastEntityId: const obx_int.IdUid(7, 1813780709103220274),
+    lastEntityId: const obx_int.IdUid(8, 8700000000000000001),
     lastIndexId: const obx_int.IdUid(2, 7248603694203076703),
     lastRelationId: const obx_int.IdUid(0, 0),
     lastSequenceId: const obx_int.IdUid(0, 0),
@@ -693,6 +734,60 @@ obx_int.ModelDefinition getObjectBoxModel() {
         return object;
       },
     ),
+    InstallPackageEntity: obx_int.EntityDefinition<InstallPackageEntity>(
+      model: _entities[5],
+      toOneRelations: (InstallPackageEntity object) => [],
+      toManyRelations: (InstallPackageEntity object) => {},
+      getId: (InstallPackageEntity object) => object.id,
+      setId: (InstallPackageEntity object, int id) {
+        object.id = id;
+      },
+      objectToFB: (InstallPackageEntity object, fb.Builder fbb) {
+        final versionOffset = fbb.writeString(object.version);
+        final fileNameOffset = fbb.writeString(object.fileName);
+        final remarkOffset = object.remark == null
+            ? null
+            : fbb.writeString(object.remark!);
+        fbb.startTable(6);
+        fbb.addInt64(0, object.id);
+        fbb.addOffset(1, versionOffset);
+        fbb.addOffset(2, fileNameOffset);
+        fbb.addOffset(3, remarkOffset);
+        fbb.addInt64(4, object.createdAt.millisecondsSinceEpoch);
+        fbb.finish(fbb.endTable());
+        return object.id;
+      },
+      objectFromFB: (obx.Store store, ByteData fbData) {
+        final buffer = fb.BufferContext(fbData);
+        final rootOffset = buffer.derefObject(0);
+        final idParam = const fb.Int64Reader().vTableGet(
+          buffer,
+          rootOffset,
+          4,
+          0,
+        );
+        final versionParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGet(buffer, rootOffset, 6, '');
+        final fileNameParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGet(buffer, rootOffset, 8, '');
+        final remarkParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGetNullable(buffer, rootOffset, 10);
+        final createdAtParam = DateTime.fromMillisecondsSinceEpoch(
+          const fb.Int64Reader().vTableGet(buffer, rootOffset, 12, 0),
+        );
+        final object = InstallPackageEntity(
+          id: idParam,
+          version: versionParam,
+          fileName: fileNameParam,
+          remark: remarkParam,
+          createdAt: createdAtParam,
+        );
+        return object;
+      },
+    ),
   };
 
   return obx_int.ModelDefinition(model, bindings);
@@ -881,5 +976,33 @@ class KeyLoaderDetailsEntity_ {
   /// See [KeyLoaderDetailsEntity.downlinkIp].
   static final downlinkIp = obx.QueryStringProperty<KeyLoaderDetailsEntity>(
     _entities[4].properties[12],
+  );
+}
+
+/// [InstallPackageEntity] entity fields to define ObjectBox queries.
+class InstallPackageEntity_ {
+  /// See [InstallPackageEntity.id].
+  static final id = obx.QueryIntegerProperty<InstallPackageEntity>(
+    _entities[5].properties[0],
+  );
+
+  /// See [InstallPackageEntity.version].
+  static final version = obx.QueryStringProperty<InstallPackageEntity>(
+    _entities[5].properties[1],
+  );
+
+  /// See [InstallPackageEntity.fileName].
+  static final fileName = obx.QueryStringProperty<InstallPackageEntity>(
+    _entities[5].properties[2],
+  );
+
+  /// See [InstallPackageEntity.remark].
+  static final remark = obx.QueryStringProperty<InstallPackageEntity>(
+    _entities[5].properties[3],
+  );
+
+  /// See [InstallPackageEntity.createdAt].
+  static final createdAt = obx.QueryDateProperty<InstallPackageEntity>(
+    _entities[5].properties[4],
   );
 }

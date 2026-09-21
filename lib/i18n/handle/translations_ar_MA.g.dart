@@ -55,6 +55,7 @@ class TranslationsArMa extends Translations with BaseTranslations<AppLocale, Tra
 	@override late final Translations$layout$ar_MA layout = Translations$layout$ar_MA.internal(_root);
 	@override late final Translations$settings$ar_MA settings = Translations$settings$ar_MA.internal(_root);
 	@override late final Translations$cpds$ar_MA cpds = Translations$cpds$ar_MA.internal(_root);
+	@override late final Translations$selfUpdate$ar_MA selfUpdate = Translations$selfUpdate$ar_MA.internal(_root);
 }
 
 // Path: app
@@ -414,6 +415,16 @@ class Translations$cpds$ar_MA extends Translations$cpds$zh {
 	@override late final Translations$cpds$export$ar_MA export = Translations$cpds$export$ar_MA.internal(_root);
 	@override late final Translations$cpds$exportProgress$ar_MA exportProgress = Translations$cpds$exportProgress$ar_MA.internal(_root);
 	@override late final Translations$cpds$usbProgress$ar_MA usbProgress = Translations$cpds$usbProgress$ar_MA.internal(_root);
+}
+
+// Path: selfUpdate
+class Translations$selfUpdate$ar_MA extends Translations$selfUpdate$zh {
+	Translations$selfUpdate$ar_MA.internal(TranslationsArMa root) : this._root = root, super.internal(root);
+
+	final TranslationsArMa _root; // ignore: unused_field
+
+	// Translations
+	@override late final Translations$selfUpdate$failReason$ar_MA failReason = Translations$selfUpdate$failReason$ar_MA.internal(_root);
 }
 
 // Path: app.appbar
@@ -783,6 +794,19 @@ class Translations$cpds$usbProgress$ar_MA extends Translations$cpds$usbProgress$
 	@override String get detailError => 'خطأ في نقل USB';
 	@override String get detailDeviceRemoved => 'تم فصل جهاز USB';
 	@override String get detailKeyLoadSuccess => 'نجح تحميل المفتاح';
+}
+
+// Path: selfUpdate.failReason
+class Translations$selfUpdate$failReason$ar_MA extends Translations$selfUpdate$failReason$zh {
+	Translations$selfUpdate$failReason$ar_MA.internal(TranslationsArMa root) : this._root = root, super.internal(root);
+
+	final TranslationsArMa _root; // ignore: unused_field
+
+	// Translations
+	@override String get versionMismatch => 'عدم تطابق الإصدار';
+	@override String get installError => 'فشل التثبيت';
+	@override String get restartError => 'فشل إعادة التشغيل';
+	@override String get versionReadError => 'فشل قراءة الإصدار';
 }
 
 // Path: pager.injectParams.steps

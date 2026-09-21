@@ -133,12 +133,19 @@ void main() {
       );
       await tester.pumpWidget(_wrap(package));
 
-      await tester.enterText(find.byType(TextField), 'n99');
+      // Android：主搜索框只读，点击后弹出搜索弹窗。
+      await tester.tap(find.byType(TextField));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+
+      // 弹窗内的输入框（两个 TextField 中的最后一个）。
+      await tester.enterText(find.byType(TextField).last, 'n99');
       await tester.pump();
       expect(_treeText('n3'), findsOneWidget); // 输入时未搜索
 
       await tester.testTextInput.receiveAction(TextInputAction.search);
       await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
       expect(_treeText('n3'), findsNothing); // 按搜索键后搜索 n99，n3 被过滤
     } finally {
       debugDefaultTargetPlatformOverride = null;

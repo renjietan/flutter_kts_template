@@ -57,6 +57,7 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 	late final Translations$layout$zh layout = Translations$layout$zh.internal(_root);
 	late final Translations$settings$zh settings = Translations$settings$zh.internal(_root);
 	late final Translations$cpds$zh cpds = Translations$cpds$zh.internal(_root);
+	late final Translations$selfUpdate$zh selfUpdate = Translations$selfUpdate$zh.internal(_root);
 }
 
 // Path: app
@@ -695,6 +696,16 @@ class Translations$cpds$zh {
 	late final Translations$cpds$usbProgress$zh usbProgress = Translations$cpds$usbProgress$zh.internal(_root);
 }
 
+// Path: selfUpdate
+class Translations$selfUpdate$zh {
+	Translations$selfUpdate$zh.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+	late final Translations$selfUpdate$failReason$zh failReason = Translations$selfUpdate$failReason$zh.internal(_root);
+}
+
 // Path: app.appbar
 class Translations$app$appbar$zh {
 	Translations$app$appbar$zh.internal(this._root);
@@ -1058,6 +1069,7 @@ class Translations$cpds$device$zh {
 
 	/// zh: '当前 IP'
 	String get ip => '当前 IP';
+
 	/// zh: '下发IP(down)'
 	String get downCurrentIp => '下发IP(down)';
 
@@ -1351,6 +1363,27 @@ class Translations$cpds$usbProgress$zh {
 
 	/// zh: '注钥成功'
 	String get detailKeyLoadSuccess => '注钥成功';
+}
+
+// Path: selfUpdate.failReason
+class Translations$selfUpdate$failReason$zh {
+	Translations$selfUpdate$failReason$zh.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// zh: '版本不匹配'
+	String get versionMismatch => '版本不匹配';
+
+	/// zh: '安装失败'
+	String get installError => '安装失败';
+
+	/// zh: '重启失败'
+	String get restartError => '重启失败';
+
+	/// zh: '读取版本失败'
+	String get versionReadError => '读取版本失败';
 }
 
 // Path: pager.injectParams.steps

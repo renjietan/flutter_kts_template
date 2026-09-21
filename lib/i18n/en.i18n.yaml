@@ -368,3 +368,10 @@ cpds:
     detailError: USB transfer error
     detailDeviceRemoved: USB device disconnected
     detailKeyLoadSuccess: Key load successful
+
+selfUpdate:
+  failReason:
+    versionMismatch: Version mismatch
+    installError: Installation failed
+    restartError: Restart failed
+    versionReadError: Failed to read version

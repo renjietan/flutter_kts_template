@@ -368,3 +368,10 @@ cpds:
     detailError: USB 传输异常
     detailDeviceRemoved: USB 设备已断开
     detailKeyLoadSuccess: 注钥成功
+
+selfUpdate:
+  failReason:
+    versionMismatch: 版本不匹配
+    installError: 安装失败
+    restartError: 重启失败
+    versionReadError: 读取版本失败

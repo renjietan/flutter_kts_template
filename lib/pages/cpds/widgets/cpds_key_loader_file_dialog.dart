@@ -6,6 +6,7 @@ import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
 import 'package:dage/dage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_kts_template/core/cpds/parser/cpds_package_parser.dart';
 import 'package:flutter_kts_template/core/cpds/service/cpds_manager.dart';
 import 'package:flutter_kts_template/core/databaseManager/databaseManager.dart';
 import 'package:flutter_kts_template/core/entities/keyLoaderDetails/keyLoaderDetailsEntity.dart';
@@ -555,10 +556,11 @@ class _CpdsKeyLoaderFileDialogState extends State<CpdsKeyLoaderFileDialog> {
 
       // 7. 解密 .pad → zip（age），存储到 uploads 并同步状态。
       try {
-        final zipBytes = await _decryptWithPassphrase(
+        final decryptedZip = await _decryptWithPassphrase(
           received.content,
           _passwordController.text,
         );
+        final zipBytes = CpdsPackageParser.ensureAes256Resource(decryptedZip);
         final zipName = _txbzJsonUaeName(fileName);
         await CpdsManager.instance.uploadPackage(zipName, zipBytes);
         if (_cancelled) return;

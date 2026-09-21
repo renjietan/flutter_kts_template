@@ -14,6 +14,7 @@ import 'package:flutter_kts_template/components/loading/simple.loading.dart';
 import 'package:flutter_kts_template/core/cpds/cpds_exception.dart';
 import 'package:flutter_kts_template/core/cpds/model/cpds_enums.dart';
 import 'package:flutter_kts_template/core/cpds/model/cpds_models.dart';
+import 'package:flutter_kts_template/core/cpds/parser/cpds_package_parser.dart';
 import 'package:flutter_kts_template/core/cpds/service/cpds_manager.dart';
 import 'package:flutter_kts_template/core/databaseManager/databaseManager.dart';
 import 'package:flutter_kts_template/core/entities/keyLoaderDetails/keyLoaderDetailsEntity.dart';
@@ -368,6 +369,7 @@ class _CpdsPageState extends State<CpdsPage> {
     if (clearKeyLoader) {
       _clearKeyLoaderData();
     }
+    zipBytes = CpdsPackageParser.ensureAes256Resource(zipBytes!);
     final zipName = _txbzJsonUaeName(p.basename(stored.path));
     await CpdsManager.instance.uploadPackage(zipName, zipBytes!);
     await CpdsManager.instance.parsePackage();

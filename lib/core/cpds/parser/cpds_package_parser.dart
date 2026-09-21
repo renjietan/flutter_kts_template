@@ -112,6 +112,22 @@ class CpdsPackageParser {
     );
   }
 
+  static const String radioResourceKey = '1_resource/aes256.json';
+  static const String emptyAes256Json =
+      '{"File":{"Layer":"key","Type":"aes256","Guid":"","Description":""}}';
+
+  /// 解密后的通信包若缺少 [radioResourceKey]，则补入一个空资源键，
+  /// 使包含电台设备的包能通过 `1_resource` 目录校验；已存在时原样返回。
+  static Uint8List ensureAes256Resource(Uint8List zipBytes) {
+    final archive = ZipDecoder().decodeBytes(zipBytes);
+    final hasKey = archive.files.any((file) => file.name == radioResourceKey);
+    if (hasKey) {
+      return zipBytes;
+    }
+    archive.add(ArchiveFile.string(radioResourceKey, emptyAes256Json));
+    return ZipEncoder().encodeBytes(archive);
+  }
+
   static void _validateFileName(String name) {
     if (name.isEmpty ||
         path.basename(name) != name ||

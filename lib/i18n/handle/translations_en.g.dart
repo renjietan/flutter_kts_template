@@ -55,6 +55,7 @@ class TranslationsEn extends Translations with BaseTranslations<AppLocale, Trans
 	@override late final _Translations$layout$en layout = _Translations$layout$en._(_root);
 	@override late final _Translations$settings$en settings = _Translations$settings$en._(_root);
 	@override late final _Translations$cpds$en cpds = _Translations$cpds$en._(_root);
+	@override late final _Translations$selfUpdate$en selfUpdate = _Translations$selfUpdate$en._(_root);
 }
 
 // Path: app
@@ -414,6 +415,16 @@ class _Translations$cpds$en extends Translations$cpds$zh {
 	@override late final _Translations$cpds$export$en export = _Translations$cpds$export$en._(_root);
 	@override late final _Translations$cpds$exportProgress$en exportProgress = _Translations$cpds$exportProgress$en._(_root);
 	@override late final _Translations$cpds$usbProgress$en usbProgress = _Translations$cpds$usbProgress$en._(_root);
+}
+
+// Path: selfUpdate
+class _Translations$selfUpdate$en extends Translations$selfUpdate$zh {
+	_Translations$selfUpdate$en._(TranslationsEn root) : this._root = root, super.internal(root);
+
+	final TranslationsEn _root; // ignore: unused_field
+
+	// Translations
+	@override late final _Translations$selfUpdate$failReason$en failReason = _Translations$selfUpdate$failReason$en._(_root);
 }
 
 // Path: app.appbar
@@ -783,6 +794,19 @@ class _Translations$cpds$usbProgress$en extends Translations$cpds$usbProgress$zh
 	@override String get detailError => 'USB transfer error';
 	@override String get detailDeviceRemoved => 'USB device disconnected';
 	@override String get detailKeyLoadSuccess => 'Key load successful';
+}
+
+// Path: selfUpdate.failReason
+class _Translations$selfUpdate$failReason$en extends Translations$selfUpdate$failReason$zh {
+	_Translations$selfUpdate$failReason$en._(TranslationsEn root) : this._root = root, super.internal(root);
+
+	final TranslationsEn _root; // ignore: unused_field
+
+	// Translations
+	@override String get versionMismatch => 'Version mismatch';
+	@override String get installError => 'Installation failed';
+	@override String get restartError => 'Restart failed';
+	@override String get versionReadError => 'Failed to read version';
 }
 
 // Path: pager.injectParams.steps

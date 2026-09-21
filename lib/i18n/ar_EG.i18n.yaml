@@ -366,3 +366,10 @@ cpds:
     detailError: خطأ في نقل USB
     detailDeviceRemoved: تم فصل جهاز USB
     detailKeyLoadSuccess: نجح تحميل المفتاح
+
+selfUpdate:
+  failReason:
+    versionMismatch: عدم تطابق الإصدار
+    installError: فشل التثبيت
+    restartError: فشل إعادة التشغيل
+    versionReadError: فشل قراءة الإصدار

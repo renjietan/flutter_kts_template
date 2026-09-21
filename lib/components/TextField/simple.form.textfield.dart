@@ -51,6 +51,8 @@ class _SimpleFormTextFieldState extends State<SimpleFormTextField> {
       enabled: widget.field.enabled,
       readOnly: widget.field.readonly,
       inputFormatters: widget.field.inputFormatters,
+      maxLines: widget.field.maxLines,
+      minLines: widget.field.minLines,
       validator: widget.field.validators != null
           ? FormBuilderValidators.compose(widget.field.validators!)
           : null,
@@ -116,6 +118,10 @@ class FormFieldConfig {
   final List<TextInputFormatter>? inputFormatters;
   final String? Function(String value)? counterTextBuilder;
 
+  /// 多行输入（textarea）相关。
+  final int? maxLines;
+  final int? minLines;
+
   // 新增字段类型
   final FormFieldType fieldType;
 
@@ -139,6 +145,8 @@ class FormFieldConfig {
     this.labelHelpText,
     this.inputFormatters,
     this.counterTextBuilder,
+    this.maxLines,
+    this.minLines,
     this.fieldType = FormFieldType.text, // 默认为文本输入
     this.items,
     this.labelBuilder,
