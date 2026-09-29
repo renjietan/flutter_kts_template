@@ -71,7 +71,7 @@
     },
     {
       "id": "4:3041742923072573707",
-      "lastPropertyId": "7:1938772858763471383",
+      "lastPropertyId": "8:738009481192627460",
       "name": "RadiosEntity",
       "properties": [
         {
@@ -109,6 +109,11 @@
           "id": "7:1938772858763471383",
           "name": "alias",
           "type": 9
+        },
+        {
+          "id": "8:738009481192627460",
+          "name": "radioType",
+          "type": 9
         }
       ],
       "relations": []
@@ -144,7 +149,7 @@
     },
     {
       "id": "7:1813780709103220274",
-      "lastPropertyId": "15:4274463691773407178",
+      "lastPropertyId": "16:2413419587393832057",
       "name": "KeyLoaderDetailsEntity",
       "properties": [
         {
@@ -211,6 +216,11 @@
         {
           "id": "15:4274463691773407178",
           "name": "downlinkIp",
+          "type": 9
+        },
+        {
+          "id": "16:2413419587393832057",
+          "name": "deviceType",
           "type": 9
         }
       ],

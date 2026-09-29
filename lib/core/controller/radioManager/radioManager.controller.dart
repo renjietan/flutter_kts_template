@@ -37,12 +37,19 @@ class RadioManagerController {
               .contains(keyword)
               .or(RadiosEntity_.consumer.contains(keyword))
               .or(RadiosEntity_.location.contains(keyword))
-              .or(RadiosEntity_.sn.contains(keyword)),
+            .or(RadiosEntity_.sn.contains(keyword)),
         );
+      }
+      if (params.radioType.isNotEmpty) {
+        condition.add(RadiosEntity_.radioType.equals(params.radioType));
+      }
+      Condition<RadiosEntity>? cond;
+      for (final item in condition) {
+        cond = cond == null ? item : cond.and(item);
       }
       final query = db
           .box<RadiosEntity>()
-          .query(condition.isEmpty ? null : condition.first)
+          .query(cond)
           .order(RadiosEntity_.id, flags: Order.descending)
           .build();
       var count = query.count();

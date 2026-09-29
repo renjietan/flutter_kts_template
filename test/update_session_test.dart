@@ -7,7 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 class _MockTransport implements UpdateTransport {
   final sent = <Uint8List>[];
-  final _controller = StreamController<Uint8List>.broadcast();
+  final _controller = StreamController<UpdateDatagram>.broadcast();
   bool closed = false;
   int _sendCount = 0;
 
@@ -20,12 +20,12 @@ class _MockTransport implements UpdateTransport {
     _sendCount++;
     final reply = onSend?.call(_sendCount);
     if (reply != null) {
-      _controller.add(reply);
+      _controller.add(UpdateDatagram(data: reply, sourceIp: '192.168.1.10'));
     }
   }
 
   @override
-  Stream<Uint8List> get replies => _controller.stream;
+  Stream<UpdateDatagram> get replies => _controller.stream;
 
   @override
   Future<void> close() async {
@@ -33,7 +33,8 @@ class _MockTransport implements UpdateTransport {
     await _controller.close();
   }
 
-  void emitBytes(Uint8List bytes) => _controller.add(bytes);
+  void emitBytes(Uint8List bytes) =>
+      _controller.add(UpdateDatagram(data: bytes, sourceIp: '192.168.1.10'));
 }
 
 Uint8List _authAck(String deviceType, String ip) {
@@ -141,5 +142,23 @@ void main() {
     );
     expect(reply, isNull);
     expect(transport.sent.length, 0);
+  });
+
+  test('waitFor captures a reply that arrived before subscribing', () async {
+    final transport = _MockTransport();
+    final session = UpdateSession(transport: transport);
+
+    // 回复在 waitFor 之前到达（模拟阶段切换的订阅间隙）。
+    transport.emitBytes(_authAck('CCU', '192.168.1.10'));
+
+    final replies = await session.waitFor<AuthAckReply>(
+      timeout: const Duration(milliseconds: 50),
+      matches: (r) => r is AuthAckReply,
+      isDone: (collected) => collected.isNotEmpty,
+    );
+
+    expect(replies.length, 1);
+    expect(replies.single.deviceType, 'CCU');
+    expect(replies.single.ip, '192.168.1.10');
   });
 }

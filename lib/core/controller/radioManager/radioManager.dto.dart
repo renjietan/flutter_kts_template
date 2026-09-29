@@ -4,10 +4,12 @@ import '../../databaseManager/pagerable/pager.abstract.dto.dart';
 
 class RadioManagerDto extends PagerDtoAbstract {
   final String keyword;
+  final String radioType;
   RadioManagerDto({
     required super.page,
     required super.pageSize,
     this.keyword = "",
+    this.radioType = "",
   });
 
   factory RadioManagerDto.fromJson(Map<String, dynamic> json) {
@@ -15,11 +17,13 @@ class RadioManagerDto extends PagerDtoAbstract {
       page: json['page'] ?? "1", // 默认值 1
       pageSize: json['pageSize'] ?? "10", // 默认值 10
       keyword: json['keyword'] ?? "",
+      radioType: json['radioType'] ?? "",
     );
   }
 
   @override
-  Map<String, dynamic> toJson() => {...super.toJson(), 'keyword': keyword};
+  Map<String, dynamic> toJson() =>
+      {...super.toJson(), 'keyword': keyword, 'radioType': radioType};
 
   @override
   List<String> validate() {
@@ -32,5 +36,5 @@ class RadioManagerDto extends PagerDtoAbstract {
 
   @override
   String toString() =>
-      'RadioManagerDto(page: $page, pageSize: $pageSize, keyword: $keyword)';
+      'RadioManagerDto(page: $page, pageSize: $pageSize, keyword: $keyword, radioType: $radioType)';
 }

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_kts_template/core/entities/installPackage/installPackageEntity.dart';
 import 'package:flutter_kts_template/core/selfUpdate/install_package_repository.dart';
+import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 import 'package:flutter_kts_template/objectbox.g.dart';
 import 'package:flutter_kts_template/pages/self_update/self_update.page.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -32,15 +33,22 @@ void main() {
     void Function(InstallPackageEntity)? onUpdate,
     void Function(InstallPackageEntity, String, String?)? onEdit,
   }) async {
+    LocaleSettings.setLocaleSync(AppLocale.zh);
     await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(
-          body: SelfUpdatePage(
-            repository: repository,
-            onUpload: onUpload,
-            onDelete: onDelete,
-            onUpdate: onUpdate,
-            onEdit: onEdit,
+      TranslationProvider(
+        child: MaterialApp(
+          home: Scaffold(
+            body: SelfUpdatePage(
+              repository: repository,
+              interfaces: const [],
+              selectedInterfaceName: '',
+              automaticInterface: false,
+              interfacesLoading: false,
+              onUpload: onUpload,
+              onDelete: onDelete,
+              onUpdate: onUpdate,
+              onEdit: onEdit,
+            ),
           ),
         ),
       ),

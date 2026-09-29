@@ -236,13 +236,16 @@ class _CpdsFutureWarriorSaveDialogState
         selectedByOthers.add(id);
       }
     });
-    return cpdsAvailableRadios(
+    final available = cpdsAvailableRadios(
       radios: _radios,
       ownExistingRadioId: _existingRadioIdByDevice[fwDevice.key],
       ownSelectedRadioId: _selectedRadioId[fwDevice.key],
       boundRadioIds: _boundRadioIds,
       selectedByOthers: selectedByOthers,
     );
+    return available
+        .where((radio) => radio.radioType == fwDevice.device.model)
+        .toList();
   }
 
   void _clearRadio(CpdsFutureWarriorDevice fwDevice) {
@@ -751,7 +754,10 @@ class _CpdsFutureWarriorSaveDialogState
       actions: [
         TextButton(
           onPressed: _saving ? null : _cancel,
-          child: Text(t.common.cancel),
+          child: Text(
+            t.common.cancel,
+            style: const TextStyle(color: Colors.white70),
+          ),
         ),
         FilledButton(
           onPressed: _saving ? null : _save,

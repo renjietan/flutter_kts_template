@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_kts_template/core/cpds/service/cpds_manager.dart';
 import 'package:flutter_kts_template/core/entities/installPackage/installPackageEntity.dart';
 import 'package:flutter_kts_template/core/selfUpdate/scan/scan_controller.dart';
 import 'package:flutter_kts_template/core/selfUpdate/self_update_service.dart';
@@ -9,6 +10,7 @@ import 'package:flutter_kts_template/core/selfUpdate/session/update_session.dart
 import 'package:flutter_kts_template/core/selfUpdate/update/update_flow_coordinator.dart';
 import 'package:flutter_kts_template/core/selfUpdate/update/transfer_coordinator.dart';
 import 'package:flutter_kts_template/core/selfUpdate/update/update_step_controller.dart';
+import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 import 'package:flutter_kts_template/pages/self_update/self_update.page.dart';
 import 'package:flutter_kts_template/pages/self_update/widgets/upload_package_dialog.dart';
 import 'package:flutter_kts_template/pages/self_update/widgets/scan_countdown_dialog.dart';
@@ -38,6 +40,43 @@ class SelfUpdatePager extends StatefulWidget {
 class _SelfUpdatePagerState extends State<SelfUpdatePager> {
   int _reloadVersion = 0;
   bool _transferRunning = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _refreshInterfaces();
+    });
+  }
+
+  Future<void> _refreshInterfaces() async {
+    if (CpdsManager.instance.interfacesLoading) {
+      return;
+    }
+    try {
+      await CpdsManager.instance.refreshNetworkInterfaces();
+    } catch (_) {
+      // 刷新失败保持现有网卡状态。
+    }
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  Future<void> _selectInterface(String? name) async {
+    final value = name ?? '';
+    if (value == CpdsManager.instance.selectedInterfaceName) {
+      return;
+    }
+    try {
+      await CpdsManager.instance.selectNetworkInterface(value);
+    } catch (_) {
+      // 选择失败保持现有选中网卡。
+    }
+    if (mounted) {
+      setState(() {});
+    }
+  }
 
   Future<void> _handleUpload() async {
     await showDialog<void>(
@@ -126,8 +165,14 @@ class _SelfUpdatePagerState extends State<SelfUpdatePager> {
   }
 
   Future<void> _runUpdateFlow(InstallPackageEntity entity) async {
+    final ipv4 = _selectedInterfaceIpv4();
+    if (ipv4 == null || ipv4.isEmpty) {
+      await _showNoInterface();
+      return;
+    }
+
     final transport = UdpUpdateTransport();
-    await transport.init();
+    await transport.init(interfaceIp: ipv4);
     final session = UpdateSession(transport: transport);
 
     try {
@@ -164,10 +209,45 @@ class _SelfUpdatePagerState extends State<SelfUpdatePager> {
         baseName: baseName,
       );
 
-      await _runStepDialog(stepController, flow, transfer, session);
+      await _runStepDialog(
+        stepController,
+        flow,
+        transfer,
+        session,
+        scanController,
+        scanned,
+      );
     } finally {
       await session.reset();
     }
+  }
+
+  String? _selectedInterfaceIpv4() {
+    final manager = CpdsManager.instance;
+    for (final item in manager.interfaces) {
+      if (item.name == manager.selectedInterfaceName) {
+        return item.ipv4;
+      }
+    }
+    return null;
+  }
+
+  Future<void> _showNoInterface() {
+    return showDialog<void>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('提示'),
+          content: Text(t.selfUpdate.selectInterfaceFirst),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text('确定'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   Future<int?> _scan(ScanController scanController) {
@@ -207,7 +287,16 @@ class _SelfUpdatePagerState extends State<SelfUpdatePager> {
     UpdateFlowCoordinator flow,
     TransferCoordinator transfer,
     UpdateSession session,
+    ScanController scanController,
+    int expectedDeviceCount,
   ) async {
+    Future<void> fullReset() async {
+      transfer.cancel();
+      await session.reset();
+      stepController.reset();
+      scanController.reset();
+    }
+
     final dialogFuture = showDialog<void>(
       context: context,
       barrierDismissible: false,
@@ -215,19 +304,14 @@ class _SelfUpdatePagerState extends State<SelfUpdatePager> {
         return UpdateStepDialog(
           controller: stepController,
           onStart: () => _runTransfer(transfer, stepController),
-          onPause: () {},
-          onCancel: () async {
-            await session.reset();
-            if (dialogContext.mounted) {
-              Navigator.of(dialogContext).pop();
-            }
-          },
-          onClose: () async {
-            await session.reset();
-            if (dialogContext.mounted) {
-              Navigator.of(dialogContext).pop();
-            }
-          },
+          onPause: transfer.pause,
+          onResume: transfer.resume,
+          onReAuth: () => flow.reAuth(expectedDeviceCount),
+          onReVersion: () => flow.reVersionCheck(),
+          onReValid: () => transfer.reValid(),
+          onReWrite: () => transfer.reWrite(),
+          onCancel: fullReset,
+          onClose: fullReset,
         );
       },
     );
@@ -238,7 +322,7 @@ class _SelfUpdatePagerState extends State<SelfUpdatePager> {
         return;
       }
       stepController.setPhase(UpdatePhase.running);
-      flow.runAuthAndVersion();
+      flow.runAuthAndVersion(expectedDeviceCount);
     });
 
     await dialogFuture;
@@ -264,7 +348,8 @@ class _SelfUpdatePagerState extends State<SelfUpdatePager> {
       }
       final ok = await transfer.run(devices);
       if (ok) {
-        await transfer.runReceipt(devices);
+        await transfer.runWrite();
+        await transfer.runUpdate();
       }
     } finally {
       _transferRunning = false;
@@ -282,6 +367,12 @@ class _SelfUpdatePagerState extends State<SelfUpdatePager> {
     return SelfUpdatePage(
       key: ValueKey(_reloadVersion),
       repository: widget.service.repository,
+      interfaces: CpdsManager.instance.interfaces,
+      selectedInterfaceName: CpdsManager.instance.selectedInterfaceName,
+      automaticInterface: CpdsManager.instance.automaticInterface,
+      interfacesLoading: CpdsManager.instance.interfacesLoading,
+      onRefreshInterfaces: _refreshInterfaces,
+      onSelectInterface: _selectInterface,
       onUpload: _handleUpload,
       onDelete: _handleDelete,
       onUpdate: _handleUpdate,

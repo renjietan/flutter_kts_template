@@ -11,6 +11,7 @@ class CpdsNetworkInterfaceBar extends StatelessWidget {
     required this.loading,
     required this.disabled,
     required this.onSelected,
+    this.showLabel = true,
   });
 
   final List<CpdsNetworkInterface> interfaces;
@@ -19,6 +20,7 @@ class CpdsNetworkInterfaceBar extends StatelessWidget {
   final bool loading;
   final bool disabled;
   final ValueChanged<String?> onSelected;
+  final bool showLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -28,11 +30,13 @@ class CpdsNetworkInterfaceBar extends StatelessWidget {
       margin: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         children: [
-          Text(
-            t.cpds.networkInterfaceLabel,
-            style: const TextStyle(color: Colors.white, fontSize: 13),
-          ),
-          const SizedBox(width: 8),
+          if (showLabel) ...[
+            Text(
+              t.cpds.networkInterfaceLabel,
+              style: const TextStyle(color: Colors.white, fontSize: 13),
+            ),
+            const SizedBox(width: 8),
+          ],
           Expanded(
             child: DropdownButtonFormField<String>(
               initialValue: selectedName.isEmpty ? null : selectedName,
@@ -46,9 +50,7 @@ class CpdsNetworkInterfaceBar extends StatelessWidget {
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(4),
-                  borderSide: const BorderSide(
-                    color: Color(0x33FFFFFF),
-                  ),
+                  borderSide: const BorderSide(color: Color(0x33FFFFFF)),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(4),
@@ -111,10 +113,7 @@ class CpdsNetworkInterfaceBar extends StatelessWidget {
               ),
               child: Text(
                 t.cpds.automatic,
-                style: const TextStyle(
-                  color: Color(0xFF0CB5FF),
-                  fontSize: 11,
-                ),
+                style: const TextStyle(color: Color(0xFF0CB5FF), fontSize: 11),
               ),
             ),
           ],

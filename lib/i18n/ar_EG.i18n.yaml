@@ -87,6 +87,8 @@ tableColumn:
     location_desc: موقع جهاز الراديو
     sn: SN
     sn_desc: رقم SN لجهاز الراديو
+    radioType: نوع الراديو
+    radioType_desc: نوع الراديو
     columnInfo: معلومات الأعمدة المعروضة
   injectEncrypt:
     parameterPacket: حزمة معلمات الاتصال
@@ -368,8 +370,48 @@ cpds:
     detailKeyLoadSuccess: نجح تحميل المفتاح
 
 selfUpdate:
+  selectInterfaceFirst: يرجى تحديد بطاقة الشبكة أولاً
+  authFailedCount: "فشل المصادقة: عدد الأجهزة التي تمت المصادقة عليها {n}"
+  versionFailedCount: "فشل التحقق من الإصدار: {n} أجهزة ردت"
+  validFailedSummary: "فشل التحقق: {fail} فشل، {timeout} مهلة"
+  writeFailedSummary: "فشل الكتابة: {fail} فشل، {timeout} مهلة"
+  updateCompletedSummary: "اكتمل التحديث: {success} نجح، {fail} فشل، {timeout} مهلة"
+  revalidate: إعادة التحقق
+  rewrite: إعادة الكتابة
   failReason:
+    format: تنسيق الإصدار غير صالح
+    length: خطأ في طول الحزمة
+    crc: فشل التحقق CRC
+    sequence: "خطأ في تسلسل الحزمة، الحزمة {n} مفقودة"
+    noHeader: لم يتم استلام رأس الملف
+    missingPacket: حزمة مفقودة
+    size: عدم تطابق حجم الملف
+    zip: فشل فك الضغط
     versionMismatch: عدم تطابق الإصدار
+    unzipFail: فشل فك ضغط الملف
+    typeDirNotFound: لم يتم العثور على مجلد نوع الجهاز
+    installFileNotFound: لم يتم العثور على ملف التثبيت
+    installFileMultiple: توجد ملفات تثبيت متعددة
+    readConfigFail: فشل قراءة التكوين
+    executablePathFail: فشل الحصول على مسار البرنامج
+    overwriteBinaryOpenFail: فشل فتح الملف المصدر للبرنامج
+    overwriteBinaryTempFail: فشل كتابة الملف المؤقت للبرنامج
+    overwriteBinaryRenameFail: فشل إعادة تسمية البرنامج
+    overwriteConfigOpenFail: فشل فتح الملف المصدر للتكوين
+    overwriteConfigTempFail: فشل كتابة الملف المؤقت للتكوين
+    overwriteConfigRenameFail: فشل إعادة تسمية التكوين
+    overwriteIniOpenFail: فشل فتح الملف المصدر لـ ini
+    overwriteIniTempFail: فشل كتابة الملف المؤقت لـ ini
+    overwriteIniRenameFail: فشل إعادة تسمية ini
+    writeMarkerFail: فشل كتابة علامة الاستلام
+    versionWriteFail: فشل كتابة الإصدار
+    emptyCommand: أمر بدء التشغيل فارغ
+    mkdirFail: فشل إنشاء الدليل
+    writeScriptFail: فشل كتابة سكربت إعادة التشغيل
+    mismatch: عدم تطابق رأس الملف
     installError: فشل التثبيت
     restartError: فشل إعادة التشغيل
     versionReadError: فشل قراءة الإصدار
+    restartSpawnFail: فشل تشغيل السكربت
+    finalizeFail: فشل استبدال الملف التنفيذي
+    writeParamsFail: فشل كتابة معلمات إعادة التشغيل

@@ -49,6 +49,11 @@ class _ScanCountdownDialogState extends State<ScanCountdownDialog> {
     widget.onCancel?.call();
   }
 
+  void _next() {
+    widget.controller.finishEarly();
+    // finishEarly 会触发 _onChanged → state==done → onComplete。
+  }
+
   @override
   Widget build(BuildContext context) {
     final controller = widget.controller;
@@ -87,18 +92,12 @@ class _ScanCountdownDialogState extends State<ScanCountdownDialog> {
                   const SizedBox(height: 12),
                   Text(
                     '已扫描到 ${controller.deviceCount} 个设备',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                    ),
+                    style: const TextStyle(color: Colors.white, fontSize: 14),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     '剩余 ${controller.remainingSeconds} 秒',
-                    style: const TextStyle(
-                      color: Colors.white70,
-                      fontSize: 13,
-                    ),
+                    style: const TextStyle(color: Colors.white70, fontSize: 13),
                   ),
                 ],
               ),
@@ -107,10 +106,13 @@ class _ScanCountdownDialogState extends State<ScanCountdownDialog> {
         ),
       ),
       actions: [
-        TextButton(
-          onPressed: controller.state == ScanState.scanning ? _cancel : null,
-          child: const Text('取消'),
-        ),
+        if (controller.deviceCount >= 1)
+          TextButton(onPressed: _next, child: const Text('下一步'))
+        else
+          TextButton(
+            onPressed: controller.state == ScanState.scanning ? _cancel : null,
+            child: const Text('取消'),
+          ),
       ],
     );
   }

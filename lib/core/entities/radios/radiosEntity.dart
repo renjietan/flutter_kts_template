@@ -17,6 +17,9 @@ class RadiosEntity {
 
   String sn;
 
+  @JsonKey(defaultValue: '')
+  String radioType;
+
   @Property(type: PropertyType.date)
   DateTime createdAt;
 
@@ -29,6 +32,7 @@ class RadiosEntity {
     required this.location,
     required this.sn,
     required this.alias,
+    this.radioType = '',
     required this.createdAt,
     DateTime? updatedAt,
   }) : updatedAt = updatedAt ?? DateTime.now();

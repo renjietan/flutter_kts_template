@@ -703,6 +703,31 @@ class Translations$selfUpdate$zh {
 	final Translations _root; // ignore: unused_field
 
 	// Translations
+
+	/// zh: '请先选择网卡'
+	String get selectInterfaceFirst => '请先选择网卡';
+
+	/// zh: '认证失败：设备认证数量为 {n}'
+	String authFailedCount({required Object n}) => '认证失败：设备认证数量为 ${n}';
+
+	/// zh: '版本校验失败：设备回复数量为 {n}'
+	String versionFailedCount({required Object n}) => '版本校验失败：设备回复数量为 ${n}';
+
+	/// zh: '校验失败：{fail} 台失败，{timeout} 台超时'
+	String validFailedSummary({required Object fail, required Object timeout}) => '校验失败：${fail} 台失败，${timeout} 台超时';
+
+	/// zh: '写入失败：{fail} 台失败，{timeout} 台超时'
+	String writeFailedSummary({required Object fail, required Object timeout}) => '写入失败：${fail} 台失败，${timeout} 台超时';
+
+	/// zh: '更新完成：成功 {success} 台，失败 {fail} 台，超时 {timeout} 台'
+	String updateCompletedSummary({required Object success, required Object fail, required Object timeout}) => '更新完成：成功 ${success} 台，失败 ${fail} 台，超时 ${timeout} 台';
+
+	/// zh: '重新校验'
+	String get revalidate => '重新校验';
+
+	/// zh: '重新写入'
+	String get rewrite => '重新写入';
+
 	late final Translations$selfUpdate$failReason$zh failReason = Translations$selfUpdate$failReason$zh.internal(_root);
 }
 
@@ -854,6 +879,12 @@ class Translations$tableColumn$radioManager$zh {
 	/// zh: '电台SN号'
 	String get sn_desc => '电台SN号';
 
+	/// zh: '电台类型'
+	String get radioType => '电台类型';
+
+	/// zh: '电台类型'
+	String get radioType_desc => '电台类型';
+
 	/// zh: '展示列信息'
 	String get columnInfo => '展示列信息';
 }
@@ -970,6 +1001,7 @@ class Translations$Form$radioManager$zh {
 	late final Translations$Form$radioManager$alias$zh alias = Translations$Form$radioManager$alias$zh.internal(_root);
 	late final Translations$Form$radioManager$sn$zh sn = Translations$Form$radioManager$sn$zh.internal(_root);
 	late final Translations$Form$radioManager$location$zh location = Translations$Form$radioManager$location$zh.internal(_root);
+	late final Translations$Form$radioManager$radioType$zh radioType = Translations$Form$radioManager$radioType$zh.internal(_root);
 	late final Translations$Form$radioManager$consumer$zh consumer = Translations$Form$radioManager$consumer$zh.internal(_root);
 }
 
@@ -1373,17 +1405,113 @@ class Translations$selfUpdate$failReason$zh {
 
 	// Translations
 
+	/// zh: '版本号格式非法'
+	String get format => '版本号格式非法';
+
+	/// zh: '分包长度错误'
+	String get length => '分包长度错误';
+
+	/// zh: '校验失败（CRC）'
+	String get crc => '校验失败（CRC）';
+
+	/// zh: '分包顺序错误，缺少第 {n} 包'
+	String sequence({required Object n}) => '分包顺序错误，缺少第 ${n} 包';
+
+	/// zh: '未收到文件头'
+	String get noHeader => '未收到文件头';
+
+	/// zh: '缺少分包'
+	String get missingPacket => '缺少分包';
+
+	/// zh: '文件大小不符'
+	String get size => '文件大小不符';
+
+	/// zh: '解压失败'
+	String get zip => '解压失败';
+
 	/// zh: '版本不匹配'
 	String get versionMismatch => '版本不匹配';
 
-	/// zh: '安装失败'
-	String get installError => '安装失败';
+	/// zh: '解压 ZIP 失败'
+	String get unzipFail => '解压 ZIP 失败';
+
+	/// zh: '找不到设备类型文件夹'
+	String get typeDirNotFound => '找不到设备类型文件夹';
+
+	/// zh: '找不到安装文件'
+	String get installFileNotFound => '找不到安装文件';
+
+	/// zh: '存在多个安装文件'
+	String get installFileMultiple => '存在多个安装文件';
+
+	/// zh: '读取配置失败'
+	String get readConfigFail => '读取配置失败';
+
+	/// zh: '获取运行程序路径失败'
+	String get executablePathFail => '获取运行程序路径失败';
+
+	/// zh: '覆盖二进制：打开源文件失败'
+	String get overwriteBinaryOpenFail => '覆盖二进制：打开源文件失败';
+
+	/// zh: '覆盖二进制：写临时文件失败'
+	String get overwriteBinaryTempFail => '覆盖二进制：写临时文件失败';
+
+	/// zh: '覆盖二进制：改名替换失败'
+	String get overwriteBinaryRenameFail => '覆盖二进制：改名替换失败';
+
+	/// zh: '覆盖配置：打开源文件失败'
+	String get overwriteConfigOpenFail => '覆盖配置：打开源文件失败';
+
+	/// zh: '覆盖配置：写临时文件失败'
+	String get overwriteConfigTempFail => '覆盖配置：写临时文件失败';
+
+	/// zh: '覆盖配置：改名替换失败'
+	String get overwriteConfigRenameFail => '覆盖配置：改名替换失败';
+
+	/// zh: '覆盖 ini：打开源文件失败'
+	String get overwriteIniOpenFail => '覆盖 ini：打开源文件失败';
+
+	/// zh: '覆盖 ini：写临时文件失败'
+	String get overwriteIniTempFail => '覆盖 ini：写临时文件失败';
+
+	/// zh: '覆盖 ini：改名替换失败'
+	String get overwriteIniRenameFail => '覆盖 ini：改名替换失败';
+
+	/// zh: '写回执标记失败'
+	String get writeMarkerFail => '写回执标记失败';
+
+	/// zh: '回填版本失败'
+	String get versionWriteFail => '回填版本失败';
+
+	/// zh: '启动命令行为空'
+	String get emptyCommand => '启动命令行为空';
+
+	/// zh: '创建目录失败'
+	String get mkdirFail => '创建目录失败';
+
+	/// zh: '写重启脚本失败'
+	String get writeScriptFail => '写重启脚本失败';
+
+	/// zh: '文件头不匹配'
+	String get mismatch => '文件头不匹配';
+
+	/// zh: '安装/写盘失败'
+	String get installError => '安装/写盘失败';
 
 	/// zh: '重启失败'
 	String get restartError => '重启失败';
 
 	/// zh: '读取版本失败'
 	String get versionReadError => '读取版本失败';
+
+	/// zh: '启动脚本失败'
+	String get restartSpawnFail => '启动脚本失败';
+
+	/// zh: '替换可执行文件失败'
+	String get finalizeFail => '替换可执行文件失败';
+
+	/// zh: '写重启参数失败'
+	String get writeParamsFail => '写重启参数失败';
 }
 
 // Path: pager.injectParams.steps
@@ -1468,6 +1596,18 @@ class Translations$Form$radioManager$location$zh {
 
 	/// zh: '不超出50位的英文字母、数字、空格、符号"_"'
 	String get invalid => '不超出50位的英文字母、数字、空格、符号"_"';
+}
+
+// Path: Form.radioManager.radioType
+class Translations$Form$radioManager$radioType$zh {
+	Translations$Form$radioManager$radioType$zh.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// zh: '请选择电台类型'
+	String get validate => '请选择电台类型';
 }
 
 // Path: Form.radioManager.consumer

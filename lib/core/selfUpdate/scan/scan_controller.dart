@@ -29,7 +29,8 @@ class ScanController extends ChangeNotifier {
   ScanState _state = ScanState.idle;
   bool _acceptReplies = true;
   Timer? _timer;
-  StreamSubscription<Uint8List>? _sub;
+  StreamSubscription<UpdateDatagram>? _sub;
+  final Set<String> _seenIps = {};
 
   ScanState get state => _state;
   int get deviceCount => _deviceCount;
@@ -60,15 +61,19 @@ class ScanController extends ChangeNotifier {
     _remainingSteps = _totalSteps;
     _deviceCount = 0;
     _acceptReplies = true;
+    _seenIps.clear();
     notifyListeners();
 
-    _sub = transport.replies.listen((bytes) {
+    _sub = transport.replies.listen((datagram) {
       if (!_acceptReplies || _state != ScanState.scanning) {
         return;
       }
-      if (UpdateProtocol.parseReply(bytes) is ScanAckReply) {
-        _deviceCount++;
-        notifyListeners();
+      if (UpdateProtocol.parseReply(datagram.data) is ScanAckReply) {
+        // `Scan:success` 不带 ID，按来源 IP 去重，避免同一设备被计数多次。
+        if (_seenIps.add(datagram.sourceIp)) {
+          _deviceCount++;
+          notifyListeners();
+        }
       }
     });
 
@@ -96,15 +101,41 @@ class ScanController extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// 提前结束扫描（扫到设备后点【下一步】）：停计时器、不再发 `Scan`、
+  /// 丢弃后续 `Scan:success`，状态置 done。
+  void finishEarly() {
+    if (_state != ScanState.scanning) {
+      return;
+    }
+    _finish();
+  }
+
   Future<void> cancel() async {
     if (_state == ScanState.done || _state == ScanState.cancelled) {
       return;
     }
     _state = ScanState.cancelled;
+    _acceptReplies = false;
     _timer?.cancel();
     _sub?.cancel();
+    _deviceCount = 0;
+    _seenIps.clear();
     notifyListeners();
     await transport.close();
+  }
+
+  /// 全量复位扫描残留：清空计数、IP 去重集合、计时器与订阅。
+  ///
+  /// 不关闭 [transport]，由 [UpdateSession] 统一负责关 UDP。
+  void reset() {
+    _timer?.cancel();
+    _sub?.cancel();
+    _state = ScanState.cancelled;
+    _acceptReplies = false;
+    _deviceCount = 0;
+    _remainingSteps = 0;
+    _seenIps.clear();
+    notifyListeners();
   }
 
   @override

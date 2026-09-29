@@ -89,6 +89,8 @@ tableColumn:
     location_desc: Radio location
     sn: SN
     sn_desc: Radio SN
+    radioType: Radio type
+    radioType_desc: Radio type
     columnInfo: Show column info
   injectEncrypt:
     parameterPacket: Parameter Packet
@@ -143,6 +145,8 @@ Form:
       placeholder: Up to 50 letters, numbers, spaces, or "_"
       validate: Radio location cannot be empty!
       invalid: Up to 50 letters, numbers, spaces, or "_"
+    radioType:
+      validate: Please select a radio type
     consumer:
       placeholder: 5-30 letters, numbers, spaces, or "_"
       validate: Radio consumer cannot be empty!
@@ -370,8 +374,48 @@ cpds:
     detailKeyLoadSuccess: Key load successful
 
 selfUpdate:
+  selectInterfaceFirst: Please select a network interface first
+  authFailedCount: "Authentication failed: {n} devices authenticated"
+  versionFailedCount: "Version check failed: {n} devices replied"
+  validFailedSummary: "Validation failed: {fail} failed, {timeout} timed out"
+  writeFailedSummary: "Write failed: {fail} failed, {timeout} timed out"
+  updateCompletedSummary: "Update completed: {success} succeeded, {fail} failed, {timeout} timed out"
+  revalidate: Re-validate
+  rewrite: Re-write
   failReason:
+    format: Invalid version format
+    length: Packet length error
+    crc: CRC verification failed
+    sequence: "Packet sequence error, missing packet {n}"
+    noHeader: No file header received
+    missingPacket: Missing packet
+    size: File size mismatch
+    zip: Decompression failed
     versionMismatch: Version mismatch
+    unzipFail: Unzip failed
+    typeDirNotFound: Device type directory not found
+    installFileNotFound: Install file not found
+    installFileMultiple: Multiple install files
+    readConfigFail: Read config failed
+    executablePathFail: Get executable path failed
+    overwriteBinaryOpenFail: "Overwrite binary: open source failed"
+    overwriteBinaryTempFail: "Overwrite binary: temp write failed"
+    overwriteBinaryRenameFail: "Overwrite binary: rename failed"
+    overwriteConfigOpenFail: "Overwrite config: open source failed"
+    overwriteConfigTempFail: "Overwrite config: temp write failed"
+    overwriteConfigRenameFail: "Overwrite config: rename failed"
+    overwriteIniOpenFail: "Overwrite ini: open source failed"
+    overwriteIniTempFail: "Overwrite ini: temp write failed"
+    overwriteIniRenameFail: "Overwrite ini: rename failed"
+    writeMarkerFail: Write receipt marker failed
+    versionWriteFail: Write version failed
+    emptyCommand: Empty startup command
+    mkdirFail: Create directory failed
+    writeScriptFail: Write restart script failed
+    mismatch: File header mismatch
     installError: Installation failed
     restartError: Restart failed
     versionReadError: Failed to read version
+    restartSpawnFail: Restart script failed
+    finalizeFail: Failed to replace executable
+    writeParamsFail: Write finalize params failed

@@ -22,8 +22,12 @@ class UpdateProtocol {
   static const String packetPrefix = 'packet:';
   static const String packetOkPrefix = 'packet_ok:';
   static const String packetFailPrefix = 'packet_fail:';
+  static const String validPrefix = 'valid:';
+  static const String writePrefix = 'write:';
   static const String validOkPrefix = 'valid_ok:';
   static const String validFailPrefix = 'valid_fail:';
+  static const String writeOkPrefix = 'write_ok:';
+  static const String writeFailPrefix = 'write_fail:';
   static const String updateOkPrefix = 'update_ok:';
   static const String updateFailPrefix = 'update_fail:';
 
@@ -40,17 +44,13 @@ class UpdateProtocol {
   static const int packetHeaderBytes = 7 + 4 + 4 + 4;
 
   /// 每个分包可承载的最大载荷字节数（使整包不超过 1400 字节）。
-  static const int maxPacketPayloadBytes =
-      maxDatagramBytes - packetHeaderBytes;
+  static const int maxPacketPayloadBytes = maxDatagramBytes - packetHeaderBytes;
 
   /// 计算标准 CRC-32，返回无符号 32 位整数。
   static int crc32(List<int> bytes) => getCrc32(bytes) & 0xFFFFFFFF;
 
   /// 编码设备标识 ID。
-  static Uint8List encodeId({
-    required String deviceType,
-    required String ip,
-  }) {
+  static Uint8List encodeId({required String deviceType, required String ip}) {
     final typeBytes = utf8.encode(deviceType);
     final ipBytes = utf8.encode(ip);
     final data = Uint8List(2 + typeBytes.length + 2 + ipBytes.length);
@@ -79,8 +79,50 @@ class UpdateProtocol {
     required int packetCount,
     required int totalBytes,
     required String fileName,
+  }) => _encodeFileLike(
+    filePrefix,
+    crc32: crc32,
+    packetCount: packetCount,
+    totalBytes: totalBytes,
+    fileName: fileName,
+  );
+
+  /// `"valid:"` + 复用 `file:` 后面的码流（CRC32/包数量/总字节/文件名）。
+  static Uint8List encodeValid({
+    required int crc32,
+    required int packetCount,
+    required int totalBytes,
+    required String fileName,
+  }) => _encodeFileLike(
+    validPrefix,
+    crc32: crc32,
+    packetCount: packetCount,
+    totalBytes: totalBytes,
+    fileName: fileName,
+  );
+
+  /// `"write:"` + 复用 `file:` 后面的码流（CRC32/包数量/总字节/文件名）。
+  static Uint8List encodeWrite({
+    required int crc32,
+    required int packetCount,
+    required int totalBytes,
+    required String fileName,
+  }) => _encodeFileLike(
+    writePrefix,
+    crc32: crc32,
+    packetCount: packetCount,
+    totalBytes: totalBytes,
+    fileName: fileName,
+  );
+
+  static Uint8List _encodeFileLike(
+    String prefixString, {
+    required int crc32,
+    required int packetCount,
+    required int totalBytes,
+    required String fileName,
   }) {
-    final prefix = utf8.encode(filePrefix);
+    final prefix = utf8.encode(prefixString);
     final nameBytes = utf8.encode(fileName);
     final data = Uint8List(prefix.length + 12 + nameBytes.length);
     data.setRange(0, prefix.length, prefix);
@@ -173,6 +215,12 @@ class UpdateProtocol {
     }
     if (_startsWith(bytes, validFailPrefix)) {
       return _parseValidFail(bytes);
+    }
+    if (_startsWith(bytes, writeOkPrefix)) {
+      return _parseWriteOk(bytes);
+    }
+    if (_startsWith(bytes, writeFailPrefix)) {
+      return _parseWriteFail(bytes);
     }
     if (_startsWith(bytes, updateOkPrefix)) {
       return _parseUpdateOk(bytes);
@@ -295,10 +343,27 @@ class UpdateProtocol {
       return null;
     }
     final reason = utf8.decode(bytes.sublist(id.$3));
-    return ValidReply(
+    return ValidReply(deviceType: id.$1, ip: id.$2, ok: false, reason: reason);
+  }
+
+  static WriteResultReply? _parseWriteOk(Uint8List bytes) {
+    final id = _parseId(bytes, writeOkPrefix.length);
+    if (id == null || id.$3 != bytes.length) {
+      return null;
+    }
+    return WriteResultReply(ok: true, deviceType: id.$1, ip: id.$2);
+  }
+
+  static WriteResultReply? _parseWriteFail(Uint8List bytes) {
+    final id = _parseId(bytes, writeFailPrefix.length);
+    if (id == null) {
+      return null;
+    }
+    final reason = utf8.decode(bytes.sublist(id.$3));
+    return WriteResultReply(
+      ok: false,
       deviceType: id.$1,
       ip: id.$2,
-      ok: false,
       reason: reason,
     );
   }
@@ -350,7 +415,9 @@ class UpdateProtocol {
     if (offset + 2 > bytes.length) {
       return null;
     }
-    final typeLength = ByteData.sublistView(bytes).getUint16(offset, Endian.big);
+    final typeLength = ByteData.sublistView(
+      bytes,
+    ).getUint16(offset, Endian.big);
     offset += 2;
     if (offset + typeLength + 2 > bytes.length) {
       return null;
@@ -458,6 +525,15 @@ final class PacketFailReply extends UpdateReply {
   final int packetNumber;
   final int packetLength;
   final String reason;
+
+  /// 当 reason 形如 `sequence:S` 时返回缺失包号 S（1-based）；否则返回 null。
+  int? get missingPacketNumber {
+    const prefix = 'sequence:';
+    if (!reason.startsWith(prefix)) {
+      return null;
+    }
+    return int.tryParse(reason.substring(prefix.length));
+  }
 }
 
 final class ValidReply extends UpdateReply {
@@ -471,6 +547,22 @@ final class ValidReply extends UpdateReply {
   final String deviceType;
   final String ip;
   final bool ok;
+  final String? reason;
+}
+
+final class WriteResultReply extends UpdateReply {
+  const WriteResultReply({
+    required this.ok,
+    required this.deviceType,
+    required this.ip,
+    this.reason,
+  });
+
+  final bool ok;
+  final String deviceType;
+  final String ip;
+
+  /// 失败时是 `<码>:<原因>`，成功时为 null。
   final String? reason;
 }
 

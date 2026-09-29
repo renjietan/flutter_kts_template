@@ -151,6 +151,7 @@ List<Widget> _buildFormFields(
     } else {
       widgets.add(
         SimpleFormSelectField<dynamic>(
+          name: field.name,
           items: field.items ?? [],
           labelBuilder: field.labelBuilder ?? (v) => v,
           initialValue: field.initialValue,
@@ -269,6 +270,7 @@ Widget _buildFieldItem(
           contentPadding: contentPadding,
         )
       : SimpleFormSelectField<dynamic>(
+          name: field.name,
           items: field.items ?? [],
           labelBuilder: field.labelBuilder ?? (v) => v,
           initialValue: field.initialValue,

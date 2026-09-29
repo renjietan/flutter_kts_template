@@ -9,7 +9,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 class _MockTransport implements UpdateTransport {
   final sent = <Uint8List>[];
-  final _controller = StreamController<Uint8List>.broadcast(sync: true);
+  final _controller = StreamController<UpdateDatagram>.broadcast(sync: true);
   bool closed = false;
 
   @override
@@ -18,7 +18,7 @@ class _MockTransport implements UpdateTransport {
   }
 
   @override
-  Stream<Uint8List> get replies => _controller.stream;
+  Stream<UpdateDatagram> get replies => _controller.stream;
 
   @override
   Future<void> close() async {
@@ -26,8 +26,13 @@ class _MockTransport implements UpdateTransport {
     await _controller.close();
   }
 
-  void emit(String text) =>
-      _controller.add(Uint8List.fromList(text.codeUnits));
+  void emit(String text, {String sourceIp = '192.168.1.10'}) =>
+      _controller.add(
+        UpdateDatagram(
+          data: Uint8List.fromList(text.codeUnits),
+          sourceIp: sourceIp,
+        ),
+      );
 }
 
 void main() {
@@ -93,6 +98,37 @@ void main() {
     await tester.pump(const Duration(seconds: 7));
     expect(controller.state, ScanState.done);
     expect(completedCount, 1);
+  });
+
+  testWidgets('deduplicates devices by source IP during scan', (tester) async {
+    final transport = _MockTransport();
+    final controller = ScanController(
+      transport: transport,
+      duration: const Duration(seconds: 10),
+      tick: const Duration(seconds: 1),
+    );
+    addTearDown(controller.dispose);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(body: ScanCountdownDialog(controller: controller)),
+      ),
+    );
+    await tester.pump();
+
+    // 同一来源 IP 重复回 Scan:success，只计数一次。
+    transport.emit('Scan:success', sourceIp: '192.168.1.10');
+    transport.emit('Scan:success', sourceIp: '192.168.1.10');
+    transport.emit('Scan:success', sourceIp: '192.168.1.10');
+    await tester.pump();
+    expect(find.text('已扫描到 1 个设备'), findsOneWidget);
+
+    // 不同来源 IP 才累加。
+    transport.emit('Scan:success', sourceIp: '192.168.1.11');
+    await tester.pump();
+    expect(find.text('已扫描到 2 个设备'), findsOneWidget);
+
+    await controller.cancel();
   });
 
   testWidgets('cancel closes transport and invokes onCancel', (tester) async {

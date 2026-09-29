@@ -194,9 +194,17 @@ class _UploadPackageDialogState extends State<UploadPackageDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('取消'),
+          child: const Text(
+            '取消',
+            style: TextStyle(color: Colors.white70),
+          ),
         ),
-        BaseButton(label: '确定', minWidth: 100, onPressed: _submit),
+        BaseButton(
+          label: '确定',
+          minWidth: 110,
+          borderRadius: 18,
+          onPressed: _submit,
+        ),
       ],
     );
   }

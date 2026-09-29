@@ -6,6 +6,7 @@ import 'dart:ui' show ImageFilter;
 import 'package:dage/dage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_kts_template/api/KeyLoaders.api.dart';
 import 'package:flutter_kts_template/api/RadiosManagerApi.dart';
 import 'package:flutter_kts_template/api/cpds.api.dart';
@@ -29,7 +30,6 @@ import 'package:flutter_kts_template/pages/cpds/widgets/cpds_key_loader_file_dia
 import 'package:flutter_kts_template/pages/cpds/widgets/cpds_package_panel.dart';
 import 'package:flutter_kts_template/utils/files/pick_files/FileSelector.dart';
 import 'package:flutter_kts_template/utils/provider/menu.provider.dart';
-import 'package:flutter_kts_template/utils/shared.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:path/path.dart' as p;
@@ -49,10 +49,6 @@ class CpdsPage extends StatefulWidget {
 
 class _CpdsPageState extends State<CpdsPage> {
   CpdsApplicationState _state = CpdsApplicationState();
-  List<CpdsNetworkInterface> _interfaces = const [];
-  String _selectedInterfaceName = '';
-  bool _automaticInterface = false;
-  bool _interfacesLoading = false;
   bool _suppressNetworkInterfaceDialogs = false;
   bool _uploading = false;
   bool _browseRunning = false;
@@ -195,77 +191,15 @@ class _CpdsPageState extends State<CpdsPage> {
   }
 
   Future<void> _refreshNetworkInterfaces() async {
-    if (_state.active || _interfacesLoading) return;
-    setState(() {
-      _interfacesLoading = true;
-    });
-    List<CpdsNetworkInterface> interfaces;
+    if (_state.active || CpdsManager.instance.interfacesLoading) return;
     try {
-      interfaces = await CpdsApi.listNetworkInterfaces();
+      await CpdsManager.instance.refreshNetworkInterfaces();
     } catch (error) {
-      if (!mounted) return;
-      setState(() {
-        _interfaces = [];
-        _selectedInterfaceName = '';
-        _automaticInterface = false;
-        _interfacesLoading = false;
-      });
-      await Shared.saveCpdsNetworkInterface('');
       if (!_suppressNetworkInterfaceDialogs) {
         _showError(error);
       }
-      return;
     }
-
-    if (!mounted) return;
-    if (interfaces.isEmpty) {
-      setState(() {
-        _interfaces = const [];
-        _selectedInterfaceName = '';
-        _automaticInterface = false;
-        _interfacesLoading = false;
-      });
-      await Shared.saveCpdsNetworkInterface('');
-      return;
-    }
-
-    final stored = Shared.getCpdsNetworkInterface() ?? '';
-    var selectedName = '';
-    var automatic = false;
-    if (interfaces.length == 1 && interfaces.first.linkUp) {
-      selectedName = interfaces.first.name;
-      automatic = true;
-    } else if (stored.isNotEmpty &&
-        interfaces.any((item) => item.name == stored && item.linkUp)) {
-      selectedName = stored;
-    }
-
-    try {
-      setState(() {
-        _interfaces = interfaces;
-        _selectedInterfaceName = selectedName;
-        _automaticInterface = automatic;
-      });
-      await CpdsApi.selectNetworkInterface(selectedName);
-      await Shared.saveCpdsNetworkInterface(selectedName);
-    } catch (error) {
-      if (!mounted) return;
-      setState(() {
-        _interfaces = [];
-        _selectedInterfaceName = '';
-        _automaticInterface = false;
-      });
-      await Shared.saveCpdsNetworkInterface('');
-      if (!_suppressNetworkInterfaceDialogs) {
-        _showError(error);
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _interfacesLoading = false;
-        });
-      }
-    }
+    if (mounted) setState(() {});
   }
 
   Future<void> _browse() async {
@@ -334,7 +268,13 @@ class _CpdsPageState extends State<CpdsPage> {
     final destPath = p.join(uploadsPath, p.basename(sourceFile.path));
     final stored = File(destPath);
     if (sourceFile.path != destPath) {
-      await sourceFile.copy(destPath);
+      if (await stored.exists()) {
+        final overwrite = await _confirmOverwritePc();
+        if (!overwrite) {
+          return;
+        }
+      }
+      await stored.writeAsBytes(await sourceFile.readAsBytes(), flush: true);
     }
 
     Uint8List? zipBytes;
@@ -361,7 +301,12 @@ class _CpdsPageState extends State<CpdsPage> {
         if (await stored.exists()) await stored.delete();
       } catch (_) {}
       SimplePopup.error(
-        CpdsMessages.tr(context, '文件已销毁，请重新选择文件', 'File destroyed, please select again', 'الملف مدمر، يرجى إعادة الاختيار'),
+        CpdsMessages.tr(
+          context,
+          '文件已销毁，请重新选择文件',
+          'File destroyed, please select again',
+          'الملف مدمر، يرجى إعادة الاختيار',
+        ),
       );
       return;
     }
@@ -381,6 +326,42 @@ class _CpdsPageState extends State<CpdsPage> {
         CpdsManager.instance.uploadPath!,
     ];
     await _deleteOtherUploadFiles(keepPaths);
+  }
+
+  Future<bool> _confirmOverwritePc() async {
+    final proceed = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: const Color(0xFF20262D),
+        title: Text(
+          Translations.of(dialogContext).tips.title,
+          style: const TextStyle(color: Colors.white, fontSize: 17),
+        ),
+        content: Text(
+          CpdsMessages.tr(
+            dialogContext,
+            '文件已存在，是否覆盖？',
+            'File already exists. Overwrite?',
+            'الملف موجود بالفعل. هل تريد الكتابة فوقه؟',
+          ),
+          style: const TextStyle(color: Colors.white70, fontSize: 13),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(Translations.of(dialogContext).tips.cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(
+              CpdsMessages.tr(dialogContext, '覆盖', 'Overwrite', 'الكتابة فوقه'),
+            ),
+          ),
+        ],
+      ),
+    );
+    return proceed == true;
   }
 
   Future<void> _deleteOtherUploadFiles(Iterable<String> keepPaths) async {
@@ -456,7 +437,12 @@ class _CpdsPageState extends State<CpdsPage> {
               style: const TextStyle(color: Colors.white, fontSize: 17),
             ),
             content: Text(
-              CpdsMessages.tr(context, '本地暂无可加载文件，是否立即选择？', 'No local file to load. Select now?', 'لا يوجد ملف محلي قابل للتحميل. هل تريد الاختيار الآن؟'),
+              CpdsMessages.tr(
+                context,
+                '本地暂无可加载文件，是否立即选择？',
+                'No local file to load. Select now?',
+                'لا يوجد ملف محلي قابل للتحميل. هل تريد الاختيار الآن؟',
+              ),
               style: const TextStyle(color: Colors.white70, fontSize: 13),
             ),
             actions: [
@@ -565,19 +551,15 @@ class _CpdsPageState extends State<CpdsPage> {
 
   Future<void> _selectInterface(String? name) async {
     final value = name ?? '';
-    if (_state.active || value == _selectedInterfaceName) return;
+    if (_state.active || value == CpdsManager.instance.selectedInterfaceName) {
+      return;
+    }
     try {
-      final state = await CpdsApi.selectNetworkInterface(value);
-      if (!mounted) return;
-      setState(() {
-        _selectedInterfaceName = value;
-        _automaticInterface = false;
-      });
-      _applyState(state);
-      await Shared.saveCpdsNetworkInterface(value);
+      await CpdsManager.instance.selectNetworkInterface(value);
     } catch (error) {
       _showError(error);
     }
+    if (mounted) setState(() {});
   }
 
   Future<void> _distribute() async {
@@ -763,6 +745,7 @@ class _CpdsPageState extends State<CpdsPage> {
       if (existing == null) continue;
       existing.dcPackageAlias = item['deviceAlias']?.toString();
       existing.downlinkIp = item['downlinkIp']?.toString();
+      existing.deviceType = item['deviceModel']?.toString();
       existing.radioId = item['radioId'] as int?;
       existing.consumer = item['consumer']?.toString();
       existing.location = item['location']?.toString();
@@ -782,6 +765,7 @@ class _CpdsPageState extends State<CpdsPage> {
         dcPackageName: item['dcPackageName']?.toString() ?? '',
         dcPackageAlias: item['deviceAlias']?.toString(),
         downlinkIp: item['downlinkIp']?.toString(),
+        deviceType: item['deviceModel']?.toString(),
         keyLoaderId: keyLoaderId,
         radioId: item['radioId'] as int?,
         consumer: item['consumer']?.toString(),
@@ -877,10 +861,11 @@ class _CpdsPageState extends State<CpdsPage> {
               Expanded(
                 child: CpdsDevicePanel(
                   state: _state,
-                  interfaces: _interfaces,
-                  selectedInterfaceName: _selectedInterfaceName,
-                  automaticInterface: _automaticInterface,
-                  interfacesLoading: _interfacesLoading,
+                  interfaces: CpdsManager.instance.interfaces,
+                  selectedInterfaceName:
+                      CpdsManager.instance.selectedInterfaceName,
+                  automaticInterface: CpdsManager.instance.automaticInterface,
+                  interfacesLoading: CpdsManager.instance.interfacesLoading,
                   canDistribute: _state.canDistribute,
                   distributing: _distributing || _state.active,
                   onRefreshInterfaces: _refreshNetworkInterfaces,
@@ -940,16 +925,39 @@ class _CpdsPcPasswordDialogState extends State<_CpdsPcPasswordDialog> {
   String? _errorText;
 
   @override
+  void initState() {
+    super.initState();
+    _controller.addListener(_onChanged);
+  }
+
+  void _onChanged() {
+    if (mounted) setState(() {});
+  }
+
+  @override
   void dispose() {
+    _controller.removeListener(_onChanged);
     _controller.dispose();
     super.dispose();
   }
 
   String? _validate(String? value) {
     final text = value ?? '';
-    if (text.isEmpty) return CpdsMessages.tr(context, '密码不可为空', 'Password cannot be empty', 'كلمة المرور لا يمكن أن تكون فارغة');
-    if (text.characters.length > 100) {
-      return CpdsMessages.tr(context, '密码长度不能超过100个字符', 'Password cannot exceed 100 characters', 'لا يمكن أن تتجاوز كلمة المرور 100 حرف');
+    if (text.isEmpty) {
+      return CpdsMessages.tr(
+        context,
+        '请输入密码',
+        'Please enter a password',
+        'يرجى إدخال كلمة المرور',
+      );
+    }
+    if (!RegExp(r'^\d{8}$').hasMatch(text)) {
+      return CpdsMessages.tr(
+        context,
+        '只允许输入八位数字',
+        'Only 8 digits are allowed',
+        'يُسمح فقط بإدخال ثمانية أرقام',
+      );
     }
     return null;
   }
@@ -995,7 +1003,12 @@ class _CpdsPcPasswordDialogState extends State<_CpdsPcPasswordDialog> {
     final dialog = AlertDialog(
       backgroundColor: const Color(0xFF20262D),
       title: Text(
-        CpdsMessages.tr(context, '输入注钥包密码', 'Enter keyloader password', 'أدخل كلمة مرور حزمة المفاتيح'),
+        CpdsMessages.tr(
+          context,
+          '输入注钥包密码',
+          'Enter keyloader password',
+          'أدخل كلمة مرور حزمة المفاتيح',
+        ),
         style: const TextStyle(color: Colors.white, fontSize: 17),
       ),
       content: SizedBox(
@@ -1008,25 +1021,48 @@ class _CpdsPcPasswordDialogState extends State<_CpdsPcPasswordDialog> {
               TextFormField(
                 controller: _controller,
                 obscureText: _obscure,
+                keyboardType: TextInputType.number,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  LengthLimitingTextInputFormatter(8),
+                ],
                 autofocus: true,
                 validator: _validate,
                 onFieldSubmitted: (_) => _submit(),
                 style: const TextStyle(color: Colors.white, fontSize: 14),
                 decoration: InputDecoration(
-                  labelText: CpdsMessages.tr(context, '密码', 'Password', 'كلمة المرور'),
+                  labelText: CpdsMessages.tr(
+                    context,
+                    '密码',
+                    'Password',
+                    'كلمة المرور',
+                  ),
                   hintText: CpdsMessages.tr(
-                      context,
-                      '请输入 ${widget.fileName} 文件密钥',
-                      'Enter key for ${widget.fileName}',
-                      'أدخل مفتاح الملف ${widget.fileName}'),
+                    context,
+                    '请输入8位数字',
+                    'Please enter 8 digits',
+                    'أدخل 8 أرقام',
+                  ),
                   labelStyle: const TextStyle(color: Colors.white70),
                   hintStyle: const TextStyle(color: Colors.white38),
-                  suffixIcon: IconButton(
-                    onPressed: () => setState(() => _obscure = !_obscure),
-                    icon: Icon(
-                      _obscure ? Icons.visibility_off : Icons.visibility,
-                      color: Colors.white70,
-                    ),
+                  suffixIcon: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        '${_controller.text.length}/8',
+                        style: const TextStyle(
+                          color: Colors.white54,
+                          fontSize: 12,
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () => setState(() => _obscure = !_obscure),
+                        icon: Icon(
+                          _obscure ? Icons.visibility_off : Icons.visibility,
+                          color: Colors.white70,
+                        ),
+                      ),
+                    ],
                   ),
                   filled: true,
                   fillColor: const Color(0xFF282D33),

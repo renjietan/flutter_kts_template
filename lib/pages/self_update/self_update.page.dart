@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:composable_data_table/composable_data_table.dart';
 import 'package:flutter_kts_template/components/TextField/simple.filter.search.textField.dart';
 import 'package:flutter_kts_template/components/button/base.button.dart';
+import 'package:flutter_kts_template/core/cpds/model/cpds_models.dart';
 import 'package:flutter_kts_template/core/entities/installPackage/installPackageEntity.dart';
 import 'package:flutter_kts_template/core/selfUpdate/install_package_repository.dart';
+import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
+import 'package:flutter_kts_template/pages/cpds/widgets/cpds_network_interface_bar.dart';
 import 'package:flutter_kts_template/pages/self_update/widgets/edit_package_dialog.dart';
 import 'package:flutter_kts_template/theme/app_colors.dart';
 import 'package:flutter_kts_template/theme/table.theme.dart';
@@ -18,6 +21,12 @@ class SelfUpdatePage extends StatefulWidget {
   const SelfUpdatePage({
     super.key,
     required this.repository,
+    required this.interfaces,
+    required this.selectedInterfaceName,
+    required this.automaticInterface,
+    required this.interfacesLoading,
+    this.onRefreshInterfaces,
+    this.onSelectInterface,
     this.onUpload,
     this.onDelete,
     this.onUpdate,
@@ -25,10 +34,20 @@ class SelfUpdatePage extends StatefulWidget {
   });
 
   final InstallPackageRepository repository;
+  final List<CpdsNetworkInterface> interfaces;
+  final String selectedInterfaceName;
+  final bool automaticInterface;
+  final bool interfacesLoading;
+  final VoidCallback? onRefreshInterfaces;
+  final ValueChanged<String?>? onSelectInterface;
   final VoidCallback? onUpload;
   final void Function(InstallPackageEntity entity)? onDelete;
   final void Function(InstallPackageEntity entity)? onUpdate;
-  final void Function(InstallPackageEntity entity, String version, String? remark)?
+  final void Function(
+    InstallPackageEntity entity,
+    String version,
+    String? remark,
+  )?
   onEdit;
 
   @override
@@ -103,7 +122,6 @@ class _SelfUpdatePageState extends State<SelfUpdatePage> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               DataTablePlusThemeProvider(
                 theme: getThemePreset(ThemePreset.dark),
@@ -126,6 +144,30 @@ class _SelfUpdatePageState extends State<SelfUpdatePage> {
                   },
                 ),
               ),
+              const Spacer(),
+              SizedBox(
+                width: 240,
+                child: CpdsNetworkInterfaceBar(
+                  interfaces: widget.interfaces,
+                  selectedName: widget.selectedInterfaceName,
+                  automatic: widget.automaticInterface,
+                  loading: widget.interfacesLoading,
+                  disabled: widget.interfacesLoading,
+                  showLabel: false,
+                  onSelected: widget.onSelectInterface ?? (_) {},
+                ),
+              ),
+              const SizedBox(width: 8),
+              BaseButton(
+                label: Translations.of(context).cpds.refresh,
+                minWidth: 72,
+                height: 32,
+                isLoading: widget.interfacesLoading,
+                onPressed: widget.interfacesLoading
+                    ? null
+                    : widget.onRefreshInterfaces,
+              ),
+              const SizedBox(width: 8),
               BaseButton(
                 label: '文件上传',
                 minWidth: 110,
@@ -148,84 +190,115 @@ class _SelfUpdatePageState extends State<SelfUpdatePage> {
       return const Center(child: Text('暂无数据'));
     }
 
-    return SingleChildScrollView(
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: DataTable(
-          columnSpacing: 24,
-          columns: const [
-            DataColumn(label: Text('版本号')),
-            DataColumn(label: Text('文件名称')),
-            DataColumn(label: Text('备注')),
-            DataColumn(label: Text('创建时间')),
-            DataColumn(label: Text('操作')),
-          ],
-          rows: [
-            for (final entity in items)
-              DataRow(
-                cells: [
-                  DataCell(Text(entity.version)),
-                  DataCell(
-                    SizedBox(
-                      width: 260,
-                      child: Text(
-                        entity.fileName,
-                        overflow: TextOverflow.ellipsis,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final maxWidth = constraints.maxWidth.isFinite
+            ? constraints.maxWidth
+            : 900.0;
+        const columnSpacing = 24.0;
+        const horizontalMargin = 24.0;
+        const versionWidth = 96.0;
+        const timeWidth = 180.0;
+        const actionWidth = 160.0;
+        const fixedColumnsWidth = versionWidth + timeWidth + actionWidth;
+        const gapsWidth = columnSpacing * 4;
+        const marginsWidth = horizontalMargin * 2;
+        final flexibleTotal =
+            maxWidth - fixedColumnsWidth - gapsWidth - marginsWidth;
+        final flexible = flexibleTotal / 2;
+        final fileNameWidth = flexible < 120 ? 120.0 : flexible;
+        final remarkWidth = flexible < 100 ? 100.0 : flexible;
+
+        return Container(
+          decoration: const BoxDecoration(
+            border: Border(top: BorderSide(color: Color(0xFF353A41), width: 1)),
+          ),
+          child: SingleChildScrollView(
+            child: DataTable(
+              columnSpacing: columnSpacing,
+              columns: const [
+                DataColumn(label: Text('版本号')),
+                DataColumn(label: Text('文件名称')),
+                DataColumn(label: Text('备注')),
+                DataColumn(label: Text('创建时间')),
+                DataColumn(label: Text('操作')),
+              ],
+              rows: [
+                for (final entity in items)
+                  DataRow(
+                    cells: [
+                      DataCell(
+                        SizedBox(
+                          width: versionWidth,
+                          child: Text(entity.version),
+                        ),
                       ),
-                    ),
-                  ),
-                  DataCell(
-                    SizedBox(
-                      width: 160,
-                      child: Text(
-                        entity.remark ?? '',
-                        overflow: TextOverflow.ellipsis,
+                      DataCell(
+                        SizedBox(
+                          width: fileNameWidth,
+                          child: Text(
+                            entity.fileName,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
                       ),
-                    ),
+                      DataCell(
+                        SizedBox(
+                          width: remarkWidth,
+                          child: Text(
+                            entity.remark ?? '',
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ),
+                      DataCell(
+                        SizedBox(
+                          width: timeWidth,
+                          child: Text(_formatTime(entity.createdAt)),
+                        ),
+                      ),
+                      DataCell(
+                        SizedBox(
+                          width: actionWidth,
+                          child: _buildRowActions(entity),
+                        ),
+                      ),
+                    ],
                   ),
-                  DataCell(Text(_formatTime(entity.createdAt))),
-                  DataCell(
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          onPressed: widget.onEdit == null
-                              ? null
-                              : () => _showEditDialog(entity),
-                          icon: const Icon(
-                            Icons.edit,
-                            color: AppColors.primary,
-                          ),
-                          tooltip: '编辑',
-                        ),
-                        IconButton(
-                          onPressed: widget.onUpdate == null
-                              ? null
-                              : () => widget.onUpdate!(entity),
-                          icon: const Icon(
-                            Icons.system_update,
-                            color: Color(0xFF00A2E9),
-                          ),
-                          tooltip: '更新到设备',
-                        ),
-                        IconButton(
-                          onPressed: widget.onDelete == null
-                              ? null
-                              : () => _confirmDelete(entity),
-                          icon: const Icon(
-                            Icons.delete_outline,
-                            color: Color(0xFFF15B64),
-                          ),
-                          tooltip: '删除',
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-          ],
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildRowActions(InstallPackageEntity entity) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        IconButton(
+          onPressed: widget.onEdit == null
+              ? null
+              : () => _showEditDialog(entity),
+          icon: const Icon(Icons.edit, color: AppColors.primary),
+          tooltip: '编辑',
         ),
-      ),
+        IconButton(
+          onPressed: widget.onUpdate == null
+              ? null
+              : () => widget.onUpdate!(entity),
+          icon: const Icon(Icons.system_update, color: Color(0xFF00A2E9)),
+          tooltip: '更新到设备',
+        ),
+        IconButton(
+          onPressed: widget.onDelete == null
+              ? null
+              : () => _confirmDelete(entity),
+          icon: const Icon(Icons.delete_outline, color: Color(0xFFF15B64)),
+          tooltip: '删除',
+        ),
+      ],
     );
   }
 

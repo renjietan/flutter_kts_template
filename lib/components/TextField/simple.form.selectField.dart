@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 
 class SimpleFormSelectField<T> extends StatelessWidget {
+  /// FormBuilder 字段名，选中值会自动写入 FormBuilder 的 value。
+  final String name;
+
   /// 当前选中的值（受控模式）
   final T? value;
 
@@ -40,6 +44,7 @@ class SimpleFormSelectField<T> extends StatelessWidget {
 
   const SimpleFormSelectField({
     super.key,
+    required this.name,
     this.value,
     this.initialValue,
     required this.items,
@@ -64,17 +69,19 @@ class SimpleFormSelectField<T> extends StatelessWidget {
     final effectiveDecoration = (decoration ?? const InputDecoration())
         .copyWith(hintText: hintText ?? t.TextField.select);
 
-    return DropdownButtonFormField<T>(
-      value: value ?? initialValue,
+    return FormBuilderDropdown<T>(
+      name: name,
       items: dropdownItems,
+      initialValue: value ?? initialValue,
       onChanged: enabled ? onChanged : null,
       validator: validator,
       onSaved: onSaved,
       autovalidateMode: autovalidateMode,
       decoration: effectiveDecoration,
-      style:
-          dropdownButtonStyle?.textStyle ??
+      style: dropdownButtonStyle?.textStyle ??
           const TextStyle(fontSize: 14, color: Colors.white),
+      dropdownColor:
+          dropdownButtonStyle?.dropdownColor ?? const Color(0xFF23272D),
       // 可扩展更多属性
       isExpanded: true,
       menuMaxHeight: 150,
@@ -85,5 +92,6 @@ class SimpleFormSelectField<T> extends StatelessWidget {
 // 按钮样式
 class DropdownButtonStyle {
   final TextStyle? textStyle;
-  DropdownButtonStyle({this.textStyle});
+  final Color? dropdownColor;
+  DropdownButtonStyle({this.textStyle, this.dropdownColor});
 }

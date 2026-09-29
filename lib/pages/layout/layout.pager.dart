@@ -45,26 +45,43 @@ class MainLayout extends StatelessWidget {
     if (!await dir.exists()) return;
 
     final pcFiles = <File>[];
+    final padFiles = <File>[];
     final zipFiles = <File>[];
+    final toDelete = <FileSystemEntity>[];
+
     await for (final entity in dir.list()) {
+      if (entity is Directory) {
+        toDelete.add(entity);
+        continue;
+      }
       if (entity is! File) continue;
       final lower = entity.path.toLowerCase();
       if (lower.endsWith('.pc')) {
         pcFiles.add(entity);
+      } else if (lower.endsWith('.pad')) {
+        padFiles.add(entity);
       } else if (lower.endsWith('.zip')) {
         zipFiles.add(entity);
+      } else {
+        toDelete.add(entity);
       }
     }
 
-    void sortDesc(List<File> files) {
-      files.sort(
-        (a, b) => b.statSync().modified.compareTo(a.statSync().modified),
-      );
+    for (final entity in toDelete) {
+      try {
+        if (entity is Directory) {
+          await entity.delete(recursive: true);
+        } else {
+          await entity.delete();
+        }
+      } catch (_) {}
     }
 
     Future<void> deleteExceptFirst(List<File> files) async {
       if (files.length <= 1) return;
-      sortDesc(files);
+      files.sort(
+        (a, b) => b.statSync().modified.compareTo(a.statSync().modified),
+      );
       for (final file in files.sublist(1)) {
         try {
           await file.delete();
@@ -73,6 +90,7 @@ class MainLayout extends StatelessWidget {
     }
 
     await deleteExceptFirst(pcFiles);
+    await deleteExceptFirst(padFiles);
     await deleteExceptFirst(zipFiles);
     SimplePopup.success(t.common.OperationSuccess);
   }
@@ -200,7 +218,7 @@ class _AppVersionLabelState extends State<_AppVersionLabel> {
           }
         }
         return Text(
-          version.isEmpty ? '' : 'v$version',
+          version.isEmpty ? '' : 'V$version',
           style: const TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.w400,

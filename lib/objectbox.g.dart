@@ -110,7 +110,7 @@ final _entities = <obx_int.ModelEntity>[
   obx_int.ModelEntity(
     id: const obx_int.IdUid(4, 3041742923072573707),
     name: 'RadiosEntity',
-    lastPropertyId: const obx_int.IdUid(7, 1938772858763471383),
+    lastPropertyId: const obx_int.IdUid(8, 738009481192627460),
     flags: 0,
     properties: <obx_int.ModelProperty>[
       obx_int.ModelProperty(
@@ -155,6 +155,12 @@ final _entities = <obx_int.ModelEntity>[
         type: 9,
         flags: 0,
       ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(8, 738009481192627460),
+        name: 'radioType',
+        type: 9,
+        flags: 0,
+      ),
     ],
     relations: <obx_int.ModelRelation>[],
     backlinks: <obx_int.ModelBacklink>[],
@@ -196,7 +202,7 @@ final _entities = <obx_int.ModelEntity>[
   obx_int.ModelEntity(
     id: const obx_int.IdUid(7, 1813780709103220274),
     name: 'KeyLoaderDetailsEntity',
-    lastPropertyId: const obx_int.IdUid(15, 4274463691773407178),
+    lastPropertyId: const obx_int.IdUid(16, 2413419587393832057),
     flags: 0,
     properties: <obx_int.ModelProperty>[
       obx_int.ModelProperty(
@@ -274,6 +280,12 @@ final _entities = <obx_int.ModelEntity>[
       obx_int.ModelProperty(
         id: const obx_int.IdUid(15, 4274463691773407178),
         name: 'downlinkIp',
+        type: 9,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(16, 2413419587393832057),
+        name: 'deviceType',
         type: 9,
         flags: 0,
       ),
@@ -524,7 +536,8 @@ obx_int.ModelDefinition getObjectBoxModel() {
         final locationOffset = fbb.writeString(object.location);
         final snOffset = fbb.writeString(object.sn);
         final aliasOffset = fbb.writeString(object.alias);
-        fbb.startTable(8);
+        final radioTypeOffset = fbb.writeString(object.radioType);
+        fbb.startTable(9);
         fbb.addInt64(0, object.id);
         fbb.addInt64(1, object.createdAt.millisecondsSinceEpoch);
         fbb.addInt64(2, object.updatedAt.millisecondsSinceEpoch);
@@ -532,6 +545,7 @@ obx_int.ModelDefinition getObjectBoxModel() {
         fbb.addOffset(4, locationOffset);
         fbb.addOffset(5, snOffset);
         fbb.addOffset(6, aliasOffset);
+        fbb.addOffset(7, radioTypeOffset);
         fbb.finish(fbb.endTable());
         return object.id;
       },
@@ -556,6 +570,9 @@ obx_int.ModelDefinition getObjectBoxModel() {
         final aliasParam = const fb.StringReader(
           asciiOptimization: true,
         ).vTableGet(buffer, rootOffset, 16, '');
+        final radioTypeParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGet(buffer, rootOffset, 18, '');
         final createdAtParam = DateTime.fromMillisecondsSinceEpoch(
           const fb.Int64Reader().vTableGet(buffer, rootOffset, 6, 0),
         );
@@ -568,6 +585,7 @@ obx_int.ModelDefinition getObjectBoxModel() {
           location: locationParam,
           sn: snParam,
           alias: aliasParam,
+          radioType: radioTypeParam,
           createdAt: createdAtParam,
           updatedAt: updatedAtParam,
         );
@@ -648,7 +666,10 @@ obx_int.ModelDefinition getObjectBoxModel() {
         final downlinkIpOffset = object.downlinkIp == null
             ? null
             : fbb.writeString(object.downlinkIp!);
-        fbb.startTable(16);
+        final deviceTypeOffset = object.deviceType == null
+            ? null
+            : fbb.writeString(object.deviceType!);
+        fbb.startTable(17);
         fbb.addInt64(0, object.id);
         fbb.addOffset(1, netNodePackageNameOffset);
         fbb.addOffset(2, dcPackageNameOffset);
@@ -662,6 +683,7 @@ obx_int.ModelDefinition getObjectBoxModel() {
         fbb.addOffset(12, parentIdPathOffset);
         fbb.addOffset(13, dcPackageAliasOffset);
         fbb.addOffset(14, downlinkIpOffset);
+        fbb.addOffset(15, deviceTypeOffset);
         fbb.finish(fbb.endTable());
         return object.id;
       },
@@ -692,6 +714,9 @@ obx_int.ModelDefinition getObjectBoxModel() {
         final downlinkIpParam = const fb.StringReader(
           asciiOptimization: true,
         ).vTableGetNullable(buffer, rootOffset, 32);
+        final deviceTypeParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGetNullable(buffer, rootOffset, 34);
         final radioIdParam = const fb.Int64Reader().vTableGetNullable(
           buffer,
           rootOffset,
@@ -722,6 +747,7 @@ obx_int.ModelDefinition getObjectBoxModel() {
           keyLoaderId: keyLoaderIdParam,
           dcPackageAlias: dcPackageAliasParam,
           downlinkIp: downlinkIpParam,
+          deviceType: deviceTypeParam,
           radioId: radioIdParam,
           consumer: consumerParam,
           location: locationParam,
@@ -785,6 +811,7 @@ obx_int.ModelDefinition getObjectBoxModel() {
           remark: remarkParam,
           createdAt: createdAtParam,
         );
+
         return object;
       },
     ),
@@ -885,6 +912,11 @@ class RadiosEntity_ {
   static final alias = obx.QueryStringProperty<RadiosEntity>(
     _entities[2].properties[6],
   );
+
+  /// See [RadiosEntity.radioType].
+  static final radioType = obx.QueryStringProperty<RadiosEntity>(
+    _entities[2].properties[7],
+  );
 }
 
 /// [KeyLoadersEntity] entity fields to define ObjectBox queries.
@@ -976,6 +1008,11 @@ class KeyLoaderDetailsEntity_ {
   /// See [KeyLoaderDetailsEntity.downlinkIp].
   static final downlinkIp = obx.QueryStringProperty<KeyLoaderDetailsEntity>(
     _entities[4].properties[12],
+  );
+
+  /// See [KeyLoaderDetailsEntity.deviceType].
+  static final deviceType = obx.QueryStringProperty<KeyLoaderDetailsEntity>(
+    _entities[4].properties[13],
   );
 }
 

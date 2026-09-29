@@ -89,6 +89,8 @@ tableColumn:
     location_desc: 电台位置
     sn: SN
     sn_desc: 电台SN号
+    radioType: 电台类型
+    radioType_desc: 电台类型
     columnInfo: 展示列信息
   injectEncrypt:
     parameterPacket: 通信参数包
@@ -143,6 +145,8 @@ Form:
       placeholder: 不超出50位的英文字母、数字、空格、符号"_"
       validate: 电台位置不可为空
       invalid: 不超出50位的英文字母、数字、空格、符号"_"
+    radioType:
+      validate: 请选择电台类型
     consumer:
       placeholder: 5-30位英文字母、数字、空格、符号"_"
       validate: 电台使用人不可为空
@@ -370,8 +374,48 @@ cpds:
     detailKeyLoadSuccess: 注钥成功
 
 selfUpdate:
+  selectInterfaceFirst: 请先选择网卡
+  authFailedCount: "认证失败：设备认证数量为 {n}"
+  versionFailedCount: "版本校验失败：设备回复数量为 {n}"
+  validFailedSummary: "校验失败：{fail} 台失败，{timeout} 台超时"
+  writeFailedSummary: "写入失败：{fail} 台失败，{timeout} 台超时"
+  updateCompletedSummary: "更新完成：成功 {success} 台，失败 {fail} 台，超时 {timeout} 台"
+  revalidate: 重新校验
+  rewrite: 重新写入
   failReason:
+    format: 版本号格式非法
+    length: 分包长度错误
+    crc: 校验失败（CRC）
+    sequence: "分包顺序错误，缺少第 {n} 包"
+    noHeader: 未收到文件头
+    missingPacket: 缺少分包
+    size: 文件大小不符
+    zip: 解压失败
     versionMismatch: 版本不匹配
-    installError: 安装失败
+    unzipFail: 解压 ZIP 失败
+    typeDirNotFound: 找不到设备类型文件夹
+    installFileNotFound: 找不到安装文件
+    installFileMultiple: 存在多个安装文件
+    readConfigFail: 读取配置失败
+    executablePathFail: 获取运行程序路径失败
+    overwriteBinaryOpenFail: 覆盖二进制：打开源文件失败
+    overwriteBinaryTempFail: 覆盖二进制：写临时文件失败
+    overwriteBinaryRenameFail: 覆盖二进制：改名替换失败
+    overwriteConfigOpenFail: 覆盖配置：打开源文件失败
+    overwriteConfigTempFail: 覆盖配置：写临时文件失败
+    overwriteConfigRenameFail: 覆盖配置：改名替换失败
+    overwriteIniOpenFail: 覆盖 ini：打开源文件失败
+    overwriteIniTempFail: 覆盖 ini：写临时文件失败
+    overwriteIniRenameFail: 覆盖 ini：改名替换失败
+    writeMarkerFail: 写回执标记失败
+    versionWriteFail: 回填版本失败
+    emptyCommand: 启动命令行为空
+    mkdirFail: 创建目录失败
+    writeScriptFail: 写重启脚本失败
+    mismatch: 文件头不匹配
+    installError: 安装/写盘失败
     restartError: 重启失败
     versionReadError: 读取版本失败
+    restartSpawnFail: 启动脚本失败
+    finalizeFail: 替换可执行文件失败
+    writeParamsFail: 写重启参数失败

@@ -22,10 +22,16 @@ class RadiosManagerApi {
     required String page,
     required String pageSize,
     required String keyword,
+    required String radioType,
   }) async {
     final res = await _instance.get(
       "$url/pager",
-      queryParameters: {"page": page, "pageSize": pageSize, "keyword": keyword},
+      queryParameters: {
+        "page": page,
+        "pageSize": pageSize,
+        "keyword": keyword,
+        "radioType": radioType,
+      },
       fromJson: (json) => BaseListResponse.fromJson(
         json as Map<String, dynamic>,
         (item) => RadiosEntity.fromJson(item),

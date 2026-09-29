@@ -14,6 +14,7 @@ class SimpleDarkDropdown<T> extends StatefulWidget {
   final double width;
   final double height;
   final bool enabled;
+  final VoidCallback? onClear;
 
   const SimpleDarkDropdown({
     super.key,
@@ -25,6 +26,7 @@ class SimpleDarkDropdown<T> extends StatefulWidget {
     this.width = 160,
     this.height = 32,
     this.enabled = true,
+    this.onClear,
   });
 
   @override
@@ -171,6 +173,19 @@ class _SimpleDarkDropdownState<T> extends State<SimpleDarkDropdown<T>> {
                   ),
                 ),
                 const SizedBox(width: 4),
+                if (widget.onClear != null)
+                  InkWell(
+                    onTap: widget.onClear,
+                    borderRadius: BorderRadius.circular(2),
+                    child: const Padding(
+                      padding: EdgeInsets.all(2),
+                      child: Icon(
+                        Icons.clear,
+                        size: 14,
+                        color: Color(0xFF8A94A6),
+                      ),
+                    ),
+                  ),
                 Icon(
                   _isOpen ? Icons.arrow_drop_up : Icons.arrow_drop_down,
                   size: 16,

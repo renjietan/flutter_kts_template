@@ -6,6 +6,7 @@ import 'package:flutter_kts_template/core/entities/installPackage/installPackage
 import 'package:flutter_kts_template/core/selfUpdate/install_package_repository.dart';
 import 'package:flutter_kts_template/core/selfUpdate/install_package_storage.dart';
 import 'package:flutter_kts_template/core/selfUpdate/self_update_service.dart';
+import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 import 'package:flutter_kts_template/objectbox.g.dart';
 import 'package:flutter_kts_template/pages/self_update/self_update.pager.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -37,12 +38,15 @@ void main() {
   });
 
   Future<void> pumpPager(WidgetTester tester) async {
+    LocaleSettings.setLocaleSync(AppLocale.zh);
     await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(
-          body: SelfUpdatePager(
-            service: service,
-            pickZipFile: () async => Uint8List(0),
+      TranslationProvider(
+        child: MaterialApp(
+          home: Scaffold(
+            body: SelfUpdatePager(
+              service: service,
+              pickZipFile: () async => Uint8List(0),
+            ),
           ),
         ),
       ),

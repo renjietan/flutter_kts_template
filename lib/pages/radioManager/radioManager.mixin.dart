@@ -5,6 +5,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_kts_template/components/button/base.button.dart';
 import 'package:flutter_kts_template/components/dialog/simple.form.dialog.dart';
+import 'package:flutter_kts_template/components/DropDown/SimpleDarkDropdown/simple.dark.dropdown.dart';
+import 'package:flutter_kts_template/components/DropDown/SimpleDarkDropdown/simple.dark.dropdown.item.dart';
 import 'package:flutter_kts_template/components/loading/simple.loading.dart';
 import 'package:flutter_kts_template/components/text/text.title.dart';
 import 'package:flutter_kts_template/core/databaseManager/databaseManager.dart';
@@ -38,6 +40,7 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
   int pageSize = 10;
   int totalPages = 0;
   String searchQuery = '';
+  String? selectedRadioType;
   bool showColumnInfo = false;
   // =============================================================================
   // 2026/6/30 下午4:34 表单相关
@@ -56,6 +59,7 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
       page: currentPage.toString(),
       pageSize: pageSize.toString(),
       keyword: searchQuery,
+      radioType: selectedRadioType ?? '',
     ).then((res) {
       Future.delayed(Duration(milliseconds: 70)).then((_) async {
         var radioResponse = await RadiosManagerApi.getAll();
@@ -259,6 +263,34 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
             getList();
           },
         ),
+        const SizedBox(width: 8),
+        SimpleDarkDropdown<String>(
+          width: 140,
+          height: 36,
+          hintText: t.tableColumn.radioManager.radioType,
+          value: selectedRadioType,
+          onChanged: (value) {
+            setState(() {
+              selectedRadioType = value;
+            });
+            SimplePopup.loading();
+            currentPage = 1;
+            getList();
+          },
+          onClear: () {
+            setState(() {
+              selectedRadioType = null;
+            });
+            SimplePopup.loading();
+            currentPage = 1;
+            getList();
+          },
+          items: const [
+            SimpleDarkDropdownItem(value: 'MMR200', label: 'MMR200'),
+            SimpleDarkDropdownItem(value: 'PMR200', label: 'PMR200'),
+            SimpleDarkDropdownItem(value: 'MR9360', label: 'MR9360'),
+          ],
+        ),
         BaseButton(
           label: t.button.radioManager.createRadio,
           minWidth: 110,
@@ -276,6 +308,7 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
             setState(() {
               searchQuery = '';
               searchFieldController.text = "";
+              selectedRadioType = null;
               SimplePopup.loading();
               getList();
             });
@@ -307,6 +340,15 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
         // size: const ColumnSize.auto(),
         flex: 1,
         cellBuilder: TextCellBuilder.text<RadiosEntity>((u) => u.sn),
+      ),
+      ColumnDefinition<RadiosEntity>(
+        label: t.tableColumn.radioManager.radioType,
+        description: t.tableColumn.radioManager.radioType_desc,
+        flex: 1,
+        cellBuilder: TextCellBuilder.text<RadiosEntity>(
+          (u) => u.radioType,
+          maxLines: 1,
+        ),
       ),
     ];
   }
@@ -372,6 +414,7 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
 
   Future<void> showDialog(DialogTypeEnum type, RadiosEntity? rowData) async {
     final isEdit = type == DialogTypeEnum.edit;
+    final currentRadioType = isEdit ? (rowData?.radioType ?? '') : '';
     SimpleFormDialog(
       title: isEdit
           ? t.button.radioManager.editRadio
@@ -444,6 +487,20 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
               RegExp(r'^[a-zA-Z0-9]{10}$'),
               errorText: t.Form.radioManager.sn.invalid,
               checkNullOrEmpty: false,
+            ),
+          ],
+        ),
+        FormFieldConfig(
+          name: 'radioType',
+          label: t.tableColumn.radioManager.radioType,
+          fieldType: FormFieldType.select,
+          items: const ['MMR200', 'PMR200', 'MR9360'],
+          labelBuilder: (value) => value.toString(),
+          initialValue: currentRadioType.isEmpty ? null : currentRadioType,
+          required: true,
+          validators: [
+            FormBuilderValidators.required(
+              errorText: t.Form.radioManager.radioType.validate,
             ),
           ],
         ),

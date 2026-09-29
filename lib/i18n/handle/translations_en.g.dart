@@ -424,6 +424,14 @@ class _Translations$selfUpdate$en extends Translations$selfUpdate$zh {
 	final TranslationsEn _root; // ignore: unused_field
 
 	// Translations
+	@override String get selectInterfaceFirst => 'Please select a network interface first';
+	@override String authFailedCount({required Object n}) => 'Authentication failed: ${n} devices authenticated';
+	@override String versionFailedCount({required Object n}) => 'Version check failed: ${n} devices replied';
+	@override String validFailedSummary({required Object fail, required Object timeout}) => 'Validation failed: ${fail} failed, ${timeout} timed out';
+	@override String writeFailedSummary({required Object fail, required Object timeout}) => 'Write failed: ${fail} failed, ${timeout} timed out';
+	@override String updateCompletedSummary({required Object success, required Object fail, required Object timeout}) => 'Update completed: ${success} succeeded, ${fail} failed, ${timeout} timed out';
+	@override String get revalidate => 'Re-validate';
+	@override String get rewrite => 'Re-write';
 	@override late final _Translations$selfUpdate$failReason$en failReason = _Translations$selfUpdate$failReason$en._(_root);
 }
 
@@ -523,6 +531,8 @@ class _Translations$tableColumn$radioManager$en extends Translations$tableColumn
 	@override String get location_desc => 'Radio location';
 	@override String get sn => 'SN';
 	@override String get sn_desc => 'Radio SN';
+	@override String get radioType => 'Radio type';
+	@override String get radioType_desc => 'Radio type';
 	@override String get columnInfo => 'Show column info';
 }
 
@@ -594,6 +604,7 @@ class _Translations$Form$radioManager$en extends Translations$Form$radioManager$
 	@override late final _Translations$Form$radioManager$alias$en alias = _Translations$Form$radioManager$alias$en._(_root);
 	@override late final _Translations$Form$radioManager$sn$en sn = _Translations$Form$radioManager$sn$en._(_root);
 	@override late final _Translations$Form$radioManager$location$en location = _Translations$Form$radioManager$location$en._(_root);
+	@override late final _Translations$Form$radioManager$radioType$en radioType = _Translations$Form$radioManager$radioType$en._(_root);
 	@override late final _Translations$Form$radioManager$consumer$en consumer = _Translations$Form$radioManager$consumer$en._(_root);
 }
 
@@ -803,10 +814,42 @@ class _Translations$selfUpdate$failReason$en extends Translations$selfUpdate$fai
 	final TranslationsEn _root; // ignore: unused_field
 
 	// Translations
+	@override String get format => 'Invalid version format';
+	@override String get length => 'Packet length error';
+	@override String get crc => 'CRC verification failed';
+	@override String sequence({required Object n}) => 'Packet sequence error, missing packet ${n}';
+	@override String get noHeader => 'No file header received';
+	@override String get missingPacket => 'Missing packet';
+	@override String get size => 'File size mismatch';
+	@override String get zip => 'Decompression failed';
 	@override String get versionMismatch => 'Version mismatch';
+	@override String get unzipFail => 'Unzip failed';
+	@override String get typeDirNotFound => 'Device type directory not found';
+	@override String get installFileNotFound => 'Install file not found';
+	@override String get installFileMultiple => 'Multiple install files';
+	@override String get readConfigFail => 'Read config failed';
+	@override String get executablePathFail => 'Get executable path failed';
+	@override String get overwriteBinaryOpenFail => 'Overwrite binary: open source failed';
+	@override String get overwriteBinaryTempFail => 'Overwrite binary: temp write failed';
+	@override String get overwriteBinaryRenameFail => 'Overwrite binary: rename failed';
+	@override String get overwriteConfigOpenFail => 'Overwrite config: open source failed';
+	@override String get overwriteConfigTempFail => 'Overwrite config: temp write failed';
+	@override String get overwriteConfigRenameFail => 'Overwrite config: rename failed';
+	@override String get overwriteIniOpenFail => 'Overwrite ini: open source failed';
+	@override String get overwriteIniTempFail => 'Overwrite ini: temp write failed';
+	@override String get overwriteIniRenameFail => 'Overwrite ini: rename failed';
+	@override String get writeMarkerFail => 'Write receipt marker failed';
+	@override String get versionWriteFail => 'Write version failed';
+	@override String get emptyCommand => 'Empty startup command';
+	@override String get mkdirFail => 'Create directory failed';
+	@override String get writeScriptFail => 'Write restart script failed';
+	@override String get mismatch => 'File header mismatch';
 	@override String get installError => 'Installation failed';
 	@override String get restartError => 'Restart failed';
 	@override String get versionReadError => 'Failed to read version';
+	@override String get restartSpawnFail => 'Restart script failed';
+	@override String get finalizeFail => 'Failed to replace executable';
+	@override String get writeParamsFail => 'Write finalize params failed';
 }
 
 // Path: pager.injectParams.steps
@@ -859,6 +902,16 @@ class _Translations$Form$radioManager$location$en extends Translations$Form$radi
 	@override String get placeholder => 'Up to 50 letters, numbers, spaces, or "_"';
 	@override String get validate => 'Radio location cannot be empty!';
 	@override String get invalid => 'Up to 50 letters, numbers, spaces, or "_"';
+}
+
+// Path: Form.radioManager.radioType
+class _Translations$Form$radioManager$radioType$en extends Translations$Form$radioManager$radioType$zh {
+	_Translations$Form$radioManager$radioType$en._(TranslationsEn root) : this._root = root, super.internal(root);
+
+	final TranslationsEn _root; // ignore: unused_field
+
+	// Translations
+	@override String get validate => 'Please select a radio type';
 }
 
 // Path: Form.radioManager.consumer

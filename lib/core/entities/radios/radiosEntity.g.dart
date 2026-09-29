@@ -12,6 +12,7 @@ RadiosEntity _$RadiosEntityFromJson(Map<String, dynamic> json) => RadiosEntity(
   location: json['location'] as String,
   sn: json['sn'] as String,
   alias: json['alias'] as String,
+  radioType: json['radioType'] as String? ?? '',
   createdAt: DateTime.parse(json['createdAt'] as String),
   updatedAt: json['updatedAt'] == null
       ? null
@@ -25,6 +26,7 @@ Map<String, dynamic> _$RadiosEntityToJson(RadiosEntity instance) =>
       'consumer': instance.consumer,
       'location': instance.location,
       'sn': instance.sn,
+      'radioType': instance.radioType,
       'createdAt': instance.createdAt.toIso8601String(),
       'updatedAt': instance.updatedAt.toIso8601String(),
     };

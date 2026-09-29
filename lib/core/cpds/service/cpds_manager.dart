@@ -35,6 +35,9 @@ class CpdsManager {
   String _selectedNodeId = '';
   String _selectedFutureWarriorUnitId = '';
   String _interfaceName = '';
+  List<CpdsNetworkInterface> _interfaces = const [];
+  bool _interfacesLoading = false;
+  bool _automaticInterface = false;
   CpdsSessionView? _session;
   CpdsSessionMachine? _machine;
   CpdsSessionRunner? _runner;
@@ -302,10 +305,44 @@ class CpdsManager {
     return CpdsNetworkInterfaceService.listWiredInterfaces();
   }
 
+  /// 刷新网卡列表并缓存，自动选中或恢复上次选中，然后持久化。
+  Future<void> refreshNetworkInterfaces() async {
+    if (_interfacesLoading) {
+      return;
+    }
+    _interfacesLoading = true;
+    _notify();
+    try {
+      final interfaces =
+          await CpdsNetworkInterfaceService.listWiredInterfaces();
+      var selected = '';
+      var automatic = false;
+      if (interfaces.length == 1 && interfaces.first.linkUp) {
+        selected = interfaces.first.name;
+        automatic = true;
+      } else {
+        final stored = Shared.getCpdsNetworkInterface() ?? '';
+        if (stored.isNotEmpty &&
+            interfaces.any((i) => i.name == stored && i.linkUp)) {
+          selected = stored;
+        }
+      }
+      _interfaces = interfaces;
+      _interfaceName = selected;
+      _automaticInterface = automatic;
+      await Shared.saveCpdsNetworkInterface(selected);
+    } finally {
+      _interfacesLoading = false;
+      _notify();
+    }
+  }
+
   Future<CpdsApplicationState> selectNetworkInterface(String name) async {
     _ensureIdle();
     if (name.isNotEmpty) {
-      final interfaces = await listNetworkInterfaces();
+      final interfaces = _interfaces.isNotEmpty
+          ? _interfaces
+          : await listNetworkInterfaces();
       if (!interfaces.any((item) => item.name == name)) {
         throw CpdsException(
           CpdsErrorCode.networkInterfaceError,
@@ -315,11 +352,16 @@ class CpdsManager {
       }
     }
     _interfaceName = name;
+    _automaticInterface = false;
+    await Shared.saveCpdsNetworkInterface(name);
     _notify();
     return state();
   }
 
   String get selectedInterfaceName => _interfaceName;
+  List<CpdsNetworkInterface> get interfaces => _interfaces;
+  bool get interfacesLoading => _interfacesLoading;
+  bool get automaticInterface => _automaticInterface;
 
   Future<void> restoreLastPackage() async {
     final uploadPath = Shared.getCpdsLastSourcePath();

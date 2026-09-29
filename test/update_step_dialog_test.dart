@@ -9,8 +9,11 @@ void main() {
     UpdateStepController controller, {
     VoidCallback? onStart,
     VoidCallback? onPause,
-    VoidCallback? onCancel,
-    VoidCallback? onClose,
+    VoidCallback? onResume,
+    Future<void> Function()? onReAuth,
+    Future<void> Function()? onReVersion,
+    Future<void> Function()? onCancel,
+    Future<void> Function()? onClose,
   }) async {
     await tester.pumpWidget(
       MaterialApp(
@@ -19,6 +22,9 @@ void main() {
             controller: controller,
             onStart: onStart,
             onPause: onPause,
+            onResume: onResume,
+            onReAuth: onReAuth,
+            onReVersion: onReVersion,
             onCancel: onCancel,
             onClose: onClose,
           ),
@@ -28,10 +34,11 @@ void main() {
   }
 
   bool buttonEnabled(WidgetTester tester, String label) {
-    final button = tester.widget<TextButton>(
-      find.widgetWithText(TextButton, label),
-    );
-    return button.onPressed != null;
+    final finder = find.widgetWithText(TextButton, label);
+    if (finder.evaluate().isEmpty) {
+      return false;
+    }
+    return tester.widget<TextButton>(finder).onPressed != null;
   }
 
   testWidgets('renders header and 7 step labels', (tester) async {
@@ -45,8 +52,8 @@ void main() {
       controller,
       onStart: () {},
       onPause: () {},
-      onCancel: () {},
-      onClose: () {},
+      onCancel: () async {},
+      onClose: () async {},
     );
 
     expect(find.text('更新到设备'), findsOneWidget);
@@ -82,7 +89,7 @@ void main() {
     expect(find.text('结果'), findsOneWidget);
     expect(find.text('192.168.1.10'), findsOneWidget);
     expect(find.text('CCU'), findsOneWidget);
-    expect(find.text('50%'), findsOneWidget);
+    expect(find.textContaining('50%'), findsOneWidget);
   });
 
   testWidgets('step status shows success and failed icons', (tester) async {
@@ -105,42 +112,72 @@ void main() {
       fileName: 'a.zip',
     );
 
-    // idle
-    await pumpDialog(
-      tester,
-      controller,
-      onStart: () {},
-      onPause: () {},
-      onCancel: () {},
-      onClose: () {},
-    );
-    expect(buttonEnabled(tester, '开始'), isTrue);
-    expect(buttonEnabled(tester, '暂停'), isFalse);
-    expect(buttonEnabled(tester, '取消'), isTrue);
-    expect(buttonEnabled(tester, '关闭'), isTrue);
+    Future<void> pump() => pumpDialog(
+          tester,
+          controller,
+          onStart: () {},
+          onPause: () {},
+          onResume: () {},
+          onReAuth: () async {},
+          onReVersion: () async {},
+          onCancel: () async {},
+          onClose: () async {},
+        );
 
-    // running
-    controller.setPhase(UpdatePhase.running);
-    await tester.pump();
-    expect(buttonEnabled(tester, '开始'), isFalse);
-    expect(buttonEnabled(tester, '暂停'), isTrue);
-    expect(buttonEnabled(tester, '取消'), isTrue);
-    expect(buttonEnabled(tester, '关闭'), isFalse);
-
-    // paused
-    controller.setPhase(UpdatePhase.paused);
-    await tester.pump();
-    expect(buttonEnabled(tester, '继续'), isTrue);
-    expect(buttonEnabled(tester, '暂停'), isFalse);
-    expect(buttonEnabled(tester, '取消'), isTrue);
-    expect(buttonEnabled(tester, '关闭'), isTrue);
-
-    // finished
-    controller.setPhase(UpdatePhase.finished);
-    await tester.pump();
+    // idle：发现/认证/版本校验阶段无按钮
+    await pump();
     expect(buttonEnabled(tester, '开始'), isFalse);
     expect(buttonEnabled(tester, '暂停'), isFalse);
     expect(buttonEnabled(tester, '取消'), isFalse);
+    expect(buttonEnabled(tester, '关闭'), isFalse);
+
+    // 传输：待开始
+    controller.setActiveStep(3);
+    controller.setPhase(UpdatePhase.running);
+    controller.setTransferStage(TransferStage.notStarted);
+    await tester.pump();
+    expect(buttonEnabled(tester, '开始'), isTrue);
+    expect(buttonEnabled(tester, '取消'), isTrue);
+    expect(buttonEnabled(tester, '暂停'), isFalse);
+    expect(buttonEnabled(tester, '关闭'), isFalse);
+
+    // 传输：发送中
+    controller.setTransferStage(TransferStage.sending);
+    await tester.pump();
+    expect(buttonEnabled(tester, '暂停'), isTrue);
+    expect(buttonEnabled(tester, '取消'), isTrue);
+    expect(buttonEnabled(tester, '开始'), isFalse);
+
+    // 传输：暂停
+    controller.setTransferStage(TransferStage.paused);
+    await tester.pump();
+    expect(buttonEnabled(tester, '继续'), isTrue);
+    expect(buttonEnabled(tester, '取消'), isTrue);
+    expect(buttonEnabled(tester, '暂停'), isFalse);
+
+    // 认证失败：取消 + 重新认证
+    controller.setActiveStep(1);
+    controller.setPhase(UpdatePhase.authFailed);
+    await tester.pump();
+    expect(buttonEnabled(tester, '取消'), isTrue);
+    expect(buttonEnabled(tester, '重新认证'), isTrue);
+    expect(buttonEnabled(tester, '关闭'), isFalse);
+
+    // 版本校验失败：取消 + 重新版本校验
+    controller.setActiveStep(2);
+    controller.setPhase(UpdatePhase.versionFailed);
+    await tester.pump();
+    expect(buttonEnabled(tester, '取消'), isTrue);
+    expect(buttonEnabled(tester, '重新版本校验'), isTrue);
+    expect(buttonEnabled(tester, '重新认证'), isFalse);
+    expect(buttonEnabled(tester, '关闭'), isFalse);
+
+    // 完成：关闭
+    controller.setPhase(UpdatePhase.finished);
+    await tester.pump();
     expect(buttonEnabled(tester, '关闭'), isTrue);
+    expect(buttonEnabled(tester, '取消'), isFalse);
+    expect(buttonEnabled(tester, '重新认证'), isFalse);
+    expect(buttonEnabled(tester, '重新版本校验'), isFalse);
   });
 }

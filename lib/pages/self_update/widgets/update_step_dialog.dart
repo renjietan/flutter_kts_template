@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_kts_template/core/selfUpdate/update/update_step_controller.dart';
+import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 
 /// 更新到设备的步骤弹窗。
 ///
@@ -10,6 +11,11 @@ class UpdateStepDialog extends StatefulWidget {
     required this.controller,
     this.onStart,
     this.onPause,
+    this.onResume,
+    this.onReAuth,
+    this.onReVersion,
+    this.onReValid,
+    this.onReWrite,
     this.onCancel,
     this.onClose,
   });
@@ -17,8 +23,13 @@ class UpdateStepDialog extends StatefulWidget {
   final UpdateStepController controller;
   final VoidCallback? onStart;
   final VoidCallback? onPause;
-  final VoidCallback? onCancel;
-  final VoidCallback? onClose;
+  final VoidCallback? onResume;
+  final Future<void> Function()? onReAuth;
+  final Future<void> Function()? onReVersion;
+  final Future<void> Function()? onReValid;
+  final Future<void> Function()? onReWrite;
+  final Future<void> Function()? onCancel;
+  final Future<void> Function()? onClose;
 
   @override
   State<UpdateStepDialog> createState() => _UpdateStepDialogState();
@@ -29,6 +40,11 @@ class _UpdateStepDialogState extends State<UpdateStepDialog> {
   static const Color _success = Color(0xFF2ECC71);
   static const Color _danger = Color(0xFFF15B64);
   static const Color _dim = Color(0xFF8A94A6);
+  bool _closing = false;
+  bool _reAuthing = false;
+  bool _reVersioning = false;
+  bool _reValiding = false;
+  bool _reWriting = false;
 
   static const List<String> _descriptions = [
     '正在扫描网络中的 CPDC 设备…',
@@ -58,9 +74,101 @@ class _UpdateStepDialogState extends State<UpdateStepDialog> {
     }
   }
 
+  Future<void> _handleCancel() async {
+    if (_closing) {
+      return;
+    }
+    setState(() => _closing = true);
+    await widget.onCancel?.call();
+    if (!mounted) {
+      return;
+    }
+    setState(() => _closing = false);
+    Navigator.of(context).pop();
+  }
+
+  Future<void> _handleClose() async {
+    if (_closing) {
+      return;
+    }
+    setState(() => _closing = true);
+    await widget.onClose?.call();
+    if (!mounted) {
+      return;
+    }
+    setState(() => _closing = false);
+    Navigator.of(context).pop();
+  }
+
+  Future<void> _handleReAuth() async {
+    if (_closing || _reAuthing) {
+      return;
+    }
+    setState(() => _reAuthing = true);
+    await widget.onReAuth?.call();
+    if (!mounted) {
+      return;
+    }
+    setState(() => _reAuthing = false);
+  }
+
+  Future<void> _handleReVersion() async {
+    if (_closing || _reVersioning) {
+      return;
+    }
+    setState(() => _reVersioning = true);
+    await widget.onReVersion?.call();
+    if (!mounted) {
+      return;
+    }
+    setState(() => _reVersioning = false);
+  }
+
+  Future<void> _handleReValid() async {
+    if (_closing || _reValiding) {
+      return;
+    }
+    setState(() => _reValiding = true);
+    await widget.onReValid?.call();
+    if (!mounted) {
+      return;
+    }
+    setState(() => _reValiding = false);
+  }
+
+  Future<void> _handleReWrite() async {
+    if (_closing || _reWriting) {
+      return;
+    }
+    setState(() => _reWriting = true);
+    await widget.onReWrite?.call();
+    if (!mounted) {
+      return;
+    }
+    setState(() => _reWriting = false);
+  }
+
+  String _formatBytes(int bytes) {
+    if (bytes >= 1 << 20) {
+      return '${(bytes / (1 << 20)).toStringAsFixed(1)}MB';
+    }
+    if (bytes >= 1 << 10) {
+      return '${(bytes / (1 << 10)).toStringAsFixed(1)}KB';
+    }
+    return '${bytes}B';
+  }
+
   @override
   Widget build(BuildContext context) {
     final controller = widget.controller;
+    final showPause =
+        controller.activeStep == 3 &&
+        controller.phase == UpdatePhase.running &&
+        controller.transferStage == TransferStage.sending;
+    final showResume =
+        controller.activeStep == 3 &&
+        controller.phase == UpdatePhase.running &&
+        controller.transferStage == TransferStage.paused;
     return AlertDialog(
       backgroundColor: const Color(0xFF20262D),
       title: _buildHeader(controller),
@@ -77,10 +185,25 @@ class _UpdateStepDialogState extends State<UpdateStepDialog> {
               style: const TextStyle(color: Colors.white70, fontSize: 13),
             ),
             const SizedBox(height: 8),
-            LinearProgressIndicator(
-              value: controller.totalProgress,
-              backgroundColor: const Color(0xFF353A41),
-              valueColor: const AlwaysStoppedAnimation<Color>(_accent),
+            Row(
+              children: [
+                Expanded(
+                  child: LinearProgressIndicator(
+                    value: controller.totalProgress,
+                    backgroundColor: const Color(0xFF353A41),
+                    valueColor: const AlwaysStoppedAnimation<Color>(_accent),
+                  ),
+                ),
+                if (showPause || showResume) ...[
+                  const SizedBox(width: 8),
+                  TextButton(
+                    onPressed: showPause
+                        ? widget.onPause
+                        : (showResume ? widget.onResume : null),
+                    child: Text(showPause ? '暂停' : '继续'),
+                  ),
+                ],
+              ],
             ),
             const SizedBox(height: 8),
             _buildTable(controller),
@@ -234,11 +357,29 @@ class _UpdateStepDialogState extends State<UpdateStepDialog> {
                   cells: [
                     DataCell(Text(device.ip)),
                     DataCell(Text(device.type)),
-                    DataCell(Text(device.currentVersion.isEmpty ? '--' : device.currentVersion)),
-                    DataCell(Text(device.newVersion.isEmpty ? '--' : device.newVersion)),
-                    DataCell(Text(device.status.isEmpty ? '--' : device.status)),
-                    DataCell(Text('${(device.progress * 100).round()}%')),
-                    DataCell(Text(device.result.isEmpty ? '--' : device.result)),
+                    DataCell(
+                      Text(
+                        device.currentVersion.isEmpty
+                            ? '--'
+                            : device.currentVersion,
+                      ),
+                    ),
+                    DataCell(
+                      Text(
+                        device.newVersion.isEmpty ? '--' : device.newVersion,
+                      ),
+                    ),
+                    DataCell(
+                      Text(device.status.isEmpty ? '--' : device.status),
+                    ),
+                    DataCell(
+                      Text(
+                        '${(device.progress * 100).round()}% · ${_formatBytes(device.transferredBytes)}/${_formatBytes(device.totalBytes)}',
+                      ),
+                    ),
+                    DataCell(
+                      Text(device.result.isEmpty ? '--' : device.result),
+                    ),
                   ],
                 ),
             ],
@@ -250,10 +391,24 @@ class _UpdateStepDialogState extends State<UpdateStepDialog> {
 
   List<Widget> _buildActions(UpdateStepController controller) {
     final phase = controller.phase;
-    final startEnabled = phase == UpdatePhase.idle || phase == UpdatePhase.paused;
-    final pauseEnabled = phase == UpdatePhase.running;
-    final cancelEnabled = phase != UpdatePhase.finished;
-    final closeEnabled = phase != UpdatePhase.running;
+    final inTransfer =
+        controller.activeStep == 3 && phase == UpdatePhase.running;
+    final inValid =
+        controller.activeStep == 4 && phase == UpdatePhase.running;
+    final showStart =
+        inTransfer && controller.transferStage == TransferStage.notStarted;
+    final showCancel =
+        inTransfer ||
+        inValid ||
+        phase == UpdatePhase.authFailed ||
+        phase == UpdatePhase.versionFailed ||
+        phase == UpdatePhase.validFailed ||
+        phase == UpdatePhase.writeFailed;
+    final showReAuth = phase == UpdatePhase.authFailed;
+    final showReVersion = phase == UpdatePhase.versionFailed;
+    final showReValid = phase == UpdatePhase.validFailed;
+    final showReWrite = phase == UpdatePhase.writeFailed;
+    final showClose = phase == UpdatePhase.finished;
 
     return [
       if (controller.summary.isNotEmpty)
@@ -264,22 +419,74 @@ class _UpdateStepDialogState extends State<UpdateStepDialog> {
             style: const TextStyle(color: Colors.white70, fontSize: 13),
           ),
         ),
-      TextButton(
-        onPressed: startEnabled ? widget.onStart : null,
-        child: Text(phase == UpdatePhase.paused ? '继续' : '开始'),
-      ),
-      TextButton(
-        onPressed: pauseEnabled ? widget.onPause : null,
-        child: const Text('暂停'),
-      ),
-      TextButton(
-        onPressed: cancelEnabled ? widget.onCancel : null,
-        child: const Text('取消'),
-      ),
-      TextButton(
-        onPressed: closeEnabled ? widget.onClose : null,
-        child: const Text('关闭'),
-      ),
+      if (showStart)
+        TextButton(onPressed: widget.onStart, child: const Text('开始')),
+      if (showCancel)
+        TextButton(
+          onPressed: _closing ? null : _handleCancel,
+          child: _closing
+              ? const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Text('取消'),
+        ),
+      if (showReAuth)
+        TextButton(
+          onPressed: (_closing || _reAuthing) ? null : _handleReAuth,
+          child: _reAuthing
+              ? const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Text('重新认证'),
+        ),
+      if (showReVersion)
+        TextButton(
+          onPressed: (_closing || _reVersioning) ? null : _handleReVersion,
+          child: _reVersioning
+              ? const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Text('重新版本校验'),
+        ),
+      if (showReValid)
+        TextButton(
+          onPressed: (_closing || _reValiding) ? null : _handleReValid,
+          child: _reValiding
+              ? const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : Text(t.selfUpdate.revalidate),
+        ),
+      if (showReWrite)
+        TextButton(
+          onPressed: (_closing || _reWriting) ? null : _handleReWrite,
+          child: _reWriting
+              ? const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : Text(t.selfUpdate.rewrite),
+        ),
+      if (showClose)
+        TextButton(
+          onPressed: _closing ? null : _handleClose,
+          child: _closing
+              ? const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Text('关闭'),
+        ),
     ];
   }
 }

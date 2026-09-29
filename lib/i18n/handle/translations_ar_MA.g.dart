@@ -424,6 +424,14 @@ class Translations$selfUpdate$ar_MA extends Translations$selfUpdate$zh {
 	final TranslationsArMa _root; // ignore: unused_field
 
 	// Translations
+	@override String get selectInterfaceFirst => 'يرجى تحديد بطاقة الشبكة أولاً';
+	@override String authFailedCount({required Object n}) => 'فشل المصادقة: عدد الأجهزة التي تمت المصادقة عليها ${n}';
+	@override String versionFailedCount({required Object n}) => 'فشل التحقق من الإصدار: ${n} أجهزة ردت';
+	@override String validFailedSummary({required Object fail, required Object timeout}) => 'فشل التحقق: ${fail} فشل، ${timeout} مهلة';
+	@override String writeFailedSummary({required Object fail, required Object timeout}) => 'فشل الكتابة: ${fail} فشل، ${timeout} مهلة';
+	@override String updateCompletedSummary({required Object success, required Object fail, required Object timeout}) => 'اكتمل التحديث: ${success} نجح، ${fail} فشل، ${timeout} مهلة';
+	@override String get revalidate => 'إعادة التحقق';
+	@override String get rewrite => 'إعادة الكتابة';
 	@override late final Translations$selfUpdate$failReason$ar_MA failReason = Translations$selfUpdate$failReason$ar_MA.internal(_root);
 }
 
@@ -523,6 +531,8 @@ class Translations$tableColumn$radioManager$ar_MA extends Translations$tableColu
 	@override String get location_desc => 'موقع جهاز الراديو';
 	@override String get sn => 'SN';
 	@override String get sn_desc => 'رقم SN لجهاز الراديو';
+	@override String get radioType => 'نوع الراديو';
+	@override String get radioType_desc => 'نوع الراديو';
 	@override String get columnInfo => 'معلومات الأعمدة المعروضة';
 }
 
@@ -803,10 +813,42 @@ class Translations$selfUpdate$failReason$ar_MA extends Translations$selfUpdate$f
 	final TranslationsArMa _root; // ignore: unused_field
 
 	// Translations
+	@override String get format => 'تنسيق الإصدار غير صالح';
+	@override String get length => 'خطأ في طول الحزمة';
+	@override String get crc => 'فشل التحقق CRC';
+	@override String sequence({required Object n}) => 'خطأ في تسلسل الحزمة، الحزمة ${n} مفقودة';
+	@override String get noHeader => 'لم يتم استلام رأس الملف';
+	@override String get missingPacket => 'حزمة مفقودة';
+	@override String get size => 'عدم تطابق حجم الملف';
+	@override String get zip => 'فشل فك الضغط';
 	@override String get versionMismatch => 'عدم تطابق الإصدار';
+	@override String get unzipFail => 'فشل فك ضغط الملف';
+	@override String get typeDirNotFound => 'لم يتم العثور على مجلد نوع الجهاز';
+	@override String get installFileNotFound => 'لم يتم العثور على ملف التثبيت';
+	@override String get installFileMultiple => 'توجد ملفات تثبيت متعددة';
+	@override String get readConfigFail => 'فشل قراءة التكوين';
+	@override String get executablePathFail => 'فشل الحصول على مسار البرنامج';
+	@override String get overwriteBinaryOpenFail => 'فشل فتح الملف المصدر للبرنامج';
+	@override String get overwriteBinaryTempFail => 'فشل كتابة الملف المؤقت للبرنامج';
+	@override String get overwriteBinaryRenameFail => 'فشل إعادة تسمية البرنامج';
+	@override String get overwriteConfigOpenFail => 'فشل فتح الملف المصدر للتكوين';
+	@override String get overwriteConfigTempFail => 'فشل كتابة الملف المؤقت للتكوين';
+	@override String get overwriteConfigRenameFail => 'فشل إعادة تسمية التكوين';
+	@override String get overwriteIniOpenFail => 'فشل فتح الملف المصدر لـ ini';
+	@override String get overwriteIniTempFail => 'فشل كتابة الملف المؤقت لـ ini';
+	@override String get overwriteIniRenameFail => 'فشل إعادة تسمية ini';
+	@override String get writeMarkerFail => 'فشل كتابة علامة الاستلام';
+	@override String get versionWriteFail => 'فشل كتابة الإصدار';
+	@override String get emptyCommand => 'أمر بدء التشغيل فارغ';
+	@override String get mkdirFail => 'فشل إنشاء الدليل';
+	@override String get writeScriptFail => 'فشل كتابة سكربت إعادة التشغيل';
+	@override String get mismatch => 'عدم تطابق رأس الملف';
 	@override String get installError => 'فشل التثبيت';
 	@override String get restartError => 'فشل إعادة التشغيل';
 	@override String get versionReadError => 'فشل قراءة الإصدار';
+	@override String get restartSpawnFail => 'فشل تشغيل السكربت';
+	@override String get finalizeFail => 'فشل استبدال الملف التنفيذي';
+	@override String get writeParamsFail => 'فشل كتابة معلمات إعادة التشغيل';
 }
 
 // Path: pager.injectParams.steps

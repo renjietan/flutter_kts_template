@@ -1487,6 +1487,15 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
         ),
       ),
       ColumnDefinition<KeyLoaderDetailsEntity>(
+        label: t.Form.paramsInject.deviceType.text,
+        flex: 1,
+        cellBuilder: TextCellBuilder.text<KeyLoaderDetailsEntity>(
+          (item) => (item.deviceType == null || item.deviceType!.trim().isEmpty)
+              ? '--'
+              : item.deviceType!,
+        ),
+      ),
+      ColumnDefinition<KeyLoaderDetailsEntity>(
         label: t.tableColumn.injectEncrypt.radio,
         size: const ColumnSize.fixed(160),
         cellBuilder: (item) {
@@ -1497,8 +1506,9 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
           final availableRadios = radios
               .where(
                 (radio) =>
-                    !usedRadioIds.contains(radio.id) ||
-                    radio.id == item.radioId,
+                    (!usedRadioIds.contains(radio.id) ||
+                        radio.id == item.radioId) &&
+                    radio.radioType == item.deviceType,
               )
               .toList();
           RadiosEntity? currentRadio;

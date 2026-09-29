@@ -6,6 +6,7 @@ import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
 import 'package:dage/dage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_kts_template/core/cpds/parser/cpds_package_parser.dart';
 import 'package:flutter_kts_template/core/cpds/service/cpds_manager.dart';
 import 'package:flutter_kts_template/core/databaseManager/databaseManager.dart';
@@ -16,6 +17,8 @@ import 'package:flutter_kts_template/core/utils/director.dart';
 import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 import 'package:flutter_kts_template/logger/logger.dart';
 import 'package:path/path.dart' as p;
+
+import 'package:flutter_kts_template/pages/cpds/widgets/cpds_messages.dart';
 
 /// 注钥枪文件列表弹窗。
 ///
@@ -79,13 +82,19 @@ class _CpdsKeyLoaderFileDialogState extends State<CpdsKeyLoaderFileDialog> {
   @override
   void initState() {
     super.initState();
+    _passwordController.addListener(_onPasswordChanged);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _run();
     });
   }
 
+  void _onPasswordChanged() {
+    if (mounted) setState(() {});
+  }
+
   @override
   void dispose() {
+    _passwordController.removeListener(_onPasswordChanged);
     unawaited(_cleanupUsbAndReaders());
     _passwordController.dispose();
     super.dispose();
@@ -326,6 +335,13 @@ class _CpdsKeyLoaderFileDialogState extends State<CpdsKeyLoaderFileDialog> {
       });
       return;
     }
+    if (!RegExp(r'^\d{8}$').hasMatch(password)) {
+      setState(() {
+        _passwordError = t.cpds.setPassword.invalid;
+        _decryptFailed = true;
+      });
+      return;
+    }
     final fileName = _selectedFile;
     final manager = _manager;
     final reader = _reader;
@@ -543,7 +559,19 @@ class _CpdsKeyLoaderFileDialogState extends State<CpdsKeyLoaderFileDialog> {
         await DirectoryManager.instance.getUploadsPath(),
         storedName,
       );
-      await File(padPath).writeAsBytes(received.content, flush: true);
+      final padFile = File(padPath);
+      if (await padFile.exists()) {
+        final overwrite = await _confirmOverwritePad();
+        if (!overwrite) {
+          if (mounted) {
+            setState(() {
+              _downloading = false;
+            });
+          }
+          return;
+        }
+      }
+      await padFile.writeAsBytes(received.content, flush: true);
       if (_cancelled) return;
       _padPath = padPath;
       GlobalLogger.logInfo('KEY_LOADER_PAD $padPath');
@@ -615,6 +643,42 @@ class _CpdsKeyLoaderFileDialogState extends State<CpdsKeyLoaderFileDialog> {
         await _cleanupGeneratedFiles();
       }
     }
+  }
+
+  Future<bool> _confirmOverwritePad() async {
+    final proceed = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: const Color(0xFF20262D),
+        title: Text(
+          Translations.of(dialogContext).tips.title,
+          style: const TextStyle(color: Colors.white, fontSize: 17),
+        ),
+        content: Text(
+          CpdsMessages.tr(
+            dialogContext,
+            '文件已存在，是否覆盖？',
+            'File already exists. Overwrite?',
+            'الملف موجود بالفعل. هل تريد الكتابة فوقه؟',
+          ),
+          style: const TextStyle(color: Colors.white70, fontSize: 13),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(Translations.of(dialogContext).tips.cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(
+              CpdsMessages.tr(dialogContext, '覆盖', 'Overwrite', 'الكتابة فوقه'),
+            ),
+          ),
+        ],
+      ),
+    );
+    return proceed == true;
   }
 
   String _txbzJsonUaeName(String sourceName) {
@@ -1056,24 +1120,43 @@ class _CpdsKeyLoaderFileDialogState extends State<CpdsKeyLoaderFileDialog> {
                 controller: _passwordController,
                 obscureText: _obscurePassword,
                 enabled: !_verifying,
+                keyboardType: TextInputType.number,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  LengthLimitingTextInputFormatter(8),
+                ],
                 onSubmitted: (_) => _submitPassword(),
                 style: const TextStyle(color: Colors.white, fontSize: 13),
                 decoration: InputDecoration(
+                  labelText: t.cpds.setPassword.label,
+                  labelStyle: const TextStyle(color: Colors.white),
                   hintText: t.cpds.setPassword.placeholder,
                   hintStyle: const TextStyle(color: Colors.white38),
-                  suffixIcon: IconButton(
-                    onPressed: () {
-                      setState(() {
-                        _obscurePassword = !_obscurePassword;
-                      });
-                    },
-                    icon: Icon(
-                      _obscurePassword
-                          ? Icons.visibility_off
-                          : Icons.visibility,
-                      size: 18,
-                      color: Colors.white54,
-                    ),
+                  suffixIcon: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        '${_passwordController.text.length}/8',
+                        style: const TextStyle(
+                          color: Colors.white54,
+                          fontSize: 12,
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () {
+                          setState(() {
+                            _obscurePassword = !_obscurePassword;
+                          });
+                        },
+                        icon: Icon(
+                          _obscurePassword
+                              ? Icons.visibility_off
+                              : Icons.visibility,
+                          size: 18,
+                          color: Colors.white70,
+                        ),
+                      ),
+                    ],
                   ),
                   filled: true,
                   fillColor: const Color(0xFF282D33),
