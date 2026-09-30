@@ -391,6 +391,8 @@ class Translations$cpds$ar_MA extends Translations$cpds$zh {
 	@override String get keyLoaderSuccess => 'اكتمل التنزيل';
 	@override String get keyLoaderReadyTimeout => 'انتهت مهلة الاستجابة';
 	@override String get keyLoaderVerifyFailed => 'فشل: فشل التحقق';
+	@override String get keyLoaderFileNotFound => 'الملف غير موجود';
+	@override String get keyLoaderUnexpectedReply => 'تم استلام أمر غير متوقع';
 	@override String get keyLoaderParseSuccess => 'نجح التحليل';
 	@override String get keyLoaderParseFailed => 'فشل التحليل';
 	@override String get nodesTitle => 'عقد الشبكة';
@@ -781,11 +783,14 @@ class Translations$cpds$usbProgress$ar_MA extends Translations$cpds$usbProgress$
 	@override String get detailConnectStart => 'الاتصال بجهاز تحميل المفاتيح';
 	@override String get detailConnectSuccess => 'نجح الاتصال';
 	@override String get detailConnectFail => 'فشل الاتصال';
-	@override String get detailHandshakeStart => 'إرسال PAD_LIGHT وانتظار FILE_OK';
+	@override String get detailHandshakeStart => 'إرسال LIGHT وانتظار FILE_OK';
 	@override String get detailHandshakeSuccess => 'نجحت المصافحة';
 	@override String get detailHandshakeTimeout => 'انتهت مهلة المصافحة';
 	@override String get detailHandshakeFail => 'فشلت المصافحة';
-	@override String get detailReadyStart => 'إرسال PAD_UPLOAD وانتظار READY';
+	@override String get detailClearStart => 'إرسال FILE_CPD_CLEAR وانتظار FILE_OK';
+	@override String get detailClearSuccess => 'اكتمل المسح';
+	@override String get detailClearTimeout => 'انتهت مهلة المسح';
+	@override String get detailReadyStart => 'إرسال FILE_UPLOAD وانتظار READY';
 	@override String get detailReadySuccess => 'الجهاز جاهز';
 	@override String get detailReadyTimeout => 'انتهت مهلة التحضير';
 	@override String get detailReadyFail => 'فشل التحضير';
@@ -794,7 +799,7 @@ class Translations$cpds$usbProgress$ar_MA extends Translations$cpds$usbProgress$
 	@override String get detailComplete => 'استلم جهاز تحميل المفاتيح بنجاح';
 	@override String get detailVerifyTimeout => 'انتهت مهلة التحقق';
 	@override String get detailVerifyFail => 'فشل التحقق';
-	@override String get detailVerifySaveFail => 'فشل الحفظ';
+	@override String get detailVerifySaveFail => 'فشل الكتابة';
 	@override String get detailExportComplete => 'اكتمل: تم تصدير الملف';
 	@override String detailPacketSuccess({required Object index}) => 'تم إرسال الحزمة ${index} بنجاح';
 	@override String detailPacketFail({required Object index}) => 'فشل إرسال الحزمة ${index}';
@@ -803,6 +808,7 @@ class Translations$cpds$usbProgress$ar_MA extends Translations$cpds$usbProgress$
 	@override String detailSaveError({required Object index}) => 'فشل حفظ الحزمة ${index}';
 	@override String get detailError => 'خطأ في نقل USB';
 	@override String get detailDeviceRemoved => 'تم فصل جهاز USB';
+	@override String get detailUnexpectedReply => 'تم استلام رد غير متوقع';
 	@override String get detailKeyLoadSuccess => 'نجح تحميل المفتاح';
 }
 
@@ -848,6 +854,15 @@ class Translations$selfUpdate$failReason$ar_MA extends Translations$selfUpdate$f
 	@override String get versionReadError => 'فشل قراءة الإصدار';
 	@override String get restartSpawnFail => 'فشل تشغيل السكربت';
 	@override String get finalizeFail => 'فشل استبدال الملف التنفيذي';
+	@override String get finalizeStartFail => 'فشل بدء المُنهي';
+	@override String get finalizeInvalidParams => 'معلمات المُنهي غير صالحة';
+	@override String get finalizeOldExitTimeout => 'انتهت مهلة خروج العملية القديمة';
+	@override String get finalizeTerminateFail => 'فشل إنهاء العملية القديمة';
+	@override String get finalizeRenameOldFail => 'فشل إعادة تسمية الملف التنفيذي القديم';
+	@override String get finalizeRenameNewFail => 'فشل إعادة تسمية الملف التنفيذي الجديد';
+	@override String get finalizeOpenLogFail => 'فشل فتح ملف سجل العملية الجديدة';
+	@override String get finalizeStartNewFail => 'فشل بدء العملية الجديدة';
+	@override String get finalizeSelfLogFail => 'فشل فتح ملف سجل المُنهي';
 	@override String get writeParamsFail => 'فشل كتابة معلمات إعادة التشغيل';
 }
 

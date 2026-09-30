@@ -640,6 +640,12 @@ class Translations$cpds$zh {
 	/// zh: '失败：校验失败'
 	String get keyLoaderVerifyFailed => '失败：校验失败';
 
+	/// zh: '文件不存在'
+	String get keyLoaderFileNotFound => '文件不存在';
+
+	/// zh: '接收到异常指令'
+	String get keyLoaderUnexpectedReply => '接收到异常指令';
+
 	/// zh: '解析成功'
 	String get keyLoaderParseSuccess => '解析成功';
 
@@ -1327,8 +1333,8 @@ class Translations$cpds$usbProgress$zh {
 	/// zh: '连接失败'
 	String get detailConnectFail => '连接失败';
 
-	/// zh: '发送 PAD_LIGHT，等待 FILE_OK'
-	String get detailHandshakeStart => '发送 PAD_LIGHT，等待 FILE_OK';
+	/// zh: '发送 LIGHT，等待 FILE_OK'
+	String get detailHandshakeStart => '发送 LIGHT，等待 FILE_OK';
 
 	/// zh: '握手成功'
 	String get detailHandshakeSuccess => '握手成功';
@@ -1339,8 +1345,17 @@ class Translations$cpds$usbProgress$zh {
 	/// zh: '握手失败'
 	String get detailHandshakeFail => '握手失败';
 
-	/// zh: '发送 PAD_UPLOAD，等待 READY'
-	String get detailReadyStart => '发送 PAD_UPLOAD，等待 READY';
+	/// zh: '发送 FILE_CPD_CLEAR，等待 FILE_OK'
+	String get detailClearStart => '发送 FILE_CPD_CLEAR，等待 FILE_OK';
+
+	/// zh: '清空完成'
+	String get detailClearSuccess => '清空完成';
+
+	/// zh: '清空超时'
+	String get detailClearTimeout => '清空超时';
+
+	/// zh: '发送 FILE_UPLOAD，等待 READY'
+	String get detailReadyStart => '发送 FILE_UPLOAD，等待 READY';
 
 	/// zh: '设备已就绪'
 	String get detailReadySuccess => '设备已就绪';
@@ -1366,8 +1381,8 @@ class Translations$cpds$usbProgress$zh {
 	/// zh: '校验失败'
 	String get detailVerifyFail => '校验失败';
 
-	/// zh: '保存失败'
-	String get detailVerifySaveFail => '保存失败';
+	/// zh: '写入失败'
+	String get detailVerifySaveFail => '写入失败';
 
 	/// zh: '完成：文件已导出'
 	String get detailExportComplete => '完成：文件已导出';
@@ -1392,6 +1407,9 @@ class Translations$cpds$usbProgress$zh {
 
 	/// zh: 'USB 设备已断开'
 	String get detailDeviceRemoved => 'USB 设备已断开';
+
+	/// zh: '接收到异常指令'
+	String get detailUnexpectedReply => '接收到异常指令';
 
 	/// zh: '注钥成功'
 	String get detailKeyLoadSuccess => '注钥成功';
@@ -1509,6 +1527,33 @@ class Translations$selfUpdate$failReason$zh {
 
 	/// zh: '替换可执行文件失败'
 	String get finalizeFail => '替换可执行文件失败';
+
+	/// zh: '启动替换器失败'
+	String get finalizeStartFail => '启动替换器失败';
+
+	/// zh: '替换器参数无效'
+	String get finalizeInvalidParams => '替换器参数无效';
+
+	/// zh: '等待旧进程退出超时'
+	String get finalizeOldExitTimeout => '等待旧进程退出超时';
+
+	/// zh: '终止旧进程失败'
+	String get finalizeTerminateFail => '终止旧进程失败';
+
+	/// zh: '重命名旧可执行文件失败'
+	String get finalizeRenameOldFail => '重命名旧可执行文件失败';
+
+	/// zh: '重命名新可执行文件失败'
+	String get finalizeRenameNewFail => '重命名新可执行文件失败';
+
+	/// zh: '打开新进程日志文件失败'
+	String get finalizeOpenLogFail => '打开新进程日志文件失败';
+
+	/// zh: '启动新进程失败'
+	String get finalizeStartNewFail => '启动新进程失败';
+
+	/// zh: '打开替换器日志文件失败'
+	String get finalizeSelfLogFail => '打开替换器日志文件失败';
 
 	/// zh: '写重启参数失败'
 	String get writeParamsFail => '写重启参数失败';

@@ -13,6 +13,16 @@ String selfUpdateFailReasonText(String code) {
     final missing = code.substring('sequence:'.length);
     return reasons.sequence(n: missing);
   }
+  if (code.startsWith('finalize_')) {
+    final colon = code.indexOf(':');
+    final key = colon < 0 ? code : code.substring(0, colon);
+    final detail = colon < 0 ? '' : code.substring(colon + 1);
+    final text = _finalizeFailText(key);
+    if (text != null) {
+      return detail.isEmpty ? text : '$text：$detail';
+    }
+    return code;
+  }
   final write = _writeFailReasonText(code);
   if (write != null) {
     return write;
@@ -40,6 +50,8 @@ String selfUpdateFailReasonText(String code) {
       return reasons.restartSpawnFail;
     case 'finalize_fail':
       return reasons.finalizeFail;
+    case 'finalize_start_fail':
+      return reasons.finalizeStartFail;
     case 'version_read_error':
       return reasons.versionReadError;
     case 'version_mismatch':
@@ -106,6 +118,34 @@ String? _writeFailText(String key) {
       return r.writeScriptFail;
     case 'write_params_fail':
       return r.writeParamsFail;
+    default:
+      return null;
+  }
+}
+
+String? _finalizeFailText(String key) {
+  final r = t.selfUpdate.failReason;
+  switch (key) {
+    case 'finalize_fail':
+      return r.finalizeFail;
+    case 'finalize_start_fail':
+      return r.finalizeStartFail;
+    case 'finalize_invalid_params':
+      return r.finalizeInvalidParams;
+    case 'finalize_old_exit_timeout':
+      return r.finalizeOldExitTimeout;
+    case 'finalize_terminate_fail':
+      return r.finalizeTerminateFail;
+    case 'finalize_rename_old_fail':
+      return r.finalizeRenameOldFail;
+    case 'finalize_rename_new_fail':
+      return r.finalizeRenameNewFail;
+    case 'finalize_open_log_fail':
+      return r.finalizeOpenLogFail;
+    case 'finalize_start_new_fail':
+      return r.finalizeStartNewFail;
+    case 'finalize_self_log_fail':
+      return r.finalizeSelfLogFail;
     default:
       return null;
   }

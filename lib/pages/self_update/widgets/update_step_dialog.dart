@@ -378,7 +378,18 @@ class _UpdateStepDialogState extends State<UpdateStepDialog> {
                       ),
                     ),
                     DataCell(
-                      Text(device.result.isEmpty ? '--' : device.result),
+                      device.result.isEmpty
+                          ? const Text('--')
+                          : InkWell(
+                              onTap: () => _showDeviceDetail(device),
+                              child: Text(
+                                device.result,
+                                style: const TextStyle(
+                                  color: _accent,
+                                  decoration: TextDecoration.underline,
+                                ),
+                              ),
+                            ),
                     ),
                   ],
                 ),
@@ -386,6 +397,31 @@ class _UpdateStepDialogState extends State<UpdateStepDialog> {
           ),
         ),
       ),
+    );
+  }
+
+  Future<void> _showDeviceDetail(UpdateDevice device) {
+    return showDialog<void>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFF20262D),
+          title: Text(
+            '${device.type} - ${device.ip}',
+            style: const TextStyle(color: Colors.white, fontSize: 16),
+          ),
+          content: Text(
+            device.detail.isNotEmpty ? device.detail : device.result,
+            style: const TextStyle(color: Colors.white70, fontSize: 13),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text('关闭'),
+            ),
+          ],
+        );
+      },
     );
   }
 

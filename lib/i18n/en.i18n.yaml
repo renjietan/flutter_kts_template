@@ -253,6 +253,8 @@ cpds:
   keyLoaderSuccess: Download complete
   keyLoaderReadyTimeout: Response timeout
   keyLoaderVerifyFailed: "Failed: verification failed"
+  keyLoaderFileNotFound: File not found
+  keyLoaderUnexpectedReply: Received unexpected command
   keyLoaderParseSuccess: Parse success
   keyLoaderParseFailed: Parse failed
   nodesTitle: Net Node
@@ -349,11 +351,14 @@ cpds:
     detailConnectStart: Connecting key loader
     detailConnectSuccess: Connected
     detailConnectFail: Connection failed
-    detailHandshakeStart: Sending PAD_LIGHT, waiting for FILE_OK
+    detailHandshakeStart: Sending LIGHT, waiting for FILE_OK
     detailHandshakeSuccess: Handshake succeeded
     detailHandshakeTimeout: Handshake timed out
     detailHandshakeFail: Handshake failed
-    detailReadyStart: Sending PAD_UPLOAD, waiting for READY
+    detailClearStart: Sending FILE_CPD_CLEAR, waiting for FILE_OK
+    detailClearSuccess: Clear completed
+    detailClearTimeout: Clear timed out
+    detailReadyStart: Sending FILE_UPLOAD, waiting for READY
     detailReadySuccess: Device is ready
     detailReadyTimeout: Ready timed out
     detailReadyFail: Ready failed
@@ -362,7 +367,7 @@ cpds:
     detailComplete: Key loader received successfully
     detailVerifyTimeout: Verification timed out
     detailVerifyFail: Verification failed
-    detailVerifySaveFail: Save failed
+    detailVerifySaveFail: Write failed
     detailExportComplete: "Complete: file exported"
     detailPacketSuccess: Packet {index} sent successfully
     detailPacketFail: Packet {index} send failed
@@ -371,6 +376,7 @@ cpds:
     detailSaveError: Packet {index} save failed
     detailError: USB transfer error
     detailDeviceRemoved: USB device disconnected
+    detailUnexpectedReply: Unexpected reply received
     detailKeyLoadSuccess: Key load successful
 
 selfUpdate:
@@ -418,4 +424,13 @@ selfUpdate:
     versionReadError: Failed to read version
     restartSpawnFail: Restart script failed
     finalizeFail: Failed to replace executable
+    finalizeStartFail: Failed to start finalizer
+    finalizeInvalidParams: Invalid finalizer parameters
+    finalizeOldExitTimeout: Old process exit timed out
+    finalizeTerminateFail: Failed to terminate old process
+    finalizeRenameOldFail: Failed to rename old executable file
+    finalizeRenameNewFail: Failed to rename new executable file
+    finalizeOpenLogFail: Failed to open new process log file
+    finalizeStartNewFail: Failed to start new process
+    finalizeSelfLogFail: Failed to open finalizer log file
     writeParamsFail: Write finalize params failed

@@ -123,7 +123,9 @@ class WinUsbBulkManager implements KeyLoaderUsbBulkManager {
 
       try {
         winUsbFlushPipe(_interfaceHandle, _inPipeId);
-        GlobalLogger.logInfo('WinUsbBulkManager: input pipe flushed before read');
+        GlobalLogger.logInfo(
+          'WinUsbBulkManager: input pipe flushed before read',
+        );
       } catch (e) {
         GlobalLogger.logWarn('WinUsbBulkManager: flush input failed $e');
       }
@@ -276,9 +278,7 @@ class WinUsbBulkManager implements KeyLoaderUsbBulkManager {
     final type = message['type'];
     if (type == 'data') {
       final bytes = message['bytes'];
-      if (bytes is Uint8List &&
-          bytes.isNotEmpty &&
-          !_dataController.isClosed) {
+      if (bytes is Uint8List && bytes.isNotEmpty && !_dataController.isClosed) {
         _dataController.add(bytes);
       }
     } else if (type == 'disconnected') {
@@ -390,10 +390,7 @@ void _winUsbReadLoop(_WinUsbReadContext context) {
         final count = bytesReadPtr.value;
         calloc.free(overlapped);
         if (count > 0) {
-          sendPort.send({
-            'type': 'data',
-            'bytes': _copyBytes(buffer, count),
-          });
+          sendPort.send({'type': 'data', 'bytes': _copyBytes(buffer, count)});
         }
         continue;
       }
@@ -416,10 +413,7 @@ void _winUsbReadLoop(_WinUsbReadContext context) {
         }
         final count = bytesReadPtr.value;
         if (count > 0) {
-          sendPort.send({
-            'type': 'data',
-            'bytes': _copyBytes(buffer, count),
-          });
+          sendPort.send({'type': 'data', 'bytes': _copyBytes(buffer, count)});
         }
       } else if (wait == WAIT_OBJECT_0 + 1) {
         // 收到关闭信号。

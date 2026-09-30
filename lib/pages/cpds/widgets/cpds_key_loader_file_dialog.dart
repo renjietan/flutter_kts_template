@@ -201,11 +201,11 @@ class _CpdsKeyLoaderFileDialogState extends State<CpdsKeyLoaderFileDialog> {
     final reader = _UsbLineReader(manager.listenData())..start();
     _reader = reader;
 
-    // 步骤 2：就绪（PAD_LIGHT → FILE_OK）。
+    // 步骤 2：就绪（LIGHT → FILE_OK）。
     setState(() {
       _step = _CpdsStep.ready;
     });
-    await _writeUsb(manager, Uint8List.fromList(utf8.encode('PAD_LIGHT\n')));
+    await _writeUsb(manager, Uint8List.fromList(utf8.encode('LIGHT\n')));
     _setCancelLoading(true);
     try {
       try {
@@ -241,7 +241,7 @@ class _CpdsKeyLoaderFileDialogState extends State<CpdsKeyLoaderFileDialog> {
     setState(() {
       _step = _CpdsStep.list;
     });
-    await _writeUsb(manager, Uint8List.fromList(utf8.encode('PAD_LIST\n')));
+    await _writeUsb(manager, Uint8List.fromList(utf8.encode('FILE_LIST\n')));
     _setCancelLoading(true);
 
     String? line;
@@ -266,7 +266,7 @@ class _CpdsKeyLoaderFileDialogState extends State<CpdsKeyLoaderFileDialog> {
 
     if (!mounted) return;
     setState(() {
-      if (line == 'ERR\n') {
+      if (line == 'ERR:DIR_READ_FAILED\n') {
         _error = t.cpds.keyLoaderListError;
         _listFailed = true;
         _files = const [];
@@ -353,8 +353,8 @@ class _CpdsKeyLoaderFileDialogState extends State<CpdsKeyLoaderFileDialog> {
       _decryptFailed = false;
     });
 
-    // 1. 发送 PAD_DECRYPT，等待 READY。
-    await _writeUsb(manager, Uint8List.fromList(utf8.encode('PAD_DECRYPT\n')));
+    // 1. 发送 FILE_DECRYPT，等待 READY。
+    await _writeUsb(manager, Uint8List.fromList(utf8.encode('FILE_DECRYPT\n')));
     _setCancelLoading(true);
     try {
       try {
@@ -473,21 +473,34 @@ class _CpdsKeyLoaderFileDialogState extends State<CpdsKeyLoaderFileDialog> {
 
     try {
       if (_cancelled) return;
-      // 1. 发送 PAD_DOWN，等待 READY。
-      await _writeUsb(manager, Uint8List.fromList(utf8.encode('PAD_DOWN\n')));
+      // 1. 发送 FILE_DOWN 和文件名，再等待回复。
+      await _writeUsb(manager, Uint8List.fromList(utf8.encode('FILE_DOWN\n')));
       if (_cancelled) return;
       late final ({Uint8List content, Uint8List md5}) received;
       _setCancelLoading(true);
       try {
+        final fileNameBytes = utf8.encode(fileName);
+        await _writeUsb(manager, _u32le(fileNameBytes.length));
+        await _writeUsb(manager, Uint8List.fromList(fileNameBytes));
+
         try {
           final readyLine = await reader.nextLine(
-            timeout: const Duration(seconds: 3),
+            timeout: const Duration(seconds: 5),
           );
           if (!mounted) return;
+          if (readyLine == 'ERR:FILE_NOT_FOUND\n') {
+            setState(() {
+              _downloading = false;
+              _downloadFailed = true;
+              _downloadError = t.cpds.keyLoaderFileNotFound;
+            });
+            return;
+          }
           if (readyLine != 'READY\n') {
             setState(() {
               _downloading = false;
-              _downloadError = t.cpds.keyLoaderDecryptFail;
+              _downloadFailed = true;
+              _downloadError = t.cpds.keyLoaderUnexpectedReply;
             });
             return;
           }
@@ -495,6 +508,7 @@ class _CpdsKeyLoaderFileDialogState extends State<CpdsKeyLoaderFileDialog> {
           if (!mounted) return;
           setState(() {
             _downloading = false;
+            _downloadFailed = true;
             _downloadError = t.cpds.keyLoaderDecryptTimeout;
           });
           return;
@@ -505,11 +519,6 @@ class _CpdsKeyLoaderFileDialogState extends State<CpdsKeyLoaderFileDialog> {
         // READY 已确认，后续为二进制码流下载，停止行读取器避免缓存二进制数据。
         _reader?.stop();
         _reader = null;
-
-        // 2-3. 发送文件名长度 + 文件名。
-        final fileNameBytes = utf8.encode(fileName);
-        await _writeUsb(manager, _u32le(fileNameBytes.length));
-        await _writeUsb(manager, Uint8List.fromList(fileNameBytes));
 
         // 4. 接收并组装文件（长度头 + 分块 + MD5）。
         try {
@@ -536,11 +545,14 @@ class _CpdsKeyLoaderFileDialogState extends State<CpdsKeyLoaderFileDialog> {
         }
         if (!mounted) return;
 
-        // 5. 收到 MD5 后，发送 FILE_OK（无论校验结果，不等待回复），同时进行 MD5 校验。
-        await _writeUsb(manager, Uint8List.fromList(utf8.encode('FILE_OK\n')));
+        // 5. 收到 MD5 后，先本地校验，再发送确认码。
         if (_cancelled || !mounted) return;
         final computedMd5 = md5.convert(received.content).bytes;
         if (!_listEquals(computedMd5, received.md5)) {
+          await _writeUsb(
+            manager,
+            Uint8List.fromList(utf8.encode('ERR:MD5_MISMATCH\n')),
+          );
           if (!mounted) return;
           setState(() {
             _downloading = false;
@@ -549,6 +561,7 @@ class _CpdsKeyLoaderFileDialogState extends State<CpdsKeyLoaderFileDialog> {
           });
           return;
         }
+        await _writeUsb(manager, Uint8List.fromList(utf8.encode('FILE_OK\n')));
       } finally {
         _setCancelLoading(false);
       }

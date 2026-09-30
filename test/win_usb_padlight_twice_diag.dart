@@ -39,7 +39,7 @@ void main() {
   setPipeTimeout(interfaceHandle, outPipe, 3000);
   setPipeTimeout(interfaceHandle, inPipe, 3000);
 
-  final cmd = Uint8List.fromList(utf8.encode('PAD_LIGHT\n'));
+  final cmd = Uint8List.fromList(utf8.encode('LIGHT\n'));
   print('WRITE=${winUsbWritePipe(interfaceHandle, outPipe, cmd)}');
 
   for (var i = 1; i <= 3; i++) {

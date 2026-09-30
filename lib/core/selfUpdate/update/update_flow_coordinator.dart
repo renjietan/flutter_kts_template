@@ -160,12 +160,14 @@ class UpdateFlowCoordinator {
     final expectedDeviceCount = controller.devices.length;
     var lastReplies = <UpdateReply>[];
     for (var window = 0; window < versionWindows; window++) {
-      final replies = await session.collect<UpdateReply>(
+      final replies = await session.collectUntil<UpdateReply>(
         command: UpdateProtocol.encodeVersion(targetVersion),
         timeout: versionTimeout,
         matches: (reply) =>
             reply is VersionOkReply || reply is VersionFailReply,
         attempts: 1,
+        isDone: (collected) =>
+            _dedupeVersionReplies(collected).length >= expectedDeviceCount,
       );
       lastReplies = _dedupeVersionReplies(replies);
       if (lastReplies.length >= expectedDeviceCount) {
@@ -223,6 +225,8 @@ class UpdateFlowCoordinator {
           device.status = device.currentVersion == targetVersion
               ? '已最新'
               : '需更新';
+          device.result = '';
+          device.detail = '';
           break;
         }
       }
@@ -233,7 +237,8 @@ class UpdateFlowCoordinator {
       for (final device in controller.devices) {
         if (device.rawIp == reply.ip && device.type == reply.deviceType) {
           device.status = '无法获取';
-          device.result = selfUpdateFailReasonText(reply.reason);
+          device.result = '版本校验失败';
+          device.detail = selfUpdateFailReasonText(reply.reason);
           break;
         }
       }
@@ -243,6 +248,8 @@ class UpdateFlowCoordinator {
     for (final device in controller.devices) {
       if (!repliedKeys.contains('${device.type}#${device.rawIp}')) {
         device.status = '无法获取';
+        device.result = '版本校验超时';
+        device.detail = '';
       }
     }
   }
@@ -254,6 +261,7 @@ class UpdateFlowCoordinator {
       device.newVersion = '';
       device.status = '认证成功';
       device.result = '';
+      device.detail = '';
     }
   }
 

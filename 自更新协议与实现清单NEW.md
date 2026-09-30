@@ -125,7 +125,7 @@ ID = [类型字节长度 uint16BE] + [类型 UTF-8] + [IP字节长度 uint16BE] 
 逻辑：
 
 1. 每个窗口广播 `version:<目标版本>`，收集 `version_ok` / `version_fail`，按「类型#IP」去重（`version_fail` 也算已回复）。
-2. 回复数 `N >= 设备表行数` → 版本校验成功。
+2. 收到全部设备的 `version_ok` / `version_fail` 后立即结束当前窗口；回复数 `N >= 设备表行数` → 版本校验成功。
 3. `N < 设备表行数` → 下一窗口重试。
 4. 3 个窗口后：`N == 0` → 版本校验步骤红 +【取消】【重新版本校验】；`N > 0` → 转绿，未回复设备标记「无法获取」。
 5. 版本比较在 CPDS：当前版本 == 目标版本 → 已最新；不等 → 需更新。
@@ -268,8 +268,9 @@ ID = [类型字节长度 uint16BE] + [类型 UTF-8] + [IP字节长度 uint16BE] 
 1. 比对 file 头；不一致 → `write_fail:mismatch`。
 2. 一致 → 清理残留 → 覆盖 JSON / INI / marker / version → 写 staging `install_cpdc/new_exe` → 写 `install_cpdc/finalize_params.json`。
 3. spawn 自身 `--self-update-finalize --params <paramsPath>`：失败 → `write_fail:restart_spawn_fail`（不退出、可重试）。
-4. spawn 成功 → `write_ok` 连发 3 次、间隔 1 秒 → `exitNow(0)` 退出旧进程。
-5. finalize 进程在旧进程退出后：`rename(old_exe → <exe>.<版本>.bak)` → `rename(new_exe → old_exe)` → 启动新进程 → 成功清理；失败写 `install_cpdc/finalize_fail` 并回滚启动旧 exe。
+4. 等 `<dataDir>/finalize_started` 出现，最多 3 秒：超时 → `write_fail:finalize_start_fail`；成功 → `write_ok` 连发 3 次、间隔 1 秒 → 写 `<dataDir>/old_exited`（失败记日志、立即退出）→ `exitNow(0)` 退出旧进程。
+5. **VehInter 特例**：write 写盘完成后不启动 finalize，写 `<dataDir>/vehinter_handoff`，发 `write_ok`×3 后直接退出；由第三方用 `new_exe` 替换并拉起，新进程读到该标记才回 `update_ok`。
+6. **其他类型**：finalize 进程在旧进程退出后：`rename(old_exe → <exe>.<版本>.bak)` → `rename(new_exe → old_exe)` → 启动新进程 → 成功清理（含 `finalize_started` / `old_exited`）；失败写 `<dataDir>/finalize_fail`、把设备 config 的 `version` 恢复为 `old_version`，再回滚启动旧 exe。旧 exe 启动早期也会检测失败标记再兜底恢复一次。
 
 ### 6.8 回执 update
 
@@ -277,12 +278,12 @@ ID = [类型字节长度 uint16BE] + [类型 UTF-8] + [IP字节长度 uint16BE] 
 
 | 方向 | 等待时间 | 结束条件 |
 |---|---|---|
-| 被动等待 | 30 秒 | 收集「写入成功」设备的 `update_ok` / `update_fail`，汇总后进入 finished |
+| 被动等待 | 60 秒 | 收集「写入成功」设备的 `update_ok` / `update_fail`，全部回复后提前结束；否则 60 秒后汇总 |
 
 逻辑：
 
 1. 只统计「写入成功」设备的 update 结果；`write_fail` / `write 超时`设备不参与。
-2. `update_ok` → 更新成功(vX)；`update_fail` → 更新失败(原因)；30 秒未回 → 回执超时。
+2. `update_ok` → 更新成功(vX)；`update_fail` → 更新失败(原因)；60 秒未回 → 回执超时。
 3. 汇总「更新完成：成功 X 台，失败 Y 台，超时 Z 台」+【关闭】。
 
 #### CPDC 返回成功
@@ -299,7 +300,9 @@ ID = [类型字节长度 uint16BE] + [类型 UTF-8] + [IP字节长度 uint16BE] 
 
 逻辑：
 
-1. 新进程启动后读回执 marker；若 `install_cpdc/finalize_fail` 存在 → 优先回 `update_fail:finalize_fail`。
+1. 新进程启动后读回执 marker；回执目标优先 `marker.cpds_ip:39004` 单播，无 `cpds_ip` 才广播 `255.255.255.255` + `127.0.0.1`。
+2. VehInter：读到 `vehinter_handoff` 才回 `update_ok`，否则不回且保留 marker。
+3. 其他类型：若 `finalize_fail` 存在 → 优先回 `update_fail:finalize_fail`。
 2. 否则读设备当前版本：读失败 → `version_read_error`；与 marker 目标版本不等 → `version_mismatch`；相等 → `update_ok:<新版本>`。
 3. `update_ok` / `update_fail` 连发 3 次、间隔 1 秒，然后删除 marker 和失败标记。
 
@@ -334,8 +337,17 @@ ID = [类型字节长度 uint16BE] + [类型 UTF-8] + [IP字节长度 uint16BE] 
 | `mkdir_fail:<路径>` | write_fail | 创建目录失败 | Create directory failed | فشل إنشاء الدليل |
 | `write_params_fail:<路径>` | write_fail | 写重启参数失败 | Write finalize params failed | فشل كتابة معلمات إعادة التشغيل |
 | `restart_spawn_fail` | write_fail | 启动脚本失败 | Restart script failed | فشل تشغيل السكربت |
+| `finalize_start_fail` | write_fail | 启动替换器失败 | Failed to start finalizer | فشل بدء المُنهي |
 | `version_read_error` | update_fail | 读取版本失败 | Failed to read version | فشل قراءة الإصدار |
 | `version_mismatch` | update_fail | 版本不匹配 | Version mismatch | عدم تطابق الإصدار |
+| `finalize_invalid_params` | update_fail | 替换器参数无效 | Invalid finalizer parameters | معلمات المُنهي غير صالحة |
+| `finalize_old_exit_timeout` | update_fail | 等待旧进程退出超时 | Old process exit timed out | انتهت مهلة خروج العملية القديمة |
+| `finalize_terminate_fail` | update_fail | 终止旧进程失败 | Failed to terminate old process | فشل إنهاء العملية القديمة |
+| `finalize_rename_old_fail:<详情>` | update_fail | 重命名旧可执行文件失败 | Failed to rename old executable file | فشل إعادة تسمية الملف التنفيذي القديم |
+| `finalize_rename_new_fail:<详情>` | update_fail | 重命名新可执行文件失败 | Failed to rename new executable file | فشل إعادة تسمية الملف التنفيذي الجديد |
+| `finalize_open_log_fail:<详情>` | update_fail | 打开新进程日志文件失败 | Failed to open new process log file | فشل فتح ملف سجل العملية الجديدة |
+| `finalize_start_new_fail:<详情>` | update_fail | 启动新进程失败 | Failed to start new process | فشل بدء العملية الجديدة |
+| `finalize_self_log_fail:<详情>` | update_fail | 打开替换器日志文件失败 | Failed to open finalizer log file | فشل فتح ملف سجل المُنهي |
 | `finalize_fail` | update_fail | 替换可执行文件失败 | Failed to replace executable | فشل استبدال الملف التنفيذي |
 
 > 保留码（CPDS 已支持三语翻译，但当前 CPDC 实现暂未生成）：`no_header`、`missing_packet:<包号列表>`。
@@ -356,6 +368,7 @@ ID = [类型字节长度 uint16BE] + [类型 UTF-8] + [IP字节长度 uint16BE] 
 ### 8.2 CPDC（Go）
 
 运行目录 = CPDC 二进制所在目录；配置目录 = `--config-path` 解析结果。
+`dataDir` = `cpdc_config.json` 根节点 `cachePath`（目录路径）；读不到或为空时回退为运行目录。所有非 exe 文件优先写 `dataDir`。
 
 | 文件/目录 | 说明 |
 |---|---|
@@ -364,11 +377,15 @@ ID = [类型字节长度 uint16BE] + [类型 UTF-8] + [IP字节长度 uint16BE] 
 | `ReReadJson.ini` 或 `ReReadjsonPath` 指向文件 | write 阶段按需覆盖 |
 | `系统临时目录/cpdc-update-<随机串>` | write 阶段解压 ZIP 的临时目录，流程结束删除 |
 | `<运行目录>/install_cpdc/new_exe` | write 阶段暂存的新可执行文件 |
-| `<运行目录>/install_cpdc/finalize_params.json` | finalize 参数文件 |
-| `<运行目录>/install_cpdc/finalize_fail` | finalize 失败标记 |
-| `<运行目录>/.cpdc_update_receipt.json` | 回执 marker，内容 `{"version","ip"}` |
+| `<dataDir>/finalize_params.json` | finalize 参数文件（含 `old_version`、`config_path`、`old_exe`、`new_exe` 等） |
+| `<dataDir>/finalize_fail` | finalize 失败标记 |
+| `<dataDir>/finalize_started` | finalize 启动标记（旧进程等待其出现） |
+| `<dataDir>/old_exited` | 旧进程退出标记 |
+| `<dataDir>/.cpdc_update_receipt.json` | 回执 marker，内容 `{"version","ip"}` |
+| `<dataDir>/vehinter_handoff` | VehInter 第三方接管标记（存在才回 update_ok） |
 | `<运行目录>/<exe>.<版本>.bak` | finalize 期间旧 exe 的备份，成功启动后删除 |
-| `<运行目录>/logs/cpdc_restart.log` | finalize 日志，每次覆盖 |
-| `<运行目录>/logs/cpdc_<版本>.log` | 新进程运行日志，每次覆盖 |
+| `<dataDir>/logs/cpdc_restart.log` | finalize 日志，每次覆盖 |
+| `<dataDir>/logs/cpdc_<版本>.log` | 新进程运行日志，每次覆盖 |
+| `<dataDir>/logs/old_exited_write_error.log` | `old_exited` 写失败日志，覆盖写 |
 | `<目标目录>/.cpdc-write-*` | 原子写临时文件（marker、回填 version） |
 | `<目标目录>/.cpdc-copy-*` | 原子拷贝临时文件（JSON、INI、new_exe） |

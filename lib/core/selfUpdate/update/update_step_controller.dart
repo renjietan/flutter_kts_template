@@ -56,6 +56,7 @@ class UpdateDevice {
   int transferredBytes = 0;
   int totalBytes = 0;
   String result = '';
+  String detail = '';
 }
 
 /// 更新步骤弹窗的状态控制器。

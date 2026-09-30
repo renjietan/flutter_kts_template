@@ -110,6 +110,9 @@ class _UploadPackageDialogState extends State<UploadPackageDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       backgroundColor: const Color(0xFF20262D),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10),
+      ),
       title: const Text(
         '上传安装包',
         style: TextStyle(color: Colors.white, fontSize: 16),
@@ -157,7 +160,7 @@ class _UploadPackageDialogState extends State<UploadPackageDialog> {
                 ),
               ),
               const SizedBox(height: 16),
-              _buildFieldLabel('安装包'),
+              _buildFieldLabel('安装包', required: true),
               const SizedBox(height: 8),
               DataTablePlusThemeProvider(
                 theme: getThemePreset(ThemePreset.dark),
@@ -201,8 +204,8 @@ class _UploadPackageDialogState extends State<UploadPackageDialog> {
         ),
         BaseButton(
           label: '确定',
-          minWidth: 110,
-          borderRadius: 18,
+          minWidth: 100,
+          borderRadius: 5,
           onPressed: _submit,
         ),
       ],

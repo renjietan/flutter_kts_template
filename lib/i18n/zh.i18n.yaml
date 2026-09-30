@@ -253,6 +253,8 @@ cpds:
   keyLoaderSuccess: 下载完成
   keyLoaderReadyTimeout: 响应超时
   keyLoaderVerifyFailed: 失败：校验失败
+  keyLoaderFileNotFound: 文件不存在
+  keyLoaderUnexpectedReply: 接收到异常指令
   keyLoaderParseSuccess: 解析成功
   keyLoaderParseFailed: 解析失败
   nodesTitle: 网络节点
@@ -349,11 +351,14 @@ cpds:
     detailConnectStart: 连接注钥枪
     detailConnectSuccess: 连接成功
     detailConnectFail: 连接失败
-    detailHandshakeStart: 发送 PAD_LIGHT，等待 FILE_OK
+    detailHandshakeStart: 发送 LIGHT，等待 FILE_OK
     detailHandshakeSuccess: 握手成功
     detailHandshakeTimeout: 握手超时
     detailHandshakeFail: 握手失败
-    detailReadyStart: 发送 PAD_UPLOAD，等待 READY
+    detailClearStart: 发送 FILE_CPD_CLEAR，等待 FILE_OK
+    detailClearSuccess: 清空完成
+    detailClearTimeout: 清空超时
+    detailReadyStart: 发送 FILE_UPLOAD，等待 READY
     detailReadySuccess: 设备已就绪
     detailReadyTimeout: 准备超时
     detailReadyFail: 准备失败
@@ -362,7 +367,7 @@ cpds:
     detailComplete: 注钥枪接收成功
     detailVerifyTimeout: 校验超时
     detailVerifyFail: 校验失败
-    detailVerifySaveFail: 保存失败
+    detailVerifySaveFail: 写入失败
     detailExportComplete: 完成：文件已导出
     detailPacketSuccess: 第 {index} 包 发送成功
     detailPacketFail: 第 {index} 包 发送失败
@@ -371,6 +376,7 @@ cpds:
     detailSaveError: 第 {index} 包 保存失败
     detailError: USB 传输异常
     detailDeviceRemoved: USB 设备已断开
+    detailUnexpectedReply: 接收到异常指令
     detailKeyLoadSuccess: 注钥成功
 
 selfUpdate:
@@ -418,4 +424,13 @@ selfUpdate:
     versionReadError: 读取版本失败
     restartSpawnFail: 启动脚本失败
     finalizeFail: 替换可执行文件失败
+    finalizeStartFail: 启动替换器失败
+    finalizeInvalidParams: 替换器参数无效
+    finalizeOldExitTimeout: 等待旧进程退出超时
+    finalizeTerminateFail: 终止旧进程失败
+    finalizeRenameOldFail: 重命名旧可执行文件失败
+    finalizeRenameNewFail: 重命名新可执行文件失败
+    finalizeOpenLogFail: 打开新进程日志文件失败
+    finalizeStartNewFail: 启动新进程失败
+    finalizeSelfLogFail: 打开替换器日志文件失败
     writeParamsFail: 写重启参数失败

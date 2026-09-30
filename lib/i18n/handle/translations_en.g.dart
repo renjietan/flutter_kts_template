@@ -391,6 +391,8 @@ class _Translations$cpds$en extends Translations$cpds$zh {
 	@override String get keyLoaderSuccess => 'Download complete';
 	@override String get keyLoaderReadyTimeout => 'Response timeout';
 	@override String get keyLoaderVerifyFailed => 'Failed: verification failed';
+	@override String get keyLoaderFileNotFound => 'File not found';
+	@override String get keyLoaderUnexpectedReply => 'Received unexpected command';
 	@override String get keyLoaderParseSuccess => 'Parse success';
 	@override String get keyLoaderParseFailed => 'Parse failed';
 	@override String get nodesTitle => 'Net Node';
@@ -782,11 +784,14 @@ class _Translations$cpds$usbProgress$en extends Translations$cpds$usbProgress$zh
 	@override String get detailConnectStart => 'Connecting key loader';
 	@override String get detailConnectSuccess => 'Connected';
 	@override String get detailConnectFail => 'Connection failed';
-	@override String get detailHandshakeStart => 'Sending PAD_LIGHT, waiting for FILE_OK';
+	@override String get detailHandshakeStart => 'Sending LIGHT, waiting for FILE_OK';
 	@override String get detailHandshakeSuccess => 'Handshake succeeded';
 	@override String get detailHandshakeTimeout => 'Handshake timed out';
 	@override String get detailHandshakeFail => 'Handshake failed';
-	@override String get detailReadyStart => 'Sending PAD_UPLOAD, waiting for READY';
+	@override String get detailClearStart => 'Sending FILE_CPD_CLEAR, waiting for FILE_OK';
+	@override String get detailClearSuccess => 'Clear completed';
+	@override String get detailClearTimeout => 'Clear timed out';
+	@override String get detailReadyStart => 'Sending FILE_UPLOAD, waiting for READY';
 	@override String get detailReadySuccess => 'Device is ready';
 	@override String get detailReadyTimeout => 'Ready timed out';
 	@override String get detailReadyFail => 'Ready failed';
@@ -795,7 +800,7 @@ class _Translations$cpds$usbProgress$en extends Translations$cpds$usbProgress$zh
 	@override String get detailComplete => 'Key loader received successfully';
 	@override String get detailVerifyTimeout => 'Verification timed out';
 	@override String get detailVerifyFail => 'Verification failed';
-	@override String get detailVerifySaveFail => 'Save failed';
+	@override String get detailVerifySaveFail => 'Write failed';
 	@override String get detailExportComplete => 'Complete: file exported';
 	@override String detailPacketSuccess({required Object index}) => 'Packet ${index} sent successfully';
 	@override String detailPacketFail({required Object index}) => 'Packet ${index} send failed';
@@ -804,6 +809,7 @@ class _Translations$cpds$usbProgress$en extends Translations$cpds$usbProgress$zh
 	@override String detailSaveError({required Object index}) => 'Packet ${index} save failed';
 	@override String get detailError => 'USB transfer error';
 	@override String get detailDeviceRemoved => 'USB device disconnected';
+	@override String get detailUnexpectedReply => 'Unexpected reply received';
 	@override String get detailKeyLoadSuccess => 'Key load successful';
 }
 
@@ -849,6 +855,15 @@ class _Translations$selfUpdate$failReason$en extends Translations$selfUpdate$fai
 	@override String get versionReadError => 'Failed to read version';
 	@override String get restartSpawnFail => 'Restart script failed';
 	@override String get finalizeFail => 'Failed to replace executable';
+	@override String get finalizeStartFail => 'Failed to start finalizer';
+	@override String get finalizeInvalidParams => 'Invalid finalizer parameters';
+	@override String get finalizeOldExitTimeout => 'Old process exit timed out';
+	@override String get finalizeTerminateFail => 'Failed to terminate old process';
+	@override String get finalizeRenameOldFail => 'Failed to rename old executable file';
+	@override String get finalizeRenameNewFail => 'Failed to rename new executable file';
+	@override String get finalizeOpenLogFail => 'Failed to open new process log file';
+	@override String get finalizeStartNewFail => 'Failed to start new process';
+	@override String get finalizeSelfLogFail => 'Failed to open finalizer log file';
 	@override String get writeParamsFail => 'Write finalize params failed';
 }
 

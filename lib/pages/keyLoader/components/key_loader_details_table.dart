@@ -397,7 +397,7 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
     setState(() {});
   }
 
-  /// USB 上传：连接注钥枪 → PAD_LIGHT 握手 → PAD_UPLOAD 协议发送 .pad 文件。
+  /// USB 上传：连接注钥枪 → LIGHT 握手 → FILE_CPD_CLEAR 清空 → FILE_UPLOAD 协议发送 .pad 文件。
   /// 检查/申请注钥枪 USB 权限（仅 Android 需要；Windows 无授权弹窗）。
   Future<bool> _ensureUsbPermission() async {
     if (Platform.isWindows) return true;
@@ -462,7 +462,7 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
 
       // 4-2 握手
       controller?.addLine(usb.detailHandshakeStart, number: '4-2');
-      await _writeUsb(manager, Uint8List.fromList(utf8.encode('PAD_LIGHT\n')));
+      await _writeUsb(manager, Uint8List.fromList(utf8.encode('LIGHT\n')));
       if (_exportCancelled) return false;
       final lightResult = await _waitReplyResult(reader);
       if (_handleUsbDisconnected(
@@ -494,9 +494,20 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
       }
       controller?.addLine(usb.detailHandshakeSuccess, number: '4-2');
 
-      // 4-3 准备
-      controller?.addLine(usb.detailReadyStart, number: '4-3');
-      await _writeUsb(manager, Uint8List.fromList(utf8.encode('PAD_UPLOAD\n')));
+      // 4-3 清空
+      controller?.addLine(usb.detailClearStart, number: '4-3');
+      final clearOk = await _sendClearCommand(
+        manager,
+        reader,
+        controller,
+        usb,
+        failColor,
+      );
+      if (!clearOk) return false;
+
+      // 4-4 准备
+      controller?.addLine(usb.detailReadyStart, number: '4-4');
+      await _writeUsb(manager, Uint8List.fromList(utf8.encode('FILE_UPLOAD\n')));
       if (_exportCancelled) return false;
       final readyResult = await _waitReplyResult(
         reader,
@@ -507,7 +518,7 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
         controller,
         usb,
         failColor,
-        '4-3',
+        '4-4',
       )) {
         return false;
       }
@@ -515,7 +526,7 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
         controller?.addLine(
           usb.detailReadyTimeout,
           color: failColor,
-          number: '4-3',
+          number: '4-4',
         );
         controller?.appendStep(usb.terminated, terminated: true);
         return false;
@@ -524,15 +535,15 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
         controller?.addLine(
           _replyFailureText(usb, readyResult),
           color: failColor,
-          number: '4-3',
+          number: '4-4',
         );
         controller?.appendStep(usb.terminated, terminated: true);
         return false;
       }
-      controller?.addLine(usb.detailReadySuccess, number: '4-3');
+      controller?.addLine(usb.detailReadySuccess, number: '4-4');
 
-      // 4-4 传输
-      controller?.addLine(usb.detailTransferStart, number: '4-4');
+      // 4-5 传输
+      controller?.addLine(usb.detailTransferStart, number: '4-5');
       if (padPaths.length != 1) {
         GlobalLogger.logError(
           'USB_UPLOAD_EXPECTS_ONE_PAD got=${padPaths.length}',
@@ -595,7 +606,7 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
           controller,
           usb,
           failColor,
-          '4-4',
+          '4-5',
         )) {
           return false;
         }
@@ -603,7 +614,7 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
           controller?.addLine(
             usb.detailTransferTimeout,
             color: failColor,
-            number: '4-4',
+            number: '4-5',
           );
           controller?.appendStep(usb.terminated, terminated: true);
           return false;
@@ -616,7 +627,7 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
       if (_exportCancelled) return false;
       final result = await _waitReplyResult(reader);
 
-      if (_handleUsbDisconnected(result, controller, usb, failColor, '4-5')) {
+      if (_handleUsbDisconnected(result, controller, usb, failColor, '4-6')) {
         return false;
       }
       if (result == _UsbReplyResult.timeout) {
@@ -624,7 +635,7 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
         controller?.addLine(
           usb.detailVerifyTimeout,
           color: failColor,
-          number: '4-5',
+          number: '4-6',
         );
         controller?.appendStep(usb.terminated, terminated: true);
         return false;
@@ -634,7 +645,7 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
         controller?.addLine(
           _replyFailureText(usb, result),
           color: failColor,
-          number: '4-5',
+          number: '4-6',
         );
         controller?.appendStep(usb.terminated, terminated: true);
         return false;
@@ -642,7 +653,7 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
 
       // 9、收到 FILE_OK，完成导出。
       GlobalLogger.logInfo('USB_FILE_OK');
-      controller?.addLine(usb.detailExportComplete, number: '4-5');
+      controller?.addLine(usb.detailExportComplete, number: '4-6');
       controller?.appendStep(usb.completed);
       return true;
     } catch (e) {
@@ -680,6 +691,71 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
     return true;
   }
 
+  /// 发送 FILE_CPD_CLEAR 并等待 FILE_OK；3 秒超时，最多重试 2 次（共 3 次）。
+  Future<bool> _sendClearCommand(
+    KeyLoaderUsbBulkManager manager,
+    _UsbLineReader reader,
+    StepProgressController? controller,
+    Translations$cpds$usbProgress$zh usb,
+    Color failColor,
+  ) async {
+    for (var attempt = 0; attempt < 3; attempt++) {
+      if (_exportCancelled) return false;
+      await _writeUsb(
+        manager,
+        Uint8List.fromList(utf8.encode('FILE_CPD_CLEAR\n')),
+      );
+
+      _UsbReplyResult result;
+      if (_usbDisconnected) {
+        result = _UsbReplyResult.disconnected;
+      } else {
+        try {
+          final line = await reader.nextLine(
+            timeout: const Duration(seconds: 3),
+          );
+          result = line == 'FILE_OK\n'
+              ? _UsbReplyResult.ok
+              : _UsbReplyResult.unexpected;
+        } on TimeoutException {
+          result = _UsbReplyResult.timeout;
+        } on _UsbDisconnected {
+          result = _UsbReplyResult.disconnected;
+        } on StateError {
+          result = _UsbReplyResult.timeout;
+        }
+      }
+
+      if (_exportCancelled) return false;
+      if (result == _UsbReplyResult.ok) {
+        controller?.addLine(usb.detailClearSuccess, number: '4-3');
+        return true;
+      }
+      if (result == _UsbReplyResult.disconnected) {
+        _handleUsbDisconnected(result, controller, usb, failColor, '4-3');
+        return false;
+      }
+      if (result == _UsbReplyResult.unexpected) {
+        controller?.addLine(
+          usb.detailUnexpectedReply,
+          color: failColor,
+          number: '4-3',
+        );
+        controller?.appendStep(usb.terminated, terminated: true);
+        return false;
+      }
+      // timeout：继续重试。
+    }
+
+    controller?.addLine(
+      usb.detailClearTimeout,
+      color: failColor,
+      number: '4-3',
+    );
+    controller?.appendStep(usb.terminated, terminated: true);
+    return false;
+  }
+
   /// 等待注钥枪回复，使用显式 [Timer] 实现超时。
   ///
   /// 收到回复或超时后，都会取消本次等待对应的定时器，避免旧回复污染后续流程。
@@ -700,10 +776,10 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
     }
     final normalized = line;
     if (successValues.contains(normalized)) return _UsbReplyResult.ok;
-    if (normalized == 'ERR:MD5校验失败\n') {
+    if (normalized == 'ERR:MD5_MISMATCH\n') {
       return _UsbReplyResult.md5Error;
     }
-    if (normalized == 'ERR:保存失败\n') {
+    if (normalized == 'ERR:SAVE_FAILED\n') {
       return _UsbReplyResult.saveError;
     }
     return _UsbReplyResult.unexpected;

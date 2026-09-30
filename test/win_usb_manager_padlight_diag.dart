@@ -14,7 +14,7 @@ void main() async {
   final sub = manager.listenData().listen(received.add);
 
   final written = await manager.write(
-    Uint8List.fromList(utf8.encode('PAD_LIGHT\n')),
+    Uint8List.fromList(utf8.encode('LIGHT\n')),
   );
   print('WRITTEN=$written');
 

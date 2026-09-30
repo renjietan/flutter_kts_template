@@ -258,7 +258,8 @@ void main() {
       await future;
 
       expect(controller.devices.single.status, '无法获取');
-      expect(controller.devices.single.result, '版本号格式非法');
+      expect(controller.devices.single.result, '版本校验失败');
+      expect(controller.devices.single.detail, '版本号格式非法');
       expect(controller.activeStep, 3);
       expect(controller.transferStage, TransferStage.notStarted);
     },

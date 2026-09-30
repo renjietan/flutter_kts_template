@@ -249,6 +249,8 @@ cpds:
   keyLoaderSuccess: اكتمل التنزيل
   keyLoaderReadyTimeout: انتهت مهلة الاستجابة
   keyLoaderVerifyFailed: "فشل: فشل التحقق"
+  keyLoaderFileNotFound: الملف غير موجود
+  keyLoaderUnexpectedReply: تم استلام أمر غير متوقع
   keyLoaderParseSuccess: نجح التحليل
   keyLoaderParseFailed: فشل التحليل
   nodesTitle: عقد الشبكة
@@ -345,11 +347,14 @@ cpds:
     detailConnectStart: الاتصال بجهاز تحميل المفاتيح
     detailConnectSuccess: نجح الاتصال
     detailConnectFail: فشل الاتصال
-    detailHandshakeStart: إرسال PAD_LIGHT وانتظار FILE_OK
+    detailHandshakeStart: إرسال LIGHT وانتظار FILE_OK
     detailHandshakeSuccess: نجحت المصافحة
     detailHandshakeTimeout: انتهت مهلة المصافحة
     detailHandshakeFail: فشلت المصافحة
-    detailReadyStart: إرسال PAD_UPLOAD وانتظار READY
+    detailClearStart: إرسال FILE_CPD_CLEAR وانتظار FILE_OK
+    detailClearSuccess: اكتمل المسح
+    detailClearTimeout: انتهت مهلة المسح
+    detailReadyStart: إرسال FILE_UPLOAD وانتظار READY
     detailReadySuccess: الجهاز جاهز
     detailReadyTimeout: انتهت مهلة التحضير
     detailReadyFail: فشل التحضير
@@ -358,7 +363,7 @@ cpds:
     detailComplete: استلم جهاز تحميل المفاتيح بنجاح
     detailVerifyTimeout: انتهت مهلة التحقق
     detailVerifyFail: فشل التحقق
-    detailVerifySaveFail: فشل الحفظ
+    detailVerifySaveFail: فشل الكتابة
     detailExportComplete: "اكتمل: تم تصدير الملف"
     detailPacketSuccess: "تم إرسال الحزمة {index} بنجاح"
     detailPacketFail: "فشل إرسال الحزمة {index}"
@@ -367,6 +372,7 @@ cpds:
     detailSaveError: "فشل حفظ الحزمة {index}"
     detailError: خطأ في نقل USB
     detailDeviceRemoved: تم فصل جهاز USB
+    detailUnexpectedReply: تم استلام رد غير متوقع
     detailKeyLoadSuccess: نجح تحميل المفتاح
 
 selfUpdate:
@@ -414,4 +420,13 @@ selfUpdate:
     versionReadError: فشل قراءة الإصدار
     restartSpawnFail: فشل تشغيل السكربت
     finalizeFail: فشل استبدال الملف التنفيذي
+    finalizeStartFail: فشل بدء المُنهي
+    finalizeInvalidParams: معلمات المُنهي غير صالحة
+    finalizeOldExitTimeout: انتهت مهلة خروج العملية القديمة
+    finalizeTerminateFail: فشل إنهاء العملية القديمة
+    finalizeRenameOldFail: فشل إعادة تسمية الملف التنفيذي القديم
+    finalizeRenameNewFail: فشل إعادة تسمية الملف التنفيذي الجديد
+    finalizeOpenLogFail: فشل فتح ملف سجل العملية الجديدة
+    finalizeStartNewFail: فشل بدء العملية الجديدة
+    finalizeSelfLogFail: فشل فتح ملف سجل المُنهي
     writeParamsFail: فشل كتابة معلمات إعادة التشغيل

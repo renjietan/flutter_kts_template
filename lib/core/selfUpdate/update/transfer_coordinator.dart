@@ -55,7 +55,7 @@ class TransferCoordinator {
     required this.baseName,
     this.transferTimeout = UpdateSession.transferTimeout,
     this.validTimeout = UpdateSession.validTimeout,
-    this.receiptTimeout = const Duration(seconds: 30),
+    this.receiptTimeout = const Duration(seconds: 60),
     this.writeTimeout = const Duration(seconds: 15),
   });
 
@@ -447,15 +447,18 @@ class TransferCoordinator {
       if (reply.ok) {
         target.status = '校验通过';
         target.result = '';
+        target.detail = '';
       } else {
-        target.status = selfUpdateFailReasonText(reply.reason ?? 'unknown');
-        target.result = target.status;
+        target.status = '校验失败';
+        target.result = '校验失败';
+        target.detail = selfUpdateFailReasonText(reply.reason ?? 'unknown');
       }
     }
     for (final device in _selectedDevices) {
       if (!replied.contains(deviceKey(device.type, device.rawIp))) {
         device.status = '校验超时';
-        device.result = '';
+        device.result = '校验超时';
+        device.detail = '';
       }
     }
   }
@@ -565,15 +568,18 @@ class TransferCoordinator {
       if (reply.ok) {
         target.status = '写入成功';
         target.result = '';
+        target.detail = '';
       } else {
         target.status = '写入失败';
-        target.result = selfUpdateFailReasonText(reply.reason ?? 'unknown');
+        target.result = '写入失败';
+        target.detail = selfUpdateFailReasonText(reply.reason ?? 'unknown');
       }
     }
     for (final device in _selectedDevices) {
       if (!replied.contains(deviceKey(device.type, device.rawIp))) {
         device.status = '写入超时';
-        device.result = '';
+        device.result = '写入超时';
+        device.detail = '';
       }
     }
   }
@@ -639,7 +645,18 @@ class TransferCoordinator {
         timeout: timeout,
       ),
     );
-    controller.setStepStatus(6, StepStatus.success);
+    var allUpdated = true;
+    for (final device in _selectedDevices) {
+      final key = deviceKey(device.type, device.rawIp);
+      if (writeOkKeys.contains(key) && device.status != '更新成功') {
+        allUpdated = false;
+        break;
+      }
+    }
+    controller.setStepStatus(
+      6,
+      allUpdated ? StepStatus.success : StepStatus.failed,
+    );
     controller.setPhase(UpdatePhase.finished);
   }
 
@@ -663,17 +680,20 @@ class TransferCoordinator {
       final target = device.first;
       if (reply.ok) {
         target.status = '更新成功';
-        target.result = 'v${reply.detail}';
+        target.result = '更新成功';
+        target.detail = 'v${reply.detail}';
       } else {
         target.status = '更新失败';
-        target.result = selfUpdateFailReasonText(reply.detail);
+        target.result = '回执失败';
+        target.detail = selfUpdateFailReasonText(reply.detail);
       }
     }
     for (final device in _selectedDevices) {
       final key = deviceKey(device.type, device.rawIp);
       if (writeOkKeys.contains(key) && !replied.contains(key)) {
         device.status = '回执超时';
-        device.result = '';
+        device.result = '回执超时';
+        device.detail = '';
       }
     }
   }
@@ -687,6 +707,10 @@ class TransferCoordinator {
 
   void _terminate(String summary) {
     _state = TransferState.cancelled;
+    for (final device in _selectedDevices) {
+      device.result = summary.contains('超时') ? '传输超时' : '传输失败';
+      device.detail = summary;
+    }
     controller.markFailed(controller.activeStep);
     controller.setSummary(summary);
     controller.setPhase(UpdatePhase.finished);

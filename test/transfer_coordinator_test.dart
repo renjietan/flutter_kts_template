@@ -459,6 +459,7 @@ void main() {
       expect(selfUpdateFailReasonText('restart_error'), '重启失败');
       expect(selfUpdateFailReasonText('restart_spawn_fail'), '启动脚本失败');
       expect(selfUpdateFailReasonText('finalize_fail'), '替换可执行文件失败');
+      expect(selfUpdateFailReasonText('finalize_start_fail'), '启动替换器失败');
       expect(selfUpdateFailReasonText('write_params_fail'), '写重启参数失败');
       expect(selfUpdateFailReasonText('version_read_error'), '读取版本失败');
       expect(selfUpdateFailReasonText('version_mismatch'), '版本不匹配');
@@ -898,15 +899,71 @@ void main() {
     await updateFuture;
 
     expect(controller.steps[5].status, StepStatus.success);
-    expect(controller.steps[6].status, StepStatus.success);
+    expect(controller.steps[6].status, StepStatus.failed);
     expect(controller.phase, UpdatePhase.finished);
     expect(controller.devices[0].status, '更新成功');
-    expect(controller.devices[0].result, 'v0.1.1.1');
+    expect(controller.devices[0].result, '更新成功');
+    expect(controller.devices[0].detail, 'v0.1.1.1');
     expect(controller.devices[1].status, '更新失败');
     expect(
       controller.summary,
       '更新完成：成功 1 台，失败 1 台，超时 0 台',
     );
+  });
+
+  test('runUpdate all ok keeps receipt step green', () async {
+    final (tempDir, storage) = await _createStorage();
+    addTearDown(() {
+      if (tempDir.existsSync()) {
+        tempDir.deleteSync(recursive: true);
+      }
+    });
+
+    final devices = [
+      UpdateDevice(ip: '192.168.1.10', type: 'MR9360'),
+      UpdateDevice(ip: '192.168.1.11', type: 'MMR200'),
+    ];
+    final transport = _AutoAckTransport([
+      ('MR9360', '192.168.1.10'),
+      ('MMR200', '192.168.1.11'),
+    ]);
+    final session = UpdateSession(transport: transport);
+    final controller = UpdateStepController(
+      version: '0.1.1.1',
+      fileName: 'a.zip',
+    );
+    controller.devices.addAll(devices);
+    final coordinator = TransferCoordinator(
+      session: session,
+      controller: controller,
+      storage: storage,
+      baseName: 'install_xxx',
+      transferTimeout: const Duration(seconds: 3),
+      validTimeout: const Duration(seconds: 5),
+      writeTimeout: const Duration(seconds: 5),
+      receiptTimeout: const Duration(seconds: 5),
+    );
+
+    final runFuture = coordinator.run(devices);
+    await _waitForStep(controller, 4, StepStatus.running);
+    transport.emitValid();
+    expect(await runFuture, isTrue);
+
+    final writeFuture = coordinator.runWrite();
+    await _waitForStep(controller, 5, StepStatus.running);
+    transport.emitWriteOkFor('MR9360', '192.168.1.10');
+    transport.emitWriteOkFor('MMR200', '192.168.1.11');
+    expect(await writeFuture, isTrue);
+
+    final updateFuture = coordinator.runUpdate();
+    await _waitFor(() => controller.activeStep == 6);
+    transport.emitUpdateOkFor('MR9360', '192.168.1.10', '0.1.1.1');
+    transport.emitUpdateOkFor('MMR200', '192.168.1.11', '0.1.1.1');
+    await updateFuture;
+
+    expect(controller.steps[6].status, StepStatus.success);
+    expect(controller.phase, UpdatePhase.finished);
+    expect(controller.summary, '更新完成：成功 2 台，失败 0 台，超时 0 台');
   });
 
 }
