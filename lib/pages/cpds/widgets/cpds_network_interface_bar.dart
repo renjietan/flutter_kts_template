@@ -76,6 +76,9 @@ class CpdsNetworkInterfaceBar extends StatelessWidget {
                             t.cpds.networkInterfaceOption(
                               name: item.name,
                               ip: item.ipv4,
+                              type: item.wired
+                                  ? t.cpds.networkInterfaceWired
+                                  : t.cpds.networkInterfaceWireless,
                             ),
                           ),
                         ),

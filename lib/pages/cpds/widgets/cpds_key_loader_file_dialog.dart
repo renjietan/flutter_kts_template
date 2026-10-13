@@ -278,7 +278,9 @@ class _CpdsKeyLoaderFileDialogState extends State<CpdsKeyLoaderFileDialog> {
           _files = content
               .split(',')
               .map((item) => item.trim())
-              .where((item) => item.isNotEmpty)
+              .where(
+                (item) => item.isNotEmpty && item.toLowerCase().contains('.pc'),
+              )
               .toList();
         }
         _step = _CpdsStep.select;
@@ -629,6 +631,13 @@ class _CpdsKeyLoaderFileDialogState extends State<CpdsKeyLoaderFileDialog> {
         await CpdsManager.instance.parsePackage();
         if (!mounted) return;
         CpdsManager.instance.updateUploadName(fileName);
+        final padPath = _padPath;
+        if (padPath != null) {
+          CpdsManager.instance.cachePcSource(
+            pcPath: padPath,
+            password: _passwordController.text,
+          );
+        }
         final keepPaths = <String>[?_padPath, ?_uploadZipPath];
         await _deleteOtherUploadFiles(keepPaths);
         setState(() {

@@ -13,7 +13,7 @@ final _nonce = Uint8List.fromList(List<int>.generate(16, (i) => i + 20));
 
 Map<int, dynamic> _identity() => {
   1: _esn,
-  2: CpdPackedEnums([CpdsDeviceType.server.value]),
+  2: CpdPackedEnums([CpdsDeviceType.teds.value]),
 };
 
 Future<void> main() async {
@@ -65,7 +65,7 @@ Future<void> _testAuthSuccessRejectsErrorCode() async {
     2: CpdResult.success.value,
     3: 'nn_1',
     4: [
-      {1: CpdsDeviceType.server.value, 2: 'dev_1'},
+      {1: CpdsDeviceType.teds.value, 2: 'dev_1'},
     ],
     5: CpdsErrorCode.invalidMessage.value,
   });
@@ -83,7 +83,7 @@ Future<void> _testSubnetMaskContiguity() async {
   machine.recordDiscovery(
     _esn,
     _nonce,
-    const [CpdsDeviceType.server],
+    const [CpdsDeviceType.teds],
     '10.0.0.2',
     '255.0.255.0',
   );
@@ -98,7 +98,7 @@ Future<void> _testDiscoveryDuplicateTypeConsistency() async {
   machine.recordDiscovery(
     _esn,
     _nonce,
-    const [CpdsDeviceType.server],
+    const [CpdsDeviceType.teds],
     '10.0.0.2',
     '255.255.255.0',
   );
@@ -121,8 +121,8 @@ CpdsSessionMachine _discoveringMachine() {
     expected: const [
       CpdsDevice(
         id: 'dev_1',
-        type: CpdsDeviceType.server,
-        model: 'Server',
+        type: CpdsDeviceType.teds,
+        model: 'TEDS',
         alias: '',
         ip: '10.0.0.10',
       ),
@@ -137,7 +137,7 @@ CpdsSessionMachine _authenticatingMachine() {
   machine.recordDiscovery(
     _esn,
     _nonce,
-    const [CpdsDeviceType.server],
+    const [CpdsDeviceType.teds],
     '10.0.0.2',
     '255.255.255.0',
   );
@@ -155,7 +155,7 @@ CpdsSessionMachine _transferringMachine() {
     2: CpdResult.success.value,
     3: 'nn_1',
     4: [
-      {1: CpdsDeviceType.server.value, 2: 'dev_1'},
+      {1: CpdsDeviceType.teds.value, 2: 'dev_1'},
     ],
   });
   if (machine.state != CpdsActiveState.transferring) {

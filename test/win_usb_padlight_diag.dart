@@ -4,8 +4,8 @@ import 'dart:typed_data';
 import 'package:flutter_kts_template/core/rtc/managers/win-usb/win_usb_ffi.dart';
 
 void main() {
-  const vid = 0x1D6B;
-  const pid = 0x0104;
+  const vid = 0x238C;
+  const pid = 0xC000;
 
   final path = findWinUsbDevicePathByDeviceClasses(
     vid: vid,

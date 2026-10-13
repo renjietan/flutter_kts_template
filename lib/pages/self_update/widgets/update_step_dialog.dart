@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_kts_template/core/selfUpdate/update/update_step_controller.dart';
 import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
+import 'package:flutter_kts_template/utils/arabic_digits.dart';
 
 /// 更新到设备的步骤弹窗。
 ///
@@ -46,14 +47,14 @@ class _UpdateStepDialogState extends State<UpdateStepDialog> {
   bool _reValiding = false;
   bool _reWriting = false;
 
-  static const List<String> _descriptions = [
-    '正在扫描网络中的 CPDC 设备…',
-    '正在对设备进行认证…',
-    '正在比对设备当前版本与目标版本…',
-    '正在向认证成功的设备分发安装包…',
-    '设备正在校验安装包完整性…',
-    '设备正在替换程序并写入配置…',
-    '等待设备回传更新结果…',
+  static List<String> get _descriptions => [
+    t.selfUpdate.descDiscovery,
+    t.selfUpdate.descAuth,
+    t.selfUpdate.descVersion,
+    t.selfUpdate.descTransfer,
+    t.selfUpdate.descValidation,
+    t.selfUpdate.descWrite,
+    t.selfUpdate.descReceipt,
   ];
 
   @override
@@ -200,7 +201,7 @@ class _UpdateStepDialogState extends State<UpdateStepDialog> {
                     onPressed: showPause
                         ? widget.onPause
                         : (showResume ? widget.onResume : null),
-                    child: Text(showPause ? '暂停' : '继续'),
+                    child: Text(showPause ? t.selfUpdate.pause : t.selfUpdate.resume),
                   ),
                 ],
               ],
@@ -217,19 +218,19 @@ class _UpdateStepDialogState extends State<UpdateStepDialog> {
   Widget _buildHeader(UpdateStepController controller) {
     return Row(
       children: [
-        const Text(
-          '更新到设备',
-          style: TextStyle(color: Colors.white, fontSize: 16),
+        Text(
+          t.selfUpdate.updateToDevice,
+          style: const TextStyle(color: Colors.white, fontSize: 16),
         ),
         const SizedBox(width: 16),
         Text(
-          'v${controller.version}',
+          localizeDigits(context, 'v${controller.version}'),
           style: const TextStyle(color: _accent, fontSize: 14),
         ),
         const SizedBox(width: 16),
         Flexible(
           child: Text(
-            controller.fileName,
+            localizeDigits(context, controller.fileName),
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(color: Colors.white54, fontSize: 13),
           ),
@@ -296,7 +297,7 @@ class _UpdateStepDialogState extends State<UpdateStepDialog> {
     } else {
       circleColor = Colors.transparent;
       circleContent = Text(
-        '${index + 1}',
+        localizeDigits(context, '${index + 1}'),
         style: const TextStyle(color: _dim, fontSize: 12),
       );
     }
@@ -342,14 +343,14 @@ class _UpdateStepDialogState extends State<UpdateStepDialog> {
           scrollDirection: Axis.horizontal,
           child: DataTable(
             columnSpacing: 24,
-            columns: const [
-              DataColumn(label: Text('IP 地址')),
-              DataColumn(label: Text('类型')),
-              DataColumn(label: Text('当前版本')),
-              DataColumn(label: Text('新版本')),
-              DataColumn(label: Text('状态')),
-              DataColumn(label: Text('进度')),
-              DataColumn(label: Text('结果')),
+            columns: [
+              DataColumn(label: Text(t.selfUpdate.colIp)),
+              DataColumn(label: Text(t.selfUpdate.colType)),
+              DataColumn(label: Text(t.selfUpdate.colCurrentVersion)),
+              DataColumn(label: Text(t.selfUpdate.colNewVersion)),
+              DataColumn(label: Text(t.selfUpdate.colStatus)),
+              DataColumn(label: Text(t.selfUpdate.colProgress)),
+              DataColumn(label: Text(t.selfUpdate.colResult)),
             ],
             rows: [
               for (final device in controller.devices)
@@ -359,14 +360,14 @@ class _UpdateStepDialogState extends State<UpdateStepDialog> {
                     DataCell(Text(device.type)),
                     DataCell(
                       Text(
-                        device.currentVersion.isEmpty
+                        localizeDigits(context, device.currentVersion.isEmpty
                             ? '--'
-                            : device.currentVersion,
+                            : device.currentVersion),
                       ),
                     ),
                     DataCell(
                       Text(
-                        device.newVersion.isEmpty ? '--' : device.newVersion,
+                        localizeDigits(context, device.newVersion.isEmpty ? '--' : device.newVersion),
                       ),
                     ),
                     DataCell(
@@ -374,7 +375,7 @@ class _UpdateStepDialogState extends State<UpdateStepDialog> {
                     ),
                     DataCell(
                       Text(
-                        '${(device.progress * 100).round()}% · ${_formatBytes(device.transferredBytes)}/${_formatBytes(device.totalBytes)}',
+                        localizeDigits(context, '${(device.progress * 100).round()}% · ${_formatBytes(device.transferredBytes)}/${_formatBytes(device.totalBytes)}'),
                       ),
                     ),
                     DataCell(
@@ -383,7 +384,7 @@ class _UpdateStepDialogState extends State<UpdateStepDialog> {
                           : InkWell(
                               onTap: () => _showDeviceDetail(device),
                               child: Text(
-                                device.result,
+                                localizeDigits(context, device.result),
                                 style: const TextStyle(
                                   color: _accent,
                                   decoration: TextDecoration.underline,
@@ -411,13 +412,13 @@ class _UpdateStepDialogState extends State<UpdateStepDialog> {
             style: const TextStyle(color: Colors.white, fontSize: 16),
           ),
           content: Text(
-            device.detail.isNotEmpty ? device.detail : device.result,
+            localizeDigits(context, device.detail.isNotEmpty ? device.detail : device.result),
             style: const TextStyle(color: Colors.white70, fontSize: 13),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(),
-              child: const Text('关闭'),
+              child: Text(t.selfUpdate.close),
             ),
           ],
         );
@@ -451,12 +452,12 @@ class _UpdateStepDialogState extends State<UpdateStepDialog> {
         Padding(
           padding: const EdgeInsets.only(right: 12),
           child: Text(
-            controller.summary,
+            localizeDigits(context, controller.summary),
             style: const TextStyle(color: Colors.white70, fontSize: 13),
           ),
         ),
       if (showStart)
-        TextButton(onPressed: widget.onStart, child: const Text('开始')),
+        TextButton(onPressed: widget.onStart, child: Text(t.selfUpdate.start)),
       if (showCancel)
         TextButton(
           onPressed: _closing ? null : _handleCancel,
@@ -466,7 +467,7 @@ class _UpdateStepDialogState extends State<UpdateStepDialog> {
                   height: 16,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
-              : const Text('取消'),
+              : Text(t.selfUpdate.cancel),
         ),
       if (showReAuth)
         TextButton(
@@ -477,7 +478,7 @@ class _UpdateStepDialogState extends State<UpdateStepDialog> {
                   height: 16,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
-              : const Text('重新认证'),
+              : Text(t.selfUpdate.reAuth),
         ),
       if (showReVersion)
         TextButton(
@@ -488,7 +489,7 @@ class _UpdateStepDialogState extends State<UpdateStepDialog> {
                   height: 16,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
-              : const Text('重新版本校验'),
+              : Text(t.selfUpdate.reVersion),
         ),
       if (showReValid)
         TextButton(
@@ -521,7 +522,7 @@ class _UpdateStepDialogState extends State<UpdateStepDialog> {
                   height: 16,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
-              : const Text('关闭'),
+              : Text(t.selfUpdate.close),
         ),
     ];
   }

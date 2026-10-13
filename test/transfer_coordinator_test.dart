@@ -901,10 +901,10 @@ void main() {
     expect(controller.steps[5].status, StepStatus.success);
     expect(controller.steps[6].status, StepStatus.failed);
     expect(controller.phase, UpdatePhase.finished);
-    expect(controller.devices[0].status, '更新成功');
-    expect(controller.devices[0].result, '更新成功');
+    expect(controller.devices[0].status, t.selfUpdate.updateSuccess);
+    expect(controller.devices[0].result, t.selfUpdate.updateSuccess);
     expect(controller.devices[0].detail, 'v0.1.1.1');
-    expect(controller.devices[1].status, '更新失败');
+    expect(controller.devices[1].status, t.selfUpdate.receiptFailedStatus);
     expect(
       controller.summary,
       '更新完成：成功 1 台，失败 1 台，超时 0 台',

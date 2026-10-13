@@ -11,7 +11,7 @@ import 'package:flutter_kts_template/logger/logger.dart';
 /// Windows 注钥枪裸 Bulk USB 管理器。
 ///
 /// 与 [WinUsbManager] 不同，本类面向 keyLoader 的 WinUSB 复合设备接口：
-///   - VID_1D6B / PID_0104 / MI_02
+///   - VID_238C / PID_C000 / MI_02
 ///   - DeviceInterfaceGUID = {fed3a0be-9515-4920-812b-51d602e63752}
 ///
 /// 读数据采用 overlapped + event 的异步读，并在独立 isolate 中等待完成事件，
@@ -22,10 +22,9 @@ class WinUsbBulkManager implements KeyLoaderUsbBulkManager {
 
   static final WinUsbBulkManager instance = WinUsbBulkManager._();
 
-  static const int _vid = 0x1D6B;
-  static const int _pid = 0x0104;
+  static const int _vid = 0x238C;
+  static const int _pid = 0xC000;
   static const int _interfaceNumber = 2;
-  static const String _interfaceGuid = 'fed3a0be-9515-4920-812b-51d602e63752';
 
   static const int _readBufferSize = 512;
   static const int _writeTimeoutMs = 3000;
@@ -66,12 +65,20 @@ class WinUsbBulkManager implements KeyLoaderUsbBulkManager {
   Future<bool> connect() async {
     if (_connected) return true;
     try {
-      final path = findWinUsbDevicePathByDeviceClasses(
-        vid: _vid,
-        pid: _pid,
-        interfaceNumber: _interfaceNumber,
-        interfaceGuid: _interfaceGuid,
-      );
+      final devices = await enumerateWinUsbInterfacesByCustomGuid();
+      String? path;
+      for (final device in devices) {
+        if (device.vid == _vid &&
+            device.pid == _pid &&
+            device.interfaceNumber == _interfaceNumber &&
+            canOpenAsWinUsb(device.devicePath)) {
+          path = device.devicePath;
+          GlobalLogger.logInfo(
+            'WinUsbBulkManager: selected current interface path=$path',
+          );
+          break;
+        }
+      }
       if (path == null) {
         GlobalLogger.logError(
           'WinUsbBulkManager: key loader WinUSB interface not found',

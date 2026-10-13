@@ -38,8 +38,8 @@ class MainActivity : FlutterActivity() {
             "com.hytera.cpd/usb_host/disconnected"
         private const val ACTION_USB_PERMISSION = "com.hytera.cpd.USB_PERMISSION"
 
-        private const val TARGET_VENDOR_ID = 0x1D6B
-        private const val TARGET_PRODUCT_ID = 0x0104
+        private const val TARGET_VENDOR_ID = 0x238C
+        private const val TARGET_PRODUCT_ID = 0xC000
         private const val TARGET_INTERFACE_INDEX = 2
         private const val READ_BUFFER_SIZE = 512
         private const val READ_TIMEOUT_MS = 500

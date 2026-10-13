@@ -53,7 +53,9 @@ class CpdsDevicePanel extends StatelessWidget {
     final result = <CpdsFutureWarriorDevice>[];
     for (final nodeId in unit.nodeIds) {
       final node = nodesById[nodeId];
-      if (node == null || node.nodeType != 1) continue;
+      if (node == null || node.nodeType != 1 || node.hasTeds) {
+        continue;
+      }
       for (final device in node.devices) {
         result.add(
           CpdsFutureWarriorDevice(
@@ -114,7 +116,7 @@ class CpdsDevicePanel extends StatelessWidget {
       );
     }
 
-    if (selectedNode?.nodeType == 1) {
+    if (selectedNode?.nodeType == 1 && !(selectedNode?.hasTeds ?? false)) {
       final node = selectedNode!;
       return CpdsFutureWarriorPanel(
         devices: node.devices
@@ -132,7 +134,9 @@ class CpdsDevicePanel extends StatelessWidget {
     }
     final deviceRows = _buildDeviceRows(selectedNode, state.session);
     final groups = _groupDevices(deviceRows);
-    final showAlias = selectedNode?.nodeType == 2;
+    final showAlias =
+        selectedNode?.nodeType == 2 ||
+        (selectedNode?.nodeType == 1 && (selectedNode?.hasTeds ?? false));
     final stageIndex = _stageIndex(state.session);
     final transferring =
         state.session?.activeState == CpdsActiveState.transferring ||
@@ -199,12 +203,7 @@ class CpdsDevicePanel extends StatelessWidget {
                   minWidth: 88,
                   height: 32,
                   isLoading: distributing,
-                  onPressed:
-                      distributing ||
-                          state.active ||
-                          interfacesLoading ||
-                          selectedInterfaceName.isEmpty ||
-                          !canDistribute
+                  onPressed: distributing || state.active || interfacesLoading
                       ? null
                       : onDistribute,
                 ),
@@ -341,7 +340,7 @@ class CpdsDevicePanel extends StatelessWidget {
       CpdsDeviceType.smallHandheld,
       CpdsDeviceType.ccu,
       CpdsDeviceType.vehInter,
-      CpdsDeviceType.server,
+      CpdsDeviceType.teds,
       CpdsDeviceType.iec,
     ];
     final groups = <CpdsDeviceType, List<_DeviceRowData>>{};
@@ -368,7 +367,7 @@ class CpdsDevicePanel extends StatelessWidget {
   String _groupTitle(BuildContext context, String key) {
     final t = Translations.of(context);
     return switch (key) {
-      'server' => t.cpds.deviceTypes.server,
+      'teds' => t.cpds.deviceTypes.teds,
       'hf' => t.cpds.deviceTypes.hf,
       'multiBandRadio' => t.cpds.deviceTypes.multiBandRadio,
       'multiBandHandheld' => t.cpds.deviceTypes.multiBandHandheld,
@@ -381,7 +380,7 @@ class CpdsDevicePanel extends StatelessWidget {
   }
 
   String _deviceTypeKey(CpdsDeviceType type) => switch (type) {
-    CpdsDeviceType.server => 'server',
+    CpdsDeviceType.teds => 'teds',
     CpdsDeviceType.hf => 'hf',
     CpdsDeviceType.multiBandRadio => 'multiBandRadio',
     CpdsDeviceType.multiBandHandheld => 'multiBandHandheld',
@@ -394,7 +393,7 @@ class CpdsDevicePanel extends StatelessWidget {
   };
 
   CpdsDeviceType _typeFromKey(String key) => switch (key) {
-    'server' => CpdsDeviceType.server,
+    'teds' => CpdsDeviceType.teds,
     'hf' => CpdsDeviceType.hf,
     'multiBandRadio' => CpdsDeviceType.multiBandRadio,
     'multiBandHandheld' => CpdsDeviceType.multiBandHandheld,
@@ -516,7 +515,7 @@ class _CpdsFutureWarriorPanelState extends State<CpdsFutureWarriorPanel> {
       CpdsDeviceType.smallHandheld,
       CpdsDeviceType.ccu,
       CpdsDeviceType.vehInter,
-      CpdsDeviceType.server,
+      CpdsDeviceType.teds,
       CpdsDeviceType.iec,
     ];
     final groups = <CpdsDeviceType, List<CpdsFutureWarriorDevice>>{};
@@ -556,7 +555,7 @@ class _CpdsFutureWarriorPanelState extends State<CpdsFutureWarriorPanel> {
   String _groupTitle(BuildContext context, CpdsDeviceType type) {
     final t = Translations.of(context);
     return switch (type) {
-      CpdsDeviceType.server => t.cpds.deviceTypes.server,
+      CpdsDeviceType.teds => t.cpds.deviceTypes.teds,
       CpdsDeviceType.hf => t.cpds.deviceTypes.hf,
       CpdsDeviceType.multiBandRadio => t.cpds.deviceTypes.multiBandRadio,
       CpdsDeviceType.multiBandHandheld => t.cpds.deviceTypes.multiBandHandheld,
@@ -872,7 +871,7 @@ class _FutureWarriorDeviceRow extends StatelessWidget {
         ],
       );
     }
-    final label = device.type == CpdsDeviceType.server
+    final label = device.type == CpdsDeviceType.teds
         ? CpdsMessages.tr(
             context,
             '子网IP',
@@ -1178,7 +1177,7 @@ class _DeviceRow extends StatelessWidget {
   String _deviceDisplayName(BuildContext context, CpdsDevice device) {
     final t = Translations.of(context);
     final typeKey = switch (device.type) {
-      CpdsDeviceType.server => t.cpds.deviceTypes.server,
+      CpdsDeviceType.teds => t.cpds.deviceTypes.teds,
       CpdsDeviceType.hf => t.cpds.deviceTypes.hf,
       CpdsDeviceType.multiBandRadio => t.cpds.deviceTypes.multiBandRadio,
       CpdsDeviceType.multiBandHandheld => t.cpds.deviceTypes.multiBandHandheld,
@@ -1221,7 +1220,7 @@ class _DeviceRow extends StatelessWidget {
         ],
       );
     }
-    final label = device.type == CpdsDeviceType.server
+    final label = device.type == CpdsDeviceType.teds
         ? t.cpds.device.subnetIp
         : t.cpds.device.downCurrentIp;
     return Row(

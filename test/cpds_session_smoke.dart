@@ -13,8 +13,8 @@ Future<void> main() async {
     expected: [
       const CpdsDevice(
         id: 'dev_1',
-        type: CpdsDeviceType.server,
-        model: 'Server',
+        type: CpdsDeviceType.teds,
+        model: 'TEDS',
         alias: '',
         ip: '10.0.0.10',
       ),
@@ -27,7 +27,7 @@ Future<void> main() async {
   machine.recordDiscovery(
     esn,
     nonce,
-    const [CpdsDeviceType.server],
+    const [CpdsDeviceType.teds],
     '10.0.0.2',
     '255.255.255.0',
   );
@@ -38,17 +38,14 @@ Future<void> main() async {
 
   final clientIdentity = <int, dynamic>{
     1: esn,
-    2: CpdPackedEnums([CpdsDeviceType.server.value]),
+    2: CpdPackedEnums([CpdsDeviceType.teds.value]),
   };
   machine.recordAuth({
     1: clientIdentity,
     2: CpdResult.success.value,
     3: 'nn_1',
     4: [
-      {
-        1: CpdsDeviceType.server.value,
-        2: 'dev_1',
-      },
+      {1: CpdsDeviceType.teds.value, 2: 'dev_1'},
     ],
   });
   if (machine.state != CpdsActiveState.transferring) {
@@ -72,14 +69,11 @@ Future<void> main() async {
     2: CpdResult.success.value,
     3: 'nn_1',
     4: [
-      {
-        1: CpdsDeviceType.server.value,
-        2: 'dev_1',
-      },
+      {1: CpdsDeviceType.teds.value, 2: 'dev_1'},
     ],
     5: [
       {
-        1: CpdsDeviceType.server.value,
+        1: CpdsDeviceType.teds.value,
         2: 'dev_1',
         3: CpdResult.success.value,
         4: CpdParseStage.unspecified.value,

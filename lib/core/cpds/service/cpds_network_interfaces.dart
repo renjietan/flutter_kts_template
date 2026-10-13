@@ -9,7 +9,7 @@ import '../model/cpds_models.dart';
 class CpdsNetworkInterfaceService {
   CpdsNetworkInterfaceService._();
 
-  static Future<List<CpdsNetworkInterface>> listWiredInterfaces() async {
+  static Future<List<CpdsNetworkInterface>> listInterfaces() async {
     try {
       final interfaces = await NetworkInterface.list(
         includeLoopback: false,
@@ -21,29 +21,34 @@ class CpdsNetworkInterfaceService {
           : const <String, bool>{};
       final result = <CpdsNetworkInterface>[];
       for (final item in interfaces) {
-        if (!_eligibleName(item.name)) continue;
+        if (_isExcludedName(item.name)) continue;
         final ipv4 = _firstUsableIpv4(item);
         if (ipv4 == null) continue;
+        final wired = !_isWirelessName(item.name);
         final linkUp = Platform.isWindows
             ? (windowsLinkMap[ipv4] ?? true)
             : Platform.isAndroid || Platform.isLinux
-                ? _linuxLinkUp(item.name)
-                : true;
+            ? _linuxLinkUp(item.name)
+            : true;
         result.add(
           CpdsNetworkInterface(
             name: item.name,
             index: item.index,
             ipv4: ipv4,
             linkUp: linkUp,
+            wired: wired,
           ),
         );
       }
-      result.sort((a, b) => a.name.compareTo(b.name));
+      result.sort((a, b) {
+        if (a.wired != b.wired) return a.wired ? -1 : 1;
+        return a.name.compareTo(b.name);
+      });
       if (result.isEmpty) {
         throw CpdsException(
           CpdsErrorCode.networkInterfaceError,
           params: {'count': 0},
-          message: 'no wired interface',
+          message: 'no network interface',
         );
       }
       return result;
@@ -76,14 +81,15 @@ class CpdsNetworkInterfaceService {
     return CpdsWindowsLinkStatus.load();
   }
 
-  static bool _eligibleName(String name) {
+  static bool _isWirelessName(String name) {
+    final lower = name.toLowerCase();
+    const wireless = ['wi-fi', 'wifi', 'wlan', 'wireless', '无线'];
+    return wireless.any(lower.contains);
+  }
+
+  static bool _isExcludedName(String name) {
     final lower = name.toLowerCase();
     const excluded = [
-      'wi-fi',
-      'wifi',
-      'wlan',
-      'wireless',
-      '无线',
       'vpn',
       'virtual',
       'vethernet',
@@ -96,7 +102,7 @@ class CpdsNetworkInterfaceService {
       'tap',
       'tun',
     ];
-    return !excluded.any(lower.contains);
+    return excluded.any(lower.contains);
   }
 
   static String? _firstUsableIpv4(NetworkInterface item) {

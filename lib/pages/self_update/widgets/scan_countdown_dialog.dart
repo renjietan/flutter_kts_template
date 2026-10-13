@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
+import 'package:flutter_kts_template/utils/arabic_digits.dart';
 import 'package:flutter_kts_template/core/selfUpdate/scan/scan_controller.dart';
 
 /// 发现阶段的扫描倒计时弹窗。
@@ -59,8 +61,8 @@ class _ScanCountdownDialogState extends State<ScanCountdownDialog> {
     final controller = widget.controller;
     return AlertDialog(
       backgroundColor: const Color(0xFF20262D),
-      title: const Text(
-        '扫描设备',
+      title: Text(
+        t.selfUpdate.scanTitle,
         style: TextStyle(color: Colors.white, fontSize: 16),
       ),
       content: SizedBox(
@@ -85,18 +87,18 @@ class _ScanCountdownDialogState extends State<ScanCountdownDialog> {
               Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text(
-                    '扫描中....',
-                    style: TextStyle(color: Colors.white, fontSize: 16),
+                  Text(
+                    t.selfUpdate.scanning,
+                    style: const TextStyle(color: Colors.white, fontSize: 16),
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    '已扫描到 ${controller.deviceCount} 个设备',
+                    localizeDigits(context, t.selfUpdate.scannedCount(n: controller.deviceCount)),
                     style: const TextStyle(color: Colors.white, fontSize: 14),
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    '剩余 ${controller.remainingSeconds} 秒',
+                    localizeDigits(context, t.selfUpdate.remainingSeconds(n: controller.remainingSeconds)),
                     style: const TextStyle(color: Colors.white70, fontSize: 13),
                   ),
                 ],
@@ -107,11 +109,11 @@ class _ScanCountdownDialogState extends State<ScanCountdownDialog> {
       ),
       actions: [
         if (controller.deviceCount >= 1)
-          TextButton(onPressed: _next, child: const Text('下一步'))
+          TextButton(onPressed: _next, child: Text(t.selfUpdate.next))
         else
           TextButton(
             onPressed: controller.state == ScanState.scanning ? _cancel : null,
-            child: const Text('取消'),
+            child: Text(t.selfUpdate.cancel),
           ),
       ],
     );

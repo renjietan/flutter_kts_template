@@ -121,6 +121,8 @@ class CpdsNode {
   final String model;
   final List<CpdsDevice> devices;
 
+  bool get hasTeds => devices.any((d) => d.type == CpdsDeviceType.teds);
+
   factory CpdsNode.fromJson(Map<String, dynamic> json) => CpdsNode(
     id: json['id'] as String? ?? '',
     guid: json['guid'] as String? ?? '',
@@ -382,12 +384,14 @@ class CpdsNetworkInterface {
     required this.index,
     required this.ipv4,
     this.linkUp = true,
+    this.wired = true,
   });
 
   final String name;
   final int index;
   final String ipv4;
   final bool linkUp;
+  final bool wired;
 
   factory CpdsNetworkInterface.fromJson(Map<String, dynamic> json) =>
       CpdsNetworkInterface(
@@ -395,6 +399,7 @@ class CpdsNetworkInterface {
         index: _asInt(json['index']),
         ipv4: json['ipv4'] as String? ?? '',
         linkUp: json['linkUp'] as bool? ?? true,
+        wired: json['wired'] as bool? ?? true,
       );
 
   Map<String, dynamic> toJson() => {
@@ -402,6 +407,7 @@ class CpdsNetworkInterface {
     'index': index,
     'ipv4': ipv4,
     'linkUp': linkUp,
+    'wired': wired,
   };
 }
 

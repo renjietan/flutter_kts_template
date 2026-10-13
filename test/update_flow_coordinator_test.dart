@@ -207,19 +207,19 @@ void main() {
     final future = coordinator.runAuthAndVersion(1);
 
     await Future<void>.delayed(const Duration(milliseconds: 20));
-    transport.emitBytes(_authAck('Server', '192.168.1.20'));
+    transport.emitBytes(_authAck('TEDS', '192.168.1.20'));
     transport.emitBytes(_authAck('IEC', '192.168.1.21'));
     transport.emitBytes(_authAck('SmallHandheld', '192.168.1.22'));
     transport.emitBytes(_authAck('MR9360', '192.168.1.10'));
 
     await _waitForStep(controller, 2, StepStatus.running);
+    transport.emitBytes(_versionOk('IEC', '192.168.1.21', '0.0.0.2'));
     transport.emitBytes(_versionOk('MR9360', '192.168.1.10', '0.0.0.1'));
 
     await future;
 
-    expect(controller.devices.length, 1);
-    expect(controller.devices.single.type, 'MR9360');
-    expect(controller.devices.single.ip, '192.168.1.10');
+    expect(controller.devices.length, 2);
+    expect(controller.devices.map((d) => d.type).toSet(), {'IEC', 'MR9360'});
   });
 
   test(
@@ -410,46 +410,49 @@ void main() {
     expect(controller.phase, UpdatePhase.running);
   });
 
-  test('version check retries across windows until all devices reply', () async {
-    final transport = _MockTransport();
-    final session = UpdateSession(transport: transport);
-    final controller = UpdateStepController(
-      version: '0.1.1.1',
-      fileName: 'a.zip',
-    );
-    final (tempDir, storage) = await _createStorage();
-    addTearDown(() {
-      if (tempDir.existsSync()) {
-        tempDir.deleteSync(recursive: true);
-      }
-    });
-    controller.devices.addAll([
-      UpdateDevice(ip: '192.168.1.10', type: 'MR9360'),
-      UpdateDevice(ip: '192.168.1.11', type: 'MMR200'),
-    ]);
-    final coordinator = UpdateFlowCoordinator(
-      session: session,
-      controller: controller,
-      storage: storage,
-      baseName: 'install_xxx',
-      targetVersion: '0.1.1.1',
-      versionTimeout: const Duration(milliseconds: 50),
-    );
+  test(
+    'version check retries across windows until all devices reply',
+    () async {
+      final transport = _MockTransport();
+      final session = UpdateSession(transport: transport);
+      final controller = UpdateStepController(
+        version: '0.1.1.1',
+        fileName: 'a.zip',
+      );
+      final (tempDir, storage) = await _createStorage();
+      addTearDown(() {
+        if (tempDir.existsSync()) {
+          tempDir.deleteSync(recursive: true);
+        }
+      });
+      controller.devices.addAll([
+        UpdateDevice(ip: '192.168.1.10', type: 'MR9360'),
+        UpdateDevice(ip: '192.168.1.11', type: 'MMR200'),
+      ]);
+      final coordinator = UpdateFlowCoordinator(
+        session: session,
+        controller: controller,
+        storage: storage,
+        baseName: 'install_xxx',
+        targetVersion: '0.1.1.1',
+        versionTimeout: const Duration(milliseconds: 50),
+      );
 
-    final future = coordinator.runVersionCheck();
+      final future = coordinator.runVersionCheck();
 
-    // 第一个窗口（0~50ms）不回复；第二个窗口（50~100ms）回复两台。
-    await Future<void>.delayed(const Duration(milliseconds: 70));
-    transport.emitBytes(_versionOk('MR9360', '192.168.1.10', '0.0.0.1'));
-    transport.emitBytes(_versionOk('MMR200', '192.168.1.11', '0.0.0.2'));
+      // 第一个窗口（0~50ms）不回复；第二个窗口（50~100ms）回复两台。
+      await Future<void>.delayed(const Duration(milliseconds: 70));
+      transport.emitBytes(_versionOk('MR9360', '192.168.1.10', '0.0.0.1'));
+      transport.emitBytes(_versionOk('MMR200', '192.168.1.11', '0.0.0.2'));
 
-    final result = await future;
-    expect(result, isTrue);
-    expect(controller.steps[2].status, StepStatus.success);
-    expect(controller.devices[0].currentVersion, '0.0.0.1');
-    expect(controller.devices[1].currentVersion, '0.0.0.2');
-    expect(controller.activeStep, 3);
-  });
+      final result = await future;
+      expect(result, isTrue);
+      expect(controller.steps[2].status, StepStatus.success);
+      expect(controller.devices[0].currentVersion, '0.0.0.1');
+      expect(controller.devices[1].currentVersion, '0.0.0.2');
+      expect(controller.activeStep, 3);
+    },
+  );
 
   test('version check with no replies enters recoverable failure', () async {
     final transport = _MockTransport();

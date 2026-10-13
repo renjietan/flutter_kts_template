@@ -5,6 +5,7 @@ import 'package:flutter_kts_template/core/cpds/model/cpds_models.dart';
 import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 import 'package:flutter_kts_template/icons/hy_icons.dart';
 import 'package:flutter_kts_template/pages/cpds/cpds_package_tree.dart';
+import 'package:flutter_kts_template/pages/cpds/widgets/cpds_messages.dart';
 
 class CpdsPackagePanel extends StatefulWidget {
   const CpdsPackagePanel({
@@ -14,6 +15,8 @@ class CpdsPackagePanel extends StatefulWidget {
     required this.onBrowse,
     required this.onSelectNode,
     required this.onSelectFutureWarrior,
+    required this.onEditNode,
+    required this.onChangePassword,
   });
 
   final CpdsApplicationState state;
@@ -21,6 +24,8 @@ class CpdsPackagePanel extends StatefulWidget {
   final VoidCallback onBrowse;
   final ValueChanged<String> onSelectNode;
   final ValueChanged<String> onSelectFutureWarrior;
+  final ValueChanged<String> onEditNode;
+  final VoidCallback onChangePassword;
 
   @override
   State<CpdsPackagePanel> createState() => _CpdsPackagePanelState();
@@ -211,6 +216,23 @@ class _CpdsPackagePanelState extends State<CpdsPackagePanel> {
                       ? null
                       : widget.onBrowse,
                 ),
+                const SizedBox(width: 8),
+                BaseButton(
+                  label: CpdsMessages.tr(
+                    context,
+                    '修改密码',
+                    'Change Password',
+                    'تغيير كلمة المرور',
+                  ),
+                  minWidth: 110,
+                  height: 32,
+                  icon: Icons.lock_outline,
+                  onPressed: widget.state.active ||
+                          widget.uploading ||
+                          widget.state.package == null
+                      ? null
+                      : widget.onChangePassword,
+                ),
               ],
             ),
           ),
@@ -331,6 +353,7 @@ class _CpdsPackagePanelState extends State<CpdsPackagePanel> {
       selected: selected,
       expanded: row.expanded,
       onTap: onTap,
+      onEditNode: widget.onEditNode,
     );
   }
 }
@@ -341,12 +364,14 @@ class _CpdsTreeRow extends StatelessWidget {
     required this.selected,
     required this.expanded,
     required this.onTap,
+    required this.onEditNode,
   });
 
   final CpdsTreeItem item;
   final bool selected;
   final bool expanded;
   final VoidCallback? onTap;
+  final ValueChanged<String> onEditNode;
 
   @override
   Widget build(BuildContext context) {
@@ -409,6 +434,19 @@ class _CpdsTreeRow extends StatelessWidget {
             style: const TextStyle(color: Colors.white, fontSize: 13),
           ),
         ),
+        if (item.kind == CpdsTreeItemKind.node && item.nodeType == 2)
+          GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () => onEditNode(item.nodeId!),
+            child: Padding(
+              padding: const EdgeInsetsDirectional.only(start: 6, end: 16),
+              child: Icon(
+                Icons.edit_outlined,
+                size: 15,
+                color: Colors.white70,
+              ),
+            ),
+          ),
       ],
     );
   }

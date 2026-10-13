@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_kts_template/core/selfUpdate/update/update_step_controller.dart';
+import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 import 'package:flutter_kts_template/pages/self_update/widgets/update_step_dialog.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  setUp(() {
+    LocaleSettings.setLocaleSync(AppLocale.zh);
+  });
+
   Future<void> pumpDialog(
     WidgetTester tester,
     UpdateStepController controller, {
@@ -16,17 +21,19 @@ void main() {
     Future<void> Function()? onClose,
   }) async {
     await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(
-          body: UpdateStepDialog(
-            controller: controller,
-            onStart: onStart,
-            onPause: onPause,
-            onResume: onResume,
-            onReAuth: onReAuth,
-            onReVersion: onReVersion,
-            onCancel: onCancel,
-            onClose: onClose,
+      TranslationProvider(
+        child: MaterialApp(
+          home: Scaffold(
+            body: UpdateStepDialog(
+              controller: controller,
+              onStart: onStart,
+              onPause: onPause,
+              onResume: onResume,
+              onReAuth: onReAuth,
+              onReVersion: onReVersion,
+              onCancel: onCancel,
+              onClose: onClose,
+            ),
           ),
         ),
       ),

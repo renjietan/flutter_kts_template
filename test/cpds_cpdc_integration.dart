@@ -17,7 +17,7 @@ Future<void> main() async {
   const fileName = '8-12-valid.zip';
   const nodeId = 'nn_hytis_8194';
 
-  final interfaces = await CpdsNetworkInterfaceService.listWiredInterfaces();
+  final interfaces = await CpdsNetworkInterfaceService.listInterfaces();
   final selected = interfaces.firstWhere(
     (item) => item.name.toLowerCase().contains('wlan'),
     orElse: () => interfaces.first,

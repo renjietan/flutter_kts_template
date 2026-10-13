@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 
 /// 单个步骤的状态。
 enum StepStatus { pending, running, success, failed }
@@ -63,14 +64,14 @@ class UpdateDevice {
 class UpdateStepController extends ChangeNotifier {
   UpdateStepController({required this.version, required this.fileName});
 
-  static const List<String> stepLabels = [
-    '发现',
-    '认证',
-    '版本校验',
-    '传输',
-    '校验',
-    '写入',
-    '回执',
+  static List<String> get stepLabels => [
+    t.selfUpdate.stepDiscovery,
+    t.selfUpdate.stepAuth,
+    t.selfUpdate.stepVersion,
+    t.selfUpdate.stepTransfer,
+    t.selfUpdate.stepValidation,
+    t.selfUpdate.stepWrite,
+    t.selfUpdate.stepReceipt,
   ];
 
   final String version;

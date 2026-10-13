@@ -76,7 +76,8 @@ class UdpUpdateTransport implements UpdateTransport {
         data,
       ).startsWith(UpdateProtocol.packetPrefix);
       final logTransportLine =
-          !isPacket || UpdateProtocolLogger.packetLogLevel == PacketLogLevel.full;
+          !isPacket ||
+          UpdateProtocolLogger.packetLogLevel == PacketLogLevel.full;
       if (logTransportLine) {
         debugPrint('[自更新][UDP][发送] $address:$port - $sent 字节');
       }
@@ -100,7 +101,8 @@ class UdpUpdateTransport implements UpdateTransport {
       }
       final payload = Uint8List.fromList(datagram.data);
       final text = String.fromCharCodes(payload);
-      final isPacketAck = text.startsWith(UpdateProtocol.packetOkPrefix) ||
+      final isPacketAck =
+          text.startsWith(UpdateProtocol.packetOkPrefix) ||
           text.startsWith(UpdateProtocol.packetFailPrefix);
       final logTransportLine =
           !isPacketAck ||

@@ -4,6 +4,7 @@ app:
     paramsInject: Params inject
     radioManager: Radio manager
     keyManager: Key manager
+    updateCpdc: Update CPDC
 common:
   confirm: Confirm
   cancel: Cancel
@@ -263,8 +264,10 @@ cpds:
   online: "{online}/{expected} online"
   noSelection: Select a network node
   networkInterfaceLabel: Business NIC
-  networkInterfacePlaceholder: Select a wired interface
-  networkInterfaceOption: "{name} · {ip}"
+  networkInterfacePlaceholder: Select a network interface
+  networkInterfaceOption: "{name} · {ip} ({type})"
+  networkInterfaceWired: Wired
+  networkInterfaceWireless: Wireless
   networkInterfaceNoLink: No network
   automatic: Auto
   refresh: Refresh
@@ -294,7 +297,7 @@ cpds:
     subnetIp: Subnet IP
     emptyValue: "--"
   deviceTypes:
-    server: Server
+    teds: TEDS
     hf: HF
     multiBandRadio: MMR200
     multiBandHandheld: PMR200
@@ -388,6 +391,93 @@ selfUpdate:
   updateCompletedSummary: "Update completed: {success} succeeded, {fail} failed, {timeout} timed out"
   revalidate: Re-validate
   rewrite: Re-write
+  packageNotFound: No matching package found
+  transferFileTimeout: File header timeout
+  transferPacketTimeout: Packet transfer timeout
+  fileUpload: Upload file
+  emptyData: No data
+  version: Version
+  fileName: File name
+  remark: Remark
+  createdAt: Created at
+  action: Actions
+  edit: Edit
+  updateToDevice: Update to device
+  delete: Delete
+  deleteTitle: Delete prompt
+  deleteConfirm: "Delete {version}?"
+  cancel: Cancel
+  confirm: Confirm
+  prompt: Notice
+  packageMissing: Package does not exist, delete data now?
+  ok: OK
+  noDevices: No devices found
+  noDevicesNeedUpdate: No devices need update
+  pagination: "Page {page}/{pageCount} · {total} items"
+  uploadTitle: Upload package
+  versionHint: 0.1.1.1
+  remarkOptional: Remark (optional)
+  remarkHint: Enter remark
+  packageLabel: Package
+  packageHint: Select ZIP package
+  upload: Upload
+  versionRequired: Please enter version
+  versionFormat: Format should be 0.1.1.1
+  packageRequired: Please upload package first
+  editTitle: Edit package
+  scanTitle: Scan devices
+  scanning: Scanning....
+  scannedCount: "Found {n} devices"
+  remainingSeconds: "{n} seconds left"
+  next: Next
+  stepDiscovery: Discovery
+  stepAuth: Authentication
+  stepVersion: Version check
+  stepTransfer: Transfer
+  stepValidation: Validation
+  stepWrite: Write
+  stepReceipt: Receipt
+  descDiscovery: Scanning CPDC devices…
+  descAuth: Authenticating devices…
+  descVersion: Comparing versions…
+  descTransfer: Distributing package…
+  descValidation: Devices validating package…
+  descWrite: Devices replacing program and writing config…
+  descReceipt: Waiting for update result…
+  colIp: IP Address
+  colType: Type
+  colCurrentVersion: Current version
+  colNewVersion: New version
+  colStatus: Status
+  colProgress: Progress
+  colResult: Result
+  start: Start
+  pause: Pause
+  resume: Resume
+  close: Close
+  reAuth: Re-authenticate
+  reVersion: Re-check version
+  authSuccess: Authenticated
+  authFailedStatus: Authentication failed
+  authTimeout: Authentication timeout
+  latest: Up to date
+  needsUpdate: Needs update
+  unableToFetch: Unavailable
+  versionFailedStatus: Version check failed
+  versionTimeout: Version check timeout
+  validationPassed: Validated
+  validationFailedStatus: Validation failed
+  validationTimeout: Validation timeout
+  writeSuccess: Write succeeded
+  writeFailedStatus: Write failed
+  writeTimeout: Write timeout
+  updateSuccess: Update succeeded
+  receiptFailedStatus: Receipt failed
+  receiptTimeout: Receipt timeout
+  transferFailedStatus: Transfer failed
+  transferTimeout: Transfer timeout
+  transferring: Transferring
+  transferDone: Transfer done
   failReason:
     format: Invalid version format
     length: Packet length error

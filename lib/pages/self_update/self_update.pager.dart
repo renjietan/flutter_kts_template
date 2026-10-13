@@ -147,16 +147,16 @@ class _SelfUpdatePagerState extends State<SelfUpdatePager> {
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          title: const Text('提示'),
-          content: const Text('安装包不存在，是否立刻删除数据'),
+          title: Text(t.selfUpdate.prompt),
+          content: Text(t.selfUpdate.packageMissing),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: const Text('取消'),
+              child: Text(t.selfUpdate.cancel),
             ),
             ElevatedButton(
               onPressed: () => Navigator.of(dialogContext).pop(true),
-              child: const Text('删除'),
+              child: Text(t.selfUpdate.delete),
             ),
           ],
         );
@@ -237,12 +237,12 @@ class _SelfUpdatePagerState extends State<SelfUpdatePager> {
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          title: const Text('提示'),
+          title: Text(t.selfUpdate.prompt),
           content: Text(t.selfUpdate.selectInterfaceFirst),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(),
-              child: const Text('确定'),
+              child: Text(t.selfUpdate.ok),
             ),
           ],
         );
@@ -269,12 +269,12 @@ class _SelfUpdatePagerState extends State<SelfUpdatePager> {
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          title: const Text('提示'),
-          content: const Text('未扫描到设备'),
+          title: Text(t.selfUpdate.prompt),
+          content: Text(t.selfUpdate.noDevices),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(),
-              child: const Text('确定'),
+              child: Text(t.selfUpdate.ok),
             ),
           ],
         );
@@ -339,10 +339,10 @@ class _SelfUpdatePagerState extends State<SelfUpdatePager> {
     stepController.setPhase(UpdatePhase.running);
     try {
       final devices = stepController.devices
-          .where((d) => d.status == '需更新')
+          .where((d) => d.status == t.selfUpdate.needsUpdate)
           .toList();
       if (devices.isEmpty) {
-        stepController.setSummary('没有需要更新的设备');
+        stepController.setSummary(t.selfUpdate.noDevicesNeedUpdate);
         stepController.setPhase(UpdatePhase.finished);
         return;
       }

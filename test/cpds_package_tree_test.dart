@@ -1,4 +1,5 @@
 import 'package:flutter_kts_template/core/cpds/model/cpds_models.dart';
+import 'package:flutter_kts_template/core/cpds/model/cpds_enums.dart';
 import 'package:flutter_kts_template/pages/cpds/cpds_package_tree.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -10,6 +11,24 @@ CpdsNode _node(String id, {int nodeType = 0}) => CpdsNode(
   nodeType: nodeType,
   model: '',
   devices: const [],
+);
+
+CpdsNode _tedsNode(String id, {int nodeType = 1}) => CpdsNode(
+  id: id,
+  guid: 'guid-$id',
+  name: id,
+  networkSegment: '',
+  nodeType: nodeType,
+  model: '',
+  devices: [
+    CpdsDevice(
+      id: 'dc_teds_$id',
+      type: CpdsDeviceType.teds,
+      model: 'ccu',
+      alias: '',
+      ip: '',
+    ),
+  ],
 );
 
 CpdsUnit _unit(
@@ -26,7 +45,9 @@ void main() {
   group('buildCpdsPackageTree', () {
     test('nodeType==1 归入 CS，N 计数正确，普通节点在前', () {
       final tree = buildCpdsPackageTree(
-        [_unit('u1', nodeIds: ['n1', 'n2', 'n3'])],
+        [
+          _unit('u1', nodeIds: ['n1', 'n2', 'n3']),
+        ],
         _nodes([
           _node('n1', nodeType: 1),
           _node('n2', nodeType: 1),
@@ -49,17 +70,39 @@ void main() {
       expect(cs.unitId, 'u1');
     });
 
-    test('没有 nodeType==1 时不显示 CS', () {
+    test('nodeType==1 且含 teds 的节点单独拎出，位于普通节点之后、CS 之前', () {
       final tree = buildCpdsPackageTree(
-        [_unit('u1', nodeIds: ['n1', 'n2'])],
-        _nodes([_node('n1', nodeType: 2), _node('n2', nodeType: 0)]),
+        [
+          _unit('u1', nodeIds: ['n1', 'n2', 'n3', 'n4']),
+        ],
+        _nodes([
+          _node('n1', nodeType: 1),
+          _node('n2', nodeType: 2),
+          _tedsNode('n3', nodeType: 1),
+          _node('n4', nodeType: 0),
+        ]),
       );
 
       final u = tree.first;
+      expect(u.children.map((c) => c.kind).toList(), [
+        CpdsTreeItemKind.node, // n2
+        CpdsTreeItemKind.node, // n4
+        CpdsTreeItemKind.node, // n3 (teds)
+        CpdsTreeItemKind.futureWarrior,
+      ]);
+      expect(u.children[2].nodeId, 'n3');
+      expect(u.children[2].nodeType, 1);
+      expect(u.children[3].title, '未来士兵（1）');
+    });
+
+    test('没有 nodeType==1 时不显示 CS', () {
+      final tree = buildCpdsPackageTree([
+        _unit('u1', nodeIds: ['n1', 'n2']),
+      ], _nodes([_node('n1', nodeType: 2), _node('n2', nodeType: 0)]));
+
+      final u = tree.first;
       expect(
-        u.children.where(
-          (c) => c.kind == CpdsTreeItemKind.futureWarrior,
-        ),
+        u.children.where((c) => c.kind == CpdsTreeItemKind.futureWarrior),
         isEmpty,
       );
     });
@@ -70,7 +113,9 @@ void main() {
           _unit(
             'u1',
             nodeIds: ['n1', 'n2'],
-            subUnits: [_unit('u2', nodeIds: ['n3'])],
+            subUnits: [
+              _unit('u2', nodeIds: ['n3']),
+            ],
           ),
         ],
         _nodes([
@@ -89,16 +134,15 @@ void main() {
     });
 
     test('不跨 subUnits 递归收集 nodeType==1', () {
-      final tree = buildCpdsPackageTree(
-        [
-          _unit(
-            'u1',
-            nodeIds: ['n1'],
-            subUnits: [_unit('u2', nodeIds: ['n2'])],
-          ),
-        ],
-        _nodes([_node('n1', nodeType: 1), _node('n2', nodeType: 1)]),
-      );
+      final tree = buildCpdsPackageTree([
+        _unit(
+          'u1',
+          nodeIds: ['n1'],
+          subUnits: [
+            _unit('u2', nodeIds: ['n2']),
+          ],
+        ),
+      ], _nodes([_node('n1', nodeType: 1), _node('n2', nodeType: 1)]));
 
       final u1 = tree.first;
       final cs1 = u1.children.singleWhere(
@@ -132,9 +176,13 @@ void main() {
     setUp(() {
       tree = buildCpdsPackageTree(
         [
-          _unit('u1', nodeIds: ['n1', 'n3'], subUnits: [
-            _unit('u2', nodeIds: ['n4']),
-          ]),
+          _unit(
+            'u1',
+            nodeIds: ['n1', 'n3'],
+            subUnits: [
+              _unit('u2', nodeIds: ['n4']),
+            ],
+          ),
         ],
         _nodes([
           _node('n1', nodeType: 1),
@@ -153,9 +201,7 @@ void main() {
       final u1 = result.single;
       expect(u1.children.map((c) => c.nodeId), ['n3']);
       expect(
-        u1.children.where(
-          (c) => c.kind == CpdsTreeItemKind.futureWarrior,
-        ),
+        u1.children.where((c) => c.kind == CpdsTreeItemKind.futureWarrior),
         isEmpty,
       );
     });
@@ -180,14 +226,15 @@ void main() {
     late List<CpdsTreeItem> tree;
 
     setUp(() {
-      tree = buildCpdsPackageTree(
-        [
-          _unit('u1', nodeIds: ['n1'], subUnits: [
+      tree = buildCpdsPackageTree([
+        _unit(
+          'u1',
+          nodeIds: ['n1'],
+          subUnits: [
             _unit('u2', nodeIds: ['n2']),
-          ]),
-        ],
-        _nodes([_node('n1'), _node('n2')]),
-      );
+          ],
+        ),
+      ], _nodes([_node('n1'), _node('n2')]));
     });
 
     test('默认收起只显示顶层 unit', () {
@@ -198,26 +245,27 @@ void main() {
 
     test('展开父节点后显示其直接子节点', () {
       final rows = flattenCpdsTree(tree, {'unit:u1'});
-      expect(
-        rows.map((r) => r.item.key),
-        ['unit:u1', 'node:n1', 'unit:u2'],
-      );
+      expect(rows.map((r) => r.item.key), ['unit:u1', 'node:n1', 'unit:u2']);
     });
 
     test('逐级展开显示全部节点', () {
       final rows = flattenCpdsTree(tree, {'unit:u1', 'unit:u2'});
-      expect(
-        rows.map((r) => r.item.key),
-        ['unit:u1', 'node:n1', 'unit:u2', 'node:n2'],
-      );
+      expect(rows.map((r) => r.item.key), [
+        'unit:u1',
+        'node:n1',
+        'unit:u2',
+        'node:n2',
+      ]);
     });
 
     test('forceExpandAll 强制展开所有非叶子节点', () {
       final rows = flattenCpdsTree(tree, {}, forceExpandAll: true);
-      expect(
-        rows.map((r) => r.item.key),
-        ['unit:u1', 'node:n1', 'unit:u2', 'node:n2'],
-      );
+      expect(rows.map((r) => r.item.key), [
+        'unit:u1',
+        'node:n1',
+        'unit:u2',
+        'node:n2',
+      ]);
     });
   });
 }

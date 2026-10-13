@@ -110,7 +110,7 @@ class TransferCoordinator {
       deviceTypes: types,
     );
     if (zipBytes.isEmpty) {
-      _terminate('未找到匹配的安装包');
+      _terminate(t.selfUpdate.packageNotFound);
       return false;
     }
 
@@ -129,7 +129,7 @@ class TransferCoordinator {
 
     // 初始化传输进度。
     for (final device in selectedDevices) {
-      device.status = '传输中';
+      device.status = t.selfUpdate.transferring;
       device.progress = 0;
       device.transferredBytes = 0;
       device.totalBytes = zipBytes.length;
@@ -187,7 +187,7 @@ class TransferCoordinator {
           continue;
         }
         if (!ok) {
-          _terminate('传输前置指令超时');
+          _terminate(t.selfUpdate.transferFileTimeout);
           return false;
         }
         _state = TransferState.sendingPacket;
@@ -213,7 +213,7 @@ class TransferCoordinator {
           continue;
         }
         if (outcome is _PacketSendFailure) {
-          _terminate('传输分包超时');
+          _terminate(t.selfUpdate.transferPacketTimeout);
           return false;
         }
         // 成功：更新进度。
@@ -395,16 +395,16 @@ class TransferCoordinator {
 
     _markValidDevices(lastReplies);
 
-    if (_selectedDevices.every((d) => d.status == '校验通过')) {
+    if (_selectedDevices.every((d) => d.status == t.selfUpdate.validationPassed)) {
       controller.setStepStatus(4, StepStatus.success);
       return true;
     }
 
     final fail = _selectedDevices
-        .where((d) => d.status != '校验通过' && d.status != '校验超时')
+        .where((d) => d.status != t.selfUpdate.validationPassed && d.status != t.selfUpdate.validationTimeout)
         .length;
     final timeout = _selectedDevices
-        .where((d) => d.status == '校验超时')
+        .where((d) => d.status == t.selfUpdate.validationTimeout)
         .length;
     controller.setStepStatus(4, StepStatus.failed);
     controller.setSummary(
@@ -445,19 +445,19 @@ class TransferCoordinator {
       }
       final target = device.first;
       if (reply.ok) {
-        target.status = '校验通过';
+        target.status = t.selfUpdate.validationPassed;
         target.result = '';
         target.detail = '';
       } else {
-        target.status = '校验失败';
-        target.result = '校验失败';
+        target.status = t.selfUpdate.validationFailedStatus;
+        target.result = t.selfUpdate.validationFailedStatus;
         target.detail = selfUpdateFailReasonText(reply.reason ?? 'unknown');
       }
     }
     for (final device in _selectedDevices) {
       if (!replied.contains(deviceKey(device.type, device.rawIp))) {
-        device.status = '校验超时';
-        device.result = '校验超时';
+        device.status = t.selfUpdate.validationTimeout;
+        device.result = t.selfUpdate.validationTimeout;
         device.detail = '';
       }
     }
@@ -517,7 +517,7 @@ class TransferCoordinator {
 
     _markWriteDevices(lastReplies);
 
-    if (_selectedDevices.every((d) => d.status == '写入成功')) {
+    if (_selectedDevices.every((d) => d.status == t.selfUpdate.writeSuccess)) {
       controller.setStepStatus(5, StepStatus.success);
       controller.setActiveStep(6);
       controller.setStepStatus(6, StepStatus.running);
@@ -525,10 +525,10 @@ class TransferCoordinator {
     }
 
     final fail = _selectedDevices
-        .where((d) => d.status != '写入成功' && d.status != '写入超时')
+        .where((d) => d.status != t.selfUpdate.writeSuccess && d.status != t.selfUpdate.writeTimeout)
         .length;
     final timeout = _selectedDevices
-        .where((d) => d.status == '写入超时')
+        .where((d) => d.status == t.selfUpdate.writeTimeout)
         .length;
     controller.setStepStatus(5, StepStatus.failed);
     controller.setSummary(
@@ -566,19 +566,19 @@ class TransferCoordinator {
       }
       final target = device.first;
       if (reply.ok) {
-        target.status = '写入成功';
+        target.status = t.selfUpdate.writeSuccess;
         target.result = '';
         target.detail = '';
       } else {
-        target.status = '写入失败';
-        target.result = '写入失败';
+        target.status = t.selfUpdate.writeFailedStatus;
+        target.result = t.selfUpdate.writeFailedStatus;
         target.detail = selfUpdateFailReasonText(reply.reason ?? 'unknown');
       }
     }
     for (final device in _selectedDevices) {
       if (!replied.contains(deviceKey(device.type, device.rawIp))) {
-        device.status = '写入超时';
-        device.result = '写入超时';
+        device.status = t.selfUpdate.writeTimeout;
+        device.result = t.selfUpdate.writeTimeout;
         device.detail = '';
       }
     }
@@ -598,7 +598,7 @@ class TransferCoordinator {
     _laterReplies.addAll(cached);
 
     final writeOkKeys = _selectedDevices
-        .where((d) => d.status == '写入成功')
+        .where((d) => d.status == t.selfUpdate.writeSuccess)
         .map((d) => deviceKey(d.type, d.rawIp))
         .toSet();
 
@@ -629,9 +629,9 @@ class TransferCoordinator {
       if (!writeOkKeys.contains(deviceKey(device.type, device.rawIp))) {
         continue;
       }
-      if (device.status == '更新成功') {
+      if (device.status == t.selfUpdate.updateSuccess) {
         success++;
-      } else if (device.status == '更新失败') {
+      } else if (device.status == t.selfUpdate.receiptFailedStatus) {
         fail++;
       } else {
         timeout++;
@@ -648,7 +648,7 @@ class TransferCoordinator {
     var allUpdated = true;
     for (final device in _selectedDevices) {
       final key = deviceKey(device.type, device.rawIp);
-      if (writeOkKeys.contains(key) && device.status != '更新成功') {
+      if (writeOkKeys.contains(key) && device.status != t.selfUpdate.updateSuccess) {
         allUpdated = false;
         break;
       }
@@ -679,20 +679,20 @@ class TransferCoordinator {
       }
       final target = device.first;
       if (reply.ok) {
-        target.status = '更新成功';
-        target.result = '更新成功';
+        target.status = t.selfUpdate.updateSuccess;
+        target.result = t.selfUpdate.updateSuccess;
         target.detail = 'v${reply.detail}';
       } else {
-        target.status = '更新失败';
-        target.result = '回执失败';
+        target.status = t.selfUpdate.receiptFailedStatus;
+        target.result = t.selfUpdate.receiptFailedStatus;
         target.detail = selfUpdateFailReasonText(reply.detail);
       }
     }
     for (final device in _selectedDevices) {
       final key = deviceKey(device.type, device.rawIp);
       if (writeOkKeys.contains(key) && !replied.contains(key)) {
-        device.status = '回执超时';
-        device.result = '回执超时';
+        device.status = t.selfUpdate.receiptTimeout;
+        device.result = t.selfUpdate.receiptTimeout;
         device.detail = '';
       }
     }
@@ -708,7 +708,7 @@ class TransferCoordinator {
   void _terminate(String summary) {
     _state = TransferState.cancelled;
     for (final device in _selectedDevices) {
-      device.result = summary.contains('超时') ? '传输超时' : '传输失败';
+      device.result = (summary == t.selfUpdate.transferFileTimeout || summary == t.selfUpdate.transferPacketTimeout) ? t.selfUpdate.transferTimeout : t.selfUpdate.transferFailedStatus;
       device.detail = summary;
     }
     controller.markFailed(controller.activeStep);

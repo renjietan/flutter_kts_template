@@ -4,6 +4,8 @@ import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_kts_template/components/TextField/simple.form.textfield.dart';
 import 'package:flutter_kts_template/components/button/base.button.dart';
 import 'package:flutter_kts_template/core/entities/installPackage/installPackageEntity.dart';
+import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
+import 'package:flutter_kts_template/utils/arabic_digits.dart';
 
 /// 编辑安装包信息弹窗（样式对齐文件上传弹窗）。
 ///
@@ -60,10 +62,10 @@ class _EditPackageDialogState extends State<EditPackageDialog> {
   String? _validateVersion(String? value) {
     final version = value?.trim() ?? '';
     if (version.isEmpty) {
-      return '请输入版本号';
+      return t.selfUpdate.versionRequired;
     }
     if (!_versionPattern.hasMatch(version)) {
-      return '格式应为 0.1.1.1';
+      return t.selfUpdate.versionFormat;
     }
     return null;
   }
@@ -75,8 +77,8 @@ class _EditPackageDialogState extends State<EditPackageDialog> {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
       ),
-      title: const Text(
-        '编辑安装包',
+      title: Text(
+        t.selfUpdate.editTitle,
         style: TextStyle(color: Colors.white, fontSize: 16),
       ),
       content: SizedBox(
@@ -87,14 +89,14 @@ class _EditPackageDialogState extends State<EditPackageDialog> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              _buildFieldLabel('版本号', required: true),
+              _buildFieldLabel(t.selfUpdate.version, required: true),
               const SizedBox(height: 8),
               SimpleFormTextField(
                 key: const ValueKey('edit_version_field'),
                 field: FormFieldConfig(
                   name: 'version',
-                  label: '版本号',
-                  hintText: '0.1.1.1',
+                  label: t.selfUpdate.version,
+                  hintText: localizeDigits(context, t.selfUpdate.versionHint),
                   textEditingController: _versionController,
                   required: true,
                   inputFormatters: [
@@ -105,31 +107,31 @@ class _EditPackageDialogState extends State<EditPackageDialog> {
                 ),
               ),
               const SizedBox(height: 16),
-              _buildFieldLabel('备注（选填）'),
+              _buildFieldLabel(t.selfUpdate.remarkOptional),
               const SizedBox(height: 8),
               SimpleFormTextField(
                 key: const ValueKey('edit_remark_field'),
                 field: FormFieldConfig(
                   name: 'remark',
-                  label: '备注（选填）',
-                  hintText: '请输入备注',
+                  label: t.selfUpdate.remarkOptional,
+                  hintText: t.selfUpdate.remarkHint,
                   textEditingController: _remarkController,
                   keyboardType: TextInputType.multiline,
                   maxLines: null,
                   minLines: 3,
                   inputFormatters: [LengthLimitingTextInputFormatter(150)],
-                  counterTextBuilder: (value) => '${value.length}/150',
+                  counterTextBuilder: (value) => localizeDigits(context, '${value.length}/150'),
                 ),
               ),
               const SizedBox(height: 16),
-              _buildFieldLabel('安装包', required: true),
+              _buildFieldLabel(t.selfUpdate.packageLabel, required: true),
               const SizedBox(height: 8),
               SimpleFormTextField(
                 key: const ValueKey('edit_file_field'),
                 field: FormFieldConfig(
                   name: 'fileName',
-                  label: '安装包',
-                  hintText: '安装包',
+                  label: t.selfUpdate.packageLabel,
+                  hintText: t.selfUpdate.packageLabel,
                   textEditingController: _fileNameController,
                   readonly: true,
                 ),
@@ -141,13 +143,13 @@ class _EditPackageDialogState extends State<EditPackageDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text(
-            '取消',
+          child: Text(
+            t.selfUpdate.cancel,
             style: TextStyle(color: Colors.white70),
           ),
         ),
         BaseButton(
-          label: '确定',
+          label: t.selfUpdate.ok,
           minWidth: 100,
           borderRadius: 5,
           onPressed: _submit,

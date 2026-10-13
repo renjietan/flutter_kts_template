@@ -13,7 +13,7 @@ final _nonce = Uint8List.fromList(List<int>.generate(16, (i) => i + 20));
 
 Map<int, dynamic> _identity() => {
   1: _esn,
-  2: CpdPackedEnums([CpdsDeviceType.server.value]),
+  2: CpdPackedEnums([CpdsDeviceType.teds.value]),
 };
 
 Map<int, dynamic> _body({
@@ -29,7 +29,7 @@ Map<int, dynamic> _body({
     2: result,
     3: 'nn_1',
     4: [
-      {1: CpdsDeviceType.server.value, 2: 'dev_1'},
+      {1: CpdsDeviceType.teds.value, 2: 'dev_1'},
     ],
     5: [
       {1: deviceType, 2: 'dev_1', 3: typeResult, 4: stage, 5: typeErrorCode},
@@ -125,8 +125,8 @@ CpdsSessionMachine _transferringMachine() {
     expected: const [
       CpdsDevice(
         id: 'dev_1',
-        type: CpdsDeviceType.server,
-        model: 'Server',
+        type: CpdsDeviceType.teds,
+        model: 'TEDS',
         alias: '',
         ip: '10.0.0.10',
       ),
@@ -136,7 +136,7 @@ CpdsSessionMachine _transferringMachine() {
   machine.recordDiscovery(
     _esn,
     _nonce,
-    const [CpdsDeviceType.server],
+    const [CpdsDeviceType.teds],
     '10.0.0.2',
     '255.255.255.0',
   );
@@ -146,7 +146,7 @@ CpdsSessionMachine _transferringMachine() {
     2: CpdResult.success.value,
     3: 'nn_1',
     4: [
-      {1: CpdsDeviceType.server.value, 2: 'dev_1'},
+      {1: CpdsDeviceType.teds.value, 2: 'dev_1'},
     ],
   });
   return machine;

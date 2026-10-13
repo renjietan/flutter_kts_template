@@ -1,6 +1,6 @@
 enum CpdsDeviceType {
   unspecified(0, 'UNSPECIFIED'),
-  server(1, 'SERVER'),
+  teds(1, 'TEDS'),
   hf(2, 'HF'),
   multiBandRadio(3, 'MULTI_BAND_RADIO'),
   multiBandHandheld(4, 'MULTI_BAND_HANDHELD'),

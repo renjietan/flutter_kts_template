@@ -81,7 +81,12 @@ List<CpdsTreeItem> buildCpdsPackageTree(
 }) {
   return units
       .map(
-        (unit) => _buildUnit(unit, nodesById, 0, futureWarriorLabel ?? t.tree.futureWarrior),
+        (unit) => _buildUnit(
+          unit,
+          nodesById,
+          0,
+          futureWarriorLabel ?? t.tree.futureWarrior,
+        ),
       )
       .toList();
 }
@@ -93,14 +98,28 @@ CpdsTreeItem _buildUnit(
   String futureWarriorLabel,
 ) {
   final children = <CpdsTreeItem>[];
+  final tedsNodes = <CpdsTreeItem>[];
   var futureWarriorCount = 0;
 
   for (final nodeId in unit.nodeIds) {
     final node = nodesById[nodeId];
     if (node == null) continue;
     if (node.nodeType == 1) {
-      futureWarriorCount++;
-      continue; // nodeType==1 节点不再单独展示，统一归入 CS。
+      if (node.hasTeds) {
+        tedsNodes.add(
+          CpdsTreeItem(
+            kind: CpdsTreeItemKind.node,
+            key: 'node:${node.id}',
+            title: node.name,
+            depth: depth + 1,
+            nodeId: node.id,
+            nodeType: node.nodeType,
+          ),
+        );
+      } else {
+        futureWarriorCount++;
+      }
+      continue;
     }
     children.add(
       CpdsTreeItem(
@@ -113,6 +132,8 @@ CpdsTreeItem _buildUnit(
       ),
     );
   }
+
+  children.addAll(tedsNodes);
 
   if (futureWarriorCount > 0) {
     children.add(

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 
+import 'package:dage/dage.dart';
 import 'package:flutter_kts_template/config/config.dart';
 import 'package:flutter_kts_template/core/utils/director.dart';
 import 'package:flutter_kts_template/utils/shared.dart';
@@ -27,6 +28,8 @@ class CpdsManager {
       StreamController<CpdsApplicationState>.broadcast();
 
   String? _uploadPath;
+  String? _pcSourcePath;
+  String? _pcPassword;
   String _uploadName = '';
   String _transferFileName = '';
   int _uploadSize = 0;
@@ -172,6 +175,219 @@ class CpdsManager {
     _notify();
   }
 
+  /// 缓存当前通信包的 `.pc` 源文件路径与 age 密码，
+  /// 用于后续把节点名称等修改持久化回 `.pc`。
+  void cachePcSource({required String pcPath, required String password}) {
+    _pcSourcePath = pcPath;
+    _pcPassword = password;
+  }
+
+  /// 修改节点名称：更新内存 + 写回 `.zip` + 重新加密写回 `.pc`。
+  Future<void> updateNodeName(String nodeId, String newName) async {
+    _ensureIdle();
+    final package = _package;
+    final zipPath = _uploadPath;
+    if (package == null || zipPath == null) {
+      throw CpdsException(
+        CpdsErrorCode.invalidPackage,
+        params: {'field': 'package'},
+        message: 'no parsed package',
+      );
+    }
+    final pcPath = _pcSourcePath;
+    if (pcPath == null) {
+      throw CpdsException(
+        CpdsErrorCode.invalidPackage,
+        params: {'field': 'pcSource'},
+        message: 'pc source file is missing',
+      );
+    }
+    final password = _pcPassword;
+    if (password == null) {
+      throw CpdsException(
+        CpdsErrorCode.invalidPackage,
+        params: {'field': 'pcPassword'},
+        message: 'pc password is missing',
+      );
+    }
+
+    CpdsNode? node;
+    for (final n in package.nodes) {
+      if (n.id == nodeId) {
+        node = n;
+        break;
+      }
+    }
+    if (node == null) {
+      throw CpdsException(
+        CpdsErrorCode.invalidPackage,
+        params: {'field': 'nodeId', 'actual': nodeId},
+        message: 'unknown node',
+      );
+    }
+    if (node.name == newName) return;
+
+    final pcFile = File(pcPath);
+    if (!pcFile.existsSync()) {
+      throw CpdsException(
+        CpdsErrorCode.invalidPackage,
+        params: {'field': 'pcSource', 'path': pcPath},
+        message: 'pc source file is missing',
+      );
+    }
+
+    final originalZipBytes = await File(zipPath).readAsBytes();
+    final originalPcBytes = await pcFile.readAsBytes();
+
+    final newZipBytes = CpdsPackageParser.updateNodeNameInZip(
+      zipPath,
+      nodeId,
+      newName,
+    );
+    final newPcBytes = await _ageEncrypt(newZipBytes, password);
+
+    try {
+      await _writeBytesReplace(zipPath, newZipBytes);
+      await _writeBytesReplace(pcPath, newPcBytes);
+    } catch (_) {
+      try {
+        await _writeBytesReplace(zipPath, originalZipBytes);
+      } catch (_) {}
+      try {
+        await _writeBytesReplace(pcPath, originalPcBytes);
+      } catch (_) {}
+      rethrow;
+    }
+
+    await _reparsePackage();
+    _notify();
+  }
+
+  /// 重新解析当前 `.zip`，刷新 package / sha256 / 文件大小，
+  /// 但不清空已选中的节点或「未来战士」分组。
+  Future<void> _reparsePackage() async {
+    final uploadPath = _uploadPath;
+    if (uploadPath == null) return;
+    final (package, sha) = await CpdsPackageParser.parseFileWithHash(
+      uploadPath,
+      path.basename(uploadPath),
+      password: AppConfig.zipPassword,
+    );
+    _package = package;
+    _packageSha256 = sha;
+    _uploadSize = package.fileSize;
+  }
+
+  /// 修改 `.pc` 的 age 密码：校验原密码、用新密码重新加密写回 `.pc`，
+  /// 并更新内存中的密码缓存。`.zip` 保持不变。
+  Future<void> changePcPassword(String oldPassword, String newPassword) async {
+    _ensureIdle();
+    final zipPath = _uploadPath;
+    if (_package == null || zipPath == null) {
+      throw CpdsException(
+        CpdsErrorCode.invalidPackage,
+        params: {'field': 'package'},
+        message: 'no parsed package',
+      );
+    }
+    final pcPath = _pcSourcePath;
+    if (pcPath == null) {
+      throw CpdsException(
+        CpdsErrorCode.invalidPackage,
+        params: {'field': 'pcSource'},
+        message: 'pc source file is missing',
+      );
+    }
+    final pcFile = File(pcPath);
+    if (!pcFile.existsSync()) {
+      throw CpdsException(
+        CpdsErrorCode.invalidPackage,
+        params: {'field': 'pcSource', 'path': pcPath},
+        message: 'pc source file is missing',
+      );
+    }
+
+    // 校验原密码：优先比对缓存，缓存为空时用原密码解密 `.pc` 验证。
+    final cached = _pcPassword;
+    if (cached != null) {
+      if (cached != oldPassword) {
+        throw CpdsException(
+          CpdsErrorCode.invalidPackage,
+          params: {'field': 'oldPassword'},
+          message: 'old password mismatch',
+        );
+      }
+    } else {
+      try {
+        await _ageDecrypt(await pcFile.readAsBytes(), oldPassword);
+      } catch (_) {
+        throw CpdsException(
+          CpdsErrorCode.invalidPackage,
+          params: {'field': 'oldPassword'},
+          message: 'old password mismatch',
+        );
+      }
+    }
+
+    final zipBytes = await File(zipPath).readAsBytes();
+    final newPcBytes = await _ageEncrypt(zipBytes, newPassword);
+    final originalPcBytes = await pcFile.readAsBytes();
+
+    try {
+      await _writeBytesReplace(pcPath, newPcBytes);
+    } catch (_) {
+      try {
+        await _writeBytesReplace(pcPath, originalPcBytes);
+      } catch (_) {}
+      rethrow;
+    }
+
+    _pcPassword = newPassword;
+    _notify();
+  }
+
+  Future<Uint8List> _ageEncrypt(Uint8List zipBytes, String password) async {
+    final chunks = await encryptWithPassphrase(
+      Stream.value(zipBytes),
+      passphraseProvider: _ManagerPassphrase(password),
+      workFactor: 15,
+    ).toList();
+    final builder = BytesBuilder(copy: false);
+    for (final chunk in chunks) {
+      builder.add(chunk);
+    }
+    return builder.takeBytes();
+  }
+
+  Future<Uint8List> _ageDecrypt(Uint8List pcBytes, String password) async {
+    final chunks = await decryptWithPassphrase(
+      Stream.value(pcBytes),
+      passphraseProvider: _ManagerPassphrase(password),
+    ).toList();
+    final builder = BytesBuilder(copy: false);
+    for (final chunk in chunks) {
+      builder.add(chunk);
+    }
+    return builder.takeBytes();
+  }
+
+  Future<void> _writeBytesReplace(String filePath, Uint8List bytes) async {
+    final file = File(filePath);
+    final tmp = File('$filePath.tmp');
+    await tmp.writeAsBytes(bytes, flush: true);
+    try {
+      if (file.existsSync()) {
+        await file.delete();
+      }
+      await tmp.rename(filePath);
+    } catch (_) {
+      try {
+        if (await tmp.exists()) await tmp.delete();
+      } catch (_) {}
+      rethrow;
+    }
+  }
+
   Future<CpdsApplicationState> parseSourcePath(String sourcePath) async {
     _ensureIdle();
     final type = FileSystemEntity.typeSync(sourcePath, followLinks: false);
@@ -302,7 +518,7 @@ class CpdsManager {
   }
 
   Future<List<CpdsNetworkInterface>> listNetworkInterfaces() async {
-    return CpdsNetworkInterfaceService.listWiredInterfaces();
+    return CpdsNetworkInterfaceService.listInterfaces();
   }
 
   /// 刷新网卡列表并缓存，自动选中或恢复上次选中，然后持久化。
@@ -313,18 +529,32 @@ class CpdsManager {
     _interfacesLoading = true;
     _notify();
     try {
-      final interfaces =
-          await CpdsNetworkInterfaceService.listWiredInterfaces();
+      final interfaces = await CpdsNetworkInterfaceService.listInterfaces();
       var selected = '';
       var automatic = false;
-      if (interfaces.length == 1 && interfaces.first.linkUp) {
-        selected = interfaces.first.name;
-        automatic = true;
+      final stored = Shared.getCpdsNetworkInterface() ?? '';
+      if (stored.isNotEmpty &&
+          interfaces.any((i) => i.name == stored && i.linkUp)) {
+        selected = stored;
       } else {
-        final stored = Shared.getCpdsNetworkInterface() ?? '';
-        if (stored.isNotEmpty &&
-            interfaces.any((i) => i.name == stored && i.linkUp)) {
-          selected = stored;
+        CpdsNetworkInterface? candidate;
+        for (final item in interfaces) {
+          if (item.wired && item.linkUp) {
+            candidate = item;
+            break;
+          }
+        }
+        if (candidate == null) {
+          for (final item in interfaces) {
+            if (!item.wired && item.linkUp) {
+              candidate = item;
+              break;
+            }
+          }
+        }
+        if (candidate != null) {
+          selected = candidate.name;
+          automatic = true;
         }
       }
       _interfaces = interfaces;
@@ -589,6 +819,15 @@ class CpdsManager {
     await _discoveryDecisionController?.close();
     await _stateController.close();
   }
+}
+
+class _ManagerPassphrase extends PassphraseProvider {
+  _ManagerPassphrase(this.password);
+
+  final String password;
+
+  @override
+  Future<String> passphrase() async => password;
 }
 
 Uint8List _randomUuid() {

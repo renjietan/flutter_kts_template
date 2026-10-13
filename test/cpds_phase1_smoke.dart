@@ -38,7 +38,7 @@ Future<void> main() async {
       'File': {'Guid': 'guid-node', 'Model': 'Vehicle'},
       'SystemConfiguration': {
         'LANPrimary': {
-          'Server': ['dc_server_test'],
+          'TEDS': ['dc_teds_test'],
         },
         'LANMember': {
           'CCU': ['dc_ccu_test'],
@@ -63,8 +63,8 @@ Future<void> main() async {
     }),
   );
   archive.addFile(
-    _jsonFile('3_device_config/dc_server_test.json', {
-      'File': {'Guid': 'guid-device', 'Model': 'Server'},
+    _jsonFile('3_device_config/dc_teds_test.json', {
+      'File': {'Guid': 'guid-device', 'Model': 'TEDS'},
       'Ipv4Subnet': '10.0.0.21',
     }),
   );
@@ -110,12 +110,9 @@ Future<void> main() async {
       ccuAudioDevice.distributionIp2.isNotEmpty) {
     throw StateError('ccu-audio distribution ip mismatch');
   }
-  final server = node.devices.singleWhere(
-    (d) => d.type == CpdsDeviceType.server,
-  );
-  if (server.distributionIp1 != '10.0.0.21' ||
-      server.distributionIp2.isNotEmpty) {
-    throw StateError('server distribution ip mismatch');
+  final teds = node.devices.singleWhere((d) => d.type == CpdsDeviceType.teds);
+  if (teds.distributionIp1 != '10.0.0.21' || teds.distributionIp2.isNotEmpty) {
+    throw StateError('teds distribution ip mismatch');
   }
   final vehInter = node.devices.singleWhere(
     (d) => d.type == CpdsDeviceType.vehInter,

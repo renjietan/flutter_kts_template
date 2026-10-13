@@ -34,11 +34,7 @@ class UpdateFlowCoordinator {
   final Duration versionTimeout;
 
   /// 无对应更新文件夹、不支持更新的设备类型。
-  static const Set<String> unsupportedTypes = {
-    'Server',
-    'IEC',
-    'SmallHandheld',
-  };
+  static const Set<String> unsupportedTypes = {'TEDS', 'SmallHandheld'};
 
   /// 认证窗口数量：每个窗口独立广播收集一次，最多 3 次。
   static const int authWindows = 3;
@@ -141,7 +137,7 @@ class UpdateFlowCoordinator {
           ip: duplicatedIp ? '${reply.ip}（重复）' : reply.ip,
           type: reply.deviceType,
           rawIp: reply.ip,
-        )..status = '认证成功',
+        )..status = t.selfUpdate.authSuccess,
       );
     }
   }
@@ -195,15 +191,9 @@ class UpdateFlowCoordinator {
     final uniqueByKey = <String, UpdateReply>{};
     for (final reply in replies) {
       if (reply is VersionOkReply) {
-        uniqueByKey.putIfAbsent(
-          '${reply.deviceType}#${reply.ip}',
-          () => reply,
-        );
+        uniqueByKey.putIfAbsent('${reply.deviceType}#${reply.ip}', () => reply);
       } else if (reply is VersionFailReply) {
-        uniqueByKey.putIfAbsent(
-          '${reply.deviceType}#${reply.ip}',
-          () => reply,
-        );
+        uniqueByKey.putIfAbsent('${reply.deviceType}#${reply.ip}', () => reply);
       }
     }
     return uniqueByKey.values.toList();
@@ -223,8 +213,8 @@ class UpdateFlowCoordinator {
         if (device.rawIp == reply.ip && device.type == reply.deviceType) {
           device.currentVersion = reply.version;
           device.status = device.currentVersion == targetVersion
-              ? '已最新'
-              : '需更新';
+              ? t.selfUpdate.latest
+              : t.selfUpdate.needsUpdate;
           device.result = '';
           device.detail = '';
           break;
@@ -236,8 +226,8 @@ class UpdateFlowCoordinator {
       repliedKeys.add('${reply.deviceType}#${reply.ip}');
       for (final device in controller.devices) {
         if (device.rawIp == reply.ip && device.type == reply.deviceType) {
-          device.status = '无法获取';
-          device.result = '版本校验失败';
+          device.status = t.selfUpdate.unableToFetch;
+          device.result = t.selfUpdate.versionFailedStatus;
           device.detail = selfUpdateFailReasonText(reply.reason);
           break;
         }
@@ -247,8 +237,8 @@ class UpdateFlowCoordinator {
     // 超时未回的设备标记「无法获取」。
     for (final device in controller.devices) {
       if (!repliedKeys.contains('${device.type}#${device.rawIp}')) {
-        device.status = '无法获取';
-        device.result = '版本校验超时';
+        device.status = t.selfUpdate.unableToFetch;
+        device.result = t.selfUpdate.versionTimeout;
         device.detail = '';
       }
     }
@@ -259,10 +249,9 @@ class UpdateFlowCoordinator {
     for (final device in controller.devices) {
       device.currentVersion = '';
       device.newVersion = '';
-      device.status = '认证成功';
+      device.status = t.selfUpdate.authSuccess;
       device.result = '';
       device.detail = '';
     }
   }
-
 }

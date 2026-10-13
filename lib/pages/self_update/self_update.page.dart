@@ -9,6 +9,7 @@ import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 import 'package:flutter_kts_template/pages/cpds/widgets/cpds_network_interface_bar.dart';
 import 'package:flutter_kts_template/pages/self_update/widgets/edit_package_dialog.dart';
 import 'package:flutter_kts_template/theme/app_colors.dart';
+import 'package:flutter_kts_template/utils/arabic_digits.dart';
 import 'package:flutter_kts_template/theme/table.theme.dart';
 
 /// 自更新安装包上传页面。
@@ -169,7 +170,7 @@ class _SelfUpdatePageState extends State<SelfUpdatePage> {
               ),
               const SizedBox(width: 8),
               BaseButton(
-                label: '文件上传',
+                label: t.selfUpdate.fileUpload,
                 minWidth: 110,
                 onPressed: widget.onUpload,
               ),
@@ -187,7 +188,7 @@ class _SelfUpdatePageState extends State<SelfUpdatePage> {
   Widget _buildTable() {
     final items = _pageItems;
     if (items.isEmpty) {
-      return const Center(child: Text('暂无数据'));
+      return Center(child: Text(t.selfUpdate.emptyData));
     }
 
     return LayoutBuilder(
@@ -216,12 +217,12 @@ class _SelfUpdatePageState extends State<SelfUpdatePage> {
           child: SingleChildScrollView(
             child: DataTable(
               columnSpacing: columnSpacing,
-              columns: const [
-                DataColumn(label: Text('版本号')),
-                DataColumn(label: Text('文件名称')),
-                DataColumn(label: Text('备注')),
-                DataColumn(label: Text('创建时间')),
-                DataColumn(label: Text('操作')),
+              columns: [
+                DataColumn(label: Text(t.selfUpdate.version)),
+                DataColumn(label: Text(t.selfUpdate.fileName)),
+                DataColumn(label: Text(t.selfUpdate.remark)),
+                DataColumn(label: Text(t.selfUpdate.createdAt)),
+                DataColumn(label: Text(t.selfUpdate.action)),
               ],
               rows: [
                 for (final entity in items)
@@ -230,14 +231,14 @@ class _SelfUpdatePageState extends State<SelfUpdatePage> {
                       DataCell(
                         SizedBox(
                           width: versionWidth,
-                          child: Text(entity.version),
+                          child: Text(localizeDigits(context, entity.version)),
                         ),
                       ),
                       DataCell(
                         SizedBox(
                           width: fileNameWidth,
                           child: Text(
-                            entity.fileName,
+                            localizeDigits(context, entity.fileName),
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
@@ -254,7 +255,7 @@ class _SelfUpdatePageState extends State<SelfUpdatePage> {
                       DataCell(
                         SizedBox(
                           width: timeWidth,
-                          child: Text(_formatTime(entity.createdAt)),
+                          child: Text(localizeDigits(context, _formatTime(entity.createdAt))),
                         ),
                       ),
                       DataCell(
@@ -282,21 +283,21 @@ class _SelfUpdatePageState extends State<SelfUpdatePage> {
               ? null
               : () => _showEditDialog(entity),
           icon: const Icon(Icons.edit, color: AppColors.primary),
-          tooltip: '编辑',
+          tooltip: t.selfUpdate.edit,
         ),
         IconButton(
           onPressed: widget.onUpdate == null
               ? null
               : () => widget.onUpdate!(entity),
           icon: const Icon(Icons.system_update, color: Color(0xFF00A2E9)),
-          tooltip: '更新到设备',
+          tooltip: t.selfUpdate.updateToDevice,
         ),
         IconButton(
           onPressed: widget.onDelete == null
               ? null
               : () => _confirmDelete(entity),
           icon: const Icon(Icons.delete_outline, color: Color(0xFFF15B64)),
-          tooltip: '删除',
+          tooltip: t.selfUpdate.delete,
         ),
       ],
     );
@@ -322,19 +323,19 @@ class _SelfUpdatePageState extends State<SelfUpdatePage> {
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          title: const Text('删除提示'),
-          content: Text('确认删除【${entity.version}】吗？'),
+          title: Text(t.selfUpdate.deleteTitle),
+          content: Text(t.selfUpdate.deleteConfirm(version: entity.version)),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: const Text(
-                '取消',
-                style: TextStyle(color: AppColors.textMuted),
+              child: Text(
+                t.selfUpdate.cancel,
+                style: const TextStyle(color: AppColors.textMuted),
               ),
             ),
             ElevatedButton(
               onPressed: () => Navigator.of(dialogContext).pop(true),
-              child: const Text('确认'),
+              child: Text(t.selfUpdate.confirm),
             ),
           ],
         );
@@ -349,19 +350,20 @@ class _SelfUpdatePageState extends State<SelfUpdatePage> {
     if (_pageCount == 0) {
       return const SizedBox.shrink();
     }
+    final rtl = Directionality.of(context) == TextDirection.rtl;
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        Text('第 ${_page + 1} / $_pageCount 页 · 共 ${_filtered.length} 条'),
+        Text(localizeDigits(context, t.selfUpdate.pagination(page: _page + 1, pageCount: _pageCount, total: _filtered.length))),
         IconButton(
           onPressed: _page > 0 ? () => setState(() => _page--) : null,
-          icon: const Icon(Icons.chevron_left),
+          icon: Icon(rtl ? Icons.chevron_right : Icons.chevron_left),
         ),
         IconButton(
           onPressed: _page < _pageCount - 1
               ? () => setState(() => _page++)
               : null,
-          icon: const Icon(Icons.chevron_right),
+          icon: Icon(rtl ? Icons.chevron_left : Icons.chevron_right),
         ),
       ],
     );

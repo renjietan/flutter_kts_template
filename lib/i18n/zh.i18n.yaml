@@ -4,6 +4,7 @@ app:
     paramsInject: 参数加注
     radioManager: 电台管理
     keyManager: 注钥管理
+    updateCpdc: 更新CPDC
 common:
   confirm: 确认
   cancel: 取消
@@ -263,8 +264,10 @@ cpds:
   online: 已上线 {online}/{expected}
   noSelection: 请选择一个网络节点
   networkInterfaceLabel: 业务网卡
-  networkInterfacePlaceholder: 请选择有线网卡
-  networkInterfaceOption: "{name} · {ip}"
+  networkInterfacePlaceholder: 请选择网卡
+  networkInterfaceOption: "{name} · {ip}（{type}）"
+  networkInterfaceWired: 有线
+  networkInterfaceWireless: 无线
   networkInterfaceNoLink: 无网络
   automatic: 自动选中
   refresh: 刷新
@@ -294,7 +297,7 @@ cpds:
     subnetIp: 子网IP
     emptyValue: "--"
   deviceTypes:
-    server: Server
+    teds: TEDS
     hf: HF
     multiBandRadio: MMR200
     multiBandHandheld: PMR200
@@ -388,6 +391,93 @@ selfUpdate:
   updateCompletedSummary: "更新完成：成功 {success} 台，失败 {fail} 台，超时 {timeout} 台"
   revalidate: 重新校验
   rewrite: 重新写入
+  packageNotFound: 未找到匹配的安装包
+  transferFileTimeout: 传输前置指令超时
+  transferPacketTimeout: 传输分包超时
+  fileUpload: 文件上传
+  emptyData: 暂无数据
+  version: 版本号
+  fileName: 文件名称
+  remark: 备注
+  createdAt: 创建时间
+  action: 操作
+  edit: 编辑
+  updateToDevice: 更新到设备
+  delete: 删除
+  deleteTitle: 删除提示
+  deleteConfirm: "确认删除【{version}】吗？"
+  cancel: 取消
+  confirm: 确认
+  prompt: 提示
+  packageMissing: 安装包不存在，是否立刻删除数据
+  ok: 确定
+  noDevices: 未扫描到设备
+  noDevicesNeedUpdate: 没有需要更新的设备
+  pagination: "第 {page} / {pageCount} 页 · 共 {total} 条"
+  uploadTitle: 上传安装包
+  versionHint: 0.1.1.1
+  remarkOptional: 备注（选填）
+  remarkHint: 请输入备注
+  packageLabel: 安装包
+  packageHint: 请选择 ZIP 安装包
+  upload: 上传
+  versionRequired: 请输入版本号
+  versionFormat: 格式应为 0.1.1.1
+  packageRequired: 请先上传安装包
+  editTitle: 编辑安装包
+  scanTitle: 扫描设备
+  scanning: 扫描中....
+  scannedCount: "已扫描到 {n} 个设备"
+  remainingSeconds: "剩余 {n} 秒"
+  next: 下一步
+  stepDiscovery: 发现
+  stepAuth: 认证
+  stepVersion: 版本校验
+  stepTransfer: 传输
+  stepValidation: 校验
+  stepWrite: 写入
+  stepReceipt: 回执
+  descDiscovery: 正在扫描网络中的 CPDC 设备…
+  descAuth: 正在对设备进行认证…
+  descVersion: 正在比对设备当前版本与目标版本…
+  descTransfer: 正在向认证成功的设备分发安装包…
+  descValidation: 设备正在校验安装包完整性…
+  descWrite: 设备正在替换程序并写入配置…
+  descReceipt: 等待设备回传更新结果…
+  colIp: IP 地址
+  colType: 类型
+  colCurrentVersion: 当前版本
+  colNewVersion: 新版本
+  colStatus: 状态
+  colProgress: 进度
+  colResult: 结果
+  start: 开始
+  pause: 暂停
+  resume: 继续
+  close: 关闭
+  reAuth: 重新认证
+  reVersion: 重新版本校验
+  authSuccess: 认证成功
+  authFailedStatus: 认证失败
+  authTimeout: 认证超时
+  latest: 已最新
+  needsUpdate: 需更新
+  unableToFetch: 无法获取
+  versionFailedStatus: 版本校验失败
+  versionTimeout: 版本校验超时
+  validationPassed: 校验通过
+  validationFailedStatus: 校验失败
+  validationTimeout: 校验超时
+  writeSuccess: 写入成功
+  writeFailedStatus: 写入失败
+  writeTimeout: 写入超时
+  updateSuccess: 更新成功
+  receiptFailedStatus: 回执失败
+  receiptTimeout: 回执超时
+  transferFailedStatus: 传输失败
+  transferTimeout: 传输超时
+  transferring: 传输中
+  transferDone: 传输完成
   failReason:
     format: 版本号格式非法
     length: 分包长度错误

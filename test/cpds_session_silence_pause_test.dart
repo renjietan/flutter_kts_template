@@ -48,8 +48,8 @@ Future<void> main() async {
     expected: const [
       CpdsDevice(
         id: 'dev_1',
-        type: CpdsDeviceType.server,
-        model: 'Server',
+        type: CpdsDeviceType.teds,
+        model: 'TEDS',
         alias: '',
         ip: '10.0.0.10',
       ),
@@ -61,7 +61,7 @@ Future<void> main() async {
   machine.recordDiscovery(
     esn,
     Uint8List.fromList(List<int>.generate(16, (i) => i + 20)),
-    const [CpdsDeviceType.server],
+    const [CpdsDeviceType.teds],
     '10.0.0.2',
     '255.255.255.0',
   );
@@ -69,12 +69,12 @@ Future<void> main() async {
   machine.recordAuth({
     1: {
       1: esn,
-      2: CpdPackedEnums([CpdsDeviceType.server.value]),
+      2: CpdPackedEnums([CpdsDeviceType.teds.value]),
     },
     2: CpdResult.success.value,
     3: 'nn_1',
     4: [
-      {1: CpdsDeviceType.server.value, 2: 'dev_1'},
+      {1: CpdsDeviceType.teds.value, 2: 'dev_1'},
     ],
   });
   return (machine: machine, esn: esn);

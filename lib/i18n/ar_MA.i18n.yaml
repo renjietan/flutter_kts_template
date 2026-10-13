@@ -4,6 +4,7 @@ app:
     paramsInject: حقن المعلمات
     radioManager: إدارة أجهزة الراديو
     keyManager: إدارة تحميل المفاتيح
+    updateCpdc: تحديث CPDC
 common:
   confirm: تأكيد
   cancel: إلغاء
@@ -259,8 +260,10 @@ cpds:
   online: "متصل {online}/{expected}"
   noSelection: يرجى اختيار عقدة شبكة
   networkInterfaceLabel: بطاقة شبكة الأعمال
-  networkInterfacePlaceholder: يرجى اختيار بطاقة شبكة سلكية
-  networkInterfaceOption: "{name} · {ip}"
+  networkInterfacePlaceholder: يرجى اختيار بطاقة الشبكة
+  networkInterfaceOption: "{name} · {ip} ({type})"
+  networkInterfaceWired: سلكي
+  networkInterfaceWireless: لاسلكي
   networkInterfaceNoLink: لا توجد شبكة
   automatic: تحديد تلقائي
   refresh: تحديث
@@ -290,7 +293,7 @@ cpds:
     subnetIp: عنوان IP للشبكة الفرعية
     emptyValue: "--"
   deviceTypes:
-    server: Server
+    teds: TEDS
     hf: HF
     multiBandRadio: MMR200
     multiBandHandheld: PMR200
@@ -384,6 +387,93 @@ selfUpdate:
   updateCompletedSummary: "اكتمل التحديث: {success} نجح، {fail} فشل، {timeout} مهلة"
   revalidate: إعادة التحقق
   rewrite: إعادة الكتابة
+  packageNotFound: لم يتم العثور على حزمة مطابقة
+  transferFileTimeout: مهلة رأس الملف
+  transferPacketTimeout: مهلة نقل الحزم
+  fileUpload: رفع ملف
+  emptyData: لا توجد بيانات
+  version: الإصدار
+  fileName: اسم الملف
+  remark: ملاحظة
+  createdAt: تاريخ الإنشاء
+  action: الإجراءات
+  edit: تحرير
+  updateToDevice: تحديث إلى الجهاز
+  delete: حذف
+  deleteTitle: تنبيه الحذف
+  deleteConfirm: "هل تريد حذف {version}؟"
+  cancel: إلغاء
+  confirm: تأكيد
+  prompt: تنبيه
+  packageMissing: الحزمة غير موجودة، هل تريد حذف البيانات الآن؟
+  ok: موافق
+  noDevices: لم يتم العثور على أجهزة
+  noDevicesNeedUpdate: لا توجد أجهزة بحاجة إلى تحديث
+  pagination: "الصفحة {page}/{pageCount} · إجمالي {total}"
+  uploadTitle: رفع الحزمة
+  versionHint: 0.1.1.1
+  remarkOptional: ملاحظة (اختياري)
+  remarkHint: أدخل ملاحظة
+  packageLabel: الحزمة
+  packageHint: اختر حزمة ZIP
+  upload: رفع
+  versionRequired: الرجاء إدخال الإصدار
+  versionFormat: يجب أن يكون التنسيق 0.1.1.1
+  packageRequired: الرجاء رفع الحزمة أولاً
+  editTitle: تحرير الحزمة
+  scanTitle: فحص الأجهزة
+  scanning: جارٍ الفحص....
+  scannedCount: "تم العثور على {n} جهاز"
+  remainingSeconds: "متبقي {n} ثانية"
+  next: التالي
+  stepDiscovery: الاكتشاف
+  stepAuth: المصادقة
+  stepVersion: فحص الإصدار
+  stepTransfer: النقل
+  stepValidation: التحقق
+  stepWrite: الكتابة
+  stepReceipt: الإيصال
+  descDiscovery: جارٍ فحص أجهزة CPDC…
+  descAuth: جارٍ مصادقة الأجهزة…
+  descVersion: جارٍ مقارنة الإصدارات…
+  descTransfer: جارٍ توزيع الحزمة…
+  descValidation: الأجهزة تتحقق من الحزمة…
+  descWrite: الأجهزة تستبدل البرنامج وتكتب التكوين…
+  descReceipt: في انتظار نتيجة التحديث…
+  colIp: عنوان IP
+  colType: النوع
+  colCurrentVersion: الإصدار الحالي
+  colNewVersion: الإصدار الجديد
+  colStatus: الحالة
+  colProgress: التقدم
+  colResult: النتيجة
+  start: بدء
+  pause: إيقاف مؤقت
+  resume: متابعة
+  close: إغلاق
+  reAuth: إعادة المصادقة
+  reVersion: إعادة فحص الإصدار
+  authSuccess: تمت المصادقة
+  authFailedStatus: فشلت المصادقة
+  authTimeout: مهلة المصادقة
+  latest: محدث
+  needsUpdate: بحاجة إلى تحديث
+  unableToFetch: غير متاح
+  versionFailedStatus: فشل فحص الإصدار
+  versionTimeout: مهلة فحص الإصدار
+  validationPassed: تم التحقق
+  validationFailedStatus: فشل التحقق
+  validationTimeout: مهلة التحقق
+  writeSuccess: نجحت الكتابة
+  writeFailedStatus: فشلت الكتابة
+  writeTimeout: مهلة الكتابة
+  updateSuccess: نجح التحديث
+  receiptFailedStatus: فشل الإيصال
+  receiptTimeout: مهلة الإيصال
+  transferFailedStatus: فشل النقل
+  transferTimeout: مهلة النقل
+  transferring: جارٍ النقل
+  transferDone: اكتمل النقل
   failReason:
     format: تنسيق الإصدار غير صالح
     length: خطأ في طول الحزمة

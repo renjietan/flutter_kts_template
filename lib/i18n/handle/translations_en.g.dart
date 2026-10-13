@@ -401,8 +401,10 @@ class _Translations$cpds$en extends Translations$cpds$zh {
 	@override String online({required Object online, required Object expected}) => '${online}/${expected} online';
 	@override String get noSelection => 'Select a network node';
 	@override String get networkInterfaceLabel => 'Business NIC';
-	@override String get networkInterfacePlaceholder => 'Select a wired interface';
-	@override String networkInterfaceOption({required Object name, required Object ip}) => '${name} · ${ip}';
+	@override String get networkInterfacePlaceholder => 'Select a network interface';
+	@override String networkInterfaceOption({required Object name, required Object ip, required Object type}) => '${name} · ${ip} (${type})';
+	@override String get networkInterfaceWired => 'Wired';
+	@override String get networkInterfaceWireless => 'Wireless';
 	@override String get networkInterfaceNoLink => 'No network';
 	@override String get automatic => 'Auto';
 	@override String get refresh => 'Refresh';
@@ -434,6 +436,93 @@ class _Translations$selfUpdate$en extends Translations$selfUpdate$zh {
 	@override String updateCompletedSummary({required Object success, required Object fail, required Object timeout}) => 'Update completed: ${success} succeeded, ${fail} failed, ${timeout} timed out';
 	@override String get revalidate => 'Re-validate';
 	@override String get rewrite => 'Re-write';
+	@override String get packageNotFound => 'No matching package found';
+	@override String get transferFileTimeout => 'File header timeout';
+	@override String get transferPacketTimeout => 'Packet transfer timeout';
+	@override String get fileUpload => 'Upload file';
+	@override String get emptyData => 'No data';
+	@override String get version => 'Version';
+	@override String get fileName => 'File name';
+	@override String get remark => 'Remark';
+	@override String get createdAt => 'Created at';
+	@override String get action => 'Actions';
+	@override String get edit => 'Edit';
+	@override String get updateToDevice => 'Update to device';
+	@override String get delete => 'Delete';
+	@override String get deleteTitle => 'Delete prompt';
+	@override String deleteConfirm({required Object version}) => 'Delete ${version}?';
+	@override String get cancel => 'Cancel';
+	@override String get confirm => 'Confirm';
+	@override String get prompt => 'Notice';
+	@override String get packageMissing => 'Package does not exist, delete data now?';
+	@override String get ok => 'OK';
+	@override String get noDevices => 'No devices found';
+	@override String get noDevicesNeedUpdate => 'No devices need update';
+	@override String pagination({required Object page, required Object pageCount, required Object total}) => 'Page ${page}/${pageCount} · ${total} items';
+	@override String get uploadTitle => 'Upload package';
+	@override String get versionHint => '0.1.1.1';
+	@override String get remarkOptional => 'Remark (optional)';
+	@override String get remarkHint => 'Enter remark';
+	@override String get packageLabel => 'Package';
+	@override String get packageHint => 'Select ZIP package';
+	@override String get upload => 'Upload';
+	@override String get versionRequired => 'Please enter version';
+	@override String get versionFormat => 'Format should be 0.1.1.1';
+	@override String get packageRequired => 'Please upload package first';
+	@override String get editTitle => 'Edit package';
+	@override String get scanTitle => 'Scan devices';
+	@override String get scanning => 'Scanning....';
+	@override String scannedCount({required Object n}) => 'Found ${n} devices';
+	@override String remainingSeconds({required Object n}) => '${n} seconds left';
+	@override String get next => 'Next';
+	@override String get stepDiscovery => 'Discovery';
+	@override String get stepAuth => 'Authentication';
+	@override String get stepVersion => 'Version check';
+	@override String get stepTransfer => 'Transfer';
+	@override String get stepValidation => 'Validation';
+	@override String get stepWrite => 'Write';
+	@override String get stepReceipt => 'Receipt';
+	@override String get descDiscovery => 'Scanning CPDC devices…';
+	@override String get descAuth => 'Authenticating devices…';
+	@override String get descVersion => 'Comparing versions…';
+	@override String get descTransfer => 'Distributing package…';
+	@override String get descValidation => 'Devices validating package…';
+	@override String get descWrite => 'Devices replacing program and writing config…';
+	@override String get descReceipt => 'Waiting for update result…';
+	@override String get colIp => 'IP Address';
+	@override String get colType => 'Type';
+	@override String get colCurrentVersion => 'Current version';
+	@override String get colNewVersion => 'New version';
+	@override String get colStatus => 'Status';
+	@override String get colProgress => 'Progress';
+	@override String get colResult => 'Result';
+	@override String get start => 'Start';
+	@override String get pause => 'Pause';
+	@override String get resume => 'Resume';
+	@override String get close => 'Close';
+	@override String get reAuth => 'Re-authenticate';
+	@override String get reVersion => 'Re-check version';
+	@override String get authSuccess => 'Authenticated';
+	@override String get authFailedStatus => 'Authentication failed';
+	@override String get authTimeout => 'Authentication timeout';
+	@override String get latest => 'Up to date';
+	@override String get needsUpdate => 'Needs update';
+	@override String get unableToFetch => 'Unavailable';
+	@override String get versionFailedStatus => 'Version check failed';
+	@override String get versionTimeout => 'Version check timeout';
+	@override String get validationPassed => 'Validated';
+	@override String get validationFailedStatus => 'Validation failed';
+	@override String get validationTimeout => 'Validation timeout';
+	@override String get writeSuccess => 'Write succeeded';
+	@override String get writeFailedStatus => 'Write failed';
+	@override String get writeTimeout => 'Write timeout';
+	@override String get updateSuccess => 'Update succeeded';
+	@override String get receiptFailedStatus => 'Receipt failed';
+	@override String get receiptTimeout => 'Receipt timeout';
+	@override String get transferFailedStatus => 'Transfer failed';
+	@override String get transferTimeout => 'Transfer timeout';
+	@override String get transferring => 'Transferring';
+	@override String get transferDone => 'Transfer done';
 	@override late final _Translations$selfUpdate$failReason$en failReason = _Translations$selfUpdate$failReason$en._(_root);
 }
 
@@ -447,6 +536,7 @@ class _Translations$app$appbar$en extends Translations$app$appbar$zh {
 	@override String get paramsInject => 'Params inject';
 	@override String get radioManager => 'Radio manager';
 	@override String get keyManager => 'Key manager';
+	@override String get updateCpdc => 'Update CPDC';
 }
 
 // Path: pager.injectParams
@@ -687,7 +777,7 @@ class _Translations$cpds$deviceTypes$en extends Translations$cpds$deviceTypes$zh
 	final TranslationsEn _root; // ignore: unused_field
 
 	// Translations
-	@override String get server => 'Server';
+	@override String get teds => 'TEDS';
 	@override String get hf => 'HF';
 	@override String get multiBandRadio => 'MMR200';
 	@override String get multiBandHandheld => 'PMR200';

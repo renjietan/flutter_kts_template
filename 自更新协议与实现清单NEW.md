@@ -300,7 +300,7 @@ ID = [类型字节长度 uint16BE] + [类型 UTF-8] + [IP字节长度 uint16BE] 
 
 逻辑：
 
-1. 新进程启动后读回执 marker；回执目标优先 `marker.cpds_ip:39004` 单播，无 `cpds_ip` 才广播 `255.255.255.255` + `127.0.0.1`。
+1. 新进程启动后读回执 marker；CPDC 枚举所有候选网卡，为每张网卡绑定一个开启 SO_BROADCAST 的广播 socket，`update_ok` / `update_fail` 逐网卡广播到 `255.255.255.255:39004`。
 2. VehInter：读到 `vehinter_handoff` 才回 `update_ok`，否则不回且保留 marker。
 3. 其他类型：若 `finalize_fail` 存在 → 优先回 `update_fail:finalize_fail`。
 2. 否则读设备当前版本：读失败 → `version_read_error`；与 marker 目标版本不等 → `version_mismatch`；相等 → `update_ok:<新版本>`。

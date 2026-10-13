@@ -31,7 +31,7 @@ mixin SideMenuMixin<T extends StatefulWidget> on State<T> {
       MenuItem(icon: HyIcons.canshujiazhu, label: t.app.appbar.paramsInject),
       MenuItem(icon: HyIcons.diantaiguanli, label: t.app.appbar.radioManager),
       MenuItem(icon: HyIcons.zhuyueqiangguanli, label: t.app.appbar.keyManager),
-      MenuItem(icon: HyIcons.wenjian, label: '更新CPDC'),
+      MenuItem(icon: HyIcons.wenjian, label: t.app.appbar.updateCpdc),
     ];
     return List.generate(menuItems.length, (index) {
       final item = menuItems[index];

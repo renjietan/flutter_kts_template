@@ -128,6 +128,52 @@ class CpdsPackageParser {
     return ZipEncoder().encodeBytes(archive);
   }
 
+  /// 修改通信包中 `4_net_node/<nodeId>.json` 的 `BasicInfo.NodeName`，
+  /// 重新打包后返回新的 ZIP 字节。不写盘，由调用方决定持久化方式。
+  static Uint8List updateNodeNameInZip(
+    String zipPath,
+    String nodeId,
+    String newName,
+  ) {
+    final bytes = File(zipPath).readAsBytesSync();
+    final archive = ZipDecoder().decodeBytes(bytes);
+    final targetName = '4_net_node/$nodeId.json';
+    final target = archive.find(targetName);
+    if (target == null) {
+      throw CpdsException(
+        CpdsErrorCode.invalidPackage,
+        params: {'field': 'nodeReference', 'path': nodeId},
+        message: 'node json not found',
+      );
+    }
+    final data = target.readBytes();
+    if (data == null) {
+      throw CpdsException(
+        CpdsErrorCode.invalidPackage,
+        params: {'field': 'nodeJson', 'path': nodeId},
+        message: 'node json content is empty',
+      );
+    }
+
+    final Map<String, dynamic> json;
+    try {
+      json = Map<String, dynamic>.from(jsonDecode(utf8.decode(data)));
+    } on FormatException {
+      throw CpdsException(
+        CpdsErrorCode.invalidPackage,
+        params: {'field': 'json', 'path': targetName},
+      );
+    }
+    final basicInfo = Map<String, dynamic>.from(
+      json['BasicInfo'] as Map? ?? const {},
+    );
+    basicInfo['NodeName'] = newName;
+    json['BasicInfo'] = basicInfo;
+
+    archive.add(ArchiveFile.string(targetName, jsonEncode(json)));
+    return ZipEncoder().encodeBytes(archive);
+  }
+
   static void _validateFileName(String name) {
     if (name.isEmpty ||
         path.basename(name) != name ||
@@ -386,7 +432,9 @@ class CpdsPackageParser {
       final data = entry.value;
       switch (dir) {
         case '0_contacts':
-          contacts.add(_decodeJson(name, data));
+          if (base.startsWith('contacts_')) {
+            contacts.add(_decodeJson(name, data));
+          }
           break;
         case '6_unit':
           unitFiles[path.posix.basenameWithoutExtension(base)] = _decodeJson(
@@ -613,16 +661,16 @@ class CpdsPackageParser {
       }
     }
 
-    final serverIds = _stringList(systemConfig['LANPrimary']?['Server']);
-    CpdsDeviceType? serverKind;
-    for (final deviceId in serverIds) {
+    final tedsIds = _stringList(systemConfig['LANPrimary']?['TEDS']);
+    CpdsDeviceType? tedsKind;
+    for (final deviceId in tedsIds) {
       final CpdsDeviceType kind;
       final String prefix;
       final String modelName;
-      if (deviceId.startsWith('dc_server_')) {
-        kind = CpdsDeviceType.server;
-        prefix = 'dc_server_';
-        modelName = 'Server';
+      if (deviceId.startsWith('dc_teds_')) {
+        kind = CpdsDeviceType.teds;
+        prefix = 'dc_teds_';
+        modelName = 'TEDS';
       } else if (deviceId.startsWith('dc_IEC_')) {
         kind = CpdsDeviceType.iec;
         prefix = 'dc_IEC_';
@@ -630,16 +678,16 @@ class CpdsPackageParser {
       } else {
         throw CpdsException(
           CpdsErrorCode.invalidPackage,
-          params: {'field': 'serverDevicePrefix', 'path': deviceId},
+          params: {'field': 'tedsDevicePrefix', 'path': deviceId},
         );
       }
-      if (serverKind != null && serverKind != kind) {
+      if (tedsKind != null && tedsKind != kind) {
         throw CpdsException(
           CpdsErrorCode.invalidPackage,
-          params: {'field': 'serverIecMutualExclusion', 'path': id},
+          params: {'field': 'tedsIecMutualExclusion', 'path': id},
         );
       }
-      serverKind = kind;
+      tedsKind = kind;
       appendIds([deviceId], kind, prefix, modelName);
     }
 
@@ -788,7 +836,7 @@ class CpdsPackageParser {
         final audio = _asMap(config['audioBoardIpConfig']);
         final result = _asMap(audio['result']);
         return (result['ip']?.toString() ?? '', '');
-      case CpdsDeviceType.server:
+      case CpdsDeviceType.teds:
         return (config['Ipv4Subnet']?.toString() ?? '', '');
       default:
         return ('', '');

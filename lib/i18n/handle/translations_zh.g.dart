@@ -670,11 +670,17 @@ class Translations$cpds$zh {
 	/// zh: '业务网卡'
 	String get networkInterfaceLabel => '业务网卡';
 
-	/// zh: '请选择有线网卡'
-	String get networkInterfacePlaceholder => '请选择有线网卡';
+	/// zh: '请选择网卡'
+	String get networkInterfacePlaceholder => '请选择网卡';
 
-	/// zh: '{name} · {ip}'
-	String networkInterfaceOption({required Object name, required Object ip}) => '${name} · ${ip}';
+	/// zh: '{name} · {ip}（{type}）'
+	String networkInterfaceOption({required Object name, required Object ip, required Object type}) => '${name} · ${ip}（${type}）';
+
+	/// zh: '有线'
+	String get networkInterfaceWired => '有线';
+
+	/// zh: '无线'
+	String get networkInterfaceWireless => '无线';
 
 	/// zh: '无网络'
 	String get networkInterfaceNoLink => '无网络';
@@ -734,6 +740,267 @@ class Translations$selfUpdate$zh {
 	/// zh: '重新写入'
 	String get rewrite => '重新写入';
 
+	/// zh: '未找到匹配的安装包'
+	String get packageNotFound => '未找到匹配的安装包';
+
+	/// zh: '传输前置指令超时'
+	String get transferFileTimeout => '传输前置指令超时';
+
+	/// zh: '传输分包超时'
+	String get transferPacketTimeout => '传输分包超时';
+
+	/// zh: '文件上传'
+	String get fileUpload => '文件上传';
+
+	/// zh: '暂无数据'
+	String get emptyData => '暂无数据';
+
+	/// zh: '版本号'
+	String get version => '版本号';
+
+	/// zh: '文件名称'
+	String get fileName => '文件名称';
+
+	/// zh: '备注'
+	String get remark => '备注';
+
+	/// zh: '创建时间'
+	String get createdAt => '创建时间';
+
+	/// zh: '操作'
+	String get action => '操作';
+
+	/// zh: '编辑'
+	String get edit => '编辑';
+
+	/// zh: '更新到设备'
+	String get updateToDevice => '更新到设备';
+
+	/// zh: '删除'
+	String get delete => '删除';
+
+	/// zh: '删除提示'
+	String get deleteTitle => '删除提示';
+
+	/// zh: '确认删除【{version}】吗？'
+	String deleteConfirm({required Object version}) => '确认删除【${version}】吗？';
+
+	/// zh: '取消'
+	String get cancel => '取消';
+
+	/// zh: '确认'
+	String get confirm => '确认';
+
+	/// zh: '提示'
+	String get prompt => '提示';
+
+	/// zh: '安装包不存在，是否立刻删除数据'
+	String get packageMissing => '安装包不存在，是否立刻删除数据';
+
+	/// zh: '确定'
+	String get ok => '确定';
+
+	/// zh: '未扫描到设备'
+	String get noDevices => '未扫描到设备';
+
+	/// zh: '没有需要更新的设备'
+	String get noDevicesNeedUpdate => '没有需要更新的设备';
+
+	/// zh: '第 {page} / {pageCount} 页 · 共 {total} 条'
+	String pagination({required Object page, required Object pageCount, required Object total}) => '第 ${page} / ${pageCount} 页 · 共 ${total} 条';
+
+	/// zh: '上传安装包'
+	String get uploadTitle => '上传安装包';
+
+	/// zh: '0.1.1.1'
+	String get versionHint => '0.1.1.1';
+
+	/// zh: '备注（选填）'
+	String get remarkOptional => '备注（选填）';
+
+	/// zh: '请输入备注'
+	String get remarkHint => '请输入备注';
+
+	/// zh: '安装包'
+	String get packageLabel => '安装包';
+
+	/// zh: '请选择 ZIP 安装包'
+	String get packageHint => '请选择 ZIP 安装包';
+
+	/// zh: '上传'
+	String get upload => '上传';
+
+	/// zh: '请输入版本号'
+	String get versionRequired => '请输入版本号';
+
+	/// zh: '格式应为 0.1.1.1'
+	String get versionFormat => '格式应为 0.1.1.1';
+
+	/// zh: '请先上传安装包'
+	String get packageRequired => '请先上传安装包';
+
+	/// zh: '编辑安装包'
+	String get editTitle => '编辑安装包';
+
+	/// zh: '扫描设备'
+	String get scanTitle => '扫描设备';
+
+	/// zh: '扫描中....'
+	String get scanning => '扫描中....';
+
+	/// zh: '已扫描到 {n} 个设备'
+	String scannedCount({required Object n}) => '已扫描到 ${n} 个设备';
+
+	/// zh: '剩余 {n} 秒'
+	String remainingSeconds({required Object n}) => '剩余 ${n} 秒';
+
+	/// zh: '下一步'
+	String get next => '下一步';
+
+	/// zh: '发现'
+	String get stepDiscovery => '发现';
+
+	/// zh: '认证'
+	String get stepAuth => '认证';
+
+	/// zh: '版本校验'
+	String get stepVersion => '版本校验';
+
+	/// zh: '传输'
+	String get stepTransfer => '传输';
+
+	/// zh: '校验'
+	String get stepValidation => '校验';
+
+	/// zh: '写入'
+	String get stepWrite => '写入';
+
+	/// zh: '回执'
+	String get stepReceipt => '回执';
+
+	/// zh: '正在扫描网络中的 CPDC 设备…'
+	String get descDiscovery => '正在扫描网络中的 CPDC 设备…';
+
+	/// zh: '正在对设备进行认证…'
+	String get descAuth => '正在对设备进行认证…';
+
+	/// zh: '正在比对设备当前版本与目标版本…'
+	String get descVersion => '正在比对设备当前版本与目标版本…';
+
+	/// zh: '正在向认证成功的设备分发安装包…'
+	String get descTransfer => '正在向认证成功的设备分发安装包…';
+
+	/// zh: '设备正在校验安装包完整性…'
+	String get descValidation => '设备正在校验安装包完整性…';
+
+	/// zh: '设备正在替换程序并写入配置…'
+	String get descWrite => '设备正在替换程序并写入配置…';
+
+	/// zh: '等待设备回传更新结果…'
+	String get descReceipt => '等待设备回传更新结果…';
+
+	/// zh: 'IP 地址'
+	String get colIp => 'IP 地址';
+
+	/// zh: '类型'
+	String get colType => '类型';
+
+	/// zh: '当前版本'
+	String get colCurrentVersion => '当前版本';
+
+	/// zh: '新版本'
+	String get colNewVersion => '新版本';
+
+	/// zh: '状态'
+	String get colStatus => '状态';
+
+	/// zh: '进度'
+	String get colProgress => '进度';
+
+	/// zh: '结果'
+	String get colResult => '结果';
+
+	/// zh: '开始'
+	String get start => '开始';
+
+	/// zh: '暂停'
+	String get pause => '暂停';
+
+	/// zh: '继续'
+	String get resume => '继续';
+
+	/// zh: '关闭'
+	String get close => '关闭';
+
+	/// zh: '重新认证'
+	String get reAuth => '重新认证';
+
+	/// zh: '重新版本校验'
+	String get reVersion => '重新版本校验';
+
+	/// zh: '认证成功'
+	String get authSuccess => '认证成功';
+
+	/// zh: '认证失败'
+	String get authFailedStatus => '认证失败';
+
+	/// zh: '认证超时'
+	String get authTimeout => '认证超时';
+
+	/// zh: '已最新'
+	String get latest => '已最新';
+
+	/// zh: '需更新'
+	String get needsUpdate => '需更新';
+
+	/// zh: '无法获取'
+	String get unableToFetch => '无法获取';
+
+	/// zh: '版本校验失败'
+	String get versionFailedStatus => '版本校验失败';
+
+	/// zh: '版本校验超时'
+	String get versionTimeout => '版本校验超时';
+
+	/// zh: '校验通过'
+	String get validationPassed => '校验通过';
+
+	/// zh: '校验失败'
+	String get validationFailedStatus => '校验失败';
+
+	/// zh: '校验超时'
+	String get validationTimeout => '校验超时';
+
+	/// zh: '写入成功'
+	String get writeSuccess => '写入成功';
+
+	/// zh: '写入失败'
+	String get writeFailedStatus => '写入失败';
+
+	/// zh: '写入超时'
+	String get writeTimeout => '写入超时';
+
+	/// zh: '更新成功'
+	String get updateSuccess => '更新成功';
+
+	/// zh: '回执失败'
+	String get receiptFailedStatus => '回执失败';
+
+	/// zh: '回执超时'
+	String get receiptTimeout => '回执超时';
+
+	/// zh: '传输失败'
+	String get transferFailedStatus => '传输失败';
+
+	/// zh: '传输超时'
+	String get transferTimeout => '传输超时';
+
+	/// zh: '传输中'
+	String get transferring => '传输中';
+
+	/// zh: '传输完成'
+	String get transferDone => '传输完成';
+
 	late final Translations$selfUpdate$failReason$zh failReason = Translations$selfUpdate$failReason$zh.internal(_root);
 }
 
@@ -753,6 +1020,9 @@ class Translations$app$appbar$zh {
 
 	/// zh: '注钥管理'
 	String get keyManager => '注钥管理';
+
+	/// zh: '更新CPDC'
+	String get updateCpdc => '更新CPDC';
 }
 
 // Path: pager.injectParams
@@ -1132,8 +1402,8 @@ class Translations$cpds$deviceTypes$zh {
 
 	// Translations
 
-	/// zh: 'Server'
-	String get server => 'Server';
+	/// zh: 'TEDS'
+	String get teds => 'TEDS';
 
 	/// zh: 'HF'
 	String get hf => 'HF';

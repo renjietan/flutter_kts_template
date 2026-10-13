@@ -401,8 +401,10 @@ class Translations$cpds$ar_MA extends Translations$cpds$zh {
 	@override String online({required Object online, required Object expected}) => 'متصل ${online}/${expected}';
 	@override String get noSelection => 'يرجى اختيار عقدة شبكة';
 	@override String get networkInterfaceLabel => 'بطاقة شبكة الأعمال';
-	@override String get networkInterfacePlaceholder => 'يرجى اختيار بطاقة شبكة سلكية';
-	@override String networkInterfaceOption({required Object name, required Object ip}) => '${name} · ${ip}';
+	@override String get networkInterfacePlaceholder => 'يرجى اختيار بطاقة الشبكة';
+	@override String networkInterfaceOption({required Object name, required Object ip, required Object type}) => '${name} · ${ip} (${type})';
+	@override String get networkInterfaceWired => 'سلكي';
+	@override String get networkInterfaceWireless => 'لاسلكي';
 	@override String get networkInterfaceNoLink => 'لا توجد شبكة';
 	@override String get automatic => 'تحديد تلقائي';
 	@override String get refresh => 'تحديث';
@@ -434,6 +436,93 @@ class Translations$selfUpdate$ar_MA extends Translations$selfUpdate$zh {
 	@override String updateCompletedSummary({required Object success, required Object fail, required Object timeout}) => 'اكتمل التحديث: ${success} نجح، ${fail} فشل، ${timeout} مهلة';
 	@override String get revalidate => 'إعادة التحقق';
 	@override String get rewrite => 'إعادة الكتابة';
+	@override String get packageNotFound => 'لم يتم العثور على حزمة مطابقة';
+	@override String get transferFileTimeout => 'مهلة رأس الملف';
+	@override String get transferPacketTimeout => 'مهلة نقل الحزم';
+	@override String get fileUpload => 'رفع ملف';
+	@override String get emptyData => 'لا توجد بيانات';
+	@override String get version => 'الإصدار';
+	@override String get fileName => 'اسم الملف';
+	@override String get remark => 'ملاحظة';
+	@override String get createdAt => 'تاريخ الإنشاء';
+	@override String get action => 'الإجراءات';
+	@override String get edit => 'تحرير';
+	@override String get updateToDevice => 'تحديث إلى الجهاز';
+	@override String get delete => 'حذف';
+	@override String get deleteTitle => 'تنبيه الحذف';
+	@override String deleteConfirm({required Object version}) => 'هل تريد حذف ${version}؟';
+	@override String get cancel => 'إلغاء';
+	@override String get confirm => 'تأكيد';
+	@override String get prompt => 'تنبيه';
+	@override String get packageMissing => 'الحزمة غير موجودة، هل تريد حذف البيانات الآن؟';
+	@override String get ok => 'موافق';
+	@override String get noDevices => 'لم يتم العثور على أجهزة';
+	@override String get noDevicesNeedUpdate => 'لا توجد أجهزة بحاجة إلى تحديث';
+	@override String pagination({required Object page, required Object pageCount, required Object total}) => 'الصفحة ${page}/${pageCount} · إجمالي ${total}';
+	@override String get uploadTitle => 'رفع الحزمة';
+	@override String get versionHint => '0.1.1.1';
+	@override String get remarkOptional => 'ملاحظة (اختياري)';
+	@override String get remarkHint => 'أدخل ملاحظة';
+	@override String get packageLabel => 'الحزمة';
+	@override String get packageHint => 'اختر حزمة ZIP';
+	@override String get upload => 'رفع';
+	@override String get versionRequired => 'الرجاء إدخال الإصدار';
+	@override String get versionFormat => 'يجب أن يكون التنسيق 0.1.1.1';
+	@override String get packageRequired => 'الرجاء رفع الحزمة أولاً';
+	@override String get editTitle => 'تحرير الحزمة';
+	@override String get scanTitle => 'فحص الأجهزة';
+	@override String get scanning => 'جارٍ الفحص....';
+	@override String scannedCount({required Object n}) => 'تم العثور على ${n} جهاز';
+	@override String remainingSeconds({required Object n}) => 'متبقي ${n} ثانية';
+	@override String get next => 'التالي';
+	@override String get stepDiscovery => 'الاكتشاف';
+	@override String get stepAuth => 'المصادقة';
+	@override String get stepVersion => 'فحص الإصدار';
+	@override String get stepTransfer => 'النقل';
+	@override String get stepValidation => 'التحقق';
+	@override String get stepWrite => 'الكتابة';
+	@override String get stepReceipt => 'الإيصال';
+	@override String get descDiscovery => 'جارٍ فحص أجهزة CPDC…';
+	@override String get descAuth => 'جارٍ مصادقة الأجهزة…';
+	@override String get descVersion => 'جارٍ مقارنة الإصدارات…';
+	@override String get descTransfer => 'جارٍ توزيع الحزمة…';
+	@override String get descValidation => 'الأجهزة تتحقق من الحزمة…';
+	@override String get descWrite => 'الأجهزة تستبدل البرنامج وتكتب التكوين…';
+	@override String get descReceipt => 'في انتظار نتيجة التحديث…';
+	@override String get colIp => 'عنوان IP';
+	@override String get colType => 'النوع';
+	@override String get colCurrentVersion => 'الإصدار الحالي';
+	@override String get colNewVersion => 'الإصدار الجديد';
+	@override String get colStatus => 'الحالة';
+	@override String get colProgress => 'التقدم';
+	@override String get colResult => 'النتيجة';
+	@override String get start => 'بدء';
+	@override String get pause => 'إيقاف مؤقت';
+	@override String get resume => 'متابعة';
+	@override String get close => 'إغلاق';
+	@override String get reAuth => 'إعادة المصادقة';
+	@override String get reVersion => 'إعادة فحص الإصدار';
+	@override String get authSuccess => 'تمت المصادقة';
+	@override String get authFailedStatus => 'فشلت المصادقة';
+	@override String get authTimeout => 'مهلة المصادقة';
+	@override String get latest => 'محدث';
+	@override String get needsUpdate => 'بحاجة إلى تحديث';
+	@override String get unableToFetch => 'غير متاح';
+	@override String get versionFailedStatus => 'فشل فحص الإصدار';
+	@override String get versionTimeout => 'مهلة فحص الإصدار';
+	@override String get validationPassed => 'تم التحقق';
+	@override String get validationFailedStatus => 'فشل التحقق';
+	@override String get validationTimeout => 'مهلة التحقق';
+	@override String get writeSuccess => 'نجحت الكتابة';
+	@override String get writeFailedStatus => 'فشلت الكتابة';
+	@override String get writeTimeout => 'مهلة الكتابة';
+	@override String get updateSuccess => 'نجح التحديث';
+	@override String get receiptFailedStatus => 'فشل الإيصال';
+	@override String get receiptTimeout => 'مهلة الإيصال';
+	@override String get transferFailedStatus => 'فشل النقل';
+	@override String get transferTimeout => 'مهلة النقل';
+	@override String get transferring => 'جارٍ النقل';
+	@override String get transferDone => 'اكتمل النقل';
 	@override late final Translations$selfUpdate$failReason$ar_MA failReason = Translations$selfUpdate$failReason$ar_MA.internal(_root);
 }
 
@@ -447,6 +536,7 @@ class Translations$app$appbar$ar_MA extends Translations$app$appbar$zh {
 	@override String get paramsInject => 'حقن المعلمات';
 	@override String get radioManager => 'إدارة أجهزة الراديو';
 	@override String get keyManager => 'إدارة تحميل المفاتيح';
+	@override String get updateCpdc => 'تحديث CPDC';
 }
 
 // Path: pager.injectParams
@@ -686,7 +776,7 @@ class Translations$cpds$deviceTypes$ar_MA extends Translations$cpds$deviceTypes$
 	final TranslationsArMa _root; // ignore: unused_field
 
 	// Translations
-	@override String get server => 'Server';
+	@override String get teds => 'TEDS';
 	@override String get hf => 'HF';
 	@override String get multiBandRadio => 'MMR200';
 	@override String get multiBandHandheld => 'PMR200';

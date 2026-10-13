@@ -10,6 +10,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_kts_template/api/KeyLoaders.api.dart';
 import 'package:flutter_kts_template/api/RadiosManagerApi.dart';
 import 'package:flutter_kts_template/api/cpds.api.dart';
+import 'package:flutter_kts_template/components/TextField/simple.form.textfield.dart';
+import 'package:flutter_kts_template/components/dialog/simple.form.dialog.dart';
 import 'package:flutter_kts_template/components/dialog/simple.tips.dialog.dart';
 import 'package:flutter_kts_template/components/loading/simple.loading.dart';
 import 'package:flutter_kts_template/core/cpds/cpds_exception.dart';
@@ -31,11 +33,13 @@ import 'package:flutter_kts_template/pages/cpds/widgets/cpds_package_panel.dart'
 import 'package:flutter_kts_template/utils/files/pick_files/FileSelector.dart';
 import 'package:flutter_kts_template/utils/provider/menu.provider.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:go_router/go_router.dart';
 import 'package:path/path.dart' as p;
 import 'package:provider/provider.dart';
 
 import 'widgets/cpds_device_panel.dart';
+import 'widgets/cpds_change_password_dialog.dart';
 import 'widgets/cpds_dialogs.dart';
 import 'widgets/cpds_messages.dart';
 import 'widgets/cpds_save_dialog.dart';
@@ -58,6 +62,7 @@ class _CpdsPageState extends State<CpdsPage> {
   String? _shownDiscoverySessionId;
   String? _shownResultSessionId;
   StreamSubscription<CpdsApplicationState>? _subscription;
+  final TextEditingController _nodeNameController = TextEditingController();
 
   @override
   void initState() {
@@ -71,6 +76,7 @@ class _CpdsPageState extends State<CpdsPage> {
   @override
   void dispose() {
     _subscription?.cancel();
+    _nodeNameController.dispose();
     super.dispose();
   }
 
@@ -278,6 +284,7 @@ class _CpdsPageState extends State<CpdsPage> {
     }
 
     Uint8List? zipBytes;
+    String? pcPassword;
     final ok = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
@@ -287,6 +294,7 @@ class _CpdsPageState extends State<CpdsPage> {
         onVerify: (password) async {
           try {
             zipBytes = await _decryptPc(stored, password);
+            pcPassword = password;
             return true;
           } catch (e) {
             GlobalLogger.logError('PC_DECRYPT_FAILED $e');
@@ -319,6 +327,12 @@ class _CpdsPageState extends State<CpdsPage> {
     await CpdsManager.instance.uploadPackage(zipName, zipBytes!);
     await CpdsManager.instance.parsePackage();
     CpdsManager.instance.updateUploadName(p.basename(stored.path));
+    if (pcPassword != null) {
+      CpdsManager.instance.cachePcSource(
+        pcPath: stored.path,
+        password: pcPassword!,
+      );
+    }
     _applyState(CpdsManager.instance.state());
     final keepPaths = <String>[
       stored.path,
@@ -549,6 +563,204 @@ class _CpdsPageState extends State<CpdsPage> {
     }
   }
 
+  Future<void> _editNode(String nodeId) async {
+    if (_state.active) return;
+    CpdsNode? node;
+    for (final n in _state.package?.nodes ?? const <CpdsNode>[]) {
+      if (n.id == nodeId) {
+        node = n;
+        break;
+      }
+    }
+    if (node == null) return;
+
+    _nodeNameController.text = node.name;
+    final oldName = node.name;
+    SimpleFormDialog(
+      title: CpdsMessages.tr(
+        context,
+        '编辑节点',
+        'Edit Node',
+        'تحرير العقدة',
+      ),
+      confirmText: Translations.of(context).common.confirm,
+      fields: [
+        FormFieldConfig(
+          name: 'nodeName',
+          label: CpdsMessages.tr(
+            context,
+            '节点名称',
+            'Node Name',
+            'اسم العقدة',
+          ),
+          textEditingController: _nodeNameController,
+          required: true,
+          counterTextBuilder: (value) =>
+              CpdsMessages.digits(context, '${value.characters.length}/40'),
+          validators: [
+            FormBuilderValidators.required(
+              errorText: CpdsMessages.tr(
+                context,
+                '节点名称不能为空',
+                'Node name cannot be empty',
+                'لا يمكن أن يكون اسم العقدة فارغًا',
+              ),
+            ),
+            (value) {
+              if (value == null || value.isEmpty) return null;
+              if (value.characters.length > 40) {
+                return CpdsMessages.tr(
+                  context,
+                  '节点名称长度不能超过40个字符',
+                  'Node name cannot exceed 40 characters',
+                  'لا يمكن أن يتجاوز اسم العقدة 40 حرفًا',
+                );
+              }
+              if (_containsChinese(value)) {
+                return CpdsMessages.tr(
+                  context,
+                  '节点名称不能包含中文',
+                  'Node name cannot contain Chinese characters',
+                  'لا يمكن أن يحتوي اسم العقدة على أحرف صينية',
+                );
+              }
+              return null;
+            },
+          ],
+        ),
+      ],
+      onConfirm: (formData) {
+        final newName = (formData['nodeName'] as String? ?? '').trim();
+        unawaited(_saveNodeName(nodeId, oldName, newName));
+      },
+    );
+  }
+
+  Future<void> _saveNodeName(
+    String nodeId,
+    String oldName,
+    String newName,
+  ) async {
+    if (newName.isEmpty || newName == oldName) return;
+    try {
+      await CpdsManager.instance.updateNodeName(nodeId, newName);
+      if (!mounted) return;
+      _applyState(CpdsManager.instance.state());
+      SimplePopup.success(
+        CpdsMessages.tr(context, '保存成功', 'Saved successfully', 'تم الحفظ بنجاح'),
+      );
+    } catch (error) {
+      GlobalLogger.logError('EDIT_NODE_FAILED $error');
+      if (!mounted) return;
+      _showNodeEditError(error);
+    }
+  }
+
+  void _showNodeEditError(Object error) {
+    final String message;
+    if (error is CpdsException) {
+      final field = error.params['field'];
+      if (field == 'pcSource') {
+        message = CpdsMessages.tr(
+          context,
+          '找不到 .pc 文件',
+          'PC file not found',
+          'لم يتم العثور على ملف PC',
+        );
+      } else if (field == 'pcPassword') {
+        message = CpdsMessages.tr(
+          context,
+          '未缓存密码',
+          'Password not cached',
+          'كلمة المرور غير مخزنة مؤقتًا',
+        );
+      } else {
+        message = CpdsMessages.tr(
+          context,
+          '保存失败',
+          'Save failed',
+          'فشل الحفظ',
+        );
+      }
+    } else {
+      message = CpdsMessages.tr(
+        context,
+        '保存失败',
+        'Save failed',
+        'فشل الحفظ',
+      );
+    }
+    SimplePopup.error(message);
+  }
+
+  bool _containsChinese(String value) {
+    return value.runes.any(
+      (r) =>
+          (r >= 0x4E00 && r <= 0x9FFF) ||
+          (r >= 0x3400 && r <= 0x4DBF) ||
+          (r >= 0xF900 && r <= 0xFAFF),
+    );
+  }
+
+  Future<void> _changePassword() async {
+    if (_state.active) return;
+    final ok = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => CpdsChangePasswordDialog(
+        onSubmit: (oldPassword, newPassword) async {
+          try {
+            await CpdsManager.instance.changePcPassword(
+              oldPassword,
+              newPassword,
+            );
+            return null;
+          } catch (error) {
+            GlobalLogger.logError('CHANGE_PC_PASSWORD_FAILED $error');
+            return _pcPasswordChangeError(error);
+          }
+        },
+      ),
+    );
+    if (ok == true && mounted) {
+      SimplePopup.success(
+        CpdsMessages.tr(
+          context,
+          '修改成功',
+          'Changed successfully',
+          'تم التعديل بنجاح',
+        ),
+      );
+    }
+  }
+
+  String _pcPasswordChangeError(Object error) {
+    if (error is CpdsException) {
+      final field = error.params['field'];
+      if (field == 'oldPassword') {
+        return CpdsMessages.tr(
+          context,
+          '原密码错误',
+          'Old password is incorrect',
+          'كلمة المرور القديمة غير صحيحة',
+        );
+      } else if (field == 'pcSource') {
+        return CpdsMessages.tr(
+          context,
+          '找不到 .pc 文件',
+          'PC file not found',
+          'لم يتم العثور على ملف PC',
+        );
+      }
+    }
+    return CpdsMessages.tr(
+      context,
+      '修改失败',
+      'Change failed',
+      'فشل التعديل',
+    );
+  }
+
   Future<void> _selectInterface(String? name) async {
     final value = name ?? '';
     if (_state.active || value == CpdsManager.instance.selectedInterfaceName) {
@@ -563,7 +775,19 @@ class _CpdsPageState extends State<CpdsPage> {
   }
 
   Future<void> _distribute() async {
-    if (_distributing || _state.active || !_state.canDistribute) return;
+    if (_distributing || _state.active) return;
+    if (CpdsManager.instance.selectedInterfaceName.isEmpty) {
+      SimplePopup.warn(
+        CpdsMessages.tr(
+          context,
+          '请先选择业务网卡',
+          'Please select the business NIC first',
+          'يرجى تحديد بطاقة شبكة الأعمال أولاً',
+        ),
+      );
+      return;
+    }
+    if (!_state.canDistribute) return;
     _distributing = true;
     final distributionFailedTitle = CpdsMessages.resultTitle(
       context,
@@ -851,6 +1075,8 @@ class _CpdsPageState extends State<CpdsPage> {
                   onBrowse: _browse,
                   onSelectNode: _selectNode,
                   onSelectFutureWarrior: _selectFutureWarrior,
+                  onEditNode: _editNode,
+                  onChangePassword: _changePassword,
                 ),
               ),
               const VerticalDivider(

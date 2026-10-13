@@ -584,8 +584,9 @@ final fCreateEventW = _kernel32
     .lookupFunction<_CreateEventW_Native, _CreateEventW_Dart>('CreateEventW');
 final fResetEvent = _kernel32
     .lookupFunction<_ResetEvent_Native, _ResetEvent_Dart>('ResetEvent');
-final fSetEvent = _kernel32
-    .lookupFunction<_SetEvent_Native, _SetEvent_Dart>('SetEvent');
+final fSetEvent = _kernel32.lookupFunction<_SetEvent_Native, _SetEvent_Dart>(
+  'SetEvent',
+);
 final fWaitForMultipleObjects = _kernel32
     .lookupFunction<
       _WaitForMultipleObjects_Native,
@@ -708,8 +709,7 @@ Future<List<WinUsbDeviceInfo>> listWinUsbDevicesFromRegistry() async {
           try {
             // 只取 Service=WINUSB 的设备（对齐 go.md）
             final service = _readRegString(devKey, 'Service');
-            if (service == null ||
-                service.toUpperCase() != 'WINUSB') {
+            if (service == null || service.toUpperCase() != 'WINUSB') {
               continue;
             }
 
@@ -721,8 +721,10 @@ Future<List<WinUsbDeviceInfo>> listWinUsbDevicesFromRegistry() async {
             if (guid == null || guid.isEmpty) continue;
 
             // 去掉 { } 括号（对齐 go.md 的 strings.Trim）
-            final cleanedGuid =
-                guid.replaceAll('{', '').replaceAll('}', '').trim();
+            final cleanedGuid = guid
+                .replaceAll('{', '')
+                .replaceAll('}', '')
+                .trim();
 
             // 构造设备路径: \\?\USB#VID_xxxx&PID_xxxx&MI_xx#instanceID#{GUID}
             final path =
@@ -741,7 +743,8 @@ Future<List<WinUsbDeviceInfo>> listWinUsbDevicesFromRegistry() async {
 
             // 解析路径获取 VID, PID, 接口号
             final parsed = _parseDevicePath(path);
-            final (vid, pid, interfaceNumber) = parsed ??
+            final (vid, pid, interfaceNumber) =
+                parsed ??
                 (
                   _extractField(vidPidKeyName, 'VID_'),
                   _extractField(vidPidKeyName, 'PID_'),
@@ -777,69 +780,85 @@ Future<List<WinUsbDeviceInfo>> listWinUsbDevicesFromRegistry() async {
 /// 通过 GUID_DEVINTERFACE_USB_DEVICE 枚举当前在线的 USB 设备接口，
 /// 过滤出可被 WinUSB 打开的设备路径。
 Future<List<WinUsbDeviceInfo>> enumerateWinUsbDevices() async {
-  final results = <WinUsbDeviceInfo>[];
-
   final guidPtr = _allocGuidDevInterfaceUsbDevice();
   try {
-    final devInfoSet = fSetupDiGetClassDevsW(
-      guidPtr,
-      nullptr,
-      nullptr,
-      DIGCF_PRESENT | DIGCF_DEVICEINTERFACE,
-    );
-
-    if (devInfoSet == INVALID_HANDLE_VALUE || devInfoSet == 0) return results;
-
-    try {
-      var index = 0;
-      while (true) {
-        final ifaceData = calloc<SP_DEVICE_INTERFACE_DATA>();
-        ifaceData.ref.cbSize = sizeOf<SP_DEVICE_INTERFACE_DATA>();
-
-        final result = fSetupDiEnumDeviceInterfaces(
-          devInfoSet,
-          nullptr,
-          guidPtr,
-          index,
-          ifaceData,
-        );
-
-        if (result == 0) {
-          final error = fGetLastError();
-          calloc.free(ifaceData);
-          // ERROR_NO_MORE_ITEMS (259) or error=0 表示枚举结束
-          if (error == 259 || error == 0) break;
-          index++;
-          continue;
-        }
-
-        try {
-          final path = _getInterfaceDetailPath(devInfoSet, ifaceData);
-          if (path != null) {
-            final info = _parseDevicePath(path);
-            if (info != null) {
-              final (vid, pid, interfaceNumber) = info;
-              results.add(
-                WinUsbDeviceInfo(
-                  devicePath: path,
-                  instanceId: '',
-                  vid: vid,
-                  pid: pid,
-                  interfaceNumber: interfaceNumber,
-                ),
-              );
-            }
-          }
-        } finally {
-          calloc.free(ifaceData);
-        }
-        index++;
-      }
-    } finally {
-      fSetupDiDestroyDeviceInfoList(devInfoSet);
-    }
+    return await _enumerateDeviceInterfaces(guidPtr);
   } finally {
     calloc.free(guidPtr);
+  }
+}
+
+/// 按注钥枪 WinUSB 接口 GUID 枚举当前在线设备接口。
+Future<List<WinUsbDeviceInfo>> enumerateWinUsbInterfacesByCustomGuid() async {
+  final guidPtr = _allocGuidFed3a0be();
+  try {
+    return await _enumerateDeviceInterfaces(guidPtr);
+  } finally {
+    calloc.free(guidPtr);
+  }
+}
+
+Future<List<WinUsbDeviceInfo>> _enumerateDeviceInterfaces(
+  Pointer<GUID> guidPtr,
+) async {
+  final results = <WinUsbDeviceInfo>[];
+
+  final devInfoSet = fSetupDiGetClassDevsW(
+    guidPtr,
+    nullptr,
+    nullptr,
+    DIGCF_PRESENT | DIGCF_DEVICEINTERFACE,
+  );
+
+  if (devInfoSet == INVALID_HANDLE_VALUE || devInfoSet == 0) return results;
+
+  try {
+    var index = 0;
+    while (true) {
+      final ifaceData = calloc<SP_DEVICE_INTERFACE_DATA>();
+      ifaceData.ref.cbSize = sizeOf<SP_DEVICE_INTERFACE_DATA>();
+
+      final result = fSetupDiEnumDeviceInterfaces(
+        devInfoSet,
+        nullptr,
+        guidPtr,
+        index,
+        ifaceData,
+      );
+
+      if (result == 0) {
+        final error = fGetLastError();
+        calloc.free(ifaceData);
+        // ERROR_NO_MORE_ITEMS (259) or error=0 表示枚举结束
+        if (error == 259 || error == 0) break;
+        index++;
+        continue;
+      }
+
+      try {
+        final path = _getInterfaceDetailPath(devInfoSet, ifaceData);
+        if (path != null) {
+          final info = _parseDevicePath(path);
+          if (info != null) {
+            final (vid, pid, interfaceNumber) = info;
+            results.add(
+              WinUsbDeviceInfo(
+                devicePath: path,
+                instanceId: '',
+                vid: vid,
+                pid: pid,
+                interfaceNumber: interfaceNumber,
+              ),
+            );
+          }
+        }
+      } finally {
+        calloc.free(ifaceData);
+      }
+      index++;
+    }
+  } finally {
+    fSetupDiDestroyDeviceInfoList(devInfoSet);
   }
 
   return results;
@@ -1012,10 +1031,7 @@ WinUsbPipeInformation queryPipeInfo(
 /// 列出接口的全部管道（对齐 go.md 的 queryEndpoints 循环 QueryPipe）。
 ///
 /// 返回的管道列表按 PipeId 分类：bit7=1 为 IN 管道，bit7=0 为 OUT 管道。
-List<WinUsbPipeInformation> listPipes(
-  int interfaceHandle,
-  int interfaceIndex,
-) {
+List<WinUsbPipeInformation> listPipes(int interfaceHandle, int interfaceIndex) {
   final pipes = <WinUsbPipeInformation>[];
   var pipeIndex = 0;
 
@@ -1047,7 +1063,9 @@ void setPipeTimeout(int interfaceHandle, int pipeId, int timeoutMs) {
     );
     if (result == 0) {
       final error = fGetLastError();
-      throw Exception('WinUsb_SetPipePolicy(PIPE_TRANSFER_TIMEOUT) failed: error=$error');
+      throw Exception(
+        'WinUsb_SetPipePolicy(PIPE_TRANSFER_TIMEOUT) failed: error=$error',
+      );
     }
   } finally {
     calloc.free(valuePtr);
@@ -1145,8 +1163,21 @@ Pointer<GUID> _allocGuidDevInterfaceUsbDevice() {
   g.data1 = 0xA5DCBF10;
   g.data2 = 0x6530;
   g.data3 = 0x11D2;
-  g.data4a = 0x901F00C0;
-  g.data4b = 0x4FB951ED;
+  g.data4a = 0xC0001F90;
+  g.data4b = 0xED51B94F;
+  return p;
+}
+
+/// 注钥枪 WinUSB 接口 GUID:
+/// {fed3a0be-9515-4920-812b-51d602e63752}
+Pointer<GUID> _allocGuidFed3a0be() {
+  final p = calloc<GUID>();
+  final g = p.ref;
+  g.data1 = 0xFED3A0BE;
+  g.data2 = 0x9515;
+  g.data3 = 0x4920;
+  g.data4a = 0xD6512B81;
+  g.data4b = 0x5237E602;
   return p;
 }
 
@@ -1340,8 +1371,7 @@ String? _getInterfaceDetailPath(
   }
 
   final detailData = calloc<Uint8>(requiredSize);
-  final detailDataStruct =
-      detailData.cast<SP_DEVICE_INTERFACE_DETAIL_DATA_W>();
+  final detailDataStruct = detailData.cast<SP_DEVICE_INTERFACE_DETAIL_DATA_W>();
   // SP_DEVICE_INTERFACE_DETAIL_DATA_W.cbSize must be 8 on 64-bit Windows
   detailDataStruct.ref.cbSize = 8;
 
@@ -1393,18 +1423,11 @@ int _extractField(String keyName, String prefix) {
   if (idx == -1) return 0;
   final start = idx + prefix.length;
   if (start + 4 > keyName.length) return 0;
-  return int.tryParse(
-        keyName.substring(start, start + 4),
-        radix: 16,
-      ) ??
-      0;
+  return int.tryParse(keyName.substring(start, start + 4), radix: 16) ?? 0;
 }
 
 /// 从 VID/PID 键名中提取接口号（MI_xx），无则返回 0。
 int _extractInterfaceNumber(String keyName) {
-  final match = RegExp(
-    r'MI_(\d+)',
-    caseSensitive: false,
-  ).firstMatch(keyName);
+  final match = RegExp(r'MI_(\d+)', caseSensitive: false).firstMatch(keyName);
   return match != null ? int.parse(match.group(1)!) : 0;
 }
