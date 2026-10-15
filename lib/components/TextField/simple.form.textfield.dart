@@ -43,7 +43,8 @@ class _SimpleFormTextFieldState extends State<SimpleFormTextField> {
     final counter = widget.field.counterTextBuilder?.call(
       widget.field.textEditingController?.text ?? '',
     );
-    return FormBuilderTextField(
+    final hasFixedHeight = widget.field.height != null;
+    final textField = FormBuilderTextField(
       name: widget.field.name,
       controller: widget.field.textEditingController,
       obscureText: widget.field.obscureText,
@@ -51,13 +52,17 @@ class _SimpleFormTextFieldState extends State<SimpleFormTextField> {
       enabled: widget.field.enabled,
       readOnly: widget.field.readonly,
       inputFormatters: widget.field.inputFormatters,
-      maxLines: widget.field.maxLines,
-      minLines: widget.field.minLines,
+      maxLines: hasFixedHeight ? null : widget.field.maxLines,
+      minLines: hasFixedHeight ? null : widget.field.minLines,
+      expands: hasFixedHeight,
+      textAlignVertical: hasFixedHeight ? TextAlignVertical.top : null,
       validator: widget.field.validators != null
           ? FormBuilderValidators.compose(widget.field.validators!)
           : null,
       decoration: InputDecoration(
-        labelText: widget.field.hintText ?? widget.field.label,
+        labelText: widget.field.showLabelText
+            ? (widget.field.hintText ?? widget.field.label)
+            : null,
         isDense: true,
         contentPadding: EdgeInsets.symmetric(
           vertical: widget.contentPadding,
@@ -97,6 +102,11 @@ class _SimpleFormTextFieldState extends State<SimpleFormTextField> {
         ),
       ),
     );
+    final height = widget.field.height;
+    if (height == null) {
+      return textField;
+    }
+    return SizedBox(height: height, child: textField);
   }
 }
 
@@ -114,6 +124,7 @@ class FormFieldConfig {
   final bool enabled;
   final bool required;
   final String? labelHelpText;
+  final bool showLabelText;
 
   final List<TextInputFormatter>? inputFormatters;
   final String? Function(String value)? counterTextBuilder;
@@ -121,6 +132,12 @@ class FormFieldConfig {
   /// 多行输入（textarea）相关。
   final int? maxLines;
   final int? minLines;
+
+  /// 固定高度（像素）；设置后输入框固定为改高度，多行内容内部滚动。
+  final double? height;
+
+  /// 在 twoColumn 布局中独占一整行。
+  final bool fullWidth;
 
   // 新增字段类型
   final FormFieldType fieldType;
@@ -143,10 +160,13 @@ class FormFieldConfig {
     this.enabled = true,
     this.required = false,
     this.labelHelpText,
+    this.showLabelText = true,
     this.inputFormatters,
     this.counterTextBuilder,
     this.maxLines,
     this.minLines,
+    this.height,
+    this.fullWidth = false,
     this.fieldType = FormFieldType.text, // 默认为文本输入
     this.items,
     this.labelBuilder,

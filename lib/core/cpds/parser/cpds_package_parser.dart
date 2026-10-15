@@ -70,6 +70,11 @@ class CpdsPackageParser {
     final digest = sha256.convert(bytes).bytes;
     final archive = _decodeZip(bytes, password: password);
     final contents = _inspectArchive(archive, stat.size);
+    try {
+      _parseBusinessFiles(contents);
+    } catch (e) {
+      print(e);
+    }
     final package = _parseBusinessFiles(contents);
 
     return (
@@ -169,6 +174,51 @@ class CpdsPackageParser {
     );
     basicInfo['NodeName'] = newName;
     json['BasicInfo'] = basicInfo;
+
+    archive.add(ArchiveFile.string(targetName, jsonEncode(json)));
+    return ZipEncoder().encodeBytes(archive);
+  }
+
+  /// 修改通信包中 `4_net_node/<nodeId>.json` 根节点 `VeciInfo.Remark`，
+  /// 重新打包后返回新的 ZIP 字节。不写盘，由调用方决定持久化方式。
+  static Uint8List updateVeciInfoRemarkInZip(
+    String zipPath,
+    String nodeId,
+    String remark,
+  ) {
+    final bytes = File(zipPath).readAsBytesSync();
+    final archive = ZipDecoder().decodeBytes(bytes);
+    final targetName = '4_net_node/$nodeId.json';
+    final target = archive.find(targetName);
+    if (target == null) {
+      throw CpdsException(
+        CpdsErrorCode.invalidPackage,
+        params: {'field': 'nodeReference', 'path': nodeId},
+        message: 'node json not found',
+      );
+    }
+    final data = target.readBytes();
+    if (data == null) {
+      throw CpdsException(
+        CpdsErrorCode.invalidPackage,
+        params: {'field': 'nodeJson', 'path': nodeId},
+        message: 'node json content is empty',
+      );
+    }
+
+    final Map<String, dynamic> json;
+    try {
+      json = Map<String, dynamic>.from(jsonDecode(utf8.decode(data)));
+    } on FormatException {
+      throw CpdsException(
+        CpdsErrorCode.invalidPackage,
+        params: {'field': 'json', 'path': targetName},
+      );
+    }
+    final veci = json['VeciInfo'] as Map? ?? const {};
+    final veciMap = Map<String, dynamic>.from(veci);
+    veciMap['Remark'] = remark;
+    json['VeciInfo'] = veciMap;
 
     archive.add(ArchiveFile.string(targetName, jsonEncode(json)));
     return ZipEncoder().encodeBytes(archive);
@@ -495,7 +545,10 @@ class CpdsPackageParser {
       final unitRef = _asMap(contact['UnitTree']);
       units.add(_buildUnit(unitRef, unitFiles, nodes));
     }
-    return _BusinessPackage(units: units, nodes: nodes.values.toList());
+    return _BusinessPackage(
+      units: _sortUnits(units),
+      nodes: nodes.values.toList(),
+    );
   }
 
   static Map<String, dynamic> _decodeJson(String name, Uint8List data) {
@@ -533,6 +586,7 @@ class CpdsPackageParser {
     }
     final file = _asMap(unitFiles[unitId]);
     final unitName = file['UnitName']?.toString() ?? '';
+    final unitType = file['UnitType']?.toString() ?? '';
     if (file.isEmpty || unitName.isEmpty) {
       throw CpdsException(
         CpdsErrorCode.invalidPackage,
@@ -549,15 +603,24 @@ class CpdsPackageParser {
         );
       }
     }
-    final subUnits = _listOfMaps(
-      ref['SubUnits'],
-    ).map((item) => _buildUnit(item, unitFiles, nodes)).toList();
+    final subUnits = _sortUnits(
+      _listOfMaps(
+        ref['SubUnits'],
+      ).map((item) => _buildUnit(item, unitFiles, nodes)).toList(),
+    );
     return CpdsUnit(
       id: unitId,
       name: unitName,
       nodeIds: nodeIds,
       subUnits: subUnits,
+      unitType: unitType,
     );
+  }
+
+  static List<CpdsUnit> _sortUnits(List<CpdsUnit> units) {
+    final hq = units.where((unit) => unit.unitType == 'HQ').toList();
+    final others = units.where((unit) => unit.unitType != 'HQ').toList();
+    return [...hq, ...others];
   }
 
   static CpdsNode _buildNode(
@@ -571,6 +634,10 @@ class CpdsPackageParser {
     final basicInfo = _asMap(raw['BasicInfo']);
     final file = _asMap(raw['File']);
     final systemConfig = _asMap(raw['SystemConfiguration']);
+    final veciRaw = raw['VeciInfo'];
+    final veciInfo = veciRaw is Map
+        ? CpdsVeciInfo.fromJson(Map<String, dynamic>.from(veciRaw))
+        : null;
     if (id.isEmpty ||
         utf8.encode(id).length > 255 ||
         (basicInfo['NodeName']?.toString().isEmpty ?? true)) {
@@ -759,6 +826,7 @@ class CpdsPackageParser {
       nodeType: _asInt(basicInfo['NodeType']),
       model: file['Model']?.toString() ?? '',
       devices: devices,
+      veciInfo: veciInfo,
     );
   }
 

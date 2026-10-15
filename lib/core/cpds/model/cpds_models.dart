@@ -20,12 +20,14 @@ class CpdsUnit {
     required this.name,
     required this.nodeIds,
     required this.subUnits,
+    this.unitType = '',
   });
 
   final String id;
   final String name;
   final List<String> nodeIds;
   final List<CpdsUnit> subUnits;
+  final String unitType;
 
   factory CpdsUnit.fromJson(Map<String, dynamic> json) => CpdsUnit(
     id: json['id'] as String? ?? '',
@@ -34,6 +36,7 @@ class CpdsUnit {
     subUnits: _listOfMaps(
       json['subUnits'],
     ).map((item) => CpdsUnit.fromJson(item)).toList(),
+    unitType: json['unitType'] as String? ?? '',
   );
 
   Map<String, dynamic> toJson() => {
@@ -41,6 +44,7 @@ class CpdsUnit {
     'name': name,
     'nodeIds': nodeIds,
     'subUnits': subUnits.map((item) => item.toJson()).toList(),
+    'unitType': unitType,
   };
 }
 
@@ -102,6 +106,42 @@ class CpdsFutureWarriorDevice {
   String get key => '$nodeId:${device.key}';
 }
 
+class CpdsVeciInfo {
+  CpdsVeciInfo({
+    this.equipName = '',
+    this.equipTag = '',
+    this.plateNo = '',
+    this.vehicleParams = '',
+    this.purpose = '',
+    this.remark = '',
+  });
+
+  String equipName;
+  String equipTag;
+  String plateNo;
+  String vehicleParams;
+  String purpose;
+  String remark;
+
+  factory CpdsVeciInfo.fromJson(Map<String, dynamic> json) => CpdsVeciInfo(
+    equipName: json['EquipName']?.toString() ?? '',
+    equipTag: json['EquipTag']?.toString() ?? '',
+    plateNo: json['PlateNo']?.toString() ?? '',
+    vehicleParams: json['VehicleParams']?.toString() ?? '',
+    purpose: json['Purpose']?.toString() ?? '',
+    remark: json['Remark']?.toString() ?? '',
+  );
+
+  Map<String, dynamic> toJson() => {
+    'EquipName': equipName,
+    'EquipTag': equipTag,
+    'PlateNo': plateNo,
+    'VehicleParams': vehicleParams,
+    'Purpose': purpose,
+    'Remark': remark,
+  };
+}
+
 class CpdsNode {
   CpdsNode({
     required this.id,
@@ -111,6 +151,7 @@ class CpdsNode {
     required this.nodeType,
     required this.model,
     required this.devices,
+    this.veciInfo,
   });
 
   final String id;
@@ -120,6 +161,7 @@ class CpdsNode {
   final int nodeType;
   final String model;
   final List<CpdsDevice> devices;
+  final CpdsVeciInfo? veciInfo;
 
   bool get hasTeds => devices.any((d) => d.type == CpdsDeviceType.teds);
 
@@ -133,6 +175,11 @@ class CpdsNode {
     devices: _listOfMaps(
       json['devices'],
     ).map((item) => CpdsDevice.fromJson(item)).toList(),
+    veciInfo: json['veciInfo'] == null
+        ? null
+        : CpdsVeciInfo.fromJson(
+            Map<String, dynamic>.from(json['veciInfo'] as Map),
+          ),
   );
 
   Map<String, dynamic> toJson() => {
@@ -143,6 +190,7 @@ class CpdsNode {
     'nodeType': nodeType,
     'model': model,
     'devices': devices.map((item) => item.toJson()).toList(),
+    'veciInfo': veciInfo?.toJson(),
   };
 }
 
@@ -345,6 +393,7 @@ class CpdsApplicationState {
     this.canDistribute = false,
     this.active = false,
     this.session,
+    this.showCancel = false,
   });
 
   CpdsUpload? upload;
@@ -354,6 +403,7 @@ class CpdsApplicationState {
   bool canDistribute;
   bool active;
   CpdsSessionView? session;
+  bool showCancel;
 
   factory CpdsApplicationState.fromJson(Map<String, dynamic> json) =>
       CpdsApplicationState(
@@ -365,6 +415,7 @@ class CpdsApplicationState {
         canDistribute: json['canDistribute'] as bool? ?? false,
         active: json['active'] as bool? ?? false,
         session: _nullableMap(json['session'], CpdsSessionView.fromJson),
+        showCancel: json['showCancel'] as bool? ?? false,
       );
 
   Map<String, dynamic> toJson() => {
@@ -375,6 +426,7 @@ class CpdsApplicationState {
     'canDistribute': canDistribute,
     'active': active,
     'session': session?.toJson(),
+    'showCancel': showCancel,
   };
 }
 

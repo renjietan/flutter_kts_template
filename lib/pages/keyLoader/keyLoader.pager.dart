@@ -2,7 +2,6 @@ import 'package:composable_data_table/composable_data_table.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
-import 'package:flutter_kts_template/router/router.dart';
 
 import '../../components/text/text.title.dart';
 import '../../theme/table.theme.dart';
@@ -27,6 +26,7 @@ class _InjectEncryptStickPagerState extends State<KeyLoaderPager>
     with KeyLoaderMixin {
 
   AppLocale? _lastLocale;
+  bool _wasVisible = false;
 
   @override
   void didChangeDependencies() {
@@ -40,29 +40,16 @@ class _InjectEncryptStickPagerState extends State<KeyLoaderPager>
       });
     }
     _lastLocale = locale;
-  }
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      getList();
-    });
-    router.routeInformationProvider.addListener(_onRouteChanged);
-  }
 
-  void _onRouteChanged() {
-    final currentLocation = router.routerDelegate.currentConfiguration.uri
-        .toString();
-    // 判断是否是第三个菜单的路径，例如 '/injectEncryptStick'
-    if (currentLocation == "/injectEncryptStick") {
-      getList();
+    // IndexedStack 分支切换时，TickerMode 会从 false 变为 true。
+    // 用它判断“页面从不可见变为可见”，比监听路由信息更可靠。
+    final isVisible = TickerMode.of(context);
+    if (isVisible && !_wasVisible) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) getList();
+      });
     }
-  }
-
-  @override
-  void dispose() {
-    router.routeInformationProvider.removeListener(_onRouteChanged);
-    super.dispose();
+    _wasVisible = isVisible;
   }
 
   @override

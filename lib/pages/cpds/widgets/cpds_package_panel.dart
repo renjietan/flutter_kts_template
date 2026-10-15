@@ -7,6 +7,9 @@ import 'package:flutter_kts_template/icons/hy_icons.dart';
 import 'package:flutter_kts_template/pages/cpds/cpds_package_tree.dart';
 import 'package:flutter_kts_template/pages/cpds/widgets/cpds_messages.dart';
 
+/// 暂时隐藏车辆节点(nodeType==2)的编辑按钮；需要恢复时改为 true。
+const bool _kShowNodeEditButton = false;
+
 class CpdsPackagePanel extends StatefulWidget {
   const CpdsPackagePanel({
     super.key,
@@ -64,6 +67,12 @@ class _CpdsPackagePanelState extends State<CpdsPackagePanel> {
       package?.units ?? const [],
       nodesById,
       futureWarriorLabel: Translations.of(context).tree.futureWarrior,
+      directLabel: CpdsMessages.tr(
+        context,
+        '（直属指挥机构）',
+        '（Direct Command Organization）',
+        '（جهة القيادة المباشرة）',
+      ),
     );
   }
 
@@ -224,10 +233,23 @@ class _CpdsPackagePanelState extends State<CpdsPackagePanel> {
                     'Change Password',
                     'تغيير كلمة المرور',
                   ),
+                  colors: const [
+                    Color(0xFFE6A23C),
+                    Color(0xFFE6A23C),
+                    Color(0xFFE6A23C),
+                    Color(0xFFE6A23C),
+                  ],
+                  disabledColors: const [
+                    Color(0xFFF3D19E),
+                    Color(0xFFF3D19E),
+                    Color(0xFFF3D19E),
+                    Color(0xFFF3D19E),
+                  ],
                   minWidth: 110,
                   height: 32,
                   icon: Icons.lock_outline,
-                  onPressed: widget.state.active ||
+                  onPressed:
+                      widget.state.active ||
                           widget.uploading ||
                           widget.state.package == null
                       ? null
@@ -434,17 +456,15 @@ class _CpdsTreeRow extends StatelessWidget {
             style: const TextStyle(color: Colors.white, fontSize: 13),
           ),
         ),
-        if (item.kind == CpdsTreeItemKind.node && item.nodeType == 2)
+        if (_kShowNodeEditButton &&
+            item.kind == CpdsTreeItemKind.node &&
+            item.nodeType == 2)
           GestureDetector(
             behavior: HitTestBehavior.opaque,
             onTap: () => onEditNode(item.nodeId!),
             child: Padding(
               padding: const EdgeInsetsDirectional.only(start: 6, end: 16),
-              child: Icon(
-                Icons.edit_outlined,
-                size: 15,
-                color: Colors.white70,
-              ),
+              child: Icon(Icons.edit_outlined, size: 15, color: Colors.white70),
             ),
           ),
       ],

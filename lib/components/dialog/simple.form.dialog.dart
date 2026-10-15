@@ -214,37 +214,56 @@ Widget _buildTwoColumnFields(
   double contentPadding,
 ) {
   final rows = <Widget>[];
-  for (var i = 0; i < fields.length; i += 2) {
-    final first = _buildFieldItem(
-      context,
-      fields[i],
-      labelColor,
-      fillColor,
-      borderColor,
-      labelFontSize,
-      contentPadding,
-    );
-    final second = i + 1 < fields.length
-        ? _buildFieldItem(
-            context,
-            fields[i + 1],
-            labelColor,
-            fillColor,
-            borderColor,
-            labelFontSize,
-            contentPadding,
-          )
-        : const SizedBox();
-    rows.add(
-      Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(child: first),
-          const SizedBox(width: 16),
-          Expanded(child: second),
-        ],
-      ),
-    );
+  var i = 0;
+  while (i < fields.length) {
+    final current = fields[i];
+    if (current.fullWidth) {
+      rows.add(
+        _buildFieldItem(
+          context,
+          current,
+          labelColor,
+          fillColor,
+          borderColor,
+          labelFontSize,
+          contentPadding,
+        ),
+      );
+      i += 1;
+    } else {
+      final hasSecond = i + 1 < fields.length && !fields[i + 1].fullWidth;
+      final first = _buildFieldItem(
+        context,
+        current,
+        labelColor,
+        fillColor,
+        borderColor,
+        labelFontSize,
+        contentPadding,
+      );
+      final second = hasSecond
+          ? _buildFieldItem(
+              context,
+              fields[i + 1],
+              labelColor,
+              fillColor,
+              borderColor,
+              labelFontSize,
+              contentPadding,
+            )
+          : const SizedBox();
+      rows.add(
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(child: first),
+            const SizedBox(width: 16),
+            Expanded(child: second),
+          ],
+        ),
+      );
+      i += hasSecond ? 2 : 1;
+    }
     rows.add(const SizedBox(height: 14));
   }
   rows.add(const SizedBox(height: 48));

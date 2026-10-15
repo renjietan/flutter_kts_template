@@ -63,6 +63,7 @@ class _CpdsPageState extends State<CpdsPage> {
   String? _shownResultSessionId;
   StreamSubscription<CpdsApplicationState>? _subscription;
   final TextEditingController _nodeNameController = TextEditingController();
+  final TextEditingController _veciRemarkController = TextEditingController();
 
   @override
   void initState() {
@@ -77,6 +78,7 @@ class _CpdsPageState extends State<CpdsPage> {
   void dispose() {
     _subscription?.cancel();
     _nodeNameController.dispose();
+    _veciRemarkController.dispose();
     super.dispose();
   }
 
@@ -285,7 +287,7 @@ class _CpdsPageState extends State<CpdsPage> {
 
     Uint8List? zipBytes;
     String? pcPassword;
-    final ok = await showDialog<bool>(
+    final result = await showDialog<_CpdsPcPasswordResult>(
       context: context,
       barrierDismissible: false,
       builder: (dialogContext) => _CpdsPcPasswordDialog(
@@ -304,7 +306,11 @@ class _CpdsPageState extends State<CpdsPage> {
       ),
     );
 
-    if (ok != true || zipBytes == null) {
+    if (result is _CpdsPcPasswordExit) {
+      return;
+    }
+
+    if (result is! _CpdsPcPasswordOk || zipBytes == null) {
       try {
         if (await stored.exists()) await stored.delete();
       } catch (_) {}
@@ -364,7 +370,10 @@ class _CpdsPageState extends State<CpdsPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: Text(Translations.of(dialogContext).tips.cancel),
+            child: Text(
+              Translations.of(dialogContext).tips.cancel,
+              style: const TextStyle(color: Colors.white70),
+            ),
           ),
           FilledButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),
@@ -428,6 +437,7 @@ class _CpdsPageState extends State<CpdsPage> {
   }
 
   Future<void> _checkStartupPcFiles() async {
+    CpdsManager.instance.setShowCancel(true);
     try {
       final uploadsPath = await DirectoryManager.instance.getUploadsPath();
       final dir = Directory(uploadsPath);
@@ -440,6 +450,8 @@ class _CpdsPageState extends State<CpdsPage> {
       }
 
       if (pcFiles.isEmpty) {
+        // 没有待加载的 `.pc`：进入手动浏览流程，不再是“可取消的启动密码框”。
+        CpdsManager.instance.setShowCancel(false);
         if (!mounted) return;
         final proceed = await showDialog<bool>(
           context: context,
@@ -462,7 +474,10 @@ class _CpdsPageState extends State<CpdsPage> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(dialogContext).pop(false),
-                child: Text(Translations.of(dialogContext).tips.cancel),
+                child: Text(
+                  Translations.of(dialogContext).tips.cancel,
+                  style: const TextStyle(color: Colors.white70),
+                ),
               ),
               FilledButton(
                 onPressed: () => Navigator.of(dialogContext).pop(true),
@@ -487,6 +502,8 @@ class _CpdsPageState extends State<CpdsPage> {
       );
     } catch (e) {
       GlobalLogger.logError('STARTUP_PC_CHECK_FAILED $e');
+    } finally {
+      CpdsManager.instance.setShowCancel(false);
     }
   }
 
@@ -577,22 +594,12 @@ class _CpdsPageState extends State<CpdsPage> {
     _nodeNameController.text = node.name;
     final oldName = node.name;
     SimpleFormDialog(
-      title: CpdsMessages.tr(
-        context,
-        '编辑节点',
-        'Edit Node',
-        'تحرير العقدة',
-      ),
+      title: CpdsMessages.tr(context, '编辑节点', 'Edit Node', 'تحرير العقدة'),
       confirmText: Translations.of(context).common.confirm,
       fields: [
         FormFieldConfig(
           name: 'nodeName',
-          label: CpdsMessages.tr(
-            context,
-            '节点名称',
-            'Node Name',
-            'اسم العقدة',
-          ),
+          label: CpdsMessages.tr(context, '节点名称', 'Node Name', 'اسم العقدة'),
           textEditingController: _nodeNameController,
           required: true,
           counterTextBuilder: (value) =>
@@ -647,10 +654,132 @@ class _CpdsPageState extends State<CpdsPage> {
       if (!mounted) return;
       _applyState(CpdsManager.instance.state());
       SimplePopup.success(
-        CpdsMessages.tr(context, '保存成功', 'Saved successfully', 'تم الحفظ بنجاح'),
+        CpdsMessages.tr(
+          context,
+          '保存成功',
+          'Saved successfully',
+          'تم الحفظ بنجاح',
+        ),
       );
     } catch (error) {
       GlobalLogger.logError('EDIT_NODE_FAILED $error');
+      if (!mounted) return;
+      _showNodeEditError(error);
+    }
+  }
+
+  Future<void> _editVeciInfo(String nodeId) async {
+    if (_state.active) return;
+    CpdsNode? node;
+    for (final n in _state.package?.nodes ?? const <CpdsNode>[]) {
+      if (n.id == nodeId) {
+        node = n;
+        break;
+      }
+    }
+    final veci = node?.veciInfo;
+    if (veci == null) return;
+
+    _veciRemarkController.text = veci.remark;
+
+    SimpleFormDialog(
+      title: CpdsMessages.tr(
+        context,
+        '编辑车辆信息',
+        'Edit Vehicle Information',
+        'تحرير معلومات المركبة',
+      ),
+      confirmText: Translations.of(context).common.confirm,
+      dialogWidth: MediaQuery.sizeOf(context).width * 0.7,
+      twoColumn: true,
+      fields: [
+        FormFieldConfig(
+          name: 'equipName',
+          label: CpdsMessages.tr(
+            context,
+            '装备名称',
+            'Equipment Name',
+            'اسم المعدات',
+          ),
+          textEditingController: TextEditingController(text: veci.equipName),
+          enabled: false,
+          showLabelText: false,
+        ),
+        FormFieldConfig(
+          name: 'equipTag',
+          label: CpdsMessages.tr(
+            context,
+            '装备标识',
+            'Equipment Tag',
+            'تعريف المعدات',
+          ),
+          textEditingController: TextEditingController(text: veci.equipTag),
+          enabled: false,
+          showLabelText: false,
+        ),
+        FormFieldConfig(
+          name: 'plateNo',
+          label: CpdsMessages.tr(context, '车牌号', 'Plate No.', 'رقم اللوحة'),
+          textEditingController: TextEditingController(text: veci.plateNo),
+          enabled: false,
+          showLabelText: false,
+        ),
+        FormFieldConfig(
+          name: 'vehicleParams',
+          label: CpdsMessages.tr(
+            context,
+            '车辆基础参数',
+            'Vehicle Parameters',
+            'معايير المركبة',
+          ),
+          textEditingController: TextEditingController(
+            text: veci.vehicleParams,
+          ),
+          enabled: false,
+          showLabelText: false,
+        ),
+        FormFieldConfig(
+          name: 'purpose',
+          label: CpdsMessages.tr(context, '用途', 'Purpose', 'الغرض'),
+          textEditingController: TextEditingController(text: veci.purpose),
+          enabled: false,
+          showLabelText: false,
+          fullWidth: true,
+        ),
+        FormFieldConfig(
+          name: 'remark',
+          label: CpdsMessages.tr(context, '备注', 'Remark', 'ملاحظات'),
+          textEditingController: _veciRemarkController,
+          showLabelText: false,
+          fullWidth: true,
+          height: 120,
+          inputFormatters: [LengthLimitingTextInputFormatter(200)],
+          counterTextBuilder: (value) =>
+              CpdsMessages.digits(context, '${value.characters.length}/200'),
+        ),
+      ],
+      onConfirm: (formData) {
+        final remark = (formData['remark'] as String? ?? '').trim();
+        unawaited(_saveVeciInfoRemark(nodeId, remark));
+      },
+    );
+  }
+
+  Future<void> _saveVeciInfoRemark(String nodeId, String remark) async {
+    try {
+      await CpdsManager.instance.updateVeciInfoRemark(nodeId, remark);
+      if (!mounted) return;
+      _applyState(CpdsManager.instance.state());
+      SimplePopup.success(
+        CpdsMessages.tr(
+          context,
+          '保存成功',
+          'Saved successfully',
+          'تم الحفظ بنجاح',
+        ),
+      );
+    } catch (error) {
+      GlobalLogger.logError('EDIT_VECI_INFO_FAILED $error');
       if (!mounted) return;
       _showNodeEditError(error);
     }
@@ -675,20 +804,10 @@ class _CpdsPageState extends State<CpdsPage> {
           'كلمة المرور غير مخزنة مؤقتًا',
         );
       } else {
-        message = CpdsMessages.tr(
-          context,
-          '保存失败',
-          'Save failed',
-          'فشل الحفظ',
-        );
+        message = CpdsMessages.tr(context, '保存失败', 'Save failed', 'فشل الحفظ');
       }
     } else {
-      message = CpdsMessages.tr(
-        context,
-        '保存失败',
-        'Save failed',
-        'فشل الحفظ',
-      );
+      message = CpdsMessages.tr(context, '保存失败', 'Save failed', 'فشل الحفظ');
     }
     SimplePopup.error(message);
   }
@@ -753,12 +872,7 @@ class _CpdsPageState extends State<CpdsPage> {
         );
       }
     }
-    return CpdsMessages.tr(
-      context,
-      '修改失败',
-      'Change failed',
-      'فشل التعديل',
-    );
+    return CpdsMessages.tr(context, '修改失败', 'Change failed', 'فشل التعديل');
   }
 
   Future<void> _selectInterface(String? name) async {
@@ -1098,6 +1212,7 @@ class _CpdsPageState extends State<CpdsPage> {
                   onSelectInterface: _selectInterface,
                   onDistribute: _distribute,
                   onSaveFutureWarrior: _saveFutureWarrior,
+                  onEditVeciInfo: _editVeciInfo,
                 ),
               ),
             ],
@@ -1125,6 +1240,22 @@ class _PcPassphrase extends PassphraseProvider {
 
   @override
   Future<String> passphrase() async => password;
+}
+
+sealed class _CpdsPcPasswordResult {
+  const _CpdsPcPasswordResult();
+}
+
+class _CpdsPcPasswordOk extends _CpdsPcPasswordResult {
+  const _CpdsPcPasswordOk();
+}
+
+class _CpdsPcPasswordFail extends _CpdsPcPasswordResult {
+  const _CpdsPcPasswordFail();
+}
+
+class _CpdsPcPasswordExit extends _CpdsPcPasswordResult {
+  const _CpdsPcPasswordExit();
 }
 
 class _CpdsPcPasswordDialog extends StatefulWidget {
@@ -1199,14 +1330,14 @@ class _CpdsPcPasswordDialogState extends State<_CpdsPcPasswordDialog> {
     final ok = await widget.onVerify(_controller.text);
     if (!mounted) return;
     if (ok) {
-      Navigator.of(context).pop(true);
+      Navigator.of(context).pop(const _CpdsPcPasswordOk());
       return;
     }
 
     _attempt++;
     _controller.clear();
     if (_attempt >= 3) {
-      Navigator.of(context).pop(false);
+      Navigator.of(context).pop(const _CpdsPcPasswordFail());
       return;
     }
     final remaining = 3 - _attempt;
@@ -1315,6 +1446,18 @@ class _CpdsPcPasswordDialogState extends State<_CpdsPcPasswordDialog> {
         ),
       ),
       actions: [
+        if (CpdsManager.instance.showCancel)
+          TextButton(
+            onPressed: _loading
+                ? null
+                : () {
+                    Navigator.of(context).pop(const _CpdsPcPasswordExit());
+                  },
+            child: Text(
+              Translations.of(context).tips.cancel,
+              style: const TextStyle(color: Colors.white70),
+            ),
+          ),
         FilledButton(
           onPressed: _loading ? null : _submit,
           child: _loading

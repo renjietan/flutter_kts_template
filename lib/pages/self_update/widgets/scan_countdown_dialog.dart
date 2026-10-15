@@ -113,7 +113,10 @@ class _ScanCountdownDialogState extends State<ScanCountdownDialog> {
         else
           TextButton(
             onPressed: controller.state == ScanState.scanning ? _cancel : null,
-            child: Text(t.selfUpdate.cancel),
+            child: Text(
+              t.selfUpdate.cancel,
+              style: const TextStyle(color: Colors.white70),
+            ),
           ),
       ],
     );

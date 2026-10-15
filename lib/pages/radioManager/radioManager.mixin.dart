@@ -124,7 +124,10 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: Text(t.tips.cancel),
+            child: Text(
+              t.tips.cancel,
+              style: const TextStyle(color: Colors.white70),
+            ),
           ),
           FilledButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),

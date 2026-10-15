@@ -27,6 +27,7 @@ class CpdsDevicePanel extends StatelessWidget {
     required this.onSelectInterface,
     required this.onDistribute,
     this.onSaveFutureWarrior,
+    this.onEditVeciInfo,
   });
 
   final CpdsApplicationState state;
@@ -41,6 +42,7 @@ class CpdsDevicePanel extends StatelessWidget {
   final VoidCallback onDistribute;
   final Future<void> Function(List<CpdsFutureWarriorDevice>, String unitId)?
   onSaveFutureWarrior;
+  final ValueChanged<String>? onEditVeciInfo;
 
   static List<CpdsFutureWarriorDevice> _aggregateFutureWarriorDevices(
     CpdsPackage? package,
@@ -218,6 +220,13 @@ class CpdsDevicePanel extends StatelessWidget {
             disabled: state.active,
             onSelected: onSelectInterface,
           ),
+          if (selectedNode?.nodeType == 2 && selectedNode?.veciInfo != null)
+            _VeciInfoBox(
+              veciInfo: selectedNode!.veciInfo!,
+              onEdit: onEditVeciInfo == null
+                  ? null
+                  : () => onEditVeciInfo!(selectedNode!.id),
+            ),
           _StageStrip(activeIndex: stageIndex),
           if (transferring) ...[
             Container(
@@ -1228,6 +1237,155 @@ class _DeviceRow extends StatelessWidget {
         const SizedBox(width: 16),
         _Meta(label: label, value: device.distributionIp1),
       ],
+    );
+  }
+}
+
+class _VeciInfoBox extends StatelessWidget {
+  const _VeciInfoBox({required this.veciInfo, required this.onEdit});
+
+  final CpdsVeciInfo veciInfo;
+  final VoidCallback? onEdit;
+
+  @override
+  Widget build(BuildContext context) {
+    final title = CpdsMessages.tr(
+      context,
+      '车辆信息',
+      'Vehicle Information',
+      'معلومات المركبة',
+    );
+    final editLabel = CpdsMessages.tr(context, '编辑', 'Edit', 'تحرير');
+    final equipNameLabel = CpdsMessages.tr(
+      context,
+      '装备名称',
+      'Equipment Name',
+      'اسم المعدات',
+    );
+    final equipTagLabel = CpdsMessages.tr(
+      context,
+      '装备标识',
+      'Equipment Tag',
+      'تعريف المعدات',
+    );
+    final plateNoLabel = CpdsMessages.tr(
+      context,
+      '车牌号',
+      'Plate No.',
+      'رقم اللوحة',
+    );
+    final vehicleParamsLabel = CpdsMessages.tr(
+      context,
+      '车辆基础参数',
+      'Vehicle Parameters',
+      'معايير المركبة',
+    );
+    final purposeLabel = CpdsMessages.tr(context, '用途', 'Purpose', 'الغرض');
+    final remarkLabel = CpdsMessages.tr(context, '备注', 'Remark', 'ملاحظات');
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      decoration: BoxDecoration(
+        color: const Color(0xFF171C22),
+        border: Border.all(color: const Color(0x26FFFFFF)),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 10, 17, 0),
+            child: SizedBox(
+              width: double.infinity,
+              height: 28,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  Positioned(
+                    right: 0,
+                    top: 0,
+                    bottom: 0,
+                    child: Center(
+                      child: GestureDetector(
+                        onTap: onEdit,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.edit_outlined,
+                              size: 15,
+                              color: Color(0xFF00A2E9),
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              editLabel,
+                              style: const TextStyle(
+                                color: Color(0xFF00A2E9),
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 6),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const SizedBox(width: 16),
+                    _Meta(label: equipNameLabel, value: veciInfo.equipName),
+                    const SizedBox(width: 16),
+                    _Meta(label: equipTagLabel, value: veciInfo.equipTag),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    const SizedBox(width: 16),
+                    _Meta(label: plateNoLabel, value: veciInfo.plateNo),
+                    const SizedBox(width: 16),
+                    _Meta(
+                      label: vehicleParamsLabel,
+                      value: veciInfo.vehicleParams,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    const SizedBox(width: 16),
+                    _Meta(label: purposeLabel, value: veciInfo.purpose),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    const SizedBox(width: 16),
+                    _Meta(label: remarkLabel, value: veciInfo.remark),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

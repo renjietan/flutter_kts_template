@@ -21,7 +21,10 @@ void SimpleTipsDialog(
         content: Text(contentText),
         actions: <Widget>[
           TextButton(
-            child: Text(cancelText.isEmpty ? t.tips.cancel : cancelText),
+            child: Text(
+              cancelText.isEmpty ? t.tips.cancel : cancelText,
+              style: const TextStyle(color: Colors.white70),
+            ),
             onPressed: () {
               if (closed) return;
               closed = true;

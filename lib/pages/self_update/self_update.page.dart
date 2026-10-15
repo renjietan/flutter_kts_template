@@ -147,7 +147,7 @@ class _SelfUpdatePageState extends State<SelfUpdatePage> {
               ),
               const Spacer(),
               SizedBox(
-                width: 240,
+                width: 340,
                 child: CpdsNetworkInterfaceBar(
                   interfaces: widget.interfaces,
                   selectedName: widget.selectedInterfaceName,
@@ -330,7 +330,7 @@ class _SelfUpdatePageState extends State<SelfUpdatePage> {
               onPressed: () => Navigator.of(dialogContext).pop(false),
               child: Text(
                 t.selfUpdate.cancel,
-                style: const TextStyle(color: AppColors.textMuted),
+                style: const TextStyle(color: Colors.white70),
               ),
             ),
             ElevatedButton(

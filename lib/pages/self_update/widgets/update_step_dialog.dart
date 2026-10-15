@@ -467,7 +467,10 @@ class _UpdateStepDialogState extends State<UpdateStepDialog> {
                   height: 16,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
-              : Text(t.selfUpdate.cancel),
+              : Text(
+                  t.selfUpdate.cancel,
+                  style: const TextStyle(color: Colors.white70),
+                ),
         ),
       if (showReAuth)
         TextButton(

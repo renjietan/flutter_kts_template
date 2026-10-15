@@ -81,6 +81,7 @@ mixin FileUploadsMixin on State<FileUploads> {
         content: t.permission.no,
         confirmText: t.common.confirm,
         cancelText: t.common.cancel,
+        cancelStyle: TextStyle(color: Colors.white70),
         onConfirm: () async {
           bool r = await openAppSettings();
           GlobalLogger.logInfo(r.toString());

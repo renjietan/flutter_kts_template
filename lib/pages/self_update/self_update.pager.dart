@@ -152,7 +152,10 @@ class _SelfUpdatePagerState extends State<SelfUpdatePager> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: Text(t.selfUpdate.cancel),
+              child: Text(
+                t.selfUpdate.cancel,
+                style: const TextStyle(color: Colors.white70),
+              ),
             ),
             ElevatedButton(
               onPressed: () => Navigator.of(dialogContext).pop(true),

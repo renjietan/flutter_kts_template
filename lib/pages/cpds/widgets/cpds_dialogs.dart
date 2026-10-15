@@ -108,7 +108,10 @@ class CpdsDiscoveryMismatchDialog extends StatelessWidget {
       actions: [
         TextButton(
           onPressed: submitting ? null : () => onResolve(false),
-          child: Text(t.common.cancel),
+          child: Text(
+            t.common.cancel,
+            style: const TextStyle(color: Colors.white70),
+          ),
         ),
         FilledButton(
           onPressed: submitting ? null : () => onResolve(true),

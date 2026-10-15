@@ -78,6 +78,7 @@ List<CpdsTreeItem> buildCpdsPackageTree(
   List<CpdsUnit> units,
   Map<String, CpdsNode> nodesById, {
   String? futureWarriorLabel,
+  String directLabel = '',
 }) {
   return units
       .map(
@@ -86,6 +87,7 @@ List<CpdsTreeItem> buildCpdsPackageTree(
           nodesById,
           0,
           futureWarriorLabel ?? t.tree.futureWarrior,
+          directLabel,
         ),
       )
       .toList();
@@ -96,6 +98,7 @@ CpdsTreeItem _buildUnit(
   Map<String, CpdsNode> nodesById,
   int depth,
   String futureWarriorLabel,
+  String directLabel,
 ) {
   final children = <CpdsTreeItem>[];
   final tedsNodes = <CpdsTreeItem>[];
@@ -148,13 +151,15 @@ CpdsTreeItem _buildUnit(
   }
 
   for (final sub in unit.subUnits) {
-    children.add(_buildUnit(sub, nodesById, depth + 1, futureWarriorLabel));
+    children.add(
+      _buildUnit(sub, nodesById, depth + 1, futureWarriorLabel, directLabel),
+    );
   }
 
   return CpdsTreeItem(
     kind: CpdsTreeItemKind.unit,
     key: 'unit:${unit.id}',
-    title: unit.name,
+    title: unit.unitType == 'HQ' ? '$directLabel${unit.name}' : unit.name,
     depth: depth,
     children: children,
   );

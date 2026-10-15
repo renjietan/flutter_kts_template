@@ -11,7 +11,10 @@ mixin LayoutMixin<T extends StatefulWidget> on State<T> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(false),
-                child: Text(context.t.common.cancel),
+                child: Text(
+                  context.t.common.cancel,
+                  style: const TextStyle(color: Colors.white70),
+                ),
               ),
               TextButton(
                 onPressed: () => Navigator.of(context).pop(true),

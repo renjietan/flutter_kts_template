@@ -243,10 +243,10 @@ class _CpdsChangePasswordDialogState
       ),
       actions: [
         TextButton(
-          style: TextButton.styleFrom(foregroundColor: Colors.white70),
           onPressed: () => Navigator.of(context).pop(),
           child: Text(
             CpdsMessages.tr(context, '取消', 'Cancel', 'إلغاء'),
+            style: const TextStyle(color: Colors.white70),
           ),
         ),
         FilledButton(

@@ -117,9 +117,11 @@ class _SetPasswordDialogState extends State<SetPasswordDialog> {
       ),
       actions: [
         TextButton(
-          style: TextButton.styleFrom(foregroundColor: Colors.white70),
           onPressed: () => Navigator.of(context).pop(),
-          child: Text(t.common.cancel),
+          child: Text(
+            t.common.cancel,
+            style: const TextStyle(color: Colors.white70),
+          ),
         ),
         FilledButton(
           onPressed: _confirm,

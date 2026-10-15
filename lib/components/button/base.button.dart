@@ -9,6 +9,8 @@ class BaseButton extends StatefulWidget {
 
   final List<Color> colors;
 
+  final List<Color>? disabledColors;
+
   final Duration gradientDuration;
 
   /// 抖动
@@ -40,6 +42,7 @@ class BaseButton extends StatefulWidget {
       Color(0xFF00A2E9),
       Color(0xFF00A2E9),
     ],
+    this.disabledColors,
     this.gradientDuration = const Duration(seconds: 3),
     this.enablePulse = true,
     this.borderRadius = 5,
@@ -142,6 +145,9 @@ class _BaseButtonState extends State<BaseButton> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     final isDisabled = widget.onPressed == null || widget.isLoading;
+    final activeColors = isDisabled
+        ? (widget.disabledColors ?? widget.colors)
+        : widget.colors;
 
     return AnimatedBuilder(
       animation: Listenable.merge([
@@ -151,95 +157,98 @@ class _BaseButtonState extends State<BaseButton> with TickerProviderStateMixin {
         _pulseOpacity,
       ]),
       builder: (context, child) {
-        return GestureDetector(
-          onTapDown: _onTapDown,
-          onTapUp: _onTapUp,
-          onTapCancel: _onTapCancel,
-          child: Transform.scale(
-            scale: _scaleAnimation.value,
-            child: SizedBox(
-              height: widget.height,
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  minWidth: widget.minWidth ?? 0,
-                  maxWidth: widget.maxWidth ?? double.infinity,
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(widget.borderRadius),
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      Positioned.fill(
-                        child: _AnimatedGradientBackground(
-                          colors: isDisabled ? widget.colors : widget.colors,
-                          progress: _gradientAnimation.value,
+        return MouseRegion(
+          cursor: isDisabled ? SystemMouseCursors.forbidden : MouseCursor.defer,
+          child: GestureDetector(
+            onTapDown: _onTapDown,
+            onTapUp: _onTapUp,
+            onTapCancel: _onTapCancel,
+            child: Transform.scale(
+              scale: _scaleAnimation.value,
+              child: SizedBox(
+                height: widget.height,
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minWidth: widget.minWidth ?? 0,
+                    maxWidth: widget.maxWidth ?? double.infinity,
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(widget.borderRadius),
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        Positioned.fill(
+                          child: _AnimatedGradientBackground(
+                            colors: activeColors,
+                            progress: _gradientAnimation.value,
+                          ),
                         ),
-                      ),
-                      if (widget.enablePulse && _pulseController.isAnimating)
-                        Positioned(
-                          left: _tapPosition.dx - widget.height * 2,
-                          top: _tapPosition.dy - widget.height * 2,
-                          child: Opacity(
-                            opacity: _pulseOpacity.value,
-                            child: Transform.scale(
-                              scale: _pulseScale.value,
-                              child: Container(
-                                width: widget.height * 2,
-                                height: widget.height * 2,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: Colors.white.withValues(alpha: 0.4),
+                        if (widget.enablePulse && _pulseController.isAnimating)
+                          Positioned(
+                            left: _tapPosition.dx - widget.height * 2,
+                            top: _tapPosition.dy - widget.height * 2,
+                            child: Opacity(
+                              opacity: _pulseOpacity.value,
+                              child: Transform.scale(
+                                scale: _pulseScale.value,
+                                child: Container(
+                                  width: widget.height * 2,
+                                  height: widget.height * 2,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Colors.white.withValues(alpha: 0.4),
+                                  ),
                                 ),
                               ),
                             ),
                           ),
-                        ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
-                        child: widget.isLoading
-                            ? const SizedBox(
-                                width: 14,
-                                height: 14,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 1,
-                                  backgroundColor: Colors.white,
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                    Colors.white,
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          child: widget.isLoading
+                              ? const SizedBox(
+                                  width: 14,
+                                  height: 14,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 1,
+                                    backgroundColor: Colors.white,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      Colors.white,
+                                    ),
+                                  ),
+                                )
+                              : FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      if (widget.icon != null) ...[
+                                        Icon(
+                                          widget.icon,
+                                          color: Colors.white,
+                                          size: 20,
+                                        ),
+                                        const SizedBox(width: 8),
+                                      ],
+                                      Text(
+                                        widget.label,
+                                        maxLines: 1,
+                                        softWrap: false,
+                                        style:
+                                            widget.textStyle ??
+                                            const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w600,
+                                              letterSpacing: 0.5,
+                                            ),
+                                      ),
+                                    ],
                                   ),
                                 ),
-                              )
-                            : FittedBox(
-                                fit: BoxFit.scaleDown,
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    if (widget.icon != null) ...[
-                                      Icon(
-                                        widget.icon,
-                                        color: Colors.white,
-                                        size: 20,
-                                      ),
-                                      const SizedBox(width: 8),
-                                    ],
-                                    Text(
-                                      widget.label,
-                                      maxLines: 1,
-                                      softWrap: false,
-                                      style:
-                                          widget.textStyle ??
-                                          const TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.w600,
-                                            letterSpacing: 0.5,
-                                          ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                      ),
-                    ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),

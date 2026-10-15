@@ -1,0 +1,1181 @@
+import 'dart:async';
+import 'dart:convert';
+import 'dart:typed_data';
+
+import 'package:flutter/material.dart';
+import 'package:flutter_kts_template/core/rtc/managers/keyloader_usb_bulk_factory.dart';
+import 'package:flutter_kts_template/core/rtc/managers/keyloader_usb_bulk_manager.dart';
+import 'package:flutter_kts_template/logger/logger.dart';
+import 'package:flutter_kts_template/pages/cpds/widgets/cpds_messages.dart';
+
+class KeyLoaderFileDeleteDialog extends StatefulWidget {
+  const KeyLoaderFileDeleteDialog({super.key});
+
+  @override
+  State<KeyLoaderFileDeleteDialog> createState() =>
+      _KeyLoaderFileDeleteDialogState();
+}
+
+enum _DeleteStep { connect, ready, list, select }
+
+class _DeleteFileItem {
+  _DeleteFileItem(this.name);
+
+  final String name;
+  String? status;
+  bool deleted = false;
+}
+
+class _KeyLoaderFileDeleteDialogState extends State<KeyLoaderFileDeleteDialog> {
+  String _tr(String zh, String en, String ar) {
+    return CpdsMessages.tr(context, zh, en, ar);
+  }
+
+  _DeleteStep _step = _DeleteStep.connect;
+  final List<_DeleteFileItem> _files = [];
+  final Set<String> _selected = {};
+
+  KeyLoaderUsbBulkManager? _manager;
+  _UsbLineReader? _reader;
+  StreamSubscription<void>? _disconnectSub;
+
+  bool _deleting = false;
+  bool _reconnectRequired = false;
+  bool _closed = false;
+  _DeleteFileItem? _currentFile;
+  String? _refreshError;
+  bool _refreshLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _run();
+    });
+  }
+
+  @override
+  void dispose() {
+    unawaited(_teardownUsb());
+    super.dispose();
+  }
+
+  Future<void> _run() async {
+    if (_closed) return;
+    _resetUi();
+    _reconnectRequired = false;
+    _deleting = false;
+    _currentFile = null;
+    _refreshError = null;
+    _refreshLoading = false;
+
+    final manager = getKeyLoaderUsbBulkManager();
+    _manager = manager;
+
+    setState(() {
+      _step = _DeleteStep.connect;
+      _files.clear();
+      _selected.clear();
+    });
+
+    final connected = await manager.connect();
+    if (!mounted || _closed) return;
+    if (!connected) {
+      _showError(
+        _tr(
+          '注钥枪连接失败',
+          'Key loader connection failed',
+          'فشل الاتصال بجهاز تحميل المفاتيح',
+        ),
+      );
+      return;
+    }
+
+    await manager.drainInput();
+
+    final reader = _UsbLineReader(manager.listenData())..start();
+    _reader = reader;
+    _disconnectSub = manager.onDisconnected.listen((_) => _onDisconnected());
+
+    if (!mounted) return;
+    setState(() => _step = _DeleteStep.ready);
+    await _writeUsb(manager, Uint8List.fromList(utf8.encode('LIGHT\n')));
+    try {
+      final line = await reader.nextLine(timeout: const Duration(seconds: 3));
+      if (!mounted || _closed) return;
+      if (line != 'FILE_OK\n') {
+        _showError(_tr('响应超时', 'Response timeout', 'انتهت مهلة الاستجابة'));
+        return;
+      }
+    } on TimeoutException {
+      if (!mounted || _closed) return;
+      _showError(_tr('响应超时', 'Response timeout', 'انتهت مهلة الاستجابة'));
+      return;
+    } on StateError {
+      return;
+    }
+
+    if (!mounted) return;
+    setState(() => _step = _DeleteStep.list);
+    await _writeUsb(manager, Uint8List.fromList(utf8.encode('FILE_LIST\n')));
+
+    late final String listLine;
+    try {
+      listLine = await reader.nextLine(timeout: const Duration(seconds: 3));
+    } on TimeoutException {
+      if (!mounted || _closed) return;
+      _showError(
+        _tr(
+          '获取文件列表超时',
+          'Getting file list timed out',
+          'انتهت مهلة الحصول على قائمة الملفات',
+        ),
+      );
+      return;
+    } on StateError {
+      return;
+    }
+
+    if (!mounted || _closed) return;
+    final line = listLine;
+
+    setState(() {
+      _files.clear();
+      _selected.clear();
+      if (line == 'NONE\n') {
+        _files.clear();
+      } else if (line == 'ERR:DIR_READ_FAILED\n') {
+        _showError(
+          _tr(
+            '获取文件列表失败',
+            'Failed to get file list',
+            'فشل الحصول على قائمة الملفات',
+          ),
+        );
+        return;
+      } else {
+        final content = line.substring(0, line.length - 1);
+        _files.addAll(
+          content
+              .split(',')
+              .map((item) => item.trim())
+              .where((item) => item.isNotEmpty)
+              .map(_DeleteFileItem.new),
+        );
+      }
+      _step = _DeleteStep.select;
+    });
+  }
+
+  Future<void> _refreshList() async {
+    if (_deleting || _reconnectRequired) return;
+    if (!mounted || _closed) return;
+    setState(() {
+      _refreshLoading = true;
+      _refreshError = null;
+    });
+
+    final manager = _manager;
+    final reader = _reader;
+    if (manager == null || reader == null || _closed) {
+      if (mounted && !_closed) {
+        setState(() {
+          _refreshLoading = false;
+          _refreshError = _tr(
+            '注钥枪断开连接',
+            'Key loader disconnected',
+            'تم فصل جهاز تحميل المفاتيح',
+          );
+        });
+      }
+      return;
+    }
+    if (!(await manager.isConnected())) {
+      if (!mounted || _closed) return;
+      setState(() {
+        _refreshLoading = false;
+        _refreshError = _tr(
+          '注钥枪断开连接',
+          'Key loader disconnected',
+          'تم فصل جهاز تحميل المفاتيح',
+        );
+      });
+      return;
+    }
+    if (!mounted || _closed) return;
+
+    _clearUiState();
+    setState(() {
+      _refreshLoading = true;
+    });
+
+    try {
+      await _writeUsb(manager, Uint8List.fromList(utf8.encode('FILE_LIST\n')));
+      final line = await reader.nextLine(timeout: const Duration(seconds: 3));
+      if (!mounted || _closed) return;
+      if (line == 'NONE\n') {
+        setState(() {
+          _files.clear();
+          _refreshError = null;
+        });
+        return;
+      }
+      if (line == 'ERR:DIR_READ_FAILED\n') {
+        setState(() {
+          _refreshError = _tr(
+            '获取文件列表失败',
+            'Failed to get file list',
+            'فشل الحصول على قائمة الملفات',
+          );
+        });
+        return;
+      }
+      final content = line.substring(0, line.length - 1);
+      setState(() {
+        _files
+          ..clear()
+          ..addAll(
+            content
+                .split(',')
+                .map((item) => item.trim())
+                .where((item) => item.isNotEmpty)
+                .map(_DeleteFileItem.new),
+          );
+        _refreshError = null;
+      });
+    } on TimeoutException {
+      if (!mounted || _closed) return;
+      setState(() {
+        _refreshError = _tr(
+          '指令发送超时',
+          'Command send timeout',
+          'انتهت مهلة إرسال الأمر',
+        );
+      });
+    } on _UsbDisconnected {
+      if (!mounted || _closed) return;
+      setState(() {
+        _refreshError = _tr(
+          '注钥枪断开连接',
+          'Key loader disconnected',
+          'تم فصل جهاز تحميل المفاتيح',
+        );
+      });
+    } on StateError {
+      // 弹窗关闭或读线程停止。
+    } finally {
+      if (mounted && !_closed) {
+        setState(() {
+          _refreshLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _deleteSelectedFiles() async {
+    if (_deleting) return;
+    final targets = _files
+        .where((file) => _selected.contains(file.name) && !file.deleted)
+        .toList();
+    if (targets.isEmpty) return;
+
+    final manager = _manager;
+    if (manager == null || !(await manager.isConnected())) {
+      if (!mounted || _closed) return;
+      setState(() {
+        for (final file in targets) {
+          file.status = _tr(
+            '注钥枪断开连接',
+            'Key loader disconnected',
+            'تم فصل جهاز تحميل المفاتيح',
+          );
+        }
+      });
+      return;
+    }
+
+    if (!mounted || _closed) return;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        var closed = false;
+        return AlertDialog(
+          backgroundColor: const Color(0xFF20262D),
+          title: Text(
+            _tr('删除', 'Delete', 'حذف'),
+            style: const TextStyle(color: Colors.white, fontSize: 17),
+          ),
+          content: Text(
+            _tr(
+              '删除后将不可恢复，确认删除吗？？',
+              'Deleted files cannot be recovered. Confirm deletion?',
+              'لا يمكن استعادة الملفات المحذوفة. هل تريد تأكيد الحذف؟',
+            ),
+            style: const TextStyle(color: Colors.white70, fontSize: 13),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                if (closed) return;
+                closed = true;
+                Navigator.of(dialogContext).pop(false);
+              },
+              child: Text(
+                _tr('取消', 'Cancel', 'إلغاء'),
+                style: const TextStyle(color: Colors.white70),
+              ),
+            ),
+            FilledButton(
+              onPressed: () {
+                if (closed) return;
+                closed = true;
+                Navigator.of(dialogContext).pop(true);
+              },
+              child: Text(_tr('确认', 'Confirm', 'تأكيد')),
+            ),
+          ],
+        );
+      },
+    );
+    if (confirmed != true || !mounted || _closed) return;
+
+    _deleting = true;
+    setState(() {});
+
+    try {
+      for (final file in targets) {
+        if (_reconnectRequired || _closed) break;
+        _currentFile = file;
+        setState(() {
+          file.status = _tr('删除中', 'Deleting', 'جارٍ الحذف');
+        });
+
+        final result = await _deleteOne(file);
+        if (!mounted || _closed) return;
+        GlobalLogger.logInfo(
+          'KEY_LOADER_FILE_DELETE_RESULT file=${file.name} result=${result.name}',
+        );
+
+        if (result == _DeleteResult.timeout) {
+          setState(() {
+            file.status = _tr(
+              '指令发送超时',
+              'Command send timeout',
+              'انتهت مهلة إرسال الأمر',
+            );
+          });
+          await _handleActiveFailure();
+          return;
+        }
+        if (result == _DeleteResult.disconnected) {
+          // _onDisconnected 已设置 UI，不重复清理。
+          return;
+        }
+        if (result == _DeleteResult.ok) {
+          setState(() {
+            file.deleted = true;
+            file.status = _tr('已删除', 'Deleted', 'تم الحذف');
+            _selected.remove(file.name);
+          });
+          continue;
+        }
+        if (result == _DeleteResult.notFound) {
+          setState(() {
+            file.status = _tr('文件不存在', 'File not found', 'الملف غير موجود');
+          });
+          continue;
+        }
+        if (result == _DeleteResult.deleteFailed) {
+          setState(() {
+            file.status = _tr('删除失败', 'Delete failed', 'فشل الحذف');
+          });
+          continue;
+        }
+        setState(() {
+          file.status = _tr('删除失败', 'Delete failed', 'فشل الحذف');
+        });
+      }
+
+      if (_reconnectRequired || _closed) return;
+      await _handleAllCompleted();
+    } finally {
+      if (mounted && _deleting) {
+        setState(() {
+          _deleting = false;
+          _currentFile = null;
+        });
+      }
+    }
+  }
+
+  Future<_DeleteResult> _deleteOne(_DeleteFileItem file) async {
+    final manager = _manager;
+    final reader = _reader;
+    if (manager == null || reader == null) return _DeleteResult.disconnected;
+
+    try {
+      await _writeUsb(
+        manager,
+        Uint8List.fromList(utf8.encode('FILE_DELETE\n')),
+      );
+      final readyLine = await reader.nextLine(
+        timeout: const Duration(seconds: 3),
+      );
+      GlobalLogger.logInfo(
+        'KEY_LOADER_FILE_DELETE_READY file=${file.name} line=${readyLine.replaceAll('\n', '\\n')}',
+      );
+      if (readyLine != 'READY\n') return _DeleteResult.deleteFailed;
+
+      final nameBytes = utf8.encode(file.name);
+      await _writeUsb(manager, _u32le(nameBytes.length));
+      await _writeUsb(manager, Uint8List.fromList(nameBytes));
+
+      final line = await reader.nextLine(timeout: const Duration(seconds: 3));
+      GlobalLogger.logInfo(
+        'KEY_LOADER_FILE_DELETE_FINAL file=${file.name} line=${line.replaceAll('\n', '\\n')}',
+      );
+      if (line == 'FILE_OK\n') return _DeleteResult.ok;
+      if (line == 'ERR:FILE_NOT_FOUND\n') return _DeleteResult.notFound;
+      if (line == 'ERR:DELETE_FAILED\n') return _DeleteResult.deleteFailed;
+      return _DeleteResult.deleteFailed;
+    } on TimeoutException {
+      return _DeleteResult.timeout;
+    } on _UsbDisconnected {
+      return _DeleteResult.disconnected;
+    } on StateError {
+      return _DeleteResult.disconnected;
+    } catch (e) {
+      GlobalLogger.logError('KEY_LOADER_FILE_DELETE_ONE_ERROR $e');
+      return _DeleteResult.timeout;
+    }
+  }
+
+  Future<void> _handleActiveFailure() async {
+    await _teardownUsb();
+    if (!mounted || _closed) return;
+    _resetUi();
+    setState(() {
+      _reconnectRequired = true;
+      _deleting = false;
+      _currentFile = null;
+    });
+  }
+
+  Future<void> _handleAllCompleted() async {
+    _clearUiState();
+    setState(() {
+      _reconnectRequired = false;
+      _deleting = false;
+      _currentFile = null;
+    });
+    await _refreshList();
+  }
+
+  void _onDisconnected() {
+    if (!mounted || _closed) return;
+    if (_deleting && _currentFile != null) {
+      _currentFile!.status = _tr(
+        '注钥枪断开连接',
+        'Key loader disconnected',
+        'تم فصل جهاز تحميل المفاتيح',
+      );
+    }
+    _reader?.abort(const _UsbDisconnected());
+    setState(() {
+      _reconnectRequired = true;
+      _deleting = false;
+      _currentFile = null;
+    });
+    unawaited(_resetUsbAfterPassiveDisconnect());
+  }
+
+  Future<void> _resetUsbAfterPassiveDisconnect() async {
+    await _disconnectSub?.cancel();
+    _disconnectSub = null;
+    _reader?.stop();
+    _reader = null;
+    _manager = null;
+  }
+
+  Future<void> _reconnect() async {
+    if (_deleting || _closed) return;
+    await _teardownUsb();
+    if (!mounted || _closed) return;
+    _resetUi();
+    await _run();
+  }
+
+  Future<void> _close() async {
+    if (_closed) return;
+    _closed = true;
+    await _teardownUsb();
+    if (mounted) Navigator.of(context).pop();
+  }
+
+  Future<void> _teardownUsb() async {
+    await _disconnectSub?.cancel();
+    _disconnectSub = null;
+    _reader?.stop();
+    _reader = null;
+    final manager = _manager;
+    _manager = null;
+    if (manager != null) {
+      try {
+        if (await manager.isConnected()) {
+          await manager.disconnect();
+        }
+      } catch (e) {
+        GlobalLogger.logWarn('KEY_LOADER_FILE_DELETE_DISCONNECT_ERROR $e');
+      }
+    }
+  }
+
+  void _resetUi() {
+    _files.clear();
+    _selected.clear();
+    _currentFile = null;
+  }
+
+  void _clearUiState() {
+    _selected.clear();
+    _currentFile = null;
+    for (final file in _files) {
+      file.status = null;
+      file.deleted = false;
+    }
+  }
+
+  void _showError(String message) {
+    if (!mounted || _closed) return;
+    setState(() {
+      _currentFile = null;
+      _reconnectRequired = true;
+      _step = _DeleteStep.select;
+      _files.clear();
+      _selected.clear();
+    });
+    GlobalLogger.logError('KEY_LOADER_FILE_DELETE_ERROR $message');
+  }
+
+  bool get _allSelected {
+    final selectable = _files.where((file) => !file.deleted).toList();
+    return selectable.isNotEmpty &&
+        selectable.every((file) => _selected.contains(file.name));
+  }
+
+  bool get _someSelected =>
+      _selected.any((name) => _files.any((file) => file.name == name));
+
+  void _toggleAll(bool value) {
+    setState(() {
+      for (final file in _files) {
+        if (file.deleted) continue;
+        if (value) {
+          _selected.add(file.name);
+        } else {
+          _selected.remove(file.name);
+        }
+      }
+    });
+  }
+
+  void _toggleFile(_DeleteFileItem file, bool value) {
+    if (file.deleted) return;
+    setState(() {
+      if (value) {
+        _selected.add(file.name);
+      } else {
+        _selected.remove(file.name);
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final showClose = _step == _DeleteStep.select && !_deleting;
+    final showDelete =
+        _step == _DeleteStep.select && !_deleting && !_reconnectRequired;
+    final showReconnect = _reconnectRequired;
+    final showRefresh =
+        _step == _DeleteStep.select && !_deleting && !_reconnectRequired;
+
+    return AlertDialog(
+      backgroundColor: const Color(0xFF20262D),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      title: Text(
+        _tr(
+          '从注钥枪中删除文件',
+          'Delete files from key loader',
+          'حذف الملفات من جهاز تحميل المفاتيح',
+        ),
+        style: const TextStyle(color: Colors.white, fontSize: 17),
+      ),
+      content: SizedBox(
+        width: 720,
+        height: 460,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _DeleteStepStrip(
+              labels: _stepLabels(),
+              statuses: _stepStatuses(),
+              activeIndex: _step.index,
+            ),
+            const SizedBox(height: 12),
+            if (showRefresh)
+              Align(
+                alignment: Alignment.centerRight,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (_refreshError != null) ...[
+                      Text(
+                        _refreshError!,
+                        style: const TextStyle(
+                          color: Color(0xFFF15B64),
+                          fontSize: 12,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                    ],
+                    OutlinedButton.icon(
+                      onPressed: _refreshLoading ? null : _refreshList,
+                      icon: _refreshLoading
+                          ? const SizedBox(
+                              width: 14,
+                              height: 14,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Color(0xFF00A2E9),
+                              ),
+                            )
+                          : const Icon(Icons.refresh, size: 16),
+                      label: Text(
+                        _tr(
+                          '刷新文件列表',
+                          'Refresh file list',
+                          'تحديث قائمة الملفات',
+                        ),
+                        style: const TextStyle(fontSize: 13),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            const SizedBox(height: 8),
+            Expanded(
+              child: _reconnectRequired
+                  ? Center(
+                      child: Text(
+                        _tr(
+                          '注钥枪断开连接',
+                          'Key loader disconnected',
+                          'تم فصل جهاز تحميل المفاتيح',
+                        ),
+                        style: const TextStyle(
+                          color: Color(0xFFF15B64),
+                          fontSize: 13,
+                        ),
+                      ),
+                    )
+                  : _step == _DeleteStep.select
+                  ? _buildFileTable()
+                  : _buildProgress(_stepLabel(_step)),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        if (showClose)
+          TextButton(
+            onPressed: _close,
+            child: Text(_tr('关闭', 'Close', 'إغلاق')),
+          ),
+        if (showReconnect)
+          FilledButton(
+            onPressed: _reconnect,
+            child: Text(_tr('重新连接', 'Reconnect', 'إعادة الاتصال')),
+          ),
+        if (showDelete)
+          FilledButton(
+            onPressed: _selected.isEmpty ? null : _deleteSelectedFiles,
+            child: Text(_tr('删除', 'Delete', 'حذف')),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildFileTable() {
+    if (_files.isEmpty) {
+      return Center(
+        child: Text(
+          _tr('暂无文件', 'No files', 'لا توجد ملفات'),
+          style: const TextStyle(color: Colors.white38, fontSize: 13),
+        ),
+      );
+    }
+
+    final headerColor = Colors.white54;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Container(
+          height: 34,
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          decoration: const BoxDecoration(color: Color(0xFF14191F)),
+          child: Row(
+            children: [
+              SizedBox(
+                width: 48,
+                child: Checkbox(
+                  value: _allSelected,
+                  tristate: _someSelected && !_allSelected,
+                  onChanged: (value) => _toggleAll(value ?? false),
+                  activeColor: const Color(0xFF00A2E9),
+                ),
+              ),
+              Expanded(
+                flex: 3,
+                child: Text(
+                  _tr('文件名称', 'File name', 'اسم الملف'),
+                  style: TextStyle(color: headerColor, fontSize: 12),
+                ),
+              ),
+              Expanded(
+                flex: 2,
+                child: Text(
+                  _tr('状态', 'Status', 'الحالة'),
+                  style: TextStyle(color: headerColor, fontSize: 12),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const Divider(height: 1, thickness: 1, color: Color(0xFF353A41)),
+        Expanded(
+          child: ListView(
+            children: [
+              for (final file in _files)
+                Container(
+                  height: 36,
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  decoration: const BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(color: Color(0x1AFFFFFF)),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 48,
+                        child: Checkbox(
+                          value: _selected.contains(file.name),
+                          onChanged: file.deleted
+                              ? null
+                              : (value) => _toggleFile(file, value ?? false),
+                          activeColor: const Color(0xFF00A2E9),
+                        ),
+                      ),
+                      Expanded(
+                        flex: 3,
+                        child: Text(
+                          file.name,
+                          style: const TextStyle(
+                            color: Colors.white70,
+                            fontSize: 13,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      Expanded(
+                        flex: 2,
+                        child: Text(
+                          file.status ?? '',
+                          style: TextStyle(
+                            color: _statusColor(file.status),
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildProgress(String label) {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const SizedBox(
+            width: 18,
+            height: 18,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: Color(0xFF00A2E9),
+            ),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            label,
+            style: const TextStyle(color: Colors.white54, fontSize: 13),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Color _statusColor(String? status) {
+    if (status == null) return Colors.white54;
+    if (status == _tr('已删除', 'Deleted', 'تم الحذف')) {
+      return const Color(0xFF1B8252);
+    }
+    if (status == _tr('删除中', 'Deleting', 'جارٍ الحذف')) {
+      return const Color(0xFF00A2E9);
+    }
+    return const Color(0xFFF15B64);
+  }
+
+  String _stepLabel(_DeleteStep step) {
+    return switch (step) {
+      _DeleteStep.connect => _tr(
+        '连接注钥枪',
+        'Connect key loader',
+        'الاتصال بجهاز تحميل المفاتيح',
+      ),
+      _DeleteStep.ready => _tr('就绪', 'Ready', 'جاهز'),
+      _DeleteStep.list => _tr(
+        '获取文件列表',
+        'Get file list',
+        'الحصول على قائمة الملفات',
+      ),
+      _DeleteStep.select => _tr('文件选择', 'File selection', 'اختيار الملف'),
+    };
+  }
+
+  List<String> _stepLabels() {
+    return [
+      _tr('连接', 'Connect', 'اتصال'),
+      _tr('就绪', 'Ready', 'جاهز'),
+      _tr('列表', 'List', 'قائمة'),
+      _tr('选择', 'Select', 'اختيار'),
+    ];
+  }
+
+  List<_DeleteStepStatus> _stepStatuses() {
+    final current = _step.index;
+    return [
+      if (current == _DeleteStep.connect.index)
+        _DeleteStepStatus.active
+      else if (current > _DeleteStep.connect.index)
+        _DeleteStepStatus.passed
+      else
+        _DeleteStepStatus.pending,
+      if (current == _DeleteStep.ready.index)
+        _DeleteStepStatus.active
+      else if (current > _DeleteStep.ready.index)
+        _DeleteStepStatus.passed
+      else
+        _DeleteStepStatus.pending,
+      if (current == _DeleteStep.list.index)
+        _DeleteStepStatus.active
+      else if (current > _DeleteStep.list.index)
+        _DeleteStepStatus.passed
+      else
+        _DeleteStepStatus.pending,
+      if (current == _DeleteStep.select.index)
+        _DeleteStepStatus.active
+      else
+        _DeleteStepStatus.pending,
+    ];
+  }
+}
+
+enum _DeleteStepStatus { pending, active, passed, error, done }
+
+class _DeleteStepStrip extends StatelessWidget {
+  const _DeleteStepStrip({
+    required this.labels,
+    required this.statuses,
+    required this.activeIndex,
+  });
+
+  final List<String> labels;
+  final List<_DeleteStepStatus> statuses;
+  final int activeIndex;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 50,
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      decoration: BoxDecoration(
+        color: const Color(0xFF14191F),
+        border: Border.all(color: const Color(0xFF353A41)),
+      ),
+      child: Row(
+        children: [
+          for (var index = 0; index < labels.length; index++) ...[
+            _DeleteStepNode(
+              index: index,
+              label: labels[index],
+              status: statuses[index],
+            ),
+            if (index != labels.length - 1)
+              _DeleteStepLine(passed: index < activeIndex),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _DeleteStepNode extends StatelessWidget {
+  const _DeleteStepNode({
+    required this.index,
+    required this.label,
+    required this.status,
+  });
+
+  final int index;
+  final String label;
+  final _DeleteStepStatus status;
+
+  @override
+  Widget build(BuildContext context) {
+    final Color borderColor;
+    final Color fillColor;
+    final Color numberColor;
+    final Color textColor;
+    switch (status) {
+      case _DeleteStepStatus.done:
+        borderColor = const Color(0xFF1B8252);
+        fillColor = const Color(0xFF1B8252);
+        numberColor = Colors.white;
+        textColor = Colors.white;
+      case _DeleteStepStatus.active:
+        borderColor = const Color(0xFF00A2E9);
+        fillColor = const Color(0xFF004098);
+        numberColor = Colors.white;
+        textColor = Colors.white;
+      case _DeleteStepStatus.passed:
+        borderColor = const Color(0xFF00A2E9);
+        fillColor = Colors.transparent;
+        numberColor = const Color(0xFF0CB5FF);
+        textColor = const Color(0xFF0CB5FF);
+      case _DeleteStepStatus.error:
+        borderColor = const Color(0xFFF15B64);
+        fillColor = Colors.transparent;
+        numberColor = const Color(0xFFF15B64);
+        textColor = const Color(0xFFF15B64);
+      case _DeleteStepStatus.pending:
+        borderColor = const Color(0xFF42474E);
+        fillColor = Colors.transparent;
+        numberColor = const Color(0xFF8A94A6);
+        textColor = const Color(0xFF8A94A6);
+    }
+
+    return Expanded(
+      flex: 3,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 18,
+            height: 18,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: fillColor,
+              border: Border.all(color: borderColor),
+            ),
+            child: Text(
+              '${index + 1}',
+              style: TextStyle(fontSize: 10, color: numberColor),
+            ),
+          ),
+          const SizedBox(width: 4),
+          Flexible(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(fontSize: 10, color: textColor),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DeleteStepLine extends StatelessWidget {
+  const _DeleteStepLine({required this.passed});
+
+  final bool passed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      flex: 1,
+      child: Container(
+        height: 2,
+        color: passed ? const Color(0xFF0CB5FF) : const Color(0xFF42474E),
+      ),
+    );
+  }
+}
+
+enum _DeleteResult { ok, notFound, deleteFailed, timeout, disconnected }
+
+class _UsbDisconnected implements Exception {
+  const _UsbDisconnected();
+}
+
+class _UsbLineReader {
+  _UsbLineReader(this._dataStream);
+
+  final Stream<Uint8List> _dataStream;
+  final List<int> _buffer = [];
+  final List<String> _pending = [];
+  final List<_PendingLine> _waiters = [];
+  StreamSubscription<Uint8List>? _sub;
+
+  void start() {
+    _sub = _dataStream.listen(_onData);
+  }
+
+  void _onData(Uint8List data) {
+    if (data.isEmpty) return;
+    GlobalLogger.logInfo('USB_RECV ${_formatUsbPayload(data)}');
+    _buffer.addAll(data);
+    while (true) {
+      final index = _buffer.indexOf(0x0A);
+      if (index < 0) break;
+      final lineBytes = _buffer.sublist(0, index);
+      _buffer.removeRange(0, index + 1);
+      var content = utf8.decode(lineBytes, allowMalformed: true);
+      if (content.endsWith('\r')) {
+        content = content.substring(0, content.length - 1);
+      }
+      if (content.trim().isEmpty) continue;
+      GlobalLogger.logInfo(
+        'USB_LINE ${content.replaceAll('\r', '\\r').replaceAll('\n', '\\n')}',
+      );
+      _deliver('$content\n');
+    }
+  }
+
+  void _deliver(String line) {
+    if (_waiters.isNotEmpty) {
+      _waiters.removeAt(0).deliver(line);
+    } else {
+      _pending.add(line);
+    }
+  }
+
+  Future<String> nextLine({Duration timeout = const Duration(seconds: 3)}) {
+    if (_pending.isNotEmpty) {
+      return Future.value(_pending.removeAt(0));
+    }
+    final pending = _PendingLine();
+    _waiters.add(pending);
+    pending.start(timeout, onTimeout: () => _waiters.remove(pending));
+    return pending.completer.future;
+  }
+
+  void abort(Object error) {
+    for (final waiter in _waiters) {
+      waiter.fail(error);
+    }
+    _waiters.clear();
+  }
+
+  void stop() {
+    _sub?.cancel();
+    _sub = null;
+    _buffer.clear();
+    _pending.clear();
+    for (final waiter in _waiters) {
+      waiter.fail(const _UsbDisconnected());
+    }
+    _waiters.clear();
+  }
+}
+
+class _PendingLine {
+  final Completer<String> completer = Completer<String>();
+  Timer? _timer;
+
+  void start(Duration timeout, {required VoidCallback onTimeout}) {
+    _timer = Timer(timeout, () {
+      _timer = null;
+      onTimeout();
+      fail(TimeoutException('reply timeout'));
+    });
+  }
+
+  void deliver(String line) {
+    _timer?.cancel();
+    _timer = null;
+    if (!completer.isCompleted) completer.complete(line);
+  }
+
+  void fail(Object error) {
+    _timer?.cancel();
+    _timer = null;
+    if (!completer.isCompleted) completer.completeError(error);
+  }
+}
+
+Uint8List _u32le(int value) {
+  final data = ByteData(4);
+  data.setUint32(0, value, Endian.little);
+  return data.buffer.asUint8List();
+}
+
+Future<void> _writeUsb(KeyLoaderUsbBulkManager manager, Uint8List data) async {
+  GlobalLogger.logInfo('USB_SEND ${_formatUsbPayload(data)}');
+  final written = await manager.write(data);
+  GlobalLogger.logInfo('USB_WRITE_RESULT $written');
+}
+
+String _formatUsbPayload(Uint8List data) {
+  final hex = data.map((b) => b.toRadixString(16).padLeft(2, '0')).join(' ');
+  final parts = <String>['len=${data.length}', 'hex=[$hex]'];
+
+  final text = _decodePrintableText(data);
+  if (text != null) {
+    parts.add('text="${text.replaceAll('\r', '\\r').replaceAll('\n', '\\n')}"');
+  }
+  if (data.length == 4) {
+    parts.add('u32le=${_toU32Le(data)}');
+  }
+  return parts.join(' ');
+}
+
+String? _decodePrintableText(Uint8List data) {
+  try {
+    final text = utf8.decode(data, allowMalformed: false);
+    if (text.isEmpty) return null;
+    for (final unit in text.codeUnits) {
+      final printable = unit >= 0x20 && unit <= 0x7E;
+      final whitespace = unit == 0x0A || unit == 0x0D || unit == 0x09;
+      if (!printable && !whitespace) return null;
+    }
+    return text;
+  } catch (_) {
+    return null;
+  }
+}
+
+int _toU32Le(Uint8List data) {
+  return ByteData.sublistView(data).getUint32(0, Endian.little);
+}

@@ -689,7 +689,10 @@ class _CpdsKeyLoaderFileDialogState extends State<CpdsKeyLoaderFileDialog> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: Text(Translations.of(dialogContext).tips.cancel),
+            child: Text(
+              Translations.of(dialogContext).tips.cancel,
+              style: const TextStyle(color: Colors.white70),
+            ),
           ),
           FilledButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),
@@ -906,8 +909,6 @@ class _CpdsKeyLoaderFileDialogState extends State<CpdsKeyLoaderFileDialog> {
           TextButton(
             onPressed: _cancelLoading ? null : _cancel,
             style: TextButton.styleFrom(
-              foregroundColor: Colors.white70,
-              disabledForegroundColor: Colors.white70,
               side: const BorderSide(color: Color(0xFF00A2E9)),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(4),
@@ -927,7 +928,10 @@ class _CpdsKeyLoaderFileDialogState extends State<CpdsKeyLoaderFileDialog> {
                   ),
                   const SizedBox(width: 6),
                 ],
-                Text(t.tips.cancel),
+                Text(
+                  t.tips.cancel,
+                  style: const TextStyle(color: Colors.white70),
+                ),
               ],
             ),
           ),

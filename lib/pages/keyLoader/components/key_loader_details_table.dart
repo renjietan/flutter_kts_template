@@ -33,6 +33,7 @@ import 'package:flutter_kts_template/utils/provider/radios.provider.dart';
 import 'package:path/path.dart' as p;
 import 'package:provider/provider.dart';
 
+import 'key_loader_file_delete_dialog.dart';
 import 'set_password_dialog.dart';
 
 class KeyLoaderDetailsTable extends StatefulWidget {
@@ -226,7 +227,8 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
     return data.sublist(start, end);
   }
 
-  int get _totalPages => (_filteredData.length / _pageSize).ceil().clamp(1, 999999);
+  int get _totalPages =>
+      (_filteredData.length / _pageSize).ceil().clamp(1, 999999);
 
   bool get _allSelected =>
       _pagedData.isNotEmpty &&
@@ -296,7 +298,10 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: Text(t.tips.cancel),
+            child: Text(
+              t.tips.cancel,
+              style: const TextStyle(color: Colors.white70),
+            ),
           ),
           FilledButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),
@@ -338,7 +343,10 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: Text(t.tips.cancel),
+            child: Text(
+              t.tips.cancel,
+              style: const TextStyle(color: Colors.white70),
+            ),
           ),
           FilledButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),
@@ -415,6 +423,15 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
       return false;
     }
     return true;
+  }
+
+  Future<void> _openKeyLoaderFileDeleteDialog() async {
+    if (_exporting) return;
+    await showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => const KeyLoaderFileDeleteDialog(),
+    );
   }
 
   Future<bool> _usbUploadPads(
@@ -507,7 +524,10 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
 
       // 4-4 准备
       controller?.addLine(usb.detailReadyStart, number: '4-4');
-      await _writeUsb(manager, Uint8List.fromList(utf8.encode('FILE_UPLOAD\n')));
+      await _writeUsb(
+        manager,
+        Uint8List.fromList(utf8.encode('FILE_UPLOAD\n')),
+      );
       if (_exportCancelled) return false;
       final readyResult = await _waitReplyResult(
         reader,
@@ -1365,11 +1385,15 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
                         contentPadding: const EdgeInsets.symmetric(vertical: 8),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(6),
-                          borderSide: const BorderSide(color: Color(0xFF353A41)),
+                          borderSide: const BorderSide(
+                            color: Color(0xFF353A41),
+                          ),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(6),
-                          borderSide: const BorderSide(color: Color(0xFF353A41)),
+                          borderSide: const BorderSide(
+                            color: Color(0xFF353A41),
+                          ),
                         ),
                       ),
                     ),
@@ -1380,6 +1404,19 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
                     minWidth: 70,
                     isLoading: _exporting,
                     onPressed: _exporting ? null : () => _exportSelected(),
+                  ),
+                  const SizedBox(width: 8),
+                  BaseButton(
+                    label: CpdsMessages.tr(
+                      context,
+                      '从注钥枪中删除文件',
+                      'Delete files from key loader',
+                      'حذف الملفات من جهاز تحميل المفاتيح',
+                    ),
+                    minWidth: 140,
+                    onPressed: _exporting
+                        ? null
+                        : _openKeyLoaderFileDeleteDialog,
                   ),
                 ],
               ),
@@ -1457,6 +1494,17 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
                 isLoading: _exporting,
                 onPressed: _exporting ? null : () => _exportSelected(),
               ),
+              const SizedBox(width: 4),
+              BaseButton(
+                label: CpdsMessages.tr(
+                  context,
+                  '从注钥枪中删除文件',
+                  'Delete files from key loader',
+                  'حذف الملفات من جهاز تحميل المفاتيح',
+                ),
+                minWidth: 140,
+                onPressed: _exporting ? null : _openKeyLoaderFileDeleteDialog,
+              ),
             ],
           ),
         ),
@@ -1484,10 +1532,7 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
                       'No search results',
                       'لا توجد نتائج بحث',
                     ),
-                    style: const TextStyle(
-                      color: Colors.white38,
-                      fontSize: 13,
-                    ),
+                    style: const TextStyle(color: Colors.white38, fontSize: 13),
                   ),
                 );
               }

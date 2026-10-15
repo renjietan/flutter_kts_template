@@ -47,10 +47,21 @@ class CpdsManager {
   CpdsUdpTransport? _transport;
   StreamController<bool>? _discoveryDecisionController;
   bool _active = false;
+  bool _showCancel = false;
 
   Stream<CpdsApplicationState> get stateStream => _stateController.stream;
 
   String? get uploadPath => _uploadPath;
+  bool get hasPackage => _package != null;
+  bool get showCancel => _showCancel;
+
+  /// 标记当前是否处于「启动自动加载密码框」阶段（该密码框可取消）。
+  /// 供密码框据此决定是否显示【取消】按钮。
+  void setShowCancel(bool value) {
+    if (_showCancel == value) return;
+    _showCancel = value;
+    _notify();
+  }
 
   CpdsApplicationState state() {
     return CpdsApplicationState(
@@ -68,6 +79,7 @@ class CpdsManager {
           !_active,
       active: _active,
       session: _session,
+      showCancel: _showCancel,
     );
   }
 
@@ -243,6 +255,79 @@ class CpdsManager {
       zipPath,
       nodeId,
       newName,
+    );
+    final newPcBytes = await _ageEncrypt(newZipBytes, password);
+
+    try {
+      await _writeBytesReplace(zipPath, newZipBytes);
+      await _writeBytesReplace(pcPath, newPcBytes);
+    } catch (_) {
+      try {
+        await _writeBytesReplace(zipPath, originalZipBytes);
+      } catch (_) {}
+      try {
+        await _writeBytesReplace(pcPath, originalPcBytes);
+      } catch (_) {}
+      rethrow;
+    }
+
+    await _reparsePackage();
+    _notify();
+  }
+
+  /// 修改节点车辆信息备注：只写回 `VeciInfo.Remark`，重新打包 zip、
+  /// 重新加密覆盖 `.pc`，并刷新内存中的 package。
+  Future<void> updateVeciInfoRemark(String nodeId, String remark) async {
+    _ensureIdle();
+    final package = _package;
+    final zipPath = _uploadPath;
+    if (package == null || zipPath == null) {
+      throw CpdsException(
+        CpdsErrorCode.invalidPackage,
+        params: {'field': 'package'},
+        message: 'no parsed package',
+      );
+    }
+    if (!package.nodes.any((n) => n.id == nodeId)) {
+      throw CpdsException(
+        CpdsErrorCode.invalidPackage,
+        params: {'field': 'nodeId', 'actual': nodeId},
+        message: 'unknown node',
+      );
+    }
+    final pcPath = _pcSourcePath;
+    if (pcPath == null) {
+      throw CpdsException(
+        CpdsErrorCode.invalidPackage,
+        params: {'field': 'pcSource'},
+        message: 'pc source file is missing',
+      );
+    }
+    final password = _pcPassword;
+    if (password == null) {
+      throw CpdsException(
+        CpdsErrorCode.invalidPackage,
+        params: {'field': 'pcPassword'},
+        message: 'pc password is missing',
+      );
+    }
+
+    final pcFile = File(pcPath);
+    if (!pcFile.existsSync()) {
+      throw CpdsException(
+        CpdsErrorCode.invalidPackage,
+        params: {'field': 'pcSource', 'path': pcPath},
+        message: 'pc source file is missing',
+      );
+    }
+
+    final originalZipBytes = await File(zipPath).readAsBytes();
+    final originalPcBytes = await pcFile.readAsBytes();
+
+    final newZipBytes = CpdsPackageParser.updateVeciInfoRemarkInZip(
+      zipPath,
+      nodeId,
+      remark,
     );
     final newPcBytes = await _ageEncrypt(newZipBytes, password);
 
