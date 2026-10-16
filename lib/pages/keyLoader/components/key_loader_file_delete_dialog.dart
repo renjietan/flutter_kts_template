@@ -45,6 +45,7 @@ class _KeyLoaderFileDeleteDialogState extends State<KeyLoaderFileDeleteDialog> {
   _DeleteFileItem? _currentFile;
   String? _refreshError;
   bool _refreshLoading = false;
+  String _fileTypeFilter = 'all';
 
   @override
   void initState() {
@@ -156,11 +157,14 @@ class _KeyLoaderFileDeleteDialogState extends State<KeyLoaderFileDeleteDialog> {
       } else {
         final content = line.substring(0, line.length - 1);
         _files.addAll(
-          content
-              .split(',')
-              .map((item) => item.trim())
-              .where((item) => item.isNotEmpty)
-              .map(_DeleteFileItem.new),
+          _sortFilesByType(
+            content
+                .split(',')
+                .map((item) => item.trim())
+                .where((item) => item.isNotEmpty)
+                .map(_DeleteFileItem.new)
+                .toList(),
+          ),
         );
       }
       _step = _DeleteStep.select;
@@ -178,28 +182,12 @@ class _KeyLoaderFileDeleteDialogState extends State<KeyLoaderFileDeleteDialog> {
     final manager = _manager;
     final reader = _reader;
     if (manager == null || reader == null || _closed) {
-      if (mounted && !_closed) {
-        setState(() {
-          _refreshLoading = false;
-          _refreshError = _tr(
-            '注钥枪断开连接',
-            'Key loader disconnected',
-            'تم فصل جهاز تحميل المفاتيح',
-          );
-        });
-      }
+      await _handleRefreshFatal();
       return;
     }
     if (!(await manager.isConnected())) {
       if (!mounted || _closed) return;
-      setState(() {
-        _refreshLoading = false;
-        _refreshError = _tr(
-          '注钥枪断开连接',
-          'Key loader disconnected',
-          'تم فصل جهاز تحميل المفاتيح',
-        );
-      });
+      await _handleRefreshFatal();
       return;
     }
     if (!mounted || _closed) return;
@@ -235,34 +223,25 @@ class _KeyLoaderFileDeleteDialogState extends State<KeyLoaderFileDeleteDialog> {
         _files
           ..clear()
           ..addAll(
-            content
-                .split(',')
-                .map((item) => item.trim())
-                .where((item) => item.isNotEmpty)
-                .map(_DeleteFileItem.new),
+            _sortFilesByType(
+              content
+                  .split(',')
+                  .map((item) => item.trim())
+                  .where((item) => item.isNotEmpty)
+                  .map(_DeleteFileItem.new)
+                  .toList(),
+            ),
           );
         _refreshError = null;
       });
     } on TimeoutException {
       if (!mounted || _closed) return;
-      setState(() {
-        _refreshError = _tr(
-          '指令发送超时',
-          'Command send timeout',
-          'انتهت مهلة إرسال الأمر',
-        );
-      });
+      await _handleRefreshFatal();
     } on _UsbDisconnected {
       if (!mounted || _closed) return;
-      setState(() {
-        _refreshError = _tr(
-          '注钥枪断开连接',
-          'Key loader disconnected',
-          'تم فصل جهاز تحميل المفاتيح',
-        );
-      });
+      await _handleRefreshFatal();
     } on StateError {
-      // 弹窗关闭或读线程停止。
+      await _handleRefreshFatal();
     } finally {
       if (mounted && !_closed) {
         setState(() {
@@ -270,6 +249,19 @@ class _KeyLoaderFileDeleteDialogState extends State<KeyLoaderFileDeleteDialog> {
         });
       }
     }
+  }
+
+  Future<void> _handleRefreshFatal() async {
+    await _teardownUsb();
+    if (!mounted || _closed) return;
+    _resetUi();
+    setState(() {
+      _reconnectRequired = true;
+      _deleting = false;
+      _currentFile = null;
+      _refreshError = null;
+      _refreshLoading = false;
+    });
   }
 
   Future<void> _deleteSelectedFiles() async {
@@ -535,6 +527,7 @@ class _KeyLoaderFileDeleteDialogState extends State<KeyLoaderFileDeleteDialog> {
     _files.clear();
     _selected.clear();
     _currentFile = null;
+    _fileTypeFilter = 'all';
   }
 
   void _clearUiState() {
@@ -544,6 +537,39 @@ class _KeyLoaderFileDeleteDialogState extends State<KeyLoaderFileDeleteDialog> {
       file.status = null;
       file.deleted = false;
     }
+  }
+
+  String _fileTypeOf(String name) {
+    final lower = name.toLowerCase();
+    if (lower.endsWith('.pc')) return 'pc';
+    if (lower.endsWith('.pad')) return 'pad';
+    if (lower.endsWith('.key')) return 'key';
+    return 'unknown';
+  }
+
+  List<_DeleteFileItem> _sortFilesByType(List<_DeleteFileItem> files) {
+    final groups = <String, List<_DeleteFileItem>>{
+      'pc': [],
+      'pad': [],
+      'key': [],
+      'unknown': [],
+    };
+    for (final file in files) {
+      groups[_fileTypeOf(file.name)]!.add(file);
+    }
+    return [
+      ...groups['pc']!,
+      ...groups['pad']!,
+      ...groups['key']!,
+      ...groups['unknown']!,
+    ];
+  }
+
+  List<_DeleteFileItem> get _visibleFiles {
+    if (_fileTypeFilter == 'all') return _files;
+    return _files
+        .where((file) => _fileTypeOf(file.name) == _fileTypeFilter)
+        .toList();
   }
 
   void _showError(String message) {
@@ -559,18 +585,22 @@ class _KeyLoaderFileDeleteDialogState extends State<KeyLoaderFileDeleteDialog> {
   }
 
   bool get _allSelected {
-    final selectable = _files.where((file) => !file.deleted).toList();
+    final selectable = _visibleFiles.where((file) => !file.deleted).toList();
     return selectable.isNotEmpty &&
         selectable.every((file) => _selected.contains(file.name));
   }
 
   bool get _someSelected =>
-      _selected.any((name) => _files.any((file) => file.name == name));
+      _selected.any((name) => _visibleFiles.any((file) => file.name == name));
 
   void _toggleAll(bool value) {
     setState(() {
       for (final file in _files) {
         if (file.deleted) continue;
+        if (_fileTypeFilter != 'all' &&
+            _fileTypeOf(file.name) != _fileTypeFilter) {
+          continue;
+        }
         if (value) {
           _selected.add(file.name);
         } else {
@@ -624,44 +654,38 @@ class _KeyLoaderFileDeleteDialogState extends State<KeyLoaderFileDeleteDialog> {
             ),
             const SizedBox(height: 12),
             if (showRefresh)
-              Align(
-                alignment: Alignment.centerRight,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (_refreshError != null) ...[
-                      Text(
-                        _refreshError!,
-                        style: const TextStyle(
-                          color: Color(0xFFF15B64),
-                          fontSize: 12,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                    ],
-                    OutlinedButton.icon(
-                      onPressed: _refreshLoading ? null : _refreshList,
-                      icon: _refreshLoading
-                          ? const SizedBox(
-                              width: 14,
-                              height: 14,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Color(0xFF00A2E9),
-                              ),
-                            )
-                          : const Icon(Icons.refresh, size: 16),
-                      label: Text(
-                        _tr(
-                          '刷新文件列表',
-                          'Refresh file list',
-                          'تحديث قائمة الملفات',
-                        ),
-                        style: const TextStyle(fontSize: 13),
+              Row(
+                children: [
+                  _buildFileTypeFilter(),
+                  const Spacer(),
+                  if (_refreshError != null) ...[
+                    Text(
+                      _refreshError!,
+                      style: const TextStyle(
+                        color: Color(0xFFF15B64),
+                        fontSize: 12,
                       ),
                     ),
+                    const SizedBox(width: 8),
                   ],
-                ),
+                  OutlinedButton.icon(
+                    onPressed: _refreshLoading ? null : _refreshList,
+                    icon: _refreshLoading
+                        ? const SizedBox(
+                            width: 14,
+                            height: 14,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Color(0xFF00A2E9),
+                            ),
+                          )
+                        : const Icon(Icons.refresh, size: 16),
+                    label: Text(
+                      _tr('刷新文件列表', 'Refresh file list', 'تحديث قائمة الملفات'),
+                      style: const TextStyle(fontSize: 13),
+                    ),
+                  ),
+                ],
               ),
             const SizedBox(height: 8),
             Expanded(
@@ -706,8 +730,95 @@ class _KeyLoaderFileDeleteDialogState extends State<KeyLoaderFileDeleteDialog> {
     );
   }
 
+  Widget _buildFileTypeFilter() {
+    return Container(
+      height: 36,
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1B2026),
+        border: Border.all(color: const Color(0xFF353A41)),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          value: _fileTypeFilter,
+          isDense: true,
+          dropdownColor: const Color(0xFF282D33),
+          style: const TextStyle(color: Colors.white70, fontSize: 13),
+          onChanged: (value) {
+            if (value == null) return;
+            setState(() {
+              _fileTypeFilter = value;
+              _selected.clear();
+            });
+          },
+          items: [
+            DropdownMenuItem(
+              value: 'all',
+              child: Text(_tr('全部类型', 'All types', 'كل الأنواع')),
+            ),
+            DropdownMenuItem(
+              value: 'pc',
+              child: Text(
+                _tr(
+                  '通信参数包',
+                  'Communication parameter package',
+                  'حزمة معلمات الاتصال',
+                ),
+              ),
+            ),
+            DropdownMenuItem(
+              value: 'pad',
+              child: Text(
+                _tr(
+                  '通信参数包（单兵）',
+                  'Communication parameter package (individual)',
+                  'حزمة معلمات الاتصال (فردي)',
+                ),
+              ),
+            ),
+            DropdownMenuItem(
+              value: 'key',
+              child: Text(_tr('密钥包', 'Key package', 'حزمة المفاتيح')),
+            ),
+            DropdownMenuItem(
+              value: 'unknown',
+              child: Text(_tr('未知类型', 'Unknown type', 'نوع غير معروف')),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _fileTypeLabel(String name) {
+    return switch (_fileTypeOf(name)) {
+      'pc' => _tr(
+        '通信参数包',
+        'Communication parameter package',
+        'حزمة معلمات الاتصال',
+      ),
+      'pad' => _tr(
+        '通信参数包（单兵）',
+        'Communication parameter package (individual)',
+        'حزمة معلمات الاتصال (فردي)',
+      ),
+      'key' => _tr('密钥包', 'Key package', 'حزمة المفاتيح'),
+      _ => _tr('未知类型', 'Unknown type', 'نوع غير معروف'),
+    };
+  }
+
+  Color _fileTypeColor(String name) {
+    return switch (_fileTypeOf(name)) {
+      'pc' => const Color(0xFF00C6FF),
+      'pad' => const Color(0xFFFFB84D),
+      'key' => const Color(0xFFB78CFF),
+      _ => const Color(0xFF9AA5B1),
+    };
+  }
+
   Widget _buildFileTable() {
-    if (_files.isEmpty) {
+    if (_visibleFiles.isEmpty) {
       return Center(
         child: Text(
           _tr('暂无文件', 'No files', 'لا توجد ملفات'),
@@ -745,6 +856,13 @@ class _KeyLoaderFileDeleteDialogState extends State<KeyLoaderFileDeleteDialog> {
               Expanded(
                 flex: 2,
                 child: Text(
+                  _tr('文件类型', 'File type', 'نوع الملف'),
+                  style: TextStyle(color: headerColor, fontSize: 12),
+                ),
+              ),
+              Expanded(
+                flex: 2,
+                child: Text(
                   _tr('状态', 'Status', 'الحالة'),
                   style: TextStyle(color: headerColor, fontSize: 12),
                 ),
@@ -756,7 +874,7 @@ class _KeyLoaderFileDeleteDialogState extends State<KeyLoaderFileDeleteDialog> {
         Expanded(
           child: ListView(
             children: [
-              for (final file in _files)
+              for (final file in _visibleFiles)
                 Container(
                   height: 36,
                   padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -784,6 +902,18 @@ class _KeyLoaderFileDeleteDialogState extends State<KeyLoaderFileDeleteDialog> {
                           style: const TextStyle(
                             color: Colors.white70,
                             fontSize: 13,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      Expanded(
+                        flex: 2,
+                        child: Text(
+                          _fileTypeLabel(file.name),
+                          style: TextStyle(
+                            color: _fileTypeColor(file.name),
+                            fontSize: 12,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,

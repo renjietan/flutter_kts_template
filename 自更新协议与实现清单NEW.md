@@ -21,7 +21,7 @@
 
 - 设备类型 = 本地 `cpdc_config.<类型>.json` 文件名里的 `<类型>` 占位符（排除 `cpdc_config.json`）。
 - 安装文件按「非 `.ini` / `.json` 扩展名」识别，名称大小写不影响匹配。
-- `Server` / `IEC` / `SmallHandheld` 无对应更新文件夹；认证阶段 CPDS 直接跳过、不加入设备表。
+- `TEDS` / `SmallHandheld` 无对应更新文件夹；认证阶段 CPDS 直接跳过、不加入设备表。
 
 ## 三、UDP 端口
 
@@ -60,9 +60,10 @@ ID = [类型字节长度 uint16BE] + [类型 UTF-8] + [IP字节长度 uint16BE] 
 ### 5.2 通用规则
 
 - 下行指令（CPDS → CPDC）不带 ID。
-- 上行回复（CPDC → CPDS）除 `Scan:success` 外都带 ID。
+- 上行回复（CPDC → CPDS）除 `Scan:success` 外都带 ID；CPDS 源地址在本地网段时回复与回执**单播回源**，跨网段（源不在本地网段）时兜底绑业务网卡广播一次（无默认路由时从 0.0.0.0 广播会 ENETUNREACH）。
 - 除 `Scan` 外，所有发送/等待都带重试：初始 1 次 + 重试 2 次 = 最多 3 次。
-- `packet:` 分包载荷最大 1381 字节，整包不超过 1400 字节。
+- packet: 分包载荷最大 1381 字节，整包不超过 1400 字节。
+- 业务网卡判定（CPDC 收到 Scan 时）：Linux 通过 IP_PKTINFO 直接读取「收到 Scan 的网卡」的本地 IP 作为业务网卡 IP；非 Linux 或拿不到时回退「按 CPDS 源地址同网段匹配（排除回环/169.254，最长前缀优先）→ 默认路由 → candidates[0]」。同网段单播回源，跨网段兜底绑业务网卡广播（无默认路由时从 0.0.0.0 广播会 ENETUNREACH）。
 
 ## 六、协议
 
@@ -87,7 +88,7 @@ ID = [类型字节长度 uint16BE] + [类型 UTF-8] + [IP字节长度 uint16BE] 
 
 逻辑：
 
-1. 收到 `Scan` → 终止在途任务、清空 assembler、复位目标版本、删除回执 marker → 回 `Scan:success`。
+1. 收到 `Scan` → 终止在途任务、清空 assembler、复位目标版本、删除回执 marker → 通过 IP_PKTINFO 读取「收到 Scan 的网卡」本地 IP 并回填 `info.IP`（完全无法确定本机 IP 才不回 `Scan:success`；跨网段时兜底并通过广播回）→ 回 `Scan:success`。
 
 ### 6.2 认证 auth
 
@@ -99,7 +100,7 @@ ID = [类型字节长度 uint16BE] + [类型 UTF-8] + [IP字节长度 uint16BE] 
 
 逻辑：
 
-1. 每个窗口单独广播 `auth` 并收集 `authAck`，按「类型#IP」去重（过滤 `Server`/`IEC`/`SmallHandheld`）。
+1. 每个窗口单独广播 `auth` 并收集 `authAck`，按「类型#IP」去重（过滤 `TEDS`/`SmallHandheld`）。
 2. `N >= 扫描设备数` → 认证成功，进入版本校验。
 3. `N < 扫描设备数` → 进入下一窗口重试。
 4. 3 个窗口后：`N == 0` → 认证步骤红 + 提示「认证失败：设备认证数量为 0」+【取消】【重新认证】；`N > 0` → 认证转绿，进入版本校验。
@@ -300,7 +301,7 @@ ID = [类型字节长度 uint16BE] + [类型 UTF-8] + [IP字节长度 uint16BE] 
 
 逻辑：
 
-1. 新进程启动后读回执 marker；CPDC 枚举所有候选网卡，为每张网卡绑定一个开启 SO_BROADCAST 的广播 socket，`update_ok` / `update_fail` 逐网卡广播到 `255.255.255.255:39004`。
+1. 新进程启动后读回执 marker；`update_ok` / `update_fail` 单播到 marker 持久化的 CPDS 地址（`cpds_ip`），连发 3 次、间隔 1 秒；`cpds_ip` 为空时回退「绑业务网卡广播一次」。
 2. VehInter：读到 `vehinter_handoff` 才回 `update_ok`，否则不回且保留 marker。
 3. 其他类型：若 `finalize_fail` 存在 → 优先回 `update_fail:finalize_fail`。
 2. 否则读设备当前版本：读失败 → `version_read_error`；与 marker 目标版本不等 → `version_mismatch`；相等 → `update_ok:<新版本>`。
@@ -381,7 +382,7 @@ ID = [类型字节长度 uint16BE] + [类型 UTF-8] + [IP字节长度 uint16BE] 
 | `<dataDir>/finalize_fail` | finalize 失败标记 |
 | `<dataDir>/finalize_started` | finalize 启动标记（旧进程等待其出现） |
 | `<dataDir>/old_exited` | 旧进程退出标记 |
-| `<dataDir>/.cpdc_update_receipt.json` | 回执 marker，内容 `{"version","ip"}` |
+| `<dataDir>/.cpdc_update_receipt.json` | 回执 marker，内容 `{"version","ip","cpds_ip"}` |
 | `<dataDir>/vehinter_handoff` | VehInter 第三方接管标记（存在才回 update_ok） |
 | `<运行目录>/<exe>.<版本>.bak` | finalize 期间旧 exe 的备份，成功启动后删除 |
 | `<dataDir>/logs/cpdc_restart.log` | finalize 日志，每次覆盖 |

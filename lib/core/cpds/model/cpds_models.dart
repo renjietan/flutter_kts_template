@@ -109,7 +109,7 @@ class CpdsFutureWarriorDevice {
 class CpdsVeciInfo {
   CpdsVeciInfo({
     this.equipName = '',
-    this.equipTag = '',
+    this.ip = '',
     this.plateNo = '',
     this.vehicleParams = '',
     this.purpose = '',
@@ -117,7 +117,7 @@ class CpdsVeciInfo {
   });
 
   String equipName;
-  String equipTag;
+  String ip;
   String plateNo;
   String vehicleParams;
   String purpose;
@@ -125,7 +125,7 @@ class CpdsVeciInfo {
 
   factory CpdsVeciInfo.fromJson(Map<String, dynamic> json) => CpdsVeciInfo(
     equipName: json['EquipName']?.toString() ?? '',
-    equipTag: json['EquipTag']?.toString() ?? '',
+    ip: json['Ip']?.toString() ?? '',
     plateNo: json['PlateNo']?.toString() ?? '',
     vehicleParams: json['VehicleParams']?.toString() ?? '',
     purpose: json['Purpose']?.toString() ?? '',
@@ -134,7 +134,7 @@ class CpdsVeciInfo {
 
   Map<String, dynamic> toJson() => {
     'EquipName': equipName,
-    'EquipTag': equipTag,
+    'Ip': ip,
     'PlateNo': plateNo,
     'VehicleParams': vehicleParams,
     'Purpose': purpose,

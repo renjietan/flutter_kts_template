@@ -306,17 +306,20 @@ class CpdsDevicePanel extends StatelessWidget {
       for (final item in session?.devices ?? const <CpdsDeviceStatusView>[])
         item.device.key: item,
     };
-    return selectedNode.devices.map((device) {
-      final status = byKey[device.key];
-      return _DeviceRowData(
-        device: device,
-        status: status?.status ?? CpdsDeviceStatus.pending,
-        esnSuffix: status?.esnSuffix ?? '',
-        currentIp: status?.currentIp ?? '',
-        progress: status?.progress ?? 0,
-        errorCode: status?.errorCode ?? CpdsErrorCode.unspecified,
-      );
-    }).toList();
+    return selectedNode.devices
+        .where((device) => device.type != CpdsDeviceType.teds)
+        .map((device) {
+          final status = byKey[device.key];
+          return _DeviceRowData(
+            device: device,
+            status: status?.status ?? CpdsDeviceStatus.pending,
+            esnSuffix: status?.esnSuffix ?? '',
+            currentIp: status?.currentIp ?? '',
+            progress: status?.progress ?? 0,
+            errorCode: status?.errorCode ?? CpdsErrorCode.unspecified,
+          );
+        })
+        .toList();
   }
 
   int _stageIndex(CpdsSessionView? session) {
@@ -1262,12 +1265,7 @@ class _VeciInfoBox extends StatelessWidget {
       'Equipment Name',
       'اسم المعدات',
     );
-    final equipTagLabel = CpdsMessages.tr(
-      context,
-      '装备标识',
-      'Equipment Tag',
-      'تعريف المعدات',
-    );
+    final ipLabel = CpdsMessages.tr(context, 'IP地址', 'IP Address', 'عنوان IP');
     final plateNoLabel = CpdsMessages.tr(
       context,
       '车牌号',
@@ -1352,7 +1350,7 @@ class _VeciInfoBox extends StatelessWidget {
                     const SizedBox(width: 16),
                     _Meta(label: equipNameLabel, value: veciInfo.equipName),
                     const SizedBox(width: 16),
-                    _Meta(label: equipTagLabel, value: veciInfo.equipTag),
+                    _Meta(label: ipLabel, value: veciInfo.ip),
                   ],
                 ),
                 const SizedBox(height: 4),

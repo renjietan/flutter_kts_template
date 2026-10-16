@@ -26,7 +26,8 @@ class CpdsDiscoveryMismatchDialog extends StatelessWidget {
           (failure) =>
               failure.stage == 'DISCOVERY' &&
               failure.params.containsKey('expected') &&
-              failure.params.containsKey('actual'),
+              failure.params.containsKey('actual') &&
+              failure.deviceType != CpdsDeviceType.teds,
         )
         .toList();
     return AlertDialog(
@@ -65,9 +66,7 @@ class CpdsDiscoveryMismatchDialog extends StatelessWidget {
                 },
                 children: [
                   TableRow(
-                    decoration: const BoxDecoration(
-                      color: Color(0xFF242A31),
-                    ),
+                    decoration: const BoxDecoration(color: Color(0xFF242A31)),
                     children: [
                       _HeaderCell(text: _deviceTypeTitle(context)),
                       _HeaderCell(text: _expectedTitle(context)),
@@ -77,8 +76,10 @@ class CpdsDiscoveryMismatchDialog extends StatelessWidget {
                     ],
                   ),
                   ...rows.map((failure) {
-                    final expected = (failure.params['expected'] as num?)?.toInt() ?? 0;
-                    final actual = (failure.params['actual'] as num?)?.toInt() ?? 0;
+                    final expected =
+                        (failure.params['expected'] as num?)?.toInt() ?? 0;
+                    final actual =
+                        (failure.params['actual'] as num?)?.toInt() ?? 0;
                     return TableRow(
                       children: [
                         _Cell(
@@ -134,7 +135,11 @@ class CpdsDiscoveryMismatchDialog extends StatelessWidget {
 }
 
 class CpdsResultDialog extends StatelessWidget {
-  const CpdsResultDialog({super.key, required this.session, required this.onClose});
+  const CpdsResultDialog({
+    super.key,
+    required this.session,
+    required this.onClose,
+  });
 
   final CpdsSessionView session;
   final VoidCallback onClose;
@@ -143,19 +148,33 @@ class CpdsResultDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = Translations.of(context);
     final completed = session.devices
-        .where((item) => item.status == CpdsDeviceStatus.completed)
+        .where(
+          (item) =>
+              item.status == CpdsDeviceStatus.completed &&
+              item.device.type != CpdsDeviceType.teds,
+        )
         .toList();
     final failed = session.devices
-        .where((item) => item.status == CpdsDeviceStatus.failed)
+        .where(
+          (item) =>
+              item.status == CpdsDeviceStatus.failed &&
+              item.device.type != CpdsDeviceType.teds,
+        )
         .toList();
     final missing = session.devices
         .where(
           (item) =>
-              item.status == CpdsDeviceStatus.pending && item.esnSuffix.isEmpty,
+              item.status == CpdsDeviceStatus.pending &&
+              item.esnSuffix.isEmpty &&
+              item.device.type != CpdsDeviceType.teds,
         )
         .toList();
     final ignored = session.devices
-        .where((item) => item.status == CpdsDeviceStatus.ignored)
+        .where(
+          (item) =>
+              item.status == CpdsDeviceStatus.ignored &&
+              item.device.type != CpdsDeviceType.teds,
+        )
         .toList();
     final offlineCodes = {
       CpdsErrorCode.authTimeout,
@@ -163,9 +182,17 @@ class CpdsResultDialog extends StatelessWidget {
       CpdsErrorCode.parseTimeout,
     };
     final offline = session.devices
-        .where((item) => offlineCodes.contains(item.errorCode))
+        .where(
+          (item) =>
+              offlineCodes.contains(item.errorCode) &&
+              item.device.type != CpdsDeviceType.teds,
+        )
         .toList();
-    final restartRequired = session.activeState == CpdsActiveState.completed ||
+    final failures = session.failures
+        .where((failure) => failure.deviceType != CpdsDeviceType.teds)
+        .toList();
+    final restartRequired =
+        session.activeState == CpdsActiveState.completed ||
         session.activeState == CpdsActiveState.partialSuccess;
 
     return AlertDialog(
@@ -223,14 +250,13 @@ class CpdsResultDialog extends StatelessWidget {
                   title: _missingTitle(context),
                   children: [
                     ...missing.map(
-                      (item) =>
-                          Text(
-                            _deviceLine(context, item.device, item.esnSuffix),
-                            style: const TextStyle(
-                              color: Colors.white70,
-                              fontSize: 12,
-                            ),
-                          ),
+                      (item) => Text(
+                        _deviceLine(context, item.device, item.esnSuffix),
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 12,
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -239,22 +265,21 @@ class CpdsResultDialog extends StatelessWidget {
                   title: _ignoredTitle(context),
                   children: [
                     ...ignored.map(
-                      (item) =>
-                          Text(
-                            _deviceLine(context, item.device, item.esnSuffix),
-                            style: const TextStyle(
-                              color: Colors.white70,
-                              fontSize: 12,
-                            ),
-                          ),
+                      (item) => Text(
+                        _deviceLine(context, item.device, item.esnSuffix),
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 12,
+                        ),
+                      ),
                     ),
                   ],
                 ),
-              if (session.failures.isNotEmpty)
+              if (failures.isNotEmpty)
                 _Section(
                   title: _failedTitle(context),
                   children: [
-                    ...session.failures.map(
+                    ...failures.map(
                       (failure) => _FailureLine(failure: failure),
                     ),
                   ],
@@ -264,14 +289,13 @@ class CpdsResultDialog extends StatelessWidget {
                   title: _offlineTitle(context),
                   children: [
                     ...offline.map(
-                      (item) =>
-                          Text(
-                            _deviceLine(context, item.device, item.esnSuffix),
-                            style: const TextStyle(
-                              color: Colors.white70,
-                              fontSize: 12,
-                            ),
-                          ),
+                      (item) => Text(
+                        _deviceLine(context, item.device, item.esnSuffix),
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 12,
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -313,16 +337,28 @@ class CpdsResultDialog extends StatelessWidget {
 
   String _completedTitle(BuildContext context) =>
       CpdsMessages.tr(context, '成功完成', 'Completed devices', 'الأجهزة المكتملة');
-  String _missingTitle(BuildContext context) =>
-      CpdsMessages.tr(context, '未发现设备', 'Undiscovered devices', 'الأجهزة غير المكتشفة');
+  String _missingTitle(BuildContext context) => CpdsMessages.tr(
+    context,
+    '未发现设备',
+    'Undiscovered devices',
+    'الأجهزة غير المكتشفة',
+  );
   String _ignoredTitle(BuildContext context) =>
       CpdsMessages.tr(context, '已忽略设备', 'Ignored devices', 'الأجهزة المتجاهلة');
   String _failedTitle(BuildContext context) =>
       CpdsMessages.tr(context, '失败明细', 'Failure details', 'تفاصيل الفشل');
-  String _offlineTitle(BuildContext context) =>
-      CpdsMessages.tr(context, '掉线设备', 'Offline devices', 'الأجهزة غير المتصلة');
-  String _noCompletedTitle(BuildContext context) =>
-      CpdsMessages.tr(context, '无成功设备', 'No completed devices', 'لا توجد أجهزة مكتملة');
+  String _offlineTitle(BuildContext context) => CpdsMessages.tr(
+    context,
+    '掉线设备',
+    'Offline devices',
+    'الأجهزة غير المتصلة',
+  );
+  String _noCompletedTitle(BuildContext context) => CpdsMessages.tr(
+    context,
+    '无成功设备',
+    'No completed devices',
+    'لا توجد أجهزة مكتملة',
+  );
 }
 
 class CpdsErrorDialog extends StatelessWidget {
@@ -390,11 +426,7 @@ class CpdsErrorDialog extends StatelessWidget {
 }
 
 class _Section extends StatelessWidget {
-  const _Section({
-    required this.title,
-    required this.children,
-    this.emptyText,
-  });
+  const _Section({required this.title, required this.children, this.emptyText});
 
   final String title;
   final List<Widget> children;

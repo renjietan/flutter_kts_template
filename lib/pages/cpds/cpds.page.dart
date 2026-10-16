@@ -128,10 +128,23 @@ class _CpdsPageState extends State<CpdsPage> {
     }
   }
 
+  void _logHiddenTedsFailures(CpdsSessionView session) {
+    for (final failure in session.failures) {
+      if (failure.deviceType != CpdsDeviceType.teds) continue;
+      GlobalLogger.logError(
+        'CPDS_HIDDEN_TEDS_FAILURE stage=${failure.stage} '
+        'type=${failure.deviceType.apiName} esn=${failure.esnSuffix} '
+        'device=${failure.deviceId} code=${failure.errorCode.apiName} '
+        'params=${failure.params}',
+      );
+    }
+  }
+
   Future<void> _showDiscoveryMismatchDialog(CpdsSessionView session) async {
     if (_discoveryDialogShowing) return;
     _discoveryDialogShowing = true;
     try {
+      _logHiddenTedsFailures(session);
       final proceed = await showDialog<bool>(
         context: context,
         useRootNavigator: false,
@@ -180,6 +193,7 @@ class _CpdsPageState extends State<CpdsPage> {
   }
 
   Future<void> _showResultDialog(CpdsSessionView session) async {
+    _logHiddenTedsFailures(session);
     await showDialog<void>(
       context: context,
       useRootNavigator: false,
@@ -706,14 +720,14 @@ class _CpdsPageState extends State<CpdsPage> {
           showLabelText: false,
         ),
         FormFieldConfig(
-          name: 'equipTag',
+          name: 'ip',
           label: CpdsMessages.tr(
             context,
             '装备标识',
             'Equipment Tag',
             'تعريف المعدات',
           ),
-          textEditingController: TextEditingController(text: veci.equipTag),
+          textEditingController: TextEditingController(text: veci.ip),
           enabled: false,
           showLabelText: false,
         ),
