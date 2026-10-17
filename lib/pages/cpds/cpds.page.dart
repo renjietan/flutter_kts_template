@@ -32,14 +32,13 @@ import 'package:flutter_kts_template/pages/cpds/widgets/cpds_key_loader_file_dia
 import 'package:flutter_kts_template/pages/cpds/widgets/cpds_package_panel.dart';
 import 'package:flutter_kts_template/utils/files/pick_files/FileSelector.dart';
 import 'package:flutter_kts_template/utils/provider/menu.provider.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:go_router/go_router.dart';
 import 'package:path/path.dart' as p;
 import 'package:provider/provider.dart';
 
-import 'widgets/cpds_device_panel.dart';
 import 'widgets/cpds_change_password_dialog.dart';
+import 'widgets/cpds_device_panel.dart';
 import 'widgets/cpds_dialogs.dart';
 import 'widgets/cpds_messages.dart';
 import 'widgets/cpds_save_dialog.dart';
@@ -1195,8 +1194,7 @@ class _CpdsPageState extends State<CpdsPage> {
           return Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              SizedBox(
-                width: 550.w,
+              Expanded(
                 child: CpdsPackagePanel(
                   state: _state,
                   uploading: _uploading,
@@ -1206,6 +1204,7 @@ class _CpdsPageState extends State<CpdsPage> {
                   onEditNode: _editNode,
                   onChangePassword: _changePassword,
                 ),
+                flex: 1,
               ),
               const VerticalDivider(
                 thickness: 1,

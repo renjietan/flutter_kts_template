@@ -6,6 +6,7 @@ import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 import 'package:flutter_kts_template/icons/hy_icons.dart';
 import 'package:flutter_kts_template/pages/cpds/cpds_package_tree.dart';
 import 'package:flutter_kts_template/pages/cpds/widgets/cpds_messages.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 暂时隐藏车辆节点(nodeType==2)的编辑按钮；需要恢复时改为 true。
 const bool _kShowNodeEditButton = false;
@@ -270,22 +271,20 @@ class _CpdsPackagePanelState extends State<CpdsPackagePanel> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Container(
-                    height: 60,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 12,
-                    ),
+                    height: 100.h,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
                     decoration: const BoxDecoration(
                       border: Border(
                         bottom: BorderSide(color: Color(0xFF353A41)),
                       ),
                     ),
                     child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
                           t.cpds.nodesTitle,
                           style: const TextStyle(
-                            fontSize: 16,
+                            fontSize: 13,
                             fontWeight: FontWeight.w500,
                             color: Colors.white,
                           ),
