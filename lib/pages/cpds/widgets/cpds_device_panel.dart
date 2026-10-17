@@ -306,8 +306,9 @@ class CpdsDevicePanel extends StatelessWidget {
       for (final item in session?.devices ?? const <CpdsDeviceStatusView>[])
         item.device.key: item,
     };
+    final hideTeds = selectedNode.nodeType == 2;
     return selectedNode.devices
-        .where((device) => device.type != CpdsDeviceType.teds)
+        .where((device) => !hideTeds || device.type != CpdsDeviceType.teds)
         .map((device) {
           final status = byKey[device.key];
           return _DeviceRowData(

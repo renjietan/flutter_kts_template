@@ -140,10 +140,22 @@ class _CpdsPageState extends State<CpdsPage> {
     }
   }
 
+  bool _hideTedsForSelectedNode() {
+    final package = _state.package;
+    if (package == null) return false;
+    for (final node in package.nodes) {
+      if (node.id == _state.selectedNodeId) {
+        return node.nodeType == 2;
+      }
+    }
+    return false;
+  }
+
   Future<void> _showDiscoveryMismatchDialog(CpdsSessionView session) async {
     if (_discoveryDialogShowing) return;
     _discoveryDialogShowing = true;
     try {
+      final hideTeds = _hideTedsForSelectedNode();
       _logHiddenTedsFailures(session);
       final proceed = await showDialog<bool>(
         context: context,
@@ -154,6 +166,7 @@ class _CpdsPageState extends State<CpdsPage> {
           return CpdsDiscoveryMismatchDialog(
             session: session,
             submitting: _resolvingDecision,
+            hideTeds: hideTeds,
             onResolve: (value) {
               if (closed) return;
               closed = true;
@@ -193,6 +206,7 @@ class _CpdsPageState extends State<CpdsPage> {
   }
 
   Future<void> _showResultDialog(CpdsSessionView session) async {
+    final hideTeds = _hideTedsForSelectedNode();
     _logHiddenTedsFailures(session);
     await showDialog<void>(
       context: context,
@@ -202,6 +216,7 @@ class _CpdsPageState extends State<CpdsPage> {
         var closed = false;
         return CpdsResultDialog(
           session: session,
+          hideTeds: hideTeds,
           onClose: () {
             if (closed) return;
             closed = true;
@@ -258,6 +273,12 @@ class _CpdsPageState extends State<CpdsPage> {
     if (_state.active || _uploading) return;
     final placeholder = Translations.of(context).cpds.filePlaceholder;
     final browseFailedTitle = Translations.of(context).common.OperationError;
+    final invalidFileMessage = CpdsMessages.tr(
+      context,
+      '只允许选择 .pc 文件',
+      'Only .pc files are allowed',
+      'يُسمح فقط بملفات .pc',
+    );
 
     setState(() {
       _uploading = true;
@@ -266,6 +287,10 @@ class _CpdsPageState extends State<CpdsPage> {
       final file = await FileSelector.pickFile(['pc']);
       if (file == null) {
         SimplePopup.warn(placeholder);
+        return;
+      }
+      if (p.extension(file.name).toLowerCase() != '.pc') {
+        SimplePopup.warn(invalidFileMessage);
         return;
       }
       final pcFile = File(file.path!);

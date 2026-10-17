@@ -12,11 +12,13 @@ class CpdsDiscoveryMismatchDialog extends StatelessWidget {
     required this.session,
     required this.submitting,
     required this.onResolve,
+    this.hideTeds = false,
   });
 
   final CpdsSessionView session;
   final bool submitting;
   final ValueChanged<bool> onResolve;
+  final bool hideTeds;
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +29,7 @@ class CpdsDiscoveryMismatchDialog extends StatelessWidget {
               failure.stage == 'DISCOVERY' &&
               failure.params.containsKey('expected') &&
               failure.params.containsKey('actual') &&
-              failure.deviceType != CpdsDeviceType.teds,
+              (!hideTeds || failure.deviceType != CpdsDeviceType.teds),
         )
         .toList();
     return AlertDialog(
@@ -139,10 +141,12 @@ class CpdsResultDialog extends StatelessWidget {
     super.key,
     required this.session,
     required this.onClose,
+    this.hideTeds = false,
   });
 
   final CpdsSessionView session;
   final VoidCallback onClose;
+  final bool hideTeds;
 
   @override
   Widget build(BuildContext context) {
@@ -151,14 +155,14 @@ class CpdsResultDialog extends StatelessWidget {
         .where(
           (item) =>
               item.status == CpdsDeviceStatus.completed &&
-              item.device.type != CpdsDeviceType.teds,
+              (!hideTeds || item.device.type != CpdsDeviceType.teds),
         )
         .toList();
     final failed = session.devices
         .where(
           (item) =>
               item.status == CpdsDeviceStatus.failed &&
-              item.device.type != CpdsDeviceType.teds,
+              (!hideTeds || item.device.type != CpdsDeviceType.teds),
         )
         .toList();
     final missing = session.devices
@@ -166,14 +170,14 @@ class CpdsResultDialog extends StatelessWidget {
           (item) =>
               item.status == CpdsDeviceStatus.pending &&
               item.esnSuffix.isEmpty &&
-              item.device.type != CpdsDeviceType.teds,
+              (!hideTeds || item.device.type != CpdsDeviceType.teds),
         )
         .toList();
     final ignored = session.devices
         .where(
           (item) =>
               item.status == CpdsDeviceStatus.ignored &&
-              item.device.type != CpdsDeviceType.teds,
+              (!hideTeds || item.device.type != CpdsDeviceType.teds),
         )
         .toList();
     final offlineCodes = {
@@ -185,11 +189,13 @@ class CpdsResultDialog extends StatelessWidget {
         .where(
           (item) =>
               offlineCodes.contains(item.errorCode) &&
-              item.device.type != CpdsDeviceType.teds,
+              (!hideTeds || item.device.type != CpdsDeviceType.teds),
         )
         .toList();
     final failures = session.failures
-        .where((failure) => failure.deviceType != CpdsDeviceType.teds)
+        .where(
+          (failure) => !hideTeds || failure.deviceType != CpdsDeviceType.teds,
+        )
         .toList();
     final restartRequired =
         session.activeState == CpdsActiveState.completed ||
