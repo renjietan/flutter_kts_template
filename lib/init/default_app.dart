@@ -1,4 +1,5 @@
 //默认App的启动
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_kts_template/config/config.dart';
@@ -17,6 +18,7 @@ import '../main.dart';
 import '../utils/keyboard_shortcut_recovery.dart';
 import '../utils/provider/provider.dart';
 import '../utils/shared.dart';
+import 'screen_strategy.dart';
 
 class DefaultApp {
   //运行app
@@ -77,9 +79,40 @@ class _MyAppState extends State<MyApp> {
   // 添加 一个标记位，防止popup重复初始化
   bool isInitialized = false;
 
+  late final Size _logicalSize;
+  late final DeviceBucket _bucket;
+  late final Size _designSize;
+
   @override
   void initState() {
     super.initState();
+
+    // 读取启动时的真实物理尺寸与 DPR，换算逻辑尺寸并选择设备桶。
+    final view = WidgetsBinding.instance.platformDispatcher.views.first;
+    final physicalSize = view.physicalSize;
+    final devicePixelRatio = view.devicePixelRatio;
+    var logicalSize = physicalSize / devicePixelRatio;
+    if (logicalSize.isEmpty) {
+      logicalSize = const Size(1920, 1200);
+    }
+
+    final isWindows = defaultTargetPlatform == TargetPlatform.windows;
+    final bucket = ScreenStrategy.bucketOf(
+      isWindows: isWindows,
+      logicalSize: logicalSize,
+    );
+
+    _logicalSize = logicalSize;
+    _bucket = bucket;
+    _designSize = ScreenStrategy.designSizeOf(bucket, logicalSize);
+
+    GlobalLogger.logInfo(
+      'ScreenStrategy: platform=${defaultTargetPlatform.name} '
+      'physical=$physicalSize dpr=$devicePixelRatio '
+      'logical=$_logicalSize bucket=${bucket.name} '
+      'designSize=$_designSize',
+    );
+
     // 修复 Windows 焦点切换丢 keyup 导致的 Ctrl+V 等快捷键失效。
     KeyboardShortcutRecovery.install();
     // 关键：在第一帧绘制完成后移除原生启动页
@@ -96,9 +129,12 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return ScreenUtilInit(
-      designSize: const Size(1200, 1980),
+      designSize: _designSize,
       minTextAdapt: true, // 确保字体在小屏幕上不会缩得太小
-      splitScreenMode: true, // 确保分屏、旋转屏幕或多窗口下布局正常
+      // 原生尺寸画布下必须关闭：splitScreenMode 会把高度按 max(h,700) 保底，
+      // 手机(360)/Pad(640) 的 designSize 高小于 700，会错误放大高度。
+      splitScreenMode: false,
+      rebuildFactor: ScreenStrategy.rebuildFactorOf(_bucket),
       builder: (context, child) {
         PopupManager.initialize(navigatorKey: rootNavigatorKey);
         return MaterialApp.router(
