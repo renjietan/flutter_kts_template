@@ -93,6 +93,7 @@ class MainActivity : FlutterActivity() {
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, METHOD_CHANNEL)
             .setMethodCallHandler { call, result ->
                 when (call.method) {
+                    "hasDevice" -> result.success(findTargetDevice() != null)
                     "hasPermission" -> result.success(hasPermission())
                     "requestPermission" -> requestPermission(result)
                     "connect" -> result.success(connect())

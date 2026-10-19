@@ -4,6 +4,9 @@ import 'dart:typed_data';
 abstract class KeyLoaderUsbBulkManager {
   Future<bool> isConnected();
 
+  /// 当前是否检测到目标注钥枪（已枚举到 USB 设备，但可能尚未授权）。
+  Future<bool> hasDevice();
+
   Future<bool> hasPermission();
 
   Future<bool> requestPermission();

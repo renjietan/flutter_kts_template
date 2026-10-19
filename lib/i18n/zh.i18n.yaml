@@ -471,6 +471,7 @@ selfUpdate:
   writeSuccess: 写入成功
   writeFailedStatus: 写入失败
   writeTimeout: 写入超时
+  writeWriting: 写入中
   updateSuccess: 更新成功
   receiptFailedStatus: 回执失败
   receiptTimeout: 回执超时

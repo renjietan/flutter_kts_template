@@ -30,12 +30,14 @@ import 'package:flutter_kts_template/logger/logger.dart';
 import 'package:flutter_kts_template/objectbox.g.dart';
 import 'package:flutter_kts_template/pages/cpds/widgets/cpds_key_loader_file_dialog.dart';
 import 'package:flutter_kts_template/pages/cpds/widgets/cpds_package_panel.dart';
+import 'package:flutter_kts_template/utils/devicePermission/requestPermissions.dart';
 import 'package:flutter_kts_template/utils/files/pick_files/FileSelector.dart';
 import 'package:flutter_kts_template/utils/provider/menu.provider.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:go_router/go_router.dart';
 import 'package:path/path.dart' as p;
+import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 
 import 'widgets/cpds_device_panel.dart';
@@ -279,6 +281,14 @@ class _CpdsPageState extends State<CpdsPage> {
       'Only .pc files are allowed',
       'يُسمح فقط بملفات .pc',
     );
+    final unreadableFileMessage = CpdsMessages.tr(
+      context,
+      '无法读取所选文件',
+      'Unable to read the selected file',
+      'تعذر قراءة الملف المحدد',
+    );
+
+    if (!await _ensureFilePermission()) return;
 
     setState(() {
       _uploading = true;
@@ -293,7 +303,18 @@ class _CpdsPageState extends State<CpdsPage> {
         SimplePopup.warn(invalidFileMessage);
         return;
       }
-      final pcFile = File(file.path!);
+      File? pcFile;
+      if (file.path != null) {
+        pcFile = File(file.path!);
+      } else if (file.bytes != null) {
+        final tempDir = await Directory.systemTemp.createTemp('cpds_pick_');
+        pcFile = File(p.join(tempDir.path, file.name));
+        await pcFile.writeAsBytes(file.bytes!, flush: true);
+      }
+      if (pcFile == null) {
+        SimplePopup.warn(unreadableFileMessage);
+        return;
+      }
       await _importPcFile(pcFile, clearKeyLoader: true);
     } catch (error) {
       _showError(error, title: browseFailedTitle);
@@ -304,6 +325,55 @@ class _CpdsPageState extends State<CpdsPage> {
         });
       }
     }
+  }
+
+  Future<bool> _ensureFilePermission() async {
+    if (await RequestPermission.requestStoragePermission()) return true;
+    if (!mounted) return false;
+    final t = Translations.of(context);
+    final go = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        var closed = false;
+        return AlertDialog(
+          backgroundColor: const Color(0xFF20262D),
+          title: Text(
+            t.tips.title,
+            style: const TextStyle(color: Colors.white, fontSize: 17),
+          ),
+          content: Text(
+            t.permission.no,
+            style: const TextStyle(color: Colors.white70, fontSize: 13),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                if (closed) return;
+                closed = true;
+                Navigator.of(dialogContext).pop(false);
+              },
+              child: Text(
+                t.tips.cancel,
+                style: const TextStyle(color: Colors.white70),
+              ),
+            ),
+            FilledButton(
+              onPressed: () {
+                if (closed) return;
+                closed = true;
+                Navigator.of(dialogContext).pop(true);
+              },
+              child: Text(t.common.confirm),
+            ),
+          ],
+        );
+      },
+    );
+    if (go == true) {
+      await openAppSettings();
+    }
+    return false;
   }
 
   Future<void> _importPcFile(
@@ -963,26 +1033,14 @@ class _CpdsPageState extends State<CpdsPage> {
 
   Future<void> _browseKeyLoader() async {
     if (_state.active || _uploading) return;
-    final t = Translations.of(context);
 
     setState(() {
       _uploading = true;
     });
     try {
-      final manager = getKeyLoaderUsbBulkManager();
-
       // Android 需先申请 USB 权限；其它平台直接放行。
       if (Platform.isAndroid) {
-        if (!await manager.hasPermission()) {
-          final granted = await manager.requestPermission().timeout(
-            const Duration(seconds: 30),
-            onTimeout: () => false,
-          );
-          if (!granted) {
-            SimplePopup.error(t.cpds.keyLoaderPermissionDenied);
-            return;
-          }
-        }
+        if (!await _ensureKeyLoaderUsbPermission()) return;
       }
 
       // 弹窗内完成：连接注钥枪 → 获取文件列表 → 文件选择。
@@ -1013,6 +1071,101 @@ class _CpdsPageState extends State<CpdsPage> {
         });
       }
     }
+  }
+
+  Future<bool> _ensureKeyLoaderUsbPermission() async {
+    final t = Translations.of(context);
+    final noDeviceMessage = CpdsMessages.tr(
+      context,
+      '未检测到注钥枪，请连接后重试',
+      'Key loader not detected. Connect and retry.',
+      'لم يتم اكتشاف جهاز تحميل المفاتيح، يرجى التوصيل وإعادة المحاولة',
+    );
+    final manager = getKeyLoaderUsbBulkManager();
+    if (await manager.hasPermission()) return true;
+
+    if (!await manager.hasDevice()) {
+      if (!mounted) return false;
+      await showDialog<void>(
+        context: context,
+        barrierDismissible: false,
+        builder: (dialogContext) {
+          var closed = false;
+          return AlertDialog(
+            backgroundColor: const Color(0xFF20262D),
+            title: Text(
+              t.tips.title,
+              style: const TextStyle(color: Colors.white, fontSize: 17),
+            ),
+            content: Text(
+              noDeviceMessage,
+              style: const TextStyle(color: Colors.white70, fontSize: 13),
+            ),
+            actions: [
+              FilledButton(
+                onPressed: () {
+                  if (closed) return;
+                  closed = true;
+                  Navigator.of(dialogContext).pop();
+                },
+                child: Text(t.common.confirm),
+              ),
+            ],
+          );
+        },
+      );
+      return false;
+    }
+
+    final granted = await manager.requestPermission().timeout(
+      const Duration(seconds: 30),
+      onTimeout: () => false,
+    );
+    if (granted) return true;
+    if (!mounted) return false;
+
+    final goAuth = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        var closed = false;
+        return AlertDialog(
+          backgroundColor: const Color(0xFF20262D),
+          title: Text(
+            t.tips.title,
+            style: const TextStyle(color: Colors.white, fontSize: 17),
+          ),
+          content: Text(
+            t.cpds.keyLoaderPermissionDenied,
+            style: const TextStyle(color: Colors.white70, fontSize: 13),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                if (closed) return;
+                closed = true;
+                Navigator.of(dialogContext).pop(false);
+              },
+              child: Text(
+                t.tips.cancel,
+                style: const TextStyle(color: Colors.white70),
+              ),
+            ),
+            FilledButton(
+              onPressed: () {
+                if (closed) return;
+                closed = true;
+                Navigator.of(dialogContext).pop(true);
+              },
+              child: Text(t.tips.ok),
+            ),
+          ],
+        );
+      },
+    );
+    if (goAuth != true) return false;
+    await openAppSettings();
+    return false;
   }
 
   Future<void> _saveFutureWarrior(

@@ -272,6 +272,7 @@ ID = [类型字节长度 uint16BE] + [类型 UTF-8] + [IP字节长度 uint16BE] 
 4. 等 `<dataDir>/finalize_started` 出现，最多 3 秒：超时 → `write_fail:finalize_start_fail`；成功 → `write_ok` 连发 3 次、间隔 1 秒 → 写 `<dataDir>/old_exited`（失败记日志、立即退出）→ `exitNow(0)` 退出旧进程。
 5. **VehInter 特例**：write 写盘完成后不启动 finalize，写 `<dataDir>/vehinter_handoff`，发 `write_ok`×3 后直接退出；由第三方用 `new_exe` 替换并拉起，新进程读到该标记才回 `update_ok`。
 6. **其他类型**：finalize 进程在旧进程退出后：`rename(old_exe → <exe>.<版本>.bak)` → `rename(new_exe → old_exe)` → 启动新进程 → 成功清理（含 `finalize_started` / `old_exited`）；失败写 `<dataDir>/finalize_fail`、把设备 config 的 `version` 恢复为 `old_version`，再回滚启动旧 exe。旧 exe 启动早期也会检测失败标记再兜底恢复一次。
+7. **write 幂等**：finalize 成功替换二进制并启动新进程后写 `<dataDir>/write_done`（记录 CRC/包数量/总字节/文件名）。设备重启后再收到相同的 `write:`，直接回 `write_ok`×3，不重写、不重启；`write_done` 保留到下次 `Scan` 复位时删除。
 
 ### 6.8 回执 update
 
