@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_kts_template/core/cpds/model/cpds_models.dart';
 import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class CpdsNetworkInterfaceBar extends StatelessWidget {
   const CpdsNetworkInterfaceBar({
@@ -27,16 +28,16 @@ class CpdsNetworkInterfaceBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = Translations.of(context);
     return Container(
-      height: 32,
-      margin: const EdgeInsets.symmetric(vertical: 8),
+      height: 36.h,
+      margin: EdgeInsets.symmetric(vertical: 8.h),
       child: Row(
         children: [
           if (showLabel) ...[
             Text(
               t.cpds.networkInterfaceLabel,
-              style: const TextStyle(color: Colors.white, fontSize: 13),
+              style: TextStyle(color: Colors.white, fontSize: 13.sp),
             ),
-            const SizedBox(width: 8),
+            SizedBox(width: 8.w),
           ],
           Expanded(
             child: DropdownButtonFormField<String>(
@@ -45,22 +46,22 @@ class CpdsNetworkInterfaceBar extends StatelessWidget {
               decoration: InputDecoration(
                 filled: true,
                 fillColor: const Color(0xFF282D33),
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 2,
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 12.w,
+                  vertical: 2.h,
                 ),
                 enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(4),
+                  borderRadius: BorderRadius.circular(4.r),
                   borderSide: const BorderSide(color: Color(0x33FFFFFF)),
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(4),
+                  borderRadius: BorderRadius.circular(4.r),
                   borderSide: const BorderSide(color: Color(0xFF00A2E9)),
                 ),
                 hintText: t.cpds.networkInterfacePlaceholder,
-                hintStyle: const TextStyle(color: Colors.white54, fontSize: 13),
+                hintStyle: TextStyle(color: Colors.white54, fontSize: 13.sp),
               ),
-              style: const TextStyle(color: Colors.white, fontSize: 13),
+              style: TextStyle(color: Colors.white, fontSize: 13.sp),
               items: [
                 DropdownMenuItem<String>(
                   value: '',
@@ -84,18 +85,18 @@ class CpdsNetworkInterfaceBar extends StatelessWidget {
                           ),
                         ),
                         if (!item.linkUp) ...[
-                          const SizedBox(width: 8),
-                          const Icon(
+                          SizedBox(width: 8.w),
+                          Icon(
                             Icons.wifi_off,
-                            size: 14,
+                            size: 14.w,
                             color: Colors.redAccent,
                           ),
-                          const SizedBox(width: 4),
+                          SizedBox(width: 4.w),
                           Text(
                             t.cpds.networkInterfaceNoLink,
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: Colors.redAccent,
-                              fontSize: 11,
+                              fontSize: 11.sp,
                             ),
                           ),
                         ],
@@ -108,16 +109,19 @@ class CpdsNetworkInterfaceBar extends StatelessWidget {
             ),
           ),
           if (automatic && selectedName.isNotEmpty) ...[
-            const SizedBox(width: 8),
+            SizedBox(width: 8.w),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
               decoration: BoxDecoration(
                 color: const Color(0x2400A2E9),
-                borderRadius: BorderRadius.circular(3),
+                borderRadius: BorderRadius.circular(3.r),
               ),
               child: Text(
                 t.cpds.automatic,
-                style: const TextStyle(color: Color(0xFF0CB5FF), fontSize: 11),
+                style: TextStyle(
+                  color: const Color(0xFF0CB5FF),
+                  fontSize: 11.sp,
+                ),
               ),
             ),
           ],

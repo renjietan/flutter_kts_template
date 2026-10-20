@@ -2,6 +2,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class BaseButton extends StatefulWidget {
   final String label;
@@ -204,12 +205,12 @@ class _BaseButtonState extends State<BaseButton> with TickerProviderStateMixin {
                             ),
                           ),
                         Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          padding: EdgeInsets.symmetric(horizontal: 12.w),
                           child: widget.isLoading
-                              ? const SizedBox(
-                                  width: 14,
-                                  height: 14,
-                                  child: CircularProgressIndicator(
+                              ? SizedBox(
+                                  width: 14.w,
+                                  height: 14.h,
+                                  child: const CircularProgressIndicator(
                                     strokeWidth: 1,
                                     backgroundColor: Colors.white,
                                     valueColor: AlwaysStoppedAnimation<Color>(
@@ -227,9 +228,9 @@ class _BaseButtonState extends State<BaseButton> with TickerProviderStateMixin {
                                         Icon(
                                           widget.icon,
                                           color: Colors.white,
-                                          size: 20,
+                                          size: 20.w,
                                         ),
-                                        const SizedBox(width: 8),
+                                        SizedBox(width: 8.w),
                                       ],
                                       Text(
                                         widget.label,
@@ -237,9 +238,9 @@ class _BaseButtonState extends State<BaseButton> with TickerProviderStateMixin {
                                         softWrap: false,
                                         style:
                                             widget.textStyle ??
-                                            const TextStyle(
+                                            TextStyle(
                                               color: Colors.white,
-                                              fontSize: 16,
+                                              fontSize: 16.sp,
                                               fontWeight: FontWeight.w600,
                                               letterSpacing: 0.5,
                                             ),

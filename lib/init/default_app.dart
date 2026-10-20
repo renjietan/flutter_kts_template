@@ -106,6 +106,15 @@ class _MyAppState extends State<MyApp> {
     _bucket = bucket;
     _designSize = ScreenStrategy.designSizeOf(bucket, logicalSize);
 
+    // 仅手机端与桌面端隐藏顶部系统状态栏（WiFi、电量等），Pad 保留可见。
+    if (bucket == DeviceBucket.phoneLandscape ||
+        bucket == DeviceBucket.windows) {
+      SystemChrome.setEnabledSystemUIMode(
+        SystemUiMode.manual,
+        overlays: [SystemUiOverlay.bottom],
+      );
+    }
+
     GlobalLogger.logInfo(
       'ScreenStrategy: platform=${defaultTargetPlatform.name} '
       'physical=$physicalSize dpr=$devicePixelRatio '

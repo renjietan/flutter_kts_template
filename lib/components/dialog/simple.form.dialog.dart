@@ -53,7 +53,9 @@ Future<void> SimpleFormDialog({
         padding: EdgeInsets.fromLTRB(5.w, 5.h, 5.w, 5.h),
         decoration: BoxDecoration(
           color: Colors.transparent,
-          border: Border(bottom: BorderSide(color: Colors.white38, width: 1.w)),
+          border: Border(
+            bottom: BorderSide(color: Colors.white38, width: 1.w),
+          ),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -63,7 +65,11 @@ Future<void> SimpleFormDialog({
             const Spacer(),
             IconButton(
               onPressed: () => SmartDialog.dismiss(),
-              icon: Icon(Icons.close_rounded, size: 16.sp, color: Colors.blueGrey),
+              icon: Icon(
+                Icons.close_rounded,
+                size: 16.sp,
+                color: Colors.blueGrey,
+              ),
             ),
           ],
         ),
@@ -162,9 +168,18 @@ List<Widget> _buildFormFields(
           decoration: InputDecoration(
             labelText: field.hintText ?? field.label,
             isDense: true,
-            contentPadding: EdgeInsets.symmetric(vertical: 14.h, horizontal: 12.w),
-            labelStyle: TextStyle(color: Colors.white, fontSize: labelFontSize.sp),
-            hintStyle: TextStyle(color: Colors.white, fontSize: labelFontSize.sp),
+            contentPadding: EdgeInsets.symmetric(
+              vertical: 14.h,
+              horizontal: 12.w,
+            ),
+            labelStyle: TextStyle(
+              color: Colors.white,
+              fontSize: labelFontSize.sp,
+            ),
+            hintStyle: TextStyle(
+              color: Colors.white,
+              fontSize: labelFontSize.sp,
+            ),
             filled: true,
             fillColor: fillColor,
             border: OutlineInputBorder(
@@ -304,8 +319,14 @@ Widget _buildFieldItem(
               vertical: contentPadding.h,
               horizontal: 12.w,
             ),
-            labelStyle: TextStyle(color: Colors.white, fontSize: labelFontSize.sp),
-            hintStyle: TextStyle(color: Colors.white, fontSize: labelFontSize.sp),
+            labelStyle: TextStyle(
+              color: Colors.white,
+              fontSize: labelFontSize.sp,
+            ),
+            hintStyle: TextStyle(
+              color: Colors.white,
+              fontSize: labelFontSize.sp,
+            ),
             filled: true,
             fillColor: fillColor,
             border: OutlineInputBorder(
@@ -425,4 +446,107 @@ Widget _buildFieldLabel(
       ),
     ],
   );
+}
+
+/// 通用表单页面（移动端使用）：表单项与 [SimpleFormDialog] 保持一致。
+class SimpleFormPage extends StatefulWidget {
+  const SimpleFormPage({
+    super.key,
+    required this.title,
+    required this.fields,
+    required this.onConfirm,
+    this.confirmText,
+    this.twoColumn = false,
+    this.labelFontSize = 14,
+    this.fieldContentPadding = 10,
+    this.backgroundColor = const Color(0xFF20262D),
+  });
+
+  final String title;
+  final List<FormFieldConfig> fields;
+  final void Function(Map<String, dynamic> formData) onConfirm;
+  final String? confirmText;
+  final bool twoColumn;
+  final double labelFontSize;
+  final double fieldContentPadding;
+  final Color backgroundColor;
+
+  @override
+  State<SimpleFormPage> createState() => _SimpleFormPageState();
+}
+
+class _SimpleFormPageState extends State<SimpleFormPage> {
+  final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>();
+
+  void _submit() {
+    if (_formKey.currentState?.saveAndValidate() ?? false) {
+      final formData = _formKey.currentState?.value;
+      Navigator.of(context).pop();
+      widget.onConfirm(formData!);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    const labelColor = Colors.white;
+    const fillColor = Color(0x9921262C);
+    const borderColor = Colors.white;
+    return Scaffold(
+      backgroundColor: widget.backgroundColor,
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(32.h),
+        child: AppBar(
+          backgroundColor: widget.backgroundColor,
+          foregroundColor: Colors.white,
+          elevation: 0,
+          centerTitle: true,
+          title: Text(widget.title, style: TextStyle(fontSize: 15.sp)),
+        ),
+      ),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+          padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 24.h),
+          child: FormBuilder(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                widget.twoColumn
+                    ? _buildTwoColumnFields(
+                        context,
+                        widget.fields,
+                        labelColor,
+                        fillColor,
+                        borderColor,
+                        widget.labelFontSize,
+                        widget.fieldContentPadding,
+                      )
+                    : Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: _buildFormFields(
+                          context,
+                          widget.fields,
+                          labelColor,
+                          fillColor,
+                          borderColor,
+                          widget.labelFontSize,
+                          widget.fieldContentPadding,
+                        ),
+                      ),
+                SizedBox(height: 12.h),
+                BaseButton(
+                  minWidth: double.infinity,
+                  height: 36.h,
+                  textStyle: TextStyle(fontSize: 13.sp, color: Colors.white),
+                  label: widget.confirmText ?? context.t.common.confirm,
+                  onPressed: _submit,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }

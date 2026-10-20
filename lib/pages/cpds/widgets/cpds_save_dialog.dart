@@ -4,6 +4,8 @@ import 'dart:convert';
 
 import 'package:composable_data_table/composable_data_table.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'cpds_button_styles.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_kts_template/api/KeyLoaders.api.dart';
 import 'package:flutter_kts_template/api/RadiosManagerApi.dart';
@@ -74,6 +76,7 @@ class CpdsFutureWarriorSaveDialog extends StatefulWidget {
     required this.units,
     required this.keyLoaders,
     required this.onSave,
+    this.usePage = false,
   });
 
   final List<CpdsFutureWarriorDevice> devices;
@@ -81,6 +84,7 @@ class CpdsFutureWarriorSaveDialog extends StatefulWidget {
   final List<CpdsUnit> units;
   final List<KeyLoadersEntity> keyLoaders;
   final ValueChanged<Map<String, dynamic>> onSave;
+  final bool usePage;
 
   @override
   State<CpdsFutureWarriorSaveDialog> createState() =>
@@ -291,7 +295,7 @@ class _CpdsFutureWarriorSaveDialogState
           backgroundColor: const Color(0xFF20262D),
           title: Text(
             t.tips.title,
-            style: const TextStyle(color: Colors.white, fontSize: 17),
+            style: TextStyle(color: Colors.white, fontSize: 17.sp),
           ),
           content: Text(
             CpdsMessages.tr(
@@ -300,10 +304,11 @@ class _CpdsFutureWarriorSaveDialogState
               'Please select a key loader first',
               'يرجى تحديد جهاز تحميل المفاتيح أولاً',
             ),
-            style: const TextStyle(color: Colors.white70, fontSize: 13),
+            style: TextStyle(color: Colors.white70, fontSize: 13.sp),
           ),
           actions: [
             FilledButton(
+              style: cpdsFilledButtonStyle(),
               onPressed: () {
                 if (closed) return;
                 closed = true;
@@ -483,288 +488,324 @@ class _CpdsFutureWarriorSaveDialogState
   @override
   Widget build(BuildContext context) {
     final t = Translations.of(context);
-    return AlertDialog(
-      backgroundColor: const Color(0xFF20262D),
-      title: Text(
-        t.button.radioManager.save,
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 20,
-          fontWeight: FontWeight.w700,
+    final form = SizedBox(
+      width: widget.usePage ? double.infinity : 920.w,
+      child: FormBuilder(
+        key: _formKey,
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              DropdownButtonFormField<int>(
+                initialValue: _selectedKeyLoaderId,
+                isExpanded: true,
+                decoration: InputDecoration(
+                  labelText: t.Form.paramsInject.selectKeyLoader.text,
+                  hintText: t.Form.paramsInject.selectKeyLoader.placeholder,
+                  filled: true,
+                  fillColor: const Color(0xFF282D33),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(4.r),
+                  ),
+                ),
+                items: _keyLoaders
+                    .map(
+                      (item) => DropdownMenuItem<int>(
+                        value: item.id,
+                        child: Text(item.name),
+                      ),
+                    )
+                    .toList(),
+                onChanged: _onKeyLoaderChanged,
+                validator: (value) => value == null
+                    ? t.Form.paramsInject.selectKeyLoader.placeholder
+                    : null,
+              ),
+              SizedBox(height: 16.h),
+              Text(
+                t.pager.injectEncrypt.paramPairing,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18.sp,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              SizedBox(height: 12.h),
+              if (_radios.isEmpty)
+                const Center(child: CircularProgressIndicator())
+              else
+                Column(
+                  children: [
+                    SizedBox(
+                      width: double.infinity,
+                      child: DataTable(
+                        border: TableBorder.all(color: const Color(0xFF353A41)),
+                        headingRowColor: WidgetStatePropertyAll(
+                          const Color(0xFF292E33),
+                        ),
+                        horizontalMargin: 0,
+                        columnSpacing: 8,
+                        columns: [
+                          DataColumn(
+                            columnWidth: FlexColumnWidth(1.0),
+                            label: Padding(
+                              padding: EdgeInsets.only(left: 8.w),
+                              child: Text(
+                                t.tableColumn.injectEncrypt.parameterPacket,
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                              ),
+                            ),
+                          ),
+                          DataColumn(
+                            columnWidth: FlexColumnWidth(1.3),
+                            label: Padding(
+                              padding: EdgeInsets.only(left: 8.w),
+                              child: Text(
+                                CpdsMessages.tr(
+                                  context,
+                                  '别名',
+                                  'Alias',
+                                  'الاسم المستعار',
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                              ),
+                            ),
+                          ),
+                          DataColumn(
+                            columnWidth: FlexColumnWidth(1.2),
+                            label: Padding(
+                              padding: EdgeInsets.only(left: 8.w),
+                              child: Text(
+                                CpdsMessages.tr(
+                                  context,
+                                  '下发IP',
+                                  'Downlink IP',
+                                  'IP الإرسال',
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                              ),
+                            ),
+                          ),
+                          DataColumn(
+                            columnWidth: FlexColumnWidth(1.3),
+                            label: Padding(
+                              padding: EdgeInsets.only(left: 8.w),
+                              child: Text(
+                                t.Form.paramsInject.deviceType.text,
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                              ),
+                            ),
+                          ),
+                          DataColumn(
+                            columnWidth: FlexColumnWidth(1.6),
+                            label: Padding(
+                              padding: EdgeInsets.only(left: 8.w),
+                              child: Text(
+                                t.tableColumn.injectEncrypt.radio,
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                              ),
+                            ),
+                          ),
+                          DataColumn(
+                            columnWidth: FlexColumnWidth(1.0),
+                            label: Padding(
+                              padding: EdgeInsets.only(left: 8.w),
+                              child: Text(
+                                t.tableColumn.injectEncrypt.location,
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                              ),
+                            ),
+                          ),
+                          DataColumn(
+                            columnWidth: FlexColumnWidth(1.0),
+                            label: Padding(
+                              padding: EdgeInsets.only(left: 8.w),
+                              child: Text(
+                                t.tableColumn.injectEncrypt.SN,
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                              ),
+                            ),
+                          ),
+                        ],
+                        rows: _pagedDevices.map((fwDevice) {
+                          final device = fwDevice.device;
+                          final radio = _radioFor(fwDevice);
+                          final index = widget.devices.indexOf(fwDevice);
+                          return DataRow(
+                            color: WidgetStatePropertyAll(
+                              index.isEven
+                                  ? const Color(0xFF171C22)
+                                  : const Color(0xFF292E33),
+                            ),
+                            cells: [
+                              DataCell(
+                                Padding(
+                                  padding: EdgeInsets.only(left: 8.w),
+                                  child: Text(
+                                    device.id,
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 1,
+                                  ),
+                                ),
+                              ),
+                              DataCell(
+                                Padding(
+                                  padding: EdgeInsets.only(left: 8.w),
+                                  child: Text(
+                                    device.alias,
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 1,
+                                  ),
+                                ),
+                              ),
+                              DataCell(
+                                Padding(
+                                  padding: EdgeInsets.only(left: 8.w),
+                                  child: Text(
+                                    cpdsDisplayDownlinkIp(device.ip),
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 1,
+                                  ),
+                                ),
+                              ),
+                              DataCell(
+                                Padding(
+                                  padding: EdgeInsets.only(left: 8.w),
+                                  child: Text(
+                                    device.model,
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 1,
+                                  ),
+                                ),
+                              ),
+                              DataCell(
+                                Padding(
+                                  padding: EdgeInsets.only(left: 8.w),
+                                  child: _buildRadioPicker(fwDevice),
+                                ),
+                              ),
+                              DataCell(
+                                Padding(
+                                  padding: EdgeInsets.only(left: 8.w),
+                                  child: Text(
+                                    radio?.location ?? '--',
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 1,
+                                  ),
+                                ),
+                              ),
+                              DataCell(
+                                Padding(
+                                  padding: EdgeInsets.only(left: 8.w),
+                                  child: Text(
+                                    radio?.sn ?? '--',
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 1,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                    DataTablePlusThemeProvider(
+                      theme: getThemePreset(ThemePreset.dark),
+                      child: TablePagination(
+                        currentPage: _currentPage,
+                        totalPages: _pageCount,
+                        totalItems: widget.devices.length,
+                        pageSize: _pageSize,
+                        pageSizeOptions: const [10, 20, 50, 100],
+                        onPageSizeChanged: (size) {
+                          setState(() {
+                            _pageSize = size;
+                            _currentPage = 1;
+                          });
+                        },
+                        onPageChanged: (page) {
+                          setState(() {
+                            _currentPage = page;
+                          });
+                        },
+                        itemRangeTemplate: '',
+                      ),
+                    ),
+                  ],
+                ),
+            ],
+          ),
         ),
       ),
-      content: SizedBox(
-        width: 920,
-        child: FormBuilder(
-          key: _formKey,
+    );
+
+    final actions = <Widget>[
+      TextButton(
+        style: cpdsTextButtonStyle(),
+        onPressed: _saving ? null : _cancel,
+        child: Text(t.common.cancel, style: TextStyle(color: Colors.white70)),
+      ),
+      FilledButton(
+        style: cpdsFilledButtonStyle(),
+        onPressed: _saving ? null : _save,
+        child: Text(t.button.radioManager.save),
+      ),
+    ];
+
+    if (widget.usePage) {
+      return Scaffold(
+        backgroundColor: const Color(0xFF20262D),
+        appBar: PreferredSize(
+          preferredSize: Size.fromHeight(32.h),
+          child: AppBar(
+            backgroundColor: const Color(0xFF20262D),
+            foregroundColor: Colors.white,
+            elevation: 0,
+            centerTitle: true,
+            title: Text(
+              t.button.radioManager.save,
+              style: TextStyle(fontSize: 15.sp),
+            ),
+          ),
+        ),
+        body: SafeArea(
           child: SingleChildScrollView(
+            padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 16.h),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                DropdownButtonFormField<int>(
-                  initialValue: _selectedKeyLoaderId,
-                  isExpanded: true,
-                  decoration: InputDecoration(
-                    labelText: t.Form.paramsInject.selectKeyLoader.text,
-                    hintText: t.Form.paramsInject.selectKeyLoader.placeholder,
-                    filled: true,
-                    fillColor: const Color(0xFF282D33),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                  ),
-                  items: _keyLoaders
-                      .map(
-                        (item) => DropdownMenuItem<int>(
-                          value: item.id,
-                          child: Text(item.name),
-                        ),
-                      )
-                      .toList(),
-                  onChanged: _onKeyLoaderChanged,
-                  validator: (value) => value == null
-                      ? t.Form.paramsInject.selectKeyLoader.placeholder
-                      : null,
+                form,
+                SizedBox(height: 16.h),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: actions,
                 ),
-                const SizedBox(height: 16),
-                Text(
-                  t.pager.injectEncrypt.paramPairing,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                if (_radios.isEmpty)
-                  const Center(child: CircularProgressIndicator())
-                else
-                  Column(
-                    children: [
-                      SizedBox(
-                        width: double.infinity,
-                        child: DataTable(
-                          border: TableBorder.all(
-                            color: const Color(0xFF353A41),
-                          ),
-                          headingRowColor: WidgetStatePropertyAll(
-                            const Color(0xFF292E33),
-                          ),
-                          horizontalMargin: 0,
-                          columnSpacing: 8,
-                          columns: [
-                            DataColumn(
-                              columnWidth: FlexColumnWidth(1.0),
-                              label: Padding(
-                                padding: const EdgeInsets.only(left: 8),
-                                child: Text(
-                                  t.tableColumn.injectEncrypt.parameterPacket,
-                                  overflow: TextOverflow.ellipsis,
-                                  maxLines: 1,
-                                ),
-                              ),
-                            ),
-                            DataColumn(
-                              columnWidth: FlexColumnWidth(1.3),
-                              label: Padding(
-                                padding: const EdgeInsets.only(left: 8),
-                                child: Text(
-                                  CpdsMessages.tr(
-                                    context,
-                                    '别名',
-                                    'Alias',
-                                    'الاسم المستعار',
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                  maxLines: 1,
-                                ),
-                              ),
-                            ),
-                            DataColumn(
-                              columnWidth: FlexColumnWidth(1.2),
-                              label: Padding(
-                                padding: const EdgeInsets.only(left: 8),
-                                child: Text(
-                                  CpdsMessages.tr(
-                                    context,
-                                    '下发IP',
-                                    'Downlink IP',
-                                    'IP الإرسال',
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                  maxLines: 1,
-                                ),
-                              ),
-                            ),
-                            DataColumn(
-                              columnWidth: FlexColumnWidth(1.3),
-                              label: Padding(
-                                padding: const EdgeInsets.only(left: 8),
-                                child: Text(
-                                  t.Form.paramsInject.deviceType.text,
-                                  overflow: TextOverflow.ellipsis,
-                                  maxLines: 1,
-                                ),
-                              ),
-                            ),
-                            DataColumn(
-                              columnWidth: FlexColumnWidth(1.6),
-                              label: Padding(
-                                padding: const EdgeInsets.only(left: 8),
-                                child: Text(
-                                  t.tableColumn.injectEncrypt.radio,
-                                  overflow: TextOverflow.ellipsis,
-                                  maxLines: 1,
-                                ),
-                              ),
-                            ),
-                            DataColumn(
-                              columnWidth: FlexColumnWidth(1.0),
-                              label: Padding(
-                                padding: const EdgeInsets.only(left: 8),
-                                child: Text(
-                                  t.tableColumn.injectEncrypt.location,
-                                  overflow: TextOverflow.ellipsis,
-                                  maxLines: 1,
-                                ),
-                              ),
-                            ),
-                            DataColumn(
-                              columnWidth: FlexColumnWidth(1.0),
-                              label: Padding(
-                                padding: const EdgeInsets.only(left: 8),
-                                child: Text(
-                                  t.tableColumn.injectEncrypt.SN,
-                                  overflow: TextOverflow.ellipsis,
-                                  maxLines: 1,
-                                ),
-                              ),
-                            ),
-                          ],
-                          rows: _pagedDevices.map((fwDevice) {
-                            final device = fwDevice.device;
-                            final radio = _radioFor(fwDevice);
-                            final index = widget.devices.indexOf(fwDevice);
-                            return DataRow(
-                              color: WidgetStatePropertyAll(
-                                index.isEven
-                                    ? const Color(0xFF171C22)
-                                    : const Color(0xFF292E33),
-                              ),
-                              cells: [
-                                DataCell(
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 8),
-                                    child: Text(
-                                      device.id,
-                                      overflow: TextOverflow.ellipsis,
-                                      maxLines: 1,
-                                    ),
-                                  ),
-                                ),
-                                DataCell(
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 8),
-                                    child: Text(
-                                      device.alias,
-                                      overflow: TextOverflow.ellipsis,
-                                      maxLines: 1,
-                                    ),
-                                  ),
-                                ),
-                                DataCell(
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 8),
-                                    child: Text(
-                                      cpdsDisplayDownlinkIp(device.ip),
-                                      overflow: TextOverflow.ellipsis,
-                                      maxLines: 1,
-                                    ),
-                                  ),
-                                ),
-                                DataCell(
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 8),
-                                    child: Text(
-                                      device.model,
-                                      overflow: TextOverflow.ellipsis,
-                                      maxLines: 1,
-                                    ),
-                                  ),
-                                ),
-                                DataCell(
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 8),
-                                    child: _buildRadioPicker(fwDevice),
-                                  ),
-                                ),
-                                DataCell(
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 8),
-                                    child: Text(
-                                      radio?.location ?? '--',
-                                      overflow: TextOverflow.ellipsis,
-                                      maxLines: 1,
-                                    ),
-                                  ),
-                                ),
-                                DataCell(
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 8),
-                                    child: Text(
-                                      radio?.sn ?? '--',
-                                      overflow: TextOverflow.ellipsis,
-                                      maxLines: 1,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            );
-                          }).toList(),
-                        ),
-                      ),
-                      DataTablePlusThemeProvider(
-                        theme: getThemePreset(ThemePreset.dark),
-                        child: TablePagination(
-                          currentPage: _currentPage,
-                          totalPages: _pageCount,
-                          totalItems: widget.devices.length,
-                          pageSize: _pageSize,
-                          pageSizeOptions: const [10, 20, 50, 100],
-                          onPageSizeChanged: (size) {
-                            setState(() {
-                              _pageSize = size;
-                              _currentPage = 1;
-                            });
-                          },
-                          onPageChanged: (page) {
-                            setState(() {
-                              _currentPage = page;
-                            });
-                          },
-                          itemRangeTemplate: '',
-                        ),
-                      ),
-                    ],
-                  ),
               ],
             ),
           ),
         ),
+      );
+    }
+
+    return AlertDialog(
+      backgroundColor: const Color(0xFF20262D),
+      title: Text(
+        t.button.radioManager.save,
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: 20.sp,
+          fontWeight: FontWeight.w700,
+        ),
       ),
-      actions: [
-        TextButton(
-          onPressed: _saving ? null : _cancel,
-          child: Text(
-            t.common.cancel,
-            style: const TextStyle(color: Colors.white70),
-          ),
-        ),
-        FilledButton(
-          onPressed: _saving ? null : _save,
-          child: Text(t.button.radioManager.save),
-        ),
-      ],
+      content: form,
+      actions: actions,
     );
   }
 }
@@ -777,14 +818,14 @@ class CpdsFutureWarriorDuplicateDialog extends StatelessWidget {
   Widget _headerCell(String text) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 10.h),
         child: Text(
           text,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
+          style: TextStyle(
             color: Colors.white,
-            fontSize: 13,
+            fontSize: 13.sp,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -795,12 +836,12 @@ class CpdsFutureWarriorDuplicateDialog extends StatelessWidget {
   Widget _bodyCell(String text) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 10.h),
         child: Text(
           text,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: const TextStyle(color: Colors.white, fontSize: 13),
+          style: TextStyle(color: Colors.white, fontSize: 13.sp),
         ),
       ),
     );
@@ -816,14 +857,14 @@ class CpdsFutureWarriorDuplicateDialog extends StatelessWidget {
       backgroundColor: const Color(0xFF20262D),
       title: Text(
         t.tips.title,
-        style: const TextStyle(
+        style: TextStyle(
           color: Colors.white,
-          fontSize: 17,
+          fontSize: 17.sp,
           fontWeight: FontWeight.w600,
         ),
       ),
       content: SizedBox(
-        width: 560,
+        width: 560.w,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -835,9 +876,9 @@ class CpdsFutureWarriorDuplicateDialog extends StatelessWidget {
                 'The following data already exists. Overwrite?',
                 'البيانات التالية موجودة بالفعل. هل تريد الكتابة فوقها؟',
               ),
-              style: const TextStyle(color: Colors.white70, fontSize: 13),
+              style: TextStyle(color: Colors.white70, fontSize: 13.sp),
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
             Container(
               constraints: const BoxConstraints(maxHeight: 260),
               child: SingleChildScrollView(
@@ -904,13 +945,12 @@ class CpdsFutureWarriorDuplicateDialog extends StatelessWidget {
       ),
       actions: [
         TextButton(
+          style: cpdsTextButtonStyle(),
           onPressed: () => Navigator.of(context).pop(false),
-          child: Text(
-            t.tips.cancel,
-            style: const TextStyle(color: Colors.white70),
-          ),
+          child: Text(t.tips.cancel, style: TextStyle(color: Colors.white70)),
         ),
         FilledButton(
+          style: cpdsFilledButtonStyle(),
           onPressed: () => Navigator.of(context).pop(true),
           child: Text(t.tips.ok),
         ),

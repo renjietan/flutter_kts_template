@@ -1,5 +1,6 @@
 // ignore_for_file: cpd_lints/hardcoded_dimension
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_kts_template/components/TreeView/simple-tree/simple.tree.model.dart';
 import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 import 'package:recursive_tree_flutter/functions/tree_update_functions.dart';
@@ -97,8 +98,8 @@ class _SimpleTreeViewState<T extends AbsNodeType> extends State<SimpleTreeView>
                 // 勾选框 与 左侧 图标值显示一个
                 if (tree.data.titleIcon != null &&
                     !(tree.isLeaf && tree.data.isShowCheckbox))
-                  Icon(tree.data.titleIcon, color: Colors.white, size: 16),
-                SizedBox(width: 10),
+                  Icon(tree.data.titleIcon, color: Colors.white, size: 16.w),
+                SizedBox(width: 10.w),
                 Expanded(child: buildTitle()),
                 if (tree.data.leafActionWidgetLabel != null && tree.isLeaf)
                   BaseButton(
@@ -112,7 +113,7 @@ class _SimpleTreeViewState<T extends AbsNodeType> extends State<SimpleTreeView>
                   ),
                 if ((widget.tree.data.activeTexts?.isNotEmpty) ?? false)
                   buildActive(),
-                SizedBox(width: 30),
+                SizedBox(width: 30.w),
               ],
             ),
             if (tree.data.subTexts!.isNotEmpty) ...[
@@ -127,7 +128,10 @@ class _SimpleTreeViewState<T extends AbsNodeType> extends State<SimpleTreeView>
                       ),
                       child: Text(
                         item,
-                        style: TextStyle(fontSize: 12, color: Colors.white60),
+                        style: TextStyle(
+                          fontSize: 12.sp,
+                          color: Colors.white60,
+                        ),
                       ),
                     );
                   }),
@@ -160,11 +164,7 @@ class _SimpleTreeViewState<T extends AbsNodeType> extends State<SimpleTreeView>
           ? Container()
           : IconButton(
               iconSize: 16,
-              icon: const Icon(
-                Icons.expand_more,
-                size: 16.0,
-                color: Colors.white,
-              ),
+              icon: Icon(Icons.expand_more, size: 16.w, color: Colors.white),
               onPressed: updateStateToggleExpansion,
             ),
     );
@@ -177,7 +177,7 @@ class _SimpleTreeViewState<T extends AbsNodeType> extends State<SimpleTreeView>
         ? ""
         : " (${tree.children.length})";
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 0),
+      padding: EdgeInsets.symmetric(horizontal: 0),
       child: Text(
         tree.data.title + count,
         maxLines: 1,
@@ -214,9 +214,9 @@ class _SimpleTreeViewState<T extends AbsNodeType> extends State<SimpleTreeView>
           color: (widget.tree.data.isActive ?? false)
               ? Color(0xFF00A2E9)
               : Colors.white24,
-          width: 2,
+          width: 2.w,
         ),
-        borderRadius: BorderRadius.circular(15),
+        borderRadius: BorderRadius.circular(15.r),
         color: Colors.transparent, // 可选背景
       ),
       child: Text(
@@ -224,7 +224,7 @@ class _SimpleTreeViewState<T extends AbsNodeType> extends State<SimpleTreeView>
             ? widget.tree.data.activeTexts![1]
             : widget.tree.data.activeTexts![0],
         style: TextStyle(
-          fontSize: 10,
+          fontSize: 10.sp,
           color: (widget.tree.data.isActive ?? false)
               ? Color(0xFF00A2E9)
               : Colors.white24,

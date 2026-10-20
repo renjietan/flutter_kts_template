@@ -113,6 +113,11 @@ class _CpdsPackagePanelState extends State<CpdsPackagePanel> {
     });
   }
 
+  void _clearSearch() {
+    _searchController.clear();
+    _applySearch('');
+  }
+
   Future<void> _openSearchDialog() async {
     final result = await showDialog<String>(
       context: context,
@@ -132,20 +137,26 @@ class _CpdsPackagePanelState extends State<CpdsPackagePanel> {
     return InputDecoration(
       hintText: t.TextField.search,
       hintStyle: const TextStyle(color: Colors.white38),
-      prefixIcon: const Icon(Icons.search, size: 18, color: Colors.white54),
+      prefixIcon: Icon(Icons.search, size: 18.w, color: Colors.white54),
+      suffixIcon: IconButton(
+        icon: Icon(Icons.cancel, size: 18.w, color: Colors.white54),
+        padding: EdgeInsets.zero,
+        constraints: const BoxConstraints(),
+        onPressed: _clearSearch,
+      ),
       filled: true,
       fillColor: const Color(0xFF282D33),
       contentPadding: EdgeInsets.zero,
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(4),
+        borderRadius: BorderRadius.circular(4.r),
         borderSide: const BorderSide(color: Color(0xFF353A41)),
       ),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(4),
+        borderRadius: BorderRadius.circular(4.r),
         borderSide: const BorderSide(color: Color(0xFF353A41)),
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(4),
+        borderRadius: BorderRadius.circular(4.r),
         borderSide: const BorderSide(color: Color(0xFF00A2E9)),
       ),
     );
@@ -171,18 +182,18 @@ class _CpdsPackagePanelState extends State<CpdsPackagePanel> {
 
     return Container(
       color: const Color(0xFF0E1114),
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+      padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 16.h),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           SizedBox(
-            height: 32,
+            height: 32.h,
             child: Align(
               alignment: Alignment.centerLeft,
               child: Text(
                 t.cpds.fileTitle,
-                style: const TextStyle(
-                  fontSize: 18,
+                style: TextStyle(
+                  fontSize: 15.sp,
                   fontWeight: FontWeight.w500,
                   color: Colors.white,
                 ),
@@ -190,18 +201,18 @@ class _CpdsPackagePanelState extends State<CpdsPackagePanel> {
             ),
           ),
           SizedBox(
-            height: 32,
+            height: 32.h,
             child: Row(
               children: [
                 Expanded(
                   child: Container(
-                    height: 32,
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    height: 32.h,
+                    padding: EdgeInsets.symmetric(horizontal: 8.w),
                     alignment: Alignment.centerLeft,
                     decoration: BoxDecoration(
                       color: const Color(0xFF282D33),
                       border: Border.all(color: const Color(0x26FFFFFF)),
-                      borderRadius: BorderRadius.circular(4),
+                      borderRadius: BorderRadius.circular(4.r),
                     ),
                     child: Text(
                       widget.state.upload?.fileName ?? t.cpds.filePlaceholder,
@@ -211,23 +222,23 @@ class _CpdsPackagePanelState extends State<CpdsPackagePanel> {
                         color: widget.state.upload == null
                             ? Colors.white54
                             : Colors.white,
-                        fontSize: 13,
+                        fontSize: 13.sp,
                       ),
                     ),
                   ),
                 ),
-                const SizedBox(width: 8),
+                SizedBox(width: 8.w),
                 BaseButton(
                   label: t.cpds.browse,
-                  minWidth: 100,
-                  height: 32,
+                  minWidth: 100.w,
+                  height: 32.h,
                   icon: HyIcons.wenjian,
                   isLoading: widget.uploading,
                   onPressed: widget.state.active || widget.uploading
                       ? null
                       : widget.onBrowse,
                 ),
-                const SizedBox(width: 8),
+                SizedBox(width: 8.w),
                 BaseButton(
                   label: CpdsMessages.tr(
                     context,
@@ -247,8 +258,8 @@ class _CpdsPackagePanelState extends State<CpdsPackagePanel> {
                     Color(0xFFF3D19E),
                     Color(0xFFF3D19E),
                   ],
-                  minWidth: 110,
-                  height: 32,
+                  minWidth: 110.w,
+                  height: 32.h,
                   icon: Icons.lock_outline,
                   onPressed:
                       widget.state.active ||
@@ -260,20 +271,20 @@ class _CpdsPackagePanelState extends State<CpdsPackagePanel> {
               ],
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
           Expanded(
             child: Container(
               decoration: BoxDecoration(
                 color: const Color(0xFF171C22),
                 border: Border.all(color: const Color(0x26FFFFFF)),
-                borderRadius: BorderRadius.circular(4),
+                borderRadius: BorderRadius.circular(4.r),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Container(
-                    height: 100.h,
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    height: 40.h,
+                    padding: EdgeInsets.symmetric(horizontal: 16.w),
                     decoration: const BoxDecoration(
                       border: Border(
                         bottom: BorderSide(color: Color(0xFF353A41)),
@@ -284,8 +295,8 @@ class _CpdsPackagePanelState extends State<CpdsPackagePanel> {
                       children: [
                         Text(
                           t.cpds.nodesTitle,
-                          style: const TextStyle(
-                            fontSize: 13,
+                          style: TextStyle(
+                            fontSize: 13.sp,
                             fontWeight: FontWeight.w500,
                             color: Colors.white,
                           ),
@@ -295,20 +306,20 @@ class _CpdsPackagePanelState extends State<CpdsPackagePanel> {
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
+                    padding: EdgeInsets.fromLTRB(12.w, 8.h, 12.w, 8.h),
                     child: LayoutBuilder(
                       builder: (context, constraints) {
                         _searchBoxWidth = constraints.maxWidth;
                         return SizedBox(
-                          height: 36,
+                          height: 36.h,
                           child: defaultTargetPlatform == TargetPlatform.android
                               ? TextField(
                                   controller: _searchController,
                                   readOnly: true,
                                   onTap: _openSearchDialog,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     color: Colors.white,
-                                    fontSize: 13,
+                                    fontSize: 13.sp,
                                   ),
                                   decoration: _searchDecoration(t),
                                 )
@@ -317,9 +328,9 @@ class _CpdsPackagePanelState extends State<CpdsPackagePanel> {
                                   textInputAction: TextInputAction.search,
                                   onChanged: (value) => _applySearch(value),
                                   onSubmitted: (value) => _applySearch(value),
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 13,
+                                  style: TextStyle(
+                                    color: Colors.red,
+                                    fontSize: 13.sp,
                                   ),
                                   decoration: _searchDecoration(t),
                                 ),
@@ -332,9 +343,9 @@ class _CpdsPackagePanelState extends State<CpdsPackagePanel> {
                         ? Center(
                             child: Text(
                               searching ? t.common.noData : t.cpds.nodesEmpty,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 color: Colors.white38,
-                                fontSize: 13,
+                                fontSize: 13.sp,
                               ),
                             ),
                           )
@@ -406,7 +417,7 @@ class _CpdsTreeRow extends StatelessWidget {
       return GestureDetector(
         onTap: onTap,
         child: Container(
-          height: 32,
+          height: 32.h,
           padding: EdgeInsetsDirectional.only(start: 12.0 + item.depth * 24),
           color: selected ? const Color(0xFF004098) : Colors.transparent,
           child: _buildRowBody(),
@@ -420,7 +431,7 @@ class _CpdsTreeRow extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         child: Container(
-          height: 32,
+          height: 32.h,
           padding: EdgeInsetsDirectional.only(start: 12.0 + item.depth * 24),
           child: _buildRowBody(),
         ),
@@ -433,7 +444,7 @@ class _CpdsTreeRow extends StatelessWidget {
     return Row(
       children: [
         SizedBox(
-          width: 18,
+          width: 18.w,
           child: hasChildren
               ? Icon(
                   expanded
@@ -441,19 +452,19 @@ class _CpdsTreeRow extends StatelessWidget {
                       : (LocaleSettings.currentLocale.languageCode == 'ar'
                             ? Icons.chevron_left
                             : Icons.chevron_right),
-                  size: 18,
+                  size: 18.w,
                   color: Colors.white70,
                 )
               : null,
         ),
         _buildIcon(),
-        const SizedBox(width: 8),
+        SizedBox(width: 8.w),
         Expanded(
           child: Text(
             item.title,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(color: Colors.white, fontSize: 13),
+            style: TextStyle(color: Colors.white, fontSize: 13.sp),
           ),
         ),
         if (_kShowNodeEditButton &&
@@ -463,8 +474,12 @@ class _CpdsTreeRow extends StatelessWidget {
             behavior: HitTestBehavior.opaque,
             onTap: () => onEditNode(item.nodeId!),
             child: Padding(
-              padding: const EdgeInsetsDirectional.only(start: 6, end: 16),
-              child: Icon(Icons.edit_outlined, size: 15, color: Colors.white70),
+              padding: EdgeInsetsDirectional.only(start: 6.w, end: 16.w),
+              child: Icon(
+                Icons.edit_outlined,
+                size: 15.w,
+                color: Colors.white70,
+              ),
             ),
           ),
       ],
@@ -474,19 +489,19 @@ class _CpdsTreeRow extends StatelessWidget {
   Widget _buildIcon() {
     if (item.kind == CpdsTreeItemKind.futureWarrior) {
       return SizedBox(
-        width: 22,
-        height: 16,
+        width: 22.w,
+        height: 16.h,
         child: Stack(
           children: [
-            const Positioned(
+            Positioned(
               left: 0,
               top: 0,
-              child: Icon(HyIcons.ren, size: 16, color: Colors.white70),
+              child: Icon(HyIcons.ren, size: 16.w, color: Colors.white70),
             ),
             Positioned(
               left: 6,
               top: 0,
-              child: Icon(HyIcons.ren, size: 16, color: Colors.white70),
+              child: Icon(HyIcons.ren, size: 16.w, color: Colors.white70),
             ),
           ],
         ),
@@ -502,7 +517,7 @@ class _CpdsTreeRow extends StatelessWidget {
       },
       CpdsTreeItemKind.futureWarrior => HyIcons.ren,
     };
-    return Icon(icon, size: 16, color: Colors.white70);
+    return Icon(icon, size: 16.w, color: Colors.white70);
   }
 }
 
@@ -533,40 +548,46 @@ class _CpdsSearchDialogState extends State<_CpdsSearchDialog> {
     return Align(
       alignment: Alignment.topCenter,
       child: Padding(
-        padding: const EdgeInsets.only(top: 80),
+        padding: EdgeInsets.only(top: 16.h),
         child: Material(
           color: const Color(0xFF20262D),
-          borderRadius: BorderRadius.circular(4),
+          borderRadius: BorderRadius.circular(4.r),
           child: SizedBox(
             width: widget.width,
-            height: 44,
+            height: 36.h,
             child: TextField(
               controller: _controller,
               autofocus: true,
               textInputAction: TextInputAction.search,
               onSubmitted: (value) => Navigator.of(context).pop(value),
-              style: const TextStyle(color: Colors.white, fontSize: 13),
+              style: TextStyle(color: Colors.white, fontSize: 13.sp),
               decoration: InputDecoration(
                 hintText: t.TextField.search,
                 hintStyle: const TextStyle(color: Colors.white38),
-                prefixIcon: const Icon(
+                prefixIcon: Icon(
                   Icons.search,
-                  size: 18,
+                  size: 18.w,
                   color: Colors.white54,
+                ),
+                suffixIcon: IconButton(
+                  icon: Icon(Icons.cancel, size: 18.w, color: Colors.white54),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  onPressed: () => _controller.clear(),
                 ),
                 filled: true,
                 fillColor: const Color(0xFF282D33),
                 contentPadding: EdgeInsets.zero,
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(4),
+                  borderRadius: BorderRadius.circular(4.r),
                   borderSide: const BorderSide(color: Color(0xFF353A41)),
                 ),
                 enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(4),
+                  borderRadius: BorderRadius.circular(4.r),
                   borderSide: const BorderSide(color: Color(0xFF353A41)),
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(4),
+                  borderRadius: BorderRadius.circular(4.r),
                   borderSide: const BorderSide(color: Color(0xFF00A2E9)),
                 ),
               ),

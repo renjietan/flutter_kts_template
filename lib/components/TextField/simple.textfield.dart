@@ -1,6 +1,7 @@
 // ignore_for_file: cpd_lints/hardcoded_dimension
 import 'package:composable_data_table/composable_data_table.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class SimpleTextfield extends StatelessWidget {
   final String value;
@@ -31,7 +32,7 @@ class SimpleTextfield extends StatelessWidget {
     this.onChanged,
     this.hint = 'Search...',
     this.width = 280,
-    this.height = 40,
+    this.height = 36,
     this.controller,
     this.keyboardType,
     this.textInputAction,
@@ -53,7 +54,7 @@ class SimpleTextfield extends StatelessWidget {
         keyboardType: keyboardType,
         textInputAction: textInputAction,
         readOnly: readonly,
-        style: TextStyle(fontSize: 13, color: theme.textPrimaryColor),
+        style: TextStyle(fontSize: 13.sp, color: theme.textPrimaryColor),
         decoration: InputDecoration(
           hintText: hint,
           hintStyle: TextStyle(color: theme.textMutedColor),
@@ -62,15 +63,15 @@ class SimpleTextfield extends StatelessWidget {
           fillColor: theme.backgroundColor,
           contentPadding: contentPadding,
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(5),
+            borderRadius: BorderRadius.circular(5.r),
             borderSide: BorderSide(color: theme.borderColor),
           ),
           enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(5),
+            borderRadius: BorderRadius.circular(5.r),
             borderSide: BorderSide(color: theme.borderColor),
           ),
           focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(5),
+            borderRadius: BorderRadius.circular(5.r),
             borderSide: BorderSide(color: theme.accentColor),
           ),
         ),

@@ -1,4 +1,5 @@
 import 'package:composable_data_table/composable_data_table.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/material.dart' as material;
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -244,7 +245,7 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
       ],
       trailingActions: [
         SimpleFilterSearchField(
-          height: 34.h,
+          height: 36.h,
           controller: searchFieldController,
           textInputAction: TextInputAction.done,
           onChanged: (value) {
@@ -270,7 +271,7 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
         SizedBox(width: 8.w),
         SimpleDarkDropdown<String>(
           width: 140.w,
-          height: 34.h,
+          height: 36.h,
           hintText: t.tableColumn.radioManager.radioType,
           value: selectedRadioType,
           onChanged: (value) {
@@ -332,7 +333,10 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
         label: t.tableColumn.radioManager.alias,
         description: t.tableColumn.radioManager.alias_desc,
         flex: 1,
-        cellBuilder: TextCellBuilder.text<RadiosEntity>((u) => u.alias, maxLines: 1),
+        cellBuilder: TextCellBuilder.text<RadiosEntity>(
+          (u) => u.alias,
+          maxLines: 1,
+        ),
       ),
       ColumnDefinition<RadiosEntity>(
         label: t.tableColumn.radioManager.location,
@@ -365,7 +369,11 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
       // mainAxisSize: MainAxisSize.min,
       children: [
         IconButton(
-          icon: Icon(Icons.edit_outlined, size: 16.sp, color: Color(0xFF00A2E9)),
+          icon: Icon(
+            Icons.edit_outlined,
+            size: 16.sp,
+            color: Color(0xFF00A2E9),
+          ),
           tooltip: t.button.radioManager.edit,
           onPressed: () {
             showDialog(DialogTypeEnum.edit, data);
@@ -379,7 +387,11 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
         ),
         SizedBox(width: 10.w),
         IconButton(
-          icon: Icon(Icons.delete_outline, size: 16.sp, color: Color(0xFFF15B64)),
+          icon: Icon(
+            Icons.delete_outline,
+            size: 16.sp,
+            color: Color(0xFFF15B64),
+          ),
           tooltip: t.button.radioManager.delete,
           onPressed: () {
             delete(data);
@@ -421,104 +433,124 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
   Future<void> showDialog(DialogTypeEnum type, RadiosEntity? rowData) async {
     final isEdit = type == DialogTypeEnum.edit;
     final currentRadioType = isEdit ? (rowData?.radioType ?? '') : '';
-    SimpleFormDialog(
-      title: isEdit
-          ? t.button.radioManager.editRadio
-          : t.button.radioManager.createRadio,
-      confirmText: isEdit
-          ? t.button.radioManager.editRadio
-          : t.button.radioManager.createRadio,
-      twoColumn: true,
-      dialogWidth: MediaQuery.sizeOf(context).width * 0.7,
-      maskColor: Colors.black54,
-      fields: [
-        FormFieldConfig(
-          name: 'alias',
-          label: t.tableColumn.radioManager.alias,
-          hintText: t.Form.radioManager.alias.placeholder,
-          textEditingController: aliasTextEditController,
-          required: true,
-          labelHelpText: t.Form.radioManager.alias.help,
-          inputFormatters: [LengthLimitingTextInputFormatter(50)],
-          counterTextBuilder: (value) => localizeDigits(context, '${value.length}/50'),
-          validators: [
-            FormBuilderValidators.required(
-              errorText: t.Form.radioManager.alias.validate,
-            ),
-            (value) {
-              if (value == null || value.isEmpty) return null;
-              if (value.length > 50) {
-                return t.Form.radioManager.alias.invalidLength;
-              }
-              if (value.endsWith(' ') || value.endsWith('.')) {
+    final title = isEdit
+        ? t.button.radioManager.editRadio
+        : t.button.radioManager.createRadio;
+    final fields = <FormFieldConfig>[
+      FormFieldConfig(
+        name: 'alias',
+        label: t.tableColumn.radioManager.alias,
+        hintText: t.Form.radioManager.alias.placeholder,
+        textEditingController: aliasTextEditController,
+        required: true,
+        labelHelpText: t.Form.radioManager.alias.help,
+        inputFormatters: [LengthLimitingTextInputFormatter(50)],
+        counterTextBuilder: (value) =>
+            localizeDigits(context, '${value.length}/50'),
+        validators: [
+          FormBuilderValidators.required(
+            errorText: t.Form.radioManager.alias.validate,
+          ),
+          (value) {
+            if (value == null || value.isEmpty) return null;
+            if (value.length > 50) {
+              return t.Form.radioManager.alias.invalidLength;
+            }
+            if (value.endsWith(' ') || value.endsWith('.')) {
+              return t.Form.radioManager.alias.invalid;
+            }
+            for (final code in value.runes) {
+              if (!_isAliasCharAllowed(code)) {
                 return t.Form.radioManager.alias.invalid;
               }
-              for (final code in value.runes) {
-                if (!_isAliasCharAllowed(code)) {
-                  return t.Form.radioManager.alias.invalid;
-                }
-              }
-              return null;
-            },
-          ],
+            }
+            return null;
+          },
+        ],
+      ),
+      FormFieldConfig(
+        name: 'location',
+        label: t.tableColumn.radioManager.location,
+        hintText: t.Form.radioManager.location.placeholder,
+        textEditingController: locationTextEditController,
+        inputFormatters: [LengthLimitingTextInputFormatter(50)],
+        counterTextBuilder: (value) =>
+            localizeDigits(context, '${value.length}/50'),
+        validators: [
+          FormBuilderValidators.match(
+            RegExp(r'^[a-zA-Z0-9 _]{0,50}$'),
+            errorText: t.Form.radioManager.location.invalid,
+            checkNullOrEmpty: false,
+          ),
+        ],
+      ),
+      FormFieldConfig(
+        name: 'sn',
+        label: t.tableColumn.radioManager.sn,
+        hintText: t.Form.radioManager.sn.placeholder,
+        textEditingController: snTextEditController,
+        required: true,
+        inputFormatters: [LengthLimitingTextInputFormatter(10)],
+        counterTextBuilder: (value) =>
+            localizeDigits(context, '${value.length}/10'),
+        validators: [
+          FormBuilderValidators.required(
+            errorText: t.Form.radioManager.sn.validate,
+          ),
+          FormBuilderValidators.match(
+            RegExp(r'^[a-zA-Z0-9]{10}$'),
+            errorText: t.Form.radioManager.sn.invalid,
+            checkNullOrEmpty: false,
+          ),
+        ],
+      ),
+      FormFieldConfig(
+        name: 'radioType',
+        label: t.tableColumn.radioManager.radioType,
+        fieldType: FormFieldType.select,
+        items: const ['MMR200', 'PMR200', 'MR9360'],
+        labelBuilder: (value) => value.toString(),
+        initialValue: currentRadioType.isEmpty ? null : currentRadioType,
+        required: true,
+        validators: [
+          FormBuilderValidators.required(
+            errorText: t.Form.radioManager.radioType.validate,
+          ),
+        ],
+      ),
+    ];
+
+    void onConfirm(Map<String, dynamic> v) {
+      if (type == DialogTypeEnum.create) {
+        create(v);
+      } else {
+        update(rowData, v);
+      }
+    }
+
+    if (defaultTargetPlatform != TargetPlatform.windows) {
+      await Navigator.of(context).push<void>(
+        MaterialPageRoute(
+          builder: (_) => SimpleFormPage(
+            title: title,
+            confirmText: title,
+            fields: fields,
+            twoColumn: false,
+            onConfirm: onConfirm,
+          ),
         ),
-        FormFieldConfig(
-          name: 'location',
-          label: t.tableColumn.radioManager.location,
-          hintText: t.Form.radioManager.location.placeholder,
-          textEditingController: locationTextEditController,
-          inputFormatters: [LengthLimitingTextInputFormatter(50)],
-          counterTextBuilder: (value) => localizeDigits(context, '${value.length}/50'),
-          validators: [
-            FormBuilderValidators.match(
-              RegExp(r'^[a-zA-Z0-9 _]{0,50}$'),
-              errorText: t.Form.radioManager.location.invalid,
-              checkNullOrEmpty: false,
-            ),
-          ],
-        ),
-        FormFieldConfig(
-          name: 'sn',
-          label: t.tableColumn.radioManager.sn,
-          hintText: t.Form.radioManager.sn.placeholder,
-          textEditingController: snTextEditController,
-          required: true,
-          inputFormatters: [LengthLimitingTextInputFormatter(10)],
-          counterTextBuilder: (value) => localizeDigits(context, '${value.length}/10'),
-          validators: [
-            FormBuilderValidators.required(
-              errorText: t.Form.radioManager.sn.validate,
-            ),
-            FormBuilderValidators.match(
-              RegExp(r'^[a-zA-Z0-9]{10}$'),
-              errorText: t.Form.radioManager.sn.invalid,
-              checkNullOrEmpty: false,
-            ),
-          ],
-        ),
-        FormFieldConfig(
-          name: 'radioType',
-          label: t.tableColumn.radioManager.radioType,
-          fieldType: FormFieldType.select,
-          items: const ['MMR200', 'PMR200', 'MR9360'],
-          labelBuilder: (value) => value.toString(),
-          initialValue: currentRadioType.isEmpty ? null : currentRadioType,
-          required: true,
-          validators: [
-            FormBuilderValidators.required(
-              errorText: t.Form.radioManager.radioType.validate,
-            ),
-          ],
-        ),
-      ],
-      onConfirm: (v) {
-        if (type == DialogTypeEnum.create) {
-          create(v);
-        } else {
-          update(rowData, v);
-        }
-      },
-    );
+      );
+    } else {
+      SimpleFormDialog(
+        title: title,
+        confirmText: title,
+        twoColumn: true,
+        dialogWidth: MediaQuery.sizeOf(context).width * 0.7,
+        maskColor: Colors.black54,
+        fields: fields,
+        onConfirm: onConfirm,
+      );
+    }
   }
 
   // =============================================================================

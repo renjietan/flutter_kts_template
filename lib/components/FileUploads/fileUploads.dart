@@ -1,6 +1,7 @@
 // ignore_for_file: cpd_lints/hardcoded_dimension
 import 'package:composable_data_table/composable_data_table.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_kts_template/components/TextField/simple.textfield.dart';
 import 'package:flutter_kts_template/components/button/base.button.dart';
 import 'package:flutter_kts_template/theme/table.theme.dart';
@@ -29,7 +30,7 @@ class _FileUploadsState extends State<FileUploads> with FileUploadsMixin {
         DataTablePlusThemeProvider(
           theme: getThemePreset(ThemePreset.dark),
           child: SimpleTextfield(
-            height: 35,
+            height: 35.h,
             contentPadding: EdgeInsets.symmetric(horizontal: 10),
             controller: simpleTextController,
             readonly: true,
@@ -40,7 +41,7 @@ class _FileUploadsState extends State<FileUploads> with FileUploadsMixin {
       trailingActions: [
         BaseButton(
           label: t.button.radioManager.browse,
-          minWidth: 100,
+          minWidth: 100.w,
           icon: HyIcons.wenjian,
           isLoading: isUploadLoading,
           onPressed: () {
@@ -49,17 +50,17 @@ class _FileUploadsState extends State<FileUploads> with FileUploadsMixin {
         ),
         Container(
           // FlareButton 没有边框可供配置,所以在 FlareButton  外围套了一层 container,此 container 只作边框使用
-          constraints: const BoxConstraints(minWidth: 70),
-          height: 34,
+          constraints: BoxConstraints(minWidth: 70.w),
+          height: 34.h,
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(5),
-            border: Border.all(color: Color(0xFF00A2E9), width: 2),
+            borderRadius: BorderRadius.circular(5.r),
+            border: Border.all(color: Color(0xFF00A2E9), width: 2.w),
           ),
           child: Center(
             child: BaseButton(
               label: t.button.radioManager.parse,
-              minWidth: 66,
-              height: 30,
+              minWidth: 66.w,
+              height: 30.h,
               isLoading: isUploadLoading,
               colors: const [
                 Color(0xFF0A1D35),

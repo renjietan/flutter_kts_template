@@ -1,5 +1,6 @@
 // ignore_for_file: cpd_lints/hardcoded_dimension
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_kts_template/components/step/simple.number.step.model.dart';
 
 class SimpleNumberStep extends StatefulWidget {
@@ -34,11 +35,7 @@ class _SimpleNumberStepState extends State<SimpleNumberStep> {
         cur.add(_buildStepLine());
       }
       cur.add(
-        _buildStepItem(
-          count,
-          pre.label,
-          isActive: widget.activeStep >= count,
-        ),
+        _buildStepItem(count, pre.label, isActive: widget.activeStep >= count),
       );
       count++;
       return cur;
@@ -50,8 +47,8 @@ class _SimpleNumberStepState extends State<SimpleNumberStep> {
     return Row(
       children: [
         Container(
-          width: 20,
-          height: 20,
+          width: 20.w,
+          height: 20.h,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             border: Border.all(
@@ -62,16 +59,16 @@ class _SimpleNumberStepState extends State<SimpleNumberStep> {
           child: Text(
             "$index",
             style: TextStyle(
-              fontSize: 11,
+              fontSize: 11.sp,
               color: isActive ? Colors.redAccent : Colors.white38,
             ),
           ),
         ),
-        const SizedBox(width: 8),
+        SizedBox(width: 8.w),
         Text(
           label,
           style: TextStyle(
-            fontSize: 13,
+            fontSize: 13.sp,
             color: isActive ? Colors.white : Colors.white38,
           ),
         ),
@@ -83,9 +80,9 @@ class _SimpleNumberStepState extends State<SimpleNumberStep> {
     return Center(
       child: Container(
         width: widget.lineWidth,
-        height: 1,
+        height: 1.h,
         color: Colors.white24,
-        margin: const EdgeInsets.symmetric(horizontal: 8),
+        margin: EdgeInsets.symmetric(horizontal: 8.w),
       ),
     );
   }

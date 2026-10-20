@@ -7,6 +7,8 @@ import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
 import 'package:dage/dage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'cpds_button_styles.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_kts_template/core/cpds/parser/cpds_package_parser.dart';
 import 'package:flutter_kts_template/core/cpds/service/cpds_manager.dart';
@@ -676,7 +678,7 @@ class _CpdsKeyLoaderFileDialogState extends State<CpdsKeyLoaderFileDialog> {
         backgroundColor: const Color(0xFF20262D),
         title: Text(
           Translations.of(dialogContext).tips.title,
-          style: const TextStyle(color: Colors.white, fontSize: 17),
+          style: TextStyle(color: Colors.white, fontSize: 17.sp),
         ),
         content: Text(
           CpdsMessages.tr(
@@ -685,17 +687,19 @@ class _CpdsKeyLoaderFileDialogState extends State<CpdsKeyLoaderFileDialog> {
             'File already exists. Overwrite?',
             'الملف موجود بالفعل. هل تريد الكتابة فوقه؟',
           ),
-          style: const TextStyle(color: Colors.white70, fontSize: 13),
+          style: TextStyle(color: Colors.white70, fontSize: 13.sp),
         ),
         actions: [
           TextButton(
+            style: cpdsTextButtonStyle(),
             onPressed: () => Navigator.of(dialogContext).pop(false),
             child: Text(
               Translations.of(dialogContext).tips.cancel,
-              style: const TextStyle(color: Colors.white70),
+              style: TextStyle(color: Colors.white70),
             ),
           ),
           FilledButton(
+            style: cpdsFilledButtonStyle(),
             onPressed: () => Navigator.of(dialogContext).pop(true),
             child: Text(
               CpdsMessages.tr(dialogContext, '覆盖', 'Overwrite', 'الكتابة فوقه'),
@@ -879,10 +883,10 @@ class _CpdsKeyLoaderFileDialogState extends State<CpdsKeyLoaderFileDialog> {
     final dialogWidth = (screenWidth * 0.9).clamp(0.0, 960.0);
     return AlertDialog(
       backgroundColor: const Color(0xFF20262D),
-      insetPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+      insetPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
       title: Text(
         t.cpds.browseSourceKeyLoader,
-        style: const TextStyle(color: Colors.white, fontSize: 17),
+        style: TextStyle(color: Colors.white, fontSize: 17.sp),
       ),
       content: SizedBox(
         width: dialogWidth,
@@ -895,7 +899,7 @@ class _CpdsKeyLoaderFileDialogState extends State<CpdsKeyLoaderFileDialog> {
               statuses: _computeStepStatuses(),
               activeIndex: _step.index,
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
             Flexible(
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxHeight: 220),
@@ -912,54 +916,60 @@ class _CpdsKeyLoaderFileDialogState extends State<CpdsKeyLoaderFileDialog> {
             style: TextButton.styleFrom(
               side: const BorderSide(color: Color(0xFF00A2E9)),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(4),
+                borderRadius: BorderRadius.circular(4.r),
               ),
+              minimumSize: Size(0, 32.h),
+              textStyle: TextStyle(fontSize: 13.sp),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 if (_cancelLoading) ...[
-                  const SizedBox(
-                    width: 14,
-                    height: 14,
+                  SizedBox(
+                    width: 14.w,
+                    height: 14.h,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
                       color: Color(0xFF00A2E9),
                     ),
                   ),
-                  const SizedBox(width: 6),
+                  SizedBox(width: 6.w),
                 ],
-                Text(
-                  t.tips.cancel,
-                  style: const TextStyle(color: Colors.white70),
-                ),
+                Text(t.tips.cancel, style: TextStyle(color: Colors.white70)),
               ],
             ),
           ),
         if (_step == _CpdsStep.select && _selectedFile != null)
-          FilledButton(onPressed: _goNext, child: Text(t.cpds.keyLoaderNext)),
+          FilledButton(
+            style: cpdsFilledButtonStyle(),
+            onPressed: _goNext,
+            child: Text(t.cpds.keyLoaderNext),
+          ),
         if (_step == _CpdsStep.password)
           TextButton(
+            style: cpdsTextButtonStyle(),
             onPressed: _verifying ? null : _goPrev,
             child: Text(
               t.cpds.keyLoaderPrev,
-              style: const TextStyle(color: Colors.white70),
+              style: TextStyle(color: Colors.white70),
             ),
           ),
         if (_step == _CpdsStep.download && _decryptOk)
           FilledButton(
+            style: cpdsFilledButtonStyle(),
             onPressed: _downloading ? null : _download,
             child: Text(t.cpds.keyLoaderStepDownload),
           ),
         if (_step == _CpdsStep.complete)
           FilledButton(
+            style: cpdsFilledButtonStyle(),
             onPressed: _completeCleanupDone
                 ? () => _finish(_selectedFile)
                 : null,
             child: _completeCleanupRunning
-                ? const SizedBox(
-                    width: 16,
-                    height: 16,
+                ? SizedBox(
+                    width: 16.w,
+                    height: 16.h,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
                       color: Colors.white,
@@ -977,7 +987,7 @@ class _CpdsKeyLoaderFileDialogState extends State<CpdsKeyLoaderFileDialog> {
         child: Text(
           _error!,
           textAlign: TextAlign.center,
-          style: const TextStyle(color: Color(0xFFF15B64), fontSize: 13),
+          style: TextStyle(color: Color(0xFFF15B64), fontSize: 13.sp),
         ),
       );
     }
@@ -1002,29 +1012,29 @@ class _CpdsKeyLoaderFileDialogState extends State<CpdsKeyLoaderFileDialog> {
           Text(
             _selectedFile ?? '',
             textAlign: TextAlign.center,
-            style: const TextStyle(color: Colors.white, fontSize: 14),
+            style: TextStyle(color: Colors.white, fontSize: 14.sp),
           ),
           if (_progressMax > 0) ...[
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
             LinearProgressIndicator(
               value: (_progress / _progressMax).clamp(0.0, 1.0),
-              minHeight: 4,
+              minHeight: 4.h,
               backgroundColor: const Color(0xFF282D33),
               color: const Color(0xFF00A2E9),
             ),
-            const SizedBox(height: 6),
+            SizedBox(height: 6.h),
             Text(
               '$_progress / $_progressMax',
               textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.white54, fontSize: 12),
+              style: TextStyle(color: Colors.white54, fontSize: 12.sp),
             ),
           ],
           if (_downloadError != null) ...[
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
             Text(
               _downloadError!,
               textAlign: TextAlign.center,
-              style: const TextStyle(color: Color(0xFFF15B64), fontSize: 13),
+              style: TextStyle(color: Color(0xFFF15B64), fontSize: 13.sp),
             ),
           ],
         ],
@@ -1036,7 +1046,7 @@ class _CpdsKeyLoaderFileDialogState extends State<CpdsKeyLoaderFileDialog> {
           child: Text(
             _downloadError!,
             textAlign: TextAlign.center,
-            style: const TextStyle(color: Color(0xFFF15B64), fontSize: 13),
+            style: TextStyle(color: Color(0xFFF15B64), fontSize: 13.sp),
           ),
         );
       }
@@ -1050,21 +1060,18 @@ class _CpdsKeyLoaderFileDialogState extends State<CpdsKeyLoaderFileDialog> {
             children: [
               Text(
                 t.cpds.keyLoaderParseFailed,
-                style: const TextStyle(color: Color(0xFFF15B64), fontSize: 14),
+                style: TextStyle(color: Color(0xFFF15B64), fontSize: 14.sp),
               ),
               if (_parseError != null && _parseError!.isNotEmpty) ...[
-                const SizedBox(height: 8),
+                SizedBox(height: 8.h),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  padding: EdgeInsets.symmetric(horizontal: 12.w),
                   child: Text(
                     _parseError!,
                     textAlign: TextAlign.center,
                     maxLines: 4,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: Color(0xFFF15B64),
-                      fontSize: 12,
-                    ),
+                    style: TextStyle(color: Color(0xFFF15B64), fontSize: 12.sp),
                   ),
                 ),
               ],
@@ -1079,11 +1086,11 @@ class _CpdsKeyLoaderFileDialogState extends State<CpdsKeyLoaderFileDialog> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.check_circle, size: 48, color: Color(0xFF1B8252)),
-            const SizedBox(height: 10),
+            Icon(Icons.check_circle, size: 48.w, color: Color(0xFF1B8252)),
+            SizedBox(height: 10.h),
             Text(
               t.cpds.keyLoaderSuccess,
-              style: const TextStyle(color: Colors.white, fontSize: 14),
+              style: TextStyle(color: Colors.white, fontSize: 14.sp),
             ),
           ],
         ),
@@ -1093,7 +1100,7 @@ class _CpdsKeyLoaderFileDialogState extends State<CpdsKeyLoaderFileDialog> {
       return Center(
         child: Text(
           t.cpds.keyLoaderListEmpty,
-          style: const TextStyle(color: Colors.white38, fontSize: 13),
+          style: TextStyle(color: Colors.white38, fontSize: 13.sp),
         ),
       );
     }
@@ -1118,18 +1125,18 @@ class _CpdsKeyLoaderFileDialogState extends State<CpdsKeyLoaderFileDialog> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const SizedBox(
-            width: 18,
-            height: 18,
+          SizedBox(
+            width: 18.w,
+            height: 18.h,
             child: CircularProgressIndicator(
               strokeWidth: 2,
               color: Color(0xFF00A2E9),
             ),
           ),
-          const SizedBox(height: 10),
+          SizedBox(height: 10.h),
           Text(
             label,
-            style: const TextStyle(color: Colors.white54, fontSize: 13),
+            style: TextStyle(color: Colors.white54, fontSize: 13.sp),
           ),
         ],
       ),
@@ -1153,20 +1160,20 @@ class _CpdsKeyLoaderFileDialogState extends State<CpdsKeyLoaderFileDialog> {
                   LengthLimitingTextInputFormatter(8),
                 ],
                 onSubmitted: (_) => _submitPassword(),
-                style: const TextStyle(color: Colors.white, fontSize: 13),
+                style: TextStyle(color: Colors.white, fontSize: 13.sp),
                 decoration: InputDecoration(
                   labelText: t.cpds.setPassword.label,
-                  labelStyle: const TextStyle(color: Colors.white),
+                  labelStyle: TextStyle(color: Colors.white),
                   hintText: t.cpds.setPassword.placeholder,
-                  hintStyle: const TextStyle(color: Colors.white38),
+                  hintStyle: TextStyle(color: Colors.white38),
                   suffixIcon: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
                         '${_passwordController.text.length}/8',
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: Colors.white54,
-                          fontSize: 12,
+                          fontSize: 12.sp,
                         ),
                       ),
                       IconButton(
@@ -1179,7 +1186,7 @@ class _CpdsKeyLoaderFileDialogState extends State<CpdsKeyLoaderFileDialog> {
                           _obscurePassword
                               ? Icons.visibility_off
                               : Icons.visibility,
-                          size: 18,
+                          size: 18.w,
                           color: Colors.white70,
                         ),
                       ),
@@ -1187,36 +1194,37 @@ class _CpdsKeyLoaderFileDialogState extends State<CpdsKeyLoaderFileDialog> {
                   ),
                   filled: true,
                   fillColor: const Color(0xFF282D33),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+                  contentPadding: EdgeInsets.symmetric(horizontal: 12.w),
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(4),
+                    borderRadius: BorderRadius.circular(4.r),
                     borderSide: const BorderSide(color: Color(0xFF353A41)),
                   ),
                   enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(4),
+                    borderRadius: BorderRadius.circular(4.r),
                     borderSide: const BorderSide(color: Color(0xFF353A41)),
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(4),
+                    borderRadius: BorderRadius.circular(4.r),
                     borderSide: const BorderSide(color: Color(0xFF00A2E9)),
                   ),
                 ),
               ),
             ),
-            const SizedBox(width: 8),
+            SizedBox(width: 8.w),
             FilledButton(
+              style: cpdsFilledButtonStyle(),
               onPressed: _verifying ? null : _submitPassword,
               child: Text(t.tips.ok),
             ),
           ],
         ),
         if (_verifying) ...[
-          const SizedBox(height: 8),
-          const Align(
+          SizedBox(height: 8.h),
+          Align(
             alignment: Alignment.centerLeft,
             child: SizedBox(
-              width: 14,
-              height: 14,
+              width: 14.w,
+              height: 14.h,
               child: CircularProgressIndicator(
                 strokeWidth: 2,
                 color: Color(0xFF00A2E9),
@@ -1225,10 +1233,10 @@ class _CpdsKeyLoaderFileDialogState extends State<CpdsKeyLoaderFileDialog> {
           ),
         ],
         if (_passwordError != null) ...[
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
           Text(
             _passwordError!,
-            style: const TextStyle(color: Color(0xFFF15B64), fontSize: 12),
+            style: TextStyle(color: Color(0xFFF15B64), fontSize: 12.sp),
           ),
         ],
       ],
@@ -1250,8 +1258,8 @@ class _KeyLoaderStepStrip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 50,
-      padding: const EdgeInsets.symmetric(horizontal: 8),
+      height: 50.h,
+      padding: EdgeInsets.symmetric(horizontal: 8.w),
       decoration: BoxDecoration(
         color: const Color(0xFF14191F),
         border: Border.all(color: const Color(0xFF353A41)),
@@ -1324,8 +1332,8 @@ class _KeyLoaderStep extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            width: 18,
-            height: 18,
+            width: 18.w,
+            height: 18.h,
             alignment: Alignment.center,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
@@ -1334,16 +1342,16 @@ class _KeyLoaderStep extends StatelessWidget {
             ),
             child: Text(
               '${index + 1}',
-              style: TextStyle(fontSize: 10, color: numberColor),
+              style: TextStyle(fontSize: 10.sp, color: numberColor),
             ),
           ),
-          const SizedBox(width: 4),
+          SizedBox(width: 4.w),
           Flexible(
             child: Text(
               label,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(fontSize: 10, color: textColor),
+              style: TextStyle(fontSize: 10.sp, color: textColor),
             ),
           ),
         ],
@@ -1362,7 +1370,7 @@ class _KeyLoaderStepLine extends StatelessWidget {
     return Expanded(
       flex: 1,
       child: Container(
-        height: 2,
+        height: 2.h,
         color: passed ? const Color(0xFF0CB5FF) : const Color(0xFF42474E),
       ),
     );
@@ -1385,8 +1393,8 @@ class _FileOption extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       child: Container(
-        height: 36,
-        padding: const EdgeInsets.symmetric(horizontal: 12),
+        height: 36.h,
+        padding: EdgeInsets.symmetric(horizontal: 12.w),
         decoration: BoxDecoration(
           color: selected ? const Color(0xFF0E1114) : Colors.transparent,
           border: Border.all(
@@ -1399,10 +1407,10 @@ class _FileOption extends StatelessWidget {
               selected
                   ? Icons.radio_button_checked
                   : Icons.radio_button_unchecked,
-              size: 18,
+              size: 18.w,
               color: selected ? const Color(0xFF00A2E9) : Colors.white54,
             ),
-            const SizedBox(width: 10),
+            SizedBox(width: 10.w),
             Expanded(
               child: Text(
                 name,
@@ -1410,7 +1418,7 @@ class _FileOption extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   color: selected ? Colors.white : Colors.white70,
-                  fontSize: 13,
+                  fontSize: 13.sp,
                 ),
               ),
             ),

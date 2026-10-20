@@ -1,7 +1,11 @@
 // ignore_for_file: cpd_lints/hardcoded_dimension
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_kts_template/init/screen_strategy.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import 'cpds_button_styles.dart';
 import 'cpds_messages.dart';
 
 /// 修改 `.pc` 密码的弹窗：原密码 + 新密码 + 确认新密码。
@@ -10,15 +14,14 @@ class CpdsChangePasswordDialog extends StatefulWidget {
 
   /// 返回 null 表示成功；返回字符串表示错误信息（弹窗内展示）。
   final Future<String?> Function(String oldPassword, String newPassword)
-      onSubmit;
+  onSubmit;
 
   @override
   State<CpdsChangePasswordDialog> createState() =>
       _CpdsChangePasswordDialogState();
 }
 
-class _CpdsChangePasswordDialogState
-    extends State<CpdsChangePasswordDialog> {
+class _CpdsChangePasswordDialogState extends State<CpdsChangePasswordDialog> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _oldController = TextEditingController();
   final TextEditingController _newController = TextEditingController();
@@ -110,7 +113,7 @@ class _CpdsChangePasswordDialogState
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.only(bottom: 8),
+          padding: EdgeInsets.only(bottom: 8.h),
           child: Text.rich(
             TextSpan(
               children: [
@@ -120,7 +123,7 @@ class _CpdsChangePasswordDialogState
                 ),
                 TextSpan(
                   text: label,
-                  style: const TextStyle(color: Colors.white, fontSize: 14),
+                  style: TextStyle(color: Colors.white, fontSize: 14.sp),
                 ),
               ],
             ),
@@ -134,19 +137,24 @@ class _CpdsChangePasswordDialogState
             FilteringTextInputFormatter.digitsOnly,
             LengthLimitingTextInputFormatter(8),
           ],
-          style: const TextStyle(color: Colors.white, fontSize: 14),
+          style: TextStyle(color: Colors.white, fontSize: 13.sp),
           validator: validator,
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: const TextStyle(color: Colors.white38),
+            hintStyle: TextStyle(color: Colors.white38),
+            isDense: true,
+            contentPadding: EdgeInsets.symmetric(horizontal: 12.w),
             suffixIcon: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
                   '${controller.text.length}/8',
-                  style: const TextStyle(color: Colors.white54, fontSize: 12),
+                  style: TextStyle(color: Colors.white54, fontSize: 12.sp),
                 ),
                 IconButton(
+                  iconSize: 18,
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
                   icon: Icon(
                     _obscure
                         ? Icons.visibility_off_outlined
@@ -164,14 +172,14 @@ class _CpdsChangePasswordDialogState
             filled: true,
             fillColor: const Color(0xFF282D33),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(4),
+              borderRadius: BorderRadius.circular(4.r),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(4),
+              borderRadius: BorderRadius.circular(4.r),
               borderSide: const BorderSide(color: Color(0xFF353A41)),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(4),
+              borderRadius: BorderRadius.circular(4.r),
               borderSide: const BorderSide(color: Color(0xFF00A2E9)),
             ),
           ),
@@ -182,6 +190,10 @@ class _CpdsChangePasswordDialogState
 
   @override
   Widget build(BuildContext context) {
+    final isAndroidPad =
+        defaultTargetPlatform == TargetPlatform.android &&
+        MediaQuery.sizeOf(context).width >=
+            ScreenStrategy.masterDetailBreakpoint;
     return AlertDialog(
       backgroundColor: const Color(0xFF20262D),
       title: Text(
@@ -191,76 +203,141 @@ class _CpdsChangePasswordDialogState
           'Change Password',
           'تغيير كلمة المرور',
         ),
-        style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700),
-      ),
-      content: SizedBox(
-        width: 420,
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _buildPasswordField(
-                label: CpdsMessages.tr(context, '原密码', 'Old Password', 'كلمة المرور القديمة'),
-                hint: CpdsMessages.tr(context, '请输入原密码', 'Please enter the old password', 'يرجى إدخال كلمة المرور القديمة'),
-                controller: _oldController,
-                validator: (value) => _validate8Digits(
-                  value,
-                  CpdsMessages.tr(context, '请输入原密码', 'Please enter the old password', 'يرجى إدخال كلمة المرور القديمة'),
-                  CpdsMessages.tr(context, '只允许输入八位数字', 'Only 8 digits are allowed', 'يُسمح فقط بإدخال ثمانية أرقام'),
-                ),
-              ),
-              const SizedBox(height: 16),
-              _buildPasswordField(
-                label: CpdsMessages.tr(context, '新密码', 'New Password', 'كلمة المرور الجديدة'),
-                hint: CpdsMessages.tr(context, '请输入新密码', 'Please enter the new password', 'يرجى إدخال كلمة المرور الجديدة'),
-                controller: _newController,
-                validator: (value) => _validate8Digits(
-                  value,
-                  CpdsMessages.tr(context, '请输入新密码', 'Please enter the new password', 'يرجى إدخال كلمة المرور الجديدة'),
-                  CpdsMessages.tr(context, '只允许输入八位数字', 'Only 8 digits are allowed', 'يُسمح فقط بإدخال ثمانية أرقام'),
-                ),
-              ),
-              const SizedBox(height: 16),
-              _buildPasswordField(
-                label: CpdsMessages.tr(context, '确认新密码', 'Confirm New Password', 'تأكيد كلمة المرور الجديدة'),
-                hint: CpdsMessages.tr(context, '请再次输入新密码', 'Please enter the new password again', 'يرجى إدخال كلمة المرور الجديدة مرة أخرى'),
-                controller: _confirmController,
-                validator: _validateConfirm,
-              ),
-              if (_errorText != null) ...[
-                const SizedBox(height: 8),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    _errorText!,
-                    style: const TextStyle(color: Color(0xFFF15B64), fontSize: 12),
-                  ),
-                ),
-              ],
-            ],
-          ),
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: 18.sp,
+          fontWeight: FontWeight.w700,
         ),
+      ),
+      content: Builder(
+        builder: (dialogContext) {
+          final form = SizedBox(
+            width: 420.w,
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _buildPasswordField(
+                    label: CpdsMessages.tr(
+                      context,
+                      '原密码',
+                      'Old Password',
+                      'كلمة المرور القديمة',
+                    ),
+                    hint: CpdsMessages.tr(
+                      context,
+                      '请输入原密码',
+                      'Please enter the old password',
+                      'يرجى إدخال كلمة المرور القديمة',
+                    ),
+                    controller: _oldController,
+                    validator: (value) => _validate8Digits(
+                      value,
+                      CpdsMessages.tr(
+                        context,
+                        '请输入原密码',
+                        'Please enter the old password',
+                        'يرجى إدخال كلمة المرور القديمة',
+                      ),
+                      CpdsMessages.tr(
+                        context,
+                        '只允许输入八位数字',
+                        'Only 8 digits are allowed',
+                        'يُسمح فقط بإدخال ثمانية أرقام',
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 16.h),
+                  _buildPasswordField(
+                    label: CpdsMessages.tr(
+                      context,
+                      '新密码',
+                      'New Password',
+                      'كلمة المرور الجديدة',
+                    ),
+                    hint: CpdsMessages.tr(
+                      context,
+                      '请输入新密码',
+                      'Please enter the new password',
+                      'يرجى إدخال كلمة المرور الجديدة',
+                    ),
+                    controller: _newController,
+                    validator: (value) => _validate8Digits(
+                      value,
+                      CpdsMessages.tr(
+                        context,
+                        '请输入新密码',
+                        'Please enter the new password',
+                        'يرجى إدخال كلمة المرور الجديدة',
+                      ),
+                      CpdsMessages.tr(
+                        context,
+                        '只允许输入八位数字',
+                        'Only 8 digits are allowed',
+                        'يُسمح فقط بإدخال ثمانية أرقام',
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 16.h),
+                  _buildPasswordField(
+                    label: CpdsMessages.tr(
+                      context,
+                      '确认新密码',
+                      'Confirm New Password',
+                      'تأكيد كلمة المرور الجديدة',
+                    ),
+                    hint: CpdsMessages.tr(
+                      context,
+                      '请再次输入新密码',
+                      'Please enter the new password again',
+                      'يرجى إدخال كلمة المرور الجديدة مرة أخرى',
+                    ),
+                    controller: _confirmController,
+                    validator: _validateConfirm,
+                  ),
+                  if (_errorText != null) ...[
+                    SizedBox(height: 8.h),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        _errorText!,
+                        style: TextStyle(
+                          color: Color(0xFFF15B64),
+                          fontSize: 12.sp,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          );
+          return isAndroidPad ? SingleChildScrollView(child: form) : form;
+        },
       ),
       actions: [
         TextButton(
+          style: cpdsTextButtonStyle(),
           onPressed: () => Navigator.of(context).pop(),
           child: Text(
             CpdsMessages.tr(context, '取消', 'Cancel', 'إلغاء'),
-            style: const TextStyle(color: Colors.white70),
+            style: TextStyle(color: Colors.white70),
           ),
         ),
         FilledButton(
+          style: cpdsFilledButtonStyle(),
           onPressed: _loading ? null : _submit,
           child: _loading
-              ? const SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+              ? SizedBox(
+                  width: 16.w,
+                  height: 16.h,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
                 )
-              : Text(
-                  CpdsMessages.tr(context, '确定', 'Confirm', 'تأكيد'),
-                ),
+              : Text(CpdsMessages.tr(context, '确定', 'Confirm', 'تأكيد')),
         ),
       ],
     );

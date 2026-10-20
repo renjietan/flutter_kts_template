@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_kts_template/core/entities/radios/radiosEntity.dart';
 import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 import 'package:flutter_kts_template/pages/cpds/widgets/cpds_messages.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 Future<RadiosEntity?> showCpdsRadioSidePanel({
   required BuildContext context,
@@ -67,7 +68,7 @@ class _CpdsRadioSidePanelState extends State<CpdsRadioSidePanel> {
     return Center(
       child: Text(
         text,
-        style: const TextStyle(color: Colors.white38, fontSize: 13),
+        style: TextStyle(color: Colors.white38, fontSize: 13.sp),
       ),
     );
   }
@@ -119,7 +120,7 @@ class _CpdsRadioSidePanelState extends State<CpdsRadioSidePanel> {
                   ),
                 ),
             child: SizedBox(
-              width: 400,
+              width: 400.w,
               height: double.infinity,
               child: Material(
                 color: const Color(0xFF20262D),
@@ -127,8 +128,8 @@ class _CpdsRadioSidePanelState extends State<CpdsRadioSidePanel> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Container(
-                      height: 52,
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      height: 52.h,
+                      padding: EdgeInsets.symmetric(horizontal: 16.w),
                       decoration: const BoxDecoration(
                         border: Border(
                           bottom: BorderSide(color: Color(0xFF353A41)),
@@ -141,18 +142,18 @@ class _CpdsRadioSidePanelState extends State<CpdsRadioSidePanel> {
                               t.tableColumn.injectEncrypt.radio,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 color: Colors.white,
-                                fontSize: 16,
+                                fontSize: 16.sp,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
                           ),
                           GestureDetector(
                             onTap: () => _pop(),
-                            child: const Icon(
+                            child: Icon(
                               Icons.close,
-                              size: 20,
+                              size: 20.w,
                               color: Colors.white54,
                             ),
                           ),
@@ -160,28 +161,31 @@ class _CpdsRadioSidePanelState extends State<CpdsRadioSidePanel> {
                       ),
                     ),
                     Padding(
-                      padding: const EdgeInsets.all(12),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 12.w,
+                        vertical: 12.h,
+                      ),
                       child: TextField(
                         controller: _searchController,
                         autofocus: true,
                         onChanged: (_) => setState(() {}),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 13,
-                        ),
+                        style: TextStyle(color: Colors.white, fontSize: 13.sp),
                         decoration: InputDecoration(
                           isDense: true,
-                          prefixIcon: const Icon(
+                          prefixIcon: Icon(
                             Icons.search,
-                            size: 18,
+                            size: 18.w,
                             color: Colors.white54,
                           ),
                           suffixIcon: _searchController.text.isEmpty
                               ? null
                               : IconButton(
-                                  icon: const Icon(
+                                  iconSize: 18,
+                                  padding: EdgeInsets.zero,
+                                  constraints: const BoxConstraints(),
+                                  icon: Icon(
                                     Icons.clear,
-                                    size: 16,
+                                    size: 16.w,
                                     color: Colors.white54,
                                   ),
                                   onPressed: () {
@@ -190,24 +194,24 @@ class _CpdsRadioSidePanelState extends State<CpdsRadioSidePanel> {
                                   },
                                 ),
                           hintText: searchHint,
-                          hintStyle: const TextStyle(
+                          hintStyle: TextStyle(
                             color: Colors.white38,
-                            fontSize: 13,
+                            fontSize: 13.sp,
                           ),
                           filled: true,
                           fillColor: const Color(0xFF1B2026),
-                          contentPadding: const EdgeInsets.symmetric(
-                            vertical: 8,
-                            horizontal: 12,
+                          contentPadding: EdgeInsets.symmetric(
+                            vertical: 8.h,
+                            horizontal: 12.w,
                           ),
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(6),
+                            borderRadius: BorderRadius.circular(6.r),
                             borderSide: const BorderSide(
                               color: Color(0xFF353A41),
                             ),
                           ),
                           enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(6),
+                            borderRadius: BorderRadius.circular(6.r),
                             borderSide: const BorderSide(
                               color: Color(0xFF353A41),
                             ),
@@ -235,9 +239,9 @@ class _CpdsRadioSidePanelState extends State<CpdsRadioSidePanel> {
                                     radio.alias,
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       color: Colors.white,
-                                      fontSize: 13,
+                                      fontSize: 13.sp,
                                       fontWeight: FontWeight.w600,
                                     ),
                                   ),
@@ -245,9 +249,9 @@ class _CpdsRadioSidePanelState extends State<CpdsRadioSidePanel> {
                                     'SN: ${radio.sn}',
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       color: Color(0xFF8A94A6),
-                                      fontSize: 11,
+                                      fontSize: 11.sp,
                                     ),
                                   ),
                                 );
@@ -285,12 +289,12 @@ class CpdsRadioPickerField extends StatelessWidget {
   Widget build(BuildContext context) {
     final hasValue = selected != null;
     return Container(
-      height: height,
-      padding: const EdgeInsets.symmetric(horizontal: 8),
+      height: height.h,
+      padding: EdgeInsets.symmetric(horizontal: 8.w),
       decoration: BoxDecoration(
         color: const Color(0xFF282D33),
         border: Border.all(color: const Color(0xFF353A41)),
-        borderRadius: BorderRadius.circular(4),
+        borderRadius: BorderRadius.circular(4.r),
       ),
       child: Row(
         children: [
@@ -306,7 +310,7 @@ class CpdsRadioPickerField extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: hasValue ? Colors.white : Colors.white54,
-                    fontSize: 13,
+                    fontSize: 13.sp,
                   ),
                 ),
               ),
@@ -315,16 +319,20 @@ class CpdsRadioPickerField extends StatelessWidget {
           if (hasValue && onClear != null)
             GestureDetector(
               onTap: onClear,
-              child: const Padding(
-                padding: EdgeInsets.only(left: 8),
-                child: Icon(Icons.close, size: 16, color: Colors.white54),
+              child: Padding(
+                padding: EdgeInsets.only(left: 8.w),
+                child: Icon(Icons.close, size: 16.w, color: Colors.white54),
               ),
             ),
           GestureDetector(
             onTap: onTap,
-            child: const Padding(
-              padding: EdgeInsets.only(left: 6),
-              child: Icon(Icons.chevron_right, size: 16, color: Colors.white54),
+            child: Padding(
+              padding: EdgeInsets.only(left: 6.w),
+              child: Icon(
+                Icons.chevron_right,
+                size: 16.w,
+                color: Colors.white54,
+              ),
             ),
           ),
         ],

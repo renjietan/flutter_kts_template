@@ -1,11 +1,11 @@
 import 'package:composable_data_table/composable_data_table.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_kts_template/components/loading/simple.loading.dart';
 import 'package:flutter_kts_template/core/entities/radios/radiosEntity.dart';
 import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
-import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:flutter_kts_template/pages/radioManager/radioManager.mixin.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 
 import '../../theme/table.theme.dart';
 
@@ -62,8 +62,8 @@ class _RadioManagerPagerState extends State<RadioManagerPager>
     warningLightColor: widget.theme.warningLightColor,
     dangerColor: widget.theme.dangerColor,
     dangerLightColor: widget.theme.dangerLightColor,
-    cellPadding: widget.theme.cellPadding,
-    headerPadding: widget.theme.headerPadding,
+    cellPadding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 0),
+    headerPadding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 0),
     cellTextStyle: widget.theme.cellTextStyle,
     headerTextStyle: widget.theme.headerTextStyle,
   );

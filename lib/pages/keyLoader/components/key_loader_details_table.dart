@@ -9,6 +9,7 @@ import 'package:composable_data_table/composable_data_table.dart';
 import 'package:crypto/crypto.dart';
 import 'package:dage/dage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_kts_template/api/KeyLoaders.api.dart';
 import 'package:flutter_kts_template/api/RadiosManagerApi.dart';
 import 'package:flutter_kts_template/components/button/base.button.dart';
@@ -132,27 +133,27 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
   }
 
   DataTablePlusTheme _buildTheme() {
-    return const DataTablePlusTheme(
+    return DataTablePlusTheme(
       backgroundColor: Colors.transparent,
       headerBackgroundColor: Colors.transparent,
-      borderColor: Color(0xFF353A41),
-      borderLightColor: Color(0xFF282D33),
+      borderColor: const Color(0xFF353A41),
+      borderLightColor: const Color(0xFF282D33),
       textPrimaryColor: Colors.white,
-      textSecondaryColor: Color(0xFFB7BCC6),
-      textMutedColor: Color(0xFF8A94A6),
-      accentColor: Color(0xFF00A2E9),
-      accentLightColor: Color(0xFF1E3A5F),
-      successColor: Color(0xFF2FC88F),
-      successLightColor: Color(0xFF1B3D1B),
-      warningColor: Color(0xFFF0A43A),
-      warningLightColor: Color(0xFF4D3800),
-      dangerColor: Color(0xFFF15B64),
-      dangerLightColor: Color(0xFF4D1F1F),
-      cellPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      headerPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      cellTextStyle: TextStyle(fontSize: 13, color: Colors.white),
+      textSecondaryColor: const Color(0xFFB7BCC6),
+      textMutedColor: const Color(0xFF8A94A6),
+      accentColor: const Color(0xFF00A2E9),
+      accentLightColor: const Color(0xFF1E3A5F),
+      successColor: const Color(0xFF2FC88F),
+      successLightColor: const Color(0xFF1B3D1B),
+      warningColor: const Color(0xFFF0A43A),
+      warningLightColor: const Color(0xFF4D3800),
+      dangerColor: const Color(0xFFF15B64),
+      dangerLightColor: const Color(0xFF4D1F1F),
+      cellPadding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 0),
+      headerPadding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 0),
+      cellTextStyle: TextStyle(fontSize: 13.sp, color: Colors.white),
       headerTextStyle: TextStyle(
-        fontSize: 13,
+        fontSize: 13.sp,
         fontWeight: FontWeight.w600,
         color: Colors.white,
       ),
@@ -1346,52 +1347,55 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
           child: TableContextualBar(
             selectedCount: _selectedIds.length,
             normalToolbar: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
               child: Row(
                 children: [
                   const Spacer(),
                   SizedBox(
-                    width: 220,
-                    height: 36,
+                    width: 220.w,
+                    height: 36.h,
                     child: TextField(
                       controller: _searchController,
                       textInputAction: TextInputAction.search,
                       onSubmitted: _onSearch,
                       onChanged: (_) => setState(() {}),
-                      style: const TextStyle(color: Colors.white, fontSize: 13),
+                      style: TextStyle(color: Colors.white, fontSize: 13.sp),
                       decoration: InputDecoration(
                         isDense: true,
-                        prefixIcon: const Icon(
+                        prefixIcon: Icon(
                           Icons.search,
-                          size: 18,
+                          size: 18.w,
                           color: Colors.white54,
                         ),
                         suffixIcon: _searchController.text.isEmpty
                             ? null
                             : IconButton(
-                                icon: const Icon(
+                                iconSize: 18,
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(),
+                                icon: Icon(
                                   Icons.clear,
-                                  size: 16,
+                                  size: 16.w,
                                   color: Colors.white54,
                                 ),
                                 onPressed: _clearSearch,
                               ),
                         hintText: t.button.radioManager.search,
-                        hintStyle: const TextStyle(
+                        hintStyle: TextStyle(
                           color: Colors.white38,
-                          fontSize: 13,
+                          fontSize: 13.sp,
                         ),
                         filled: true,
                         fillColor: const Color(0xFF1B2026),
-                        contentPadding: const EdgeInsets.symmetric(vertical: 8),
+                        contentPadding: EdgeInsets.symmetric(vertical: 8.h),
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(6),
+                          borderRadius: BorderRadius.circular(6.r),
                           borderSide: const BorderSide(
                             color: Color(0xFF353A41),
                           ),
                         ),
                         enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(6),
+                          borderRadius: BorderRadius.circular(6.r),
                           borderSide: const BorderSide(
                             color: Color(0xFF353A41),
                           ),

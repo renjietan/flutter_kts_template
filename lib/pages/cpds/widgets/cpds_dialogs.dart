@@ -1,5 +1,7 @@
 // ignore_for_file: cpd_lints/hardcoded_dimension
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'cpds_button_styles.dart';
 import 'package:flutter_kts_template/core/cpds/cpds_exception.dart';
 import 'package:flutter_kts_template/core/cpds/model/cpds_enums.dart';
 import 'package:flutter_kts_template/core/cpds/model/cpds_models.dart';
@@ -37,24 +39,24 @@ class CpdsDiscoveryMismatchDialog extends StatelessWidget {
       backgroundColor: const Color(0xFF20262D),
       title: Text(
         CpdsMessages.discoveryMismatchTitle(context),
-        style: const TextStyle(color: Colors.white, fontSize: 17),
+        style: TextStyle(color: Colors.white, fontSize: 17.sp),
       ),
       content: SizedBox(
-        width: 620,
+        width: 620.w,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
               CpdsMessages.discoveryMismatchPrompt(context),
-              style: const TextStyle(color: Colors.white70, fontSize: 13),
+              style: TextStyle(color: Colors.white70, fontSize: 13.sp),
             ),
-            const SizedBox(height: 14),
+            SizedBox(height: 14.h),
             if (rows.isEmpty)
               Center(
                 child: Text(
                   CpdsMessages.noData(context),
-                  style: const TextStyle(color: Colors.white54),
+                  style: TextStyle(color: Colors.white54),
                 ),
               )
             else
@@ -111,13 +113,12 @@ class CpdsDiscoveryMismatchDialog extends StatelessWidget {
       ),
       actions: [
         TextButton(
+          style: cpdsTextButtonStyle(),
           onPressed: submitting ? null : () => onResolve(false),
-          child: Text(
-            t.common.cancel,
-            style: const TextStyle(color: Colors.white70),
-          ),
+          child: Text(t.common.cancel, style: TextStyle(color: Colors.white70)),
         ),
         FilledButton(
+          style: cpdsFilledButtonStyle(),
           onPressed: submitting ? null : () => onResolve(true),
           child: Text(t.cpds.distribute),
         ),
@@ -206,10 +207,10 @@ class CpdsResultDialog extends StatelessWidget {
       backgroundColor: const Color(0xFF20262D),
       title: Text(
         CpdsMessages.resultTitle(context, session.activeState),
-        style: const TextStyle(color: Colors.white, fontSize: 17),
+        style: TextStyle(color: Colors.white, fontSize: 17.sp),
       ),
       content: SizedBox(
-        width: 520,
+        width: 520.w,
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -224,19 +225,16 @@ class CpdsResultDialog extends StatelessWidget {
                   ignored.length,
                   offline.length,
                 ),
-                style: const TextStyle(color: Colors.white70, fontSize: 13),
+                style: TextStyle(color: Colors.white70, fontSize: 13.sp),
               ),
               if (restartRequired) ...[
-                const SizedBox(height: 10),
+                SizedBox(height: 10.h),
                 Text(
                   CpdsMessages.restartPrompt(context),
-                  style: const TextStyle(
-                    color: Color(0xFFD9FFF0),
-                    fontSize: 13,
-                  ),
+                  style: TextStyle(color: Color(0xFFD9FFF0), fontSize: 13.sp),
                 ),
               ],
-              const SizedBox(height: 14),
+              SizedBox(height: 14.h),
               _Section(
                 title: _completedTitle(context),
                 emptyText: _noCompletedTitle(context),
@@ -244,10 +242,7 @@ class CpdsResultDialog extends StatelessWidget {
                   ...completed.map(
                     (item) => Text(
                       _deviceLine(context, item.device, item.esnSuffix),
-                      style: const TextStyle(
-                        color: Colors.white70,
-                        fontSize: 12,
-                      ),
+                      style: TextStyle(color: Colors.white70, fontSize: 12.sp),
                     ),
                   ),
                 ],
@@ -259,9 +254,9 @@ class CpdsResultDialog extends StatelessWidget {
                     ...missing.map(
                       (item) => Text(
                         _deviceLine(context, item.device, item.esnSuffix),
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: Colors.white70,
-                          fontSize: 12,
+                          fontSize: 12.sp,
                         ),
                       ),
                     ),
@@ -274,9 +269,9 @@ class CpdsResultDialog extends StatelessWidget {
                     ...ignored.map(
                       (item) => Text(
                         _deviceLine(context, item.device, item.esnSuffix),
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: Colors.white70,
-                          fontSize: 12,
+                          fontSize: 12.sp,
                         ),
                       ),
                     ),
@@ -298,9 +293,9 @@ class CpdsResultDialog extends StatelessWidget {
                     ...offline.map(
                       (item) => Text(
                         _deviceLine(context, item.device, item.esnSuffix),
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: Colors.white70,
-                          fontSize: 12,
+                          fontSize: 12.sp,
                         ),
                       ),
                     ),
@@ -311,7 +306,11 @@ class CpdsResultDialog extends StatelessWidget {
         ),
       ),
       actions: [
-        FilledButton(onPressed: onClose, child: Text(t.common.confirm)),
+        FilledButton(
+          style: cpdsFilledButtonStyle(),
+          onPressed: onClose,
+          child: Text(t.common.confirm),
+        ),
       ],
     );
   }
@@ -393,32 +392,32 @@ class CpdsErrorDialog extends StatelessWidget {
       backgroundColor: const Color(0xFF20262D),
       title: Text(
         title,
-        style: const TextStyle(color: Colors.white, fontSize: 17),
+        style: TextStyle(color: Colors.white, fontSize: 17.sp),
       ),
       content: SizedBox(
-        width: 440,
+        width: 440.w,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               '$systemStage · [${error.code.apiName}] $message',
-              style: const TextStyle(color: Colors.white70, fontSize: 13),
+              style: TextStyle(color: Colors.white70, fontSize: 13.sp),
             ),
             if (error.params.isNotEmpty) ...[
-              const SizedBox(height: 12),
+              SizedBox(height: 12.h),
               Text(
                 CpdsMessages.parameterTitle(context),
-                style: const TextStyle(
+                style: TextStyle(
                   color: Colors.white54,
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              const SizedBox(height: 4),
+              SizedBox(height: 4.h),
               ...error.params.entries.map(
                 (entry) => Text(
                   '${entry.key}: ${entry.value}',
-                  style: const TextStyle(color: Colors.white54, fontSize: 12),
+                  style: TextStyle(color: Colors.white54, fontSize: 12.sp),
                 ),
               ),
             ],
@@ -426,7 +425,11 @@ class CpdsErrorDialog extends StatelessWidget {
         ),
       ),
       actions: [
-        FilledButton(onPressed: onClose, child: Text(t.common.confirm)),
+        FilledButton(
+          style: cpdsFilledButtonStyle(),
+          onPressed: onClose,
+          child: Text(t.common.confirm),
+        ),
       ],
     );
   }
@@ -442,8 +445,8 @@ class _Section extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(10),
+      margin: EdgeInsets.only(bottom: 8.h),
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 10.h),
       decoration: BoxDecoration(
         color: const Color(0x08FFFFFF),
         border: Border.all(color: const Color(0xFF353A41)),
@@ -453,17 +456,17 @@ class _Section extends StatelessWidget {
         children: [
           Text(
             title,
-            style: const TextStyle(
+            style: TextStyle(
               color: Colors.white54,
-              fontSize: 12,
+              fontSize: 12.sp,
               fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(height: 6),
+          SizedBox(height: 6.h),
           if (children.isEmpty && emptyText != null)
             Text(
               emptyText!,
-              style: const TextStyle(color: Colors.white38, fontSize: 12),
+              style: TextStyle(color: Colors.white38, fontSize: 12.sp),
             )
           else
             ...children,
@@ -481,7 +484,7 @@ class _FailureLine extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2),
+      padding: EdgeInsets.symmetric(vertical: 2.h),
       child: Text(
         CpdsMessages.failureItem(
           context,
@@ -492,7 +495,7 @@ class _FailureLine extends StatelessWidget {
           failure.errorCode,
           failure.params,
         ),
-        style: const TextStyle(color: Color(0xFFF3C6C9), fontSize: 12),
+        style: TextStyle(color: Color(0xFFF3C6C9), fontSize: 12.sp),
       ),
     );
   }
@@ -505,13 +508,13 @@ class _HeaderCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.all(8),
+    padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 8.h),
     child: Text(
       text,
-      style: const TextStyle(
+      style: TextStyle(
         color: Colors.white,
         fontWeight: FontWeight.w600,
-        fontSize: 11,
+        fontSize: 11.sp,
       ),
     ),
   );
@@ -525,13 +528,13 @@ class _Cell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.all(8),
+    padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 8.h),
     child: Text(
       text,
       style: TextStyle(
         color: warning ? const Color(0xFFFFD9A1) : Colors.white70,
         fontWeight: warning ? FontWeight.w700 : FontWeight.w400,
-        fontSize: 12,
+        fontSize: 12.sp,
       ),
     ),
   );

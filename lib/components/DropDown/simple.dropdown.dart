@@ -1,6 +1,7 @@
 // ignore_for_file: cpd_lints/hardcoded_dimension
 import 'package:composable_data_table/composable_data_table.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class SimpleDropdown<T> extends StatelessWidget {
   final T? value;
@@ -35,7 +36,7 @@ class SimpleDropdown<T> extends StatelessWidget {
 
     return Container(
       height: height,
-      padding: const EdgeInsets.symmetric(horizontal: 12),
+      padding: EdgeInsets.symmetric(horizontal: 12.w),
       decoration: BoxDecoration(
         color: theme.backgroundColor,
         border: Border.all(color: theme.borderColor),
@@ -48,7 +49,7 @@ class SimpleDropdown<T> extends StatelessWidget {
             Text(
               '$label: ',
               style: TextStyle(
-                fontSize: 13,
+                fontSize: 13.sp,
                 fontWeight: FontWeight.w500,
                 color: theme.textSecondaryColor,
               ),
@@ -60,14 +61,20 @@ class SimpleDropdown<T> extends StatelessWidget {
                 isExpanded: true,
                 hint: Text(
                   hint,
-                  style: TextStyle(fontSize: 13, color: theme.textMutedColor),
+                  style: TextStyle(
+                    fontSize: 13.sp,
+                    color: theme.textMutedColor,
+                  ),
                 ),
                 icon: Icon(
                   Icons.keyboard_arrow_down,
-                  size: 18,
+                  size: 18.w,
                   color: theme.textMutedColor,
                 ),
-                style: TextStyle(fontSize: 13, color: theme.textPrimaryColor),
+                style: TextStyle(
+                  fontSize: 13.sp,
+                  color: theme.textPrimaryColor,
+                ),
                 dropdownColor: menuItemsColor ?? theme.backgroundColor,
                 focusColor: theme.backgroundColor,
                 items: items,
@@ -79,10 +86,10 @@ class SimpleDropdown<T> extends StatelessWidget {
             InkWell(
               onTap: onClear,
               child: Padding(
-                padding: const EdgeInsets.only(left: 8),
+                padding: EdgeInsets.only(left: 8.w),
                 child: Icon(
                   Icons.close,
-                  size: 16,
+                  size: 16.w,
                   color: theme.textMutedColor,
                 ),
               ),

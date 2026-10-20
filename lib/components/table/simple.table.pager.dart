@@ -1,5 +1,6 @@
 // ignore_for_file: cpd_lints/hardcoded_dimension
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_kts_template/components/table/simple.table.mixin.dart';
 import 'package:flutter_kts_template/theme/table.theme.dart';
 
@@ -17,7 +18,7 @@ class _SimpleTableState extends State<SimpleTable> with SimpleTableMixin {
     return Container(
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.1),

@@ -1,5 +1,6 @@
 // ignore_for_file: cpd_lints/hardcoded_dimension
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class CpdsProgressBar extends StatelessWidget {
   const CpdsProgressBar({super.key, required this.value});
@@ -13,10 +14,10 @@ class CpdsProgressBar extends StatelessWidget {
       children: [
         Expanded(
           child: Container(
-            height: 5,
+            height: 5.h,
             decoration: BoxDecoration(
               color: const Color(0xFF323941),
-              borderRadius: BorderRadius.circular(3),
+              borderRadius: BorderRadius.circular(3.r),
             ),
             child: FractionallySizedBox(
               alignment: Alignment.centerLeft,
@@ -26,16 +27,16 @@ class CpdsProgressBar extends StatelessWidget {
                   gradient: const LinearGradient(
                     colors: [Color(0xFF0074D9), Color(0xFF00A2E9)],
                   ),
-                  borderRadius: BorderRadius.circular(3),
+                  borderRadius: BorderRadius.circular(3.r),
                 ),
               ),
             ),
           ),
         ),
-        const SizedBox(width: 8),
+        SizedBox(width: 8.w),
         Text(
           '$clamped%',
-          style: const TextStyle(fontSize: 11, color: Color(0xFFB7BCC6)),
+          style: TextStyle(fontSize: 11.sp, color: const Color(0xFFB7BCC6)),
         ),
       ],
     );

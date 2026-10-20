@@ -93,8 +93,8 @@ class _SimpleDarkDropdownState<T> extends State<SimpleDarkDropdown<T>> {
     showModalBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF171C22),
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(8)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(8.r)),
       ),
       builder: (context) => _MobileSheet<T>(
         items: widget.items,
@@ -132,20 +132,20 @@ class _SimpleDarkDropdownState<T> extends State<SimpleDarkDropdown<T>> {
         color: Colors.transparent,
         child: InkWell(
           onTap: _toggle,
-          borderRadius: BorderRadius.circular(2),
+          borderRadius: BorderRadius.circular(2.r),
           hoverColor: widget.enabled ? const Color(0x26004098) : null,
           child: Container(
             width: widget.width,
             height: widget.height,
-            padding: const EdgeInsets.symmetric(horizontal: 10),
+            padding: EdgeInsets.symmetric(horizontal: 10.w),
             decoration: BoxDecoration(
               color: const Color(0xFF1E2329),
-              borderRadius: BorderRadius.circular(2),
+              borderRadius: BorderRadius.circular(2.r),
               border: Border.all(
                 color: _isOpen
                     ? const Color(0xFF00A2E9)
                     : const Color(0xFF353A41),
-                width: 1,
+                width: 1.w,
               ),
             ),
             child: Row(
@@ -153,12 +153,12 @@ class _SimpleDarkDropdownState<T> extends State<SimpleDarkDropdown<T>> {
                 if (widget.prefixIcon != null) ...[
                   Icon(
                     widget.prefixIcon,
-                    size: 14,
+                    size: 14.w,
                     color: widget.enabled
                         ? const Color(0xFFB7BCC6)
                         : const Color(0xFF666666),
                   ),
-                  const SizedBox(width: 6),
+                  SizedBox(width: 6.w),
                 ],
                 Expanded(
                   child: Text(
@@ -174,23 +174,23 @@ class _SimpleDarkDropdownState<T> extends State<SimpleDarkDropdown<T>> {
                     ),
                   ),
                 ),
-                const SizedBox(width: 4),
+                SizedBox(width: 4.w),
                 if (widget.onClear != null)
                   InkWell(
                     onTap: widget.onClear,
-                    borderRadius: BorderRadius.circular(2),
-                    child: const Padding(
+                    borderRadius: BorderRadius.circular(2.r),
+                    child: Padding(
                       padding: EdgeInsets.all(2),
                       child: Icon(
                         Icons.clear,
-                        size: 14,
+                        size: 14.w,
                         color: Color(0xFF8A94A6),
                       ),
                     ),
                   ),
                 Icon(
                   _isOpen ? Icons.arrow_drop_up : Icons.arrow_drop_down,
-                  size: 16,
+                  size: 16.w,
                   color: widget.enabled
                       ? const Color(0xFF8A94A6)
                       : const Color(0xFF666666),
@@ -244,8 +244,8 @@ class _DesktopMenu<T> extends StatelessWidget {
               constraints: const BoxConstraints(maxHeight: 240),
               decoration: BoxDecoration(
                 color: const Color(0xFF23272D),
-                borderRadius: BorderRadius.circular(2),
-                border: Border.all(color: const Color(0xFF353A41), width: 1),
+                borderRadius: BorderRadius.circular(2.r),
+                border: Border.all(color: const Color(0xFF353A41), width: 1.w),
                 boxShadow: const [
                   BoxShadow(
                     color: Color(0x66000000),
@@ -255,7 +255,7 @@ class _DesktopMenu<T> extends StatelessWidget {
                 ],
               ),
               child: ListView.builder(
-                padding: const EdgeInsets.symmetric(vertical: 4),
+                padding: EdgeInsets.symmetric(vertical: 4.h),
                 shrinkWrap: true,
                 itemCount: items.length,
                 itemBuilder: (context, index) {
@@ -302,12 +302,12 @@ class _MenuItem<T> extends StatelessWidget {
             if (item.icon != null) ...[
               Icon(
                 item.icon,
-                size: 14,
+                size: 14.w,
                 color: isSelected
                     ? const Color(0xFF0CB5FF)
                     : const Color(0xFFB7BCC6),
               ),
-              const SizedBox(width: 6),
+              SizedBox(width: 6.w),
             ],
             Expanded(
               child: Text(
@@ -323,7 +323,7 @@ class _MenuItem<T> extends StatelessWidget {
               ),
             ),
             if (isSelected)
-              const Icon(Icons.check, size: 14, color: Color(0xFF0CB5FF)),
+              Icon(Icons.check, size: 14.w, color: Color(0xFF0CB5FF)),
           ],
         ),
       ),
@@ -353,23 +353,23 @@ class _MobileSheet<T> extends StatelessWidget {
         children: [
           // 顶部拖拽指示器
           Container(
-            margin: const EdgeInsets.only(top: 8, bottom: 4),
-            width: 36,
-            height: 4,
+            margin: EdgeInsets.only(top: 8.h, bottom: 4.h),
+            width: 36.w,
+            height: 4.h,
             decoration: BoxDecoration(
               color: const Color(0xFF42474E),
-              borderRadius: BorderRadius.circular(2),
+              borderRadius: BorderRadius.circular(2.r),
             ),
           ),
           // 标题栏
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
             child: Row(
               children: [
                 Text(
                   hintText ?? context.t.common.pleaseSelect,
                   style: TextStyle(
-                    fontSize: 14,
+                    fontSize: 14.sp,
                     fontWeight: FontWeight.w600,
                     color: const Color(0xFFFFFFFF),
                   ),
@@ -377,12 +377,15 @@ class _MobileSheet<T> extends StatelessWidget {
                 const Spacer(),
                 InkWell(
                   onTap: () => Navigator.of(context).pop(),
-                  borderRadius: BorderRadius.circular(2),
+                  borderRadius: BorderRadius.circular(2.r),
                   child: Padding(
-                    padding: const EdgeInsets.all(4),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 4.w,
+                      vertical: 4.h,
+                    ),
                     child: Icon(
                       Icons.close,
-                      size: 18,
+                      size: 18.w,
                       color: const Color(0xFFB7BCC6),
                     ),
                   ),
@@ -390,19 +393,19 @@ class _MobileSheet<T> extends StatelessWidget {
               ],
             ),
           ),
-          const Divider(color: Color(0xFF353A41), height: 1),
+          Divider(color: const Color(0xFF353A41), height: 1.h),
           // 选项列表
           ConstrainedConstraints(
             maxHeight: MediaQuery.of(context).size.height * 0.5,
             child: ListView.separated(
               shrinkWrap: true,
-              padding: const EdgeInsets.symmetric(vertical: 4),
+              padding: EdgeInsets.symmetric(vertical: 4.h),
               itemCount: items.length,
-              separatorBuilder: (_, _) => const Divider(
+              separatorBuilder: (_, _) => Divider(
                 color: Color(0xFF282D33),
-                height: 1,
-                indent: 12,
-                endIndent: 12,
+                height: 1.h,
+                indent: 12.w,
+                endIndent: 12.w,
               ),
               itemBuilder: (context, index) {
                 final item = items[index];
@@ -420,12 +423,12 @@ class _MobileSheet<T> extends StatelessWidget {
                         if (item.icon != null) ...[
                           Icon(
                             item.icon,
-                            size: 18,
+                            size: 18.w,
                             color: isSelected
                                 ? const Color(0xFF0CB5FF)
                                 : const Color(0xFFB7BCC6),
                           ),
-                          const SizedBox(width: 12),
+                          SizedBox(width: 12.w),
                         ],
                         Expanded(
                           child: Text(
@@ -442,9 +445,9 @@ class _MobileSheet<T> extends StatelessWidget {
                           ),
                         ),
                         if (isSelected)
-                          const Icon(
+                          Icon(
                             Icons.check_circle,
-                            size: 18,
+                            size: 18.w,
                             color: Color(0xFF0CB5FF),
                           ),
                       ],
@@ -454,7 +457,7 @@ class _MobileSheet<T> extends StatelessWidget {
               },
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
         ],
       ),
     );

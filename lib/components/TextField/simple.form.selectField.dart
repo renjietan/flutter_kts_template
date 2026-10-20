@@ -85,8 +85,9 @@ class SimpleFormSelectField<T> extends StatelessWidget {
       onSaved: onSaved,
       autovalidateMode: autovalidateMode,
       decoration: effectiveDecoration,
-      style: dropdownButtonStyle?.textStyle ??
-          TextStyle(fontSize: 14.sp, color: Colors.white),
+      style:
+          dropdownButtonStyle?.textStyle ??
+          TextStyle(fontSize: 13.sp, color: Colors.white),
       dropdownColor:
           dropdownButtonStyle?.dropdownColor ?? const Color(0xFF23272D),
       // 可扩展更多属性

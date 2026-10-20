@@ -32,7 +32,7 @@ class SimpleFilterSearchField extends StatelessWidget {
     required this.onChanged,
     this.hint = 'Search...',
     this.width = 280,
-    this.height = 40,
+    this.height = 36,
     this.controller,
     this.keyboardType,
     this.textInputAction,
@@ -57,10 +57,21 @@ class SimpleFilterSearchField extends StatelessWidget {
         decoration: InputDecoration(
           hintText: hint,
           hintStyle: TextStyle(color: theme.textMutedColor),
-          prefixIcon: Icon(Icons.search, size: 18, color: theme.textMutedColor),
-          suffixIcon: (controller != null && controller!.text.isNotEmpty && onClear != null)
+          prefixIcon: Icon(
+            Icons.search,
+            size: 18.w,
+            color: theme.textMutedColor,
+          ),
+          suffixIcon:
+              (controller != null &&
+                  controller!.text.isNotEmpty &&
+                  onClear != null)
               ? IconButton(
-                  icon: Icon(Icons.clear, size: 16, color: theme.textMutedColor),
+                  icon: Icon(
+                    Icons.clear,
+                    size: 16.w,
+                    color: theme.textMutedColor,
+                  ),
                   onPressed: () {
                     controller!.clear();
                     onClear!();

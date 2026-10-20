@@ -213,7 +213,7 @@ settings:
   arEg: 阿拉伯语（东）
   arMa: 阿拉伯语（西）
 cpds:
-  fileTitle: 文件解析
+  : 文件解析
   browse: 浏览
   goNow: 立即前往
   parse: 解析

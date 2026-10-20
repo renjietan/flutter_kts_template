@@ -1,18 +1,19 @@
 // ignore_for_file: cpd_lints/hardcoded_dimension
-import 'package:flutter/material.dart';
 import 'package:composable_data_table/composable_data_table.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_kts_template/components/button/base.button.dart';
 import 'package:flutter_kts_template/components/loading/simple.loading.dart';
 import 'package:flutter_kts_template/core/cpds/model/cpds_enums.dart';
 import 'package:flutter_kts_template/core/cpds/model/cpds_models.dart';
 import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
+import 'package:flutter_kts_template/pages/cpds/widgets/cpds_messages.dart';
 import 'package:flutter_kts_template/utils/arabic_digits.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../theme/table.theme.dart';
 import 'cpds_network_interface_bar.dart';
 import 'cpds_progress_bar.dart';
 import 'cpds_status_badge.dart';
-import 'package:flutter_kts_template/pages/cpds/widgets/cpds_messages.dart';
 
 class CpdsDevicePanel extends StatelessWidget {
   const CpdsDevicePanel({
@@ -147,16 +148,20 @@ class CpdsDevicePanel extends StatelessWidget {
 
     return Container(
       color: const Color(0xFF0E1114),
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+      padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 16.h),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           SizedBox(
-            height: 48,
+            height: 48.h,
             child: Row(
               children: [
-                Container(width: 4, height: 32, color: const Color(0xFF00A2E9)),
-                const SizedBox(width: 10),
+                Container(
+                  width: 4.w,
+                  height: 24.h,
+                  color: const Color(0xFF00A2E9),
+                ),
+                SizedBox(width: 10.w),
                 Expanded(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -166,8 +171,8 @@ class CpdsDevicePanel extends StatelessWidget {
                         selectedNode?.name ?? t.cpds.currentTitle,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontSize: 16,
+                        style: TextStyle(
+                          fontSize: 15.sp,
                           fontWeight: FontWeight.w600,
                           color: Colors.white,
                         ),
@@ -183,8 +188,8 @@ class CpdsDevicePanel extends StatelessWidget {
                                 .length,
                             expected: deviceRows.length,
                           ),
-                          style: const TextStyle(
-                            fontSize: 12,
+                          style: TextStyle(
+                            fontSize: 12.sp,
                             color: Color(0xFFB7BCC6),
                           ),
                         ),
@@ -193,18 +198,18 @@ class CpdsDevicePanel extends StatelessWidget {
                 ),
                 BaseButton(
                   label: t.cpds.refresh,
-                  minWidth: 72,
-                  height: 32,
+                  minWidth: 72.w,
+                  height: 32.h,
                   isLoading: interfacesLoading,
                   onPressed: state.active || interfacesLoading
                       ? null
                       : onRefreshInterfaces,
                 ),
-                const SizedBox(width: 8),
+                SizedBox(width: 8.w),
                 BaseButton(
                   label: t.cpds.distribute,
-                  minWidth: 88,
-                  height: 32,
+                  minWidth: 88.w,
+                  height: 32.h,
                   isLoading: distributing,
                   onPressed: distributing || state.active || interfacesLoading
                       ? null
@@ -231,9 +236,9 @@ class CpdsDevicePanel extends StatelessWidget {
           _StageStrip(activeIndex: stageIndex),
           if (transferring) ...[
             Container(
-              height: 64,
-              margin: const EdgeInsets.only(bottom: 8),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              height: 64.h,
+              margin: EdgeInsets.only(bottom: 8.h),
+              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
               decoration: BoxDecoration(
                 color: const Color(0x24004098),
                 border: Border.all(color: const Color(0x7300A2E9)),
@@ -246,42 +251,42 @@ class CpdsDevicePanel extends StatelessWidget {
                       Expanded(
                         child: Text(
                           t.cpds.stages.transfer,
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: Colors.white,
-                            fontSize: 12,
+                            fontSize: 12.sp,
                           ),
                         ),
                       ),
                       Text(
                         '${state.session?.sentChunks ?? 0}/${state.session?.totalChunks ?? 0}',
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: Color(0xFFB7BCC6),
-                          fontSize: 12,
+                          fontSize: 12.sp,
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 7),
+                  SizedBox(height: 7.h),
                   CpdsProgressBar(value: state.session?.sendingProgress ?? 0),
                 ],
               ),
             ),
           ],
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
           Expanded(
             child: Container(
               decoration: BoxDecoration(
                 color: const Color(0xFF171C22),
                 border: Border.all(color: const Color(0x26FFFFFF)),
-                borderRadius: BorderRadius.circular(4),
+                borderRadius: BorderRadius.circular(4.r),
               ),
               child: selectedNode == null
                   ? Center(
                       child: Text(
                         t.cpds.noSelection,
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: Colors.white38,
-                          fontSize: 13,
+                          fontSize: 13.sp,
                         ),
                       ),
                     )
@@ -435,8 +440,8 @@ class _StageStrip extends StatelessWidget {
       t.cpds.stages.complete,
     ];
     return Container(
-      height: 50,
-      padding: const EdgeInsets.symmetric(horizontal: 8),
+      height: 50.h,
+      padding: EdgeInsets.symmetric(horizontal: 8.w),
       decoration: BoxDecoration(
         color: const Color(0xFF14191F),
         border: Border.all(color: const Color(0xFF353A41)),
@@ -591,17 +596,17 @@ class _CpdsFutureWarriorPanelState extends State<CpdsFutureWarriorPanel> {
     final tableTheme = getThemePreset(ThemePreset.dark);
     final saveButton = BaseButton(
       label: t.button.radioManager.save,
-      minWidth: 80,
-      height: 32,
+      minWidth: 80.w,
+      height: 32.h,
       isLoading: _saving,
       onPressed: _saving ? null : _handleSave,
     );
     final normalToolbar = SizedBox(
-      height: 48,
+      height: 48.h,
       child: Row(
         children: [
-          Container(width: 4, height: 32, color: const Color(0xFF00A2E9)),
-          const SizedBox(width: 10),
+          Container(width: 4.w, height: 32.h, color: const Color(0xFF00A2E9)),
+          SizedBox(width: 10.w),
           Expanded(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -609,8 +614,8 @@ class _CpdsFutureWarriorPanelState extends State<CpdsFutureWarriorPanel> {
               children: [
                 Text(
                   t.tree.futureWarrior,
-                  style: const TextStyle(
-                    fontSize: 16,
+                  style: TextStyle(
+                    fontSize: 16.sp,
                     fontWeight: FontWeight.w600,
                     color: Colors.white,
                   ),
@@ -625,9 +630,9 @@ class _CpdsFutureWarriorPanelState extends State<CpdsFutureWarriorPanel> {
                       'تم تحديد $selectedCount/$total',
                     ),
                   ),
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Color(0xFFB7BCC6),
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    color: const Color(0xFFB7BCC6),
                   ),
                 ),
               ],
@@ -640,7 +645,7 @@ class _CpdsFutureWarriorPanelState extends State<CpdsFutureWarriorPanel> {
 
     return Container(
       color: const Color(0xFF0E1114),
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+      padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 16.w),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -657,21 +662,21 @@ class _CpdsFutureWarriorPanelState extends State<CpdsFutureWarriorPanel> {
                   side: BorderSide(
                     color: tableTheme.accentColor.withValues(alpha: 0.4),
                   ),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 10,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 14.w,
+                    vertical: 10.h,
                   ),
-                  minimumSize: const Size(0, 36),
+                  minimumSize: Size(0, 32.h),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(8.r),
                   ),
                 ),
                 child: Text(
                   _allSelected
                       ? t.checkbox.DeselectAll
                       : t.checkbox.SelectAll(count: total),
-                  style: const TextStyle(
-                    fontSize: 13,
+                  style: TextStyle(
+                    fontSize: 13.sp,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -681,48 +686,48 @@ class _CpdsFutureWarriorPanelState extends State<CpdsFutureWarriorPanel> {
                   onPressed: _clearSelection,
                   icon: Icon(
                     Icons.close,
-                    size: 16,
+                    size: 16.sp,
                     color: tableTheme.textSecondaryColor,
                   ),
                   label: Text(
                     t.button.radioManager.clear,
                     style: TextStyle(
-                      fontSize: 13,
+                      fontSize: 13.sp,
                       color: tableTheme.textSecondaryColor,
                     ),
                   ),
                   style: OutlinedButton.styleFrom(
-                    minimumSize: const Size(0, 36),
+                    minimumSize: Size(0, 36.h),
                     side: BorderSide(color: tableTheme.borderColor),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 10,
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 14.w,
+                      vertical: 10.h,
                     ),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(8.r),
                     ),
                   ),
                 ),
-                const SizedBox(width: 8),
+                SizedBox(width: 8.w),
                 saveButton,
               ],
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
           Expanded(
             child: Container(
               decoration: BoxDecoration(
                 color: const Color(0xFF171C22),
                 border: Border.all(color: const Color(0x26FFFFFF)),
-                borderRadius: BorderRadius.circular(4),
+                borderRadius: BorderRadius.circular(4.r),
               ),
               child: total == 0
                   ? Center(
                       child: Text(
                         t.cpds.nodesEmpty,
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: Colors.white38,
-                          fontSize: 13,
+                          fontSize: 13.sp,
                         ),
                       ),
                     )
@@ -783,7 +788,7 @@ class _FutureWarriorDeviceRow extends StatelessWidget {
     return InkWell(
       onTap: () => onChanged(!selected),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
         decoration: const BoxDecoration(
           border: Border(bottom: BorderSide(color: Color(0xFF353A41))),
         ),
@@ -794,61 +799,61 @@ class _FutureWarriorDeviceRow extends StatelessWidget {
             Row(
               children: [
                 SizedBox(
-                  width: 48,
-                  height: 48,
+                  width: 48.w,
+                  height: 48.h,
                   child: Checkbox(
                     value: selected,
                     activeColor: const Color(0xFF00A2E9),
                     onChanged: (value) => onChanged(value ?? false),
                   ),
                 ),
-                const SizedBox(width: 8),
+                SizedBox(width: 8.w),
                 Expanded(
                   child: Text(
                     device.alias,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(color: Colors.white, fontSize: 14),
+                    style: TextStyle(color: Colors.white, fontSize: 14.sp),
                   ),
                 ),
-                const SizedBox(width: 24),
+                SizedBox(width: 24.w),
                 Text(
                   device.id,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(color: Colors.white70, fontSize: 14),
+                  style: TextStyle(color: Colors.white70, fontSize: 14.sp),
                 ),
               ],
             ),
             Row(
               children: [
-                const SizedBox(width: 56),
+                SizedBox(width: 56.w),
                 Expanded(
                   child: Text(
                     '${CpdsMessages.tr(context, '网络节点ID', 'Net Node ID', 'معرف عقدة الشبكة')}: ${fwDevice.nodeId}',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(color: Colors.white54, fontSize: 12),
+                    style: TextStyle(color: Colors.white54, fontSize: 12.sp),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 4),
+            SizedBox(height: 4.h),
             Row(
               children: [
-                const SizedBox(width: 56),
+                SizedBox(width: 56.w),
                 Expanded(
                   child: Text(
                     '${CpdsMessages.tr(context, '网络节点名称', 'Net Node Name', 'اسم عقدة الشبكة')}: '
                     '${fwDevice.nodeName}',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(color: Colors.white54, fontSize: 12),
+                    style: TextStyle(color: Colors.white54, fontSize: 12.sp),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 4),
+            SizedBox(height: 4.h),
             _distributionIpRow(context, device),
           ],
         ),
@@ -860,7 +865,7 @@ class _FutureWarriorDeviceRow extends StatelessWidget {
     if (device.type == CpdsDeviceType.ccu) {
       return Row(
         children: [
-          const SizedBox(width: 56),
+          SizedBox(width: 56.w),
           Expanded(
             flex: 1,
             child: Text(
@@ -868,10 +873,10 @@ class _FutureWarriorDeviceRow extends StatelessWidget {
               '${device.distributionIp1.isEmpty ? '--' : device.distributionIp1}',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(color: Colors.white54, fontSize: 12),
+              style: TextStyle(color: Colors.white54, fontSize: 12.sp),
             ),
           ),
-          const SizedBox(width: 16),
+          SizedBox(width: 16.w),
           Expanded(
             flex: 1,
             child: Text(
@@ -879,7 +884,7 @@ class _FutureWarriorDeviceRow extends StatelessWidget {
               '${device.distributionIp2.isEmpty ? '--' : device.distributionIp2}',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(color: Colors.white54, fontSize: 12),
+              style: TextStyle(color: Colors.white54, fontSize: 12.sp),
             ),
           ),
         ],
@@ -900,13 +905,13 @@ class _FutureWarriorDeviceRow extends StatelessWidget {
           );
     return Row(
       children: [
-        const SizedBox(width: 56),
+        SizedBox(width: 56.w),
         Expanded(
           child: Text(
             '$label: ${device.distributionIp1.isEmpty ? '--' : device.distributionIp1}',
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(color: Colors.white54, fontSize: 12),
+            style: TextStyle(color: Colors.white54, fontSize: 12.sp),
           ),
         ),
       ],
@@ -949,8 +954,8 @@ class _StageStep extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            width: 20,
-            height: 20,
+            width: 20.w,
+            height: 20.h,
             alignment: Alignment.center,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
@@ -959,16 +964,16 @@ class _StageStep extends StatelessWidget {
             ),
             child: Text(
               localizeDigits(context, '${index + 1}'),
-              style: TextStyle(fontSize: 11, color: numberColor),
+              style: TextStyle(fontSize: 11.sp, color: numberColor),
             ),
           ),
-          const SizedBox(width: 5),
+          SizedBox(width: 5.w),
           Flexible(
             child: Text(
               label,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(fontSize: 11, color: textColor),
+              style: TextStyle(fontSize: 11.sp, color: textColor),
             ),
           ),
         ],
@@ -985,8 +990,8 @@ class _StageLine extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 24,
-      height: 1,
+      width: 24.w,
+      height: 1.h,
       color: passed ? const Color(0xFF0CB5FF) : const Color(0xFF42474E),
     );
   }
@@ -1012,8 +1017,8 @@ class _DeviceGroupHeader extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         child: Container(
-          height: 32,
-          padding: const EdgeInsets.symmetric(horizontal: 12),
+          height: 32.h,
+          padding: EdgeInsets.symmetric(horizontal: 12.w),
           child: Row(
             children: [
               Icon(
@@ -1022,14 +1027,14 @@ class _DeviceGroupHeader extends StatelessWidget {
                     : (Directionality.of(context) == TextDirection.rtl
                           ? Icons.arrow_left
                           : Icons.arrow_right),
-                size: 16,
+                size: 16.w,
                 color: Colors.white70,
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: 8.w),
               Text(
                 title,
-                style: const TextStyle(
-                  fontSize: 14,
+                style: TextStyle(
+                  fontSize: 14.sp,
                   fontWeight: FontWeight.w600,
                   color: Colors.white,
                 ),
@@ -1037,7 +1042,10 @@ class _DeviceGroupHeader extends StatelessWidget {
               const Spacer(),
               Text(
                 '$count',
-                style: const TextStyle(fontSize: 12, color: Color(0xFFB7BCC6)),
+                style: TextStyle(
+                  fontSize: 12.sp,
+                  color: const Color(0xFFB7BCC6),
+                ),
               ),
             ],
           ),
@@ -1115,7 +1123,7 @@ class _DeviceRow extends StatelessWidget {
       'معرف العقدة',
     );
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
       decoration: const BoxDecoration(
         border: Border(bottom: BorderSide(color: Color(0xFF353A41))),
       ),
@@ -1124,30 +1132,30 @@ class _DeviceRow extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Icon(
+              Icon(
                 Icons.description_outlined,
-                size: 16,
+                size: 16.w,
                 color: Colors.white70,
               ),
-              const SizedBox(width: 9),
+              SizedBox(width: 9.w),
               Expanded(
                 child: Text(
                   name,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 14, color: Colors.white),
+                  style: TextStyle(fontSize: 14.sp, color: Colors.white),
                 ),
               ),
               CpdsStatusBadge(status: row.status),
             ],
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: 4.h),
           Row(
             children: [
-              const SizedBox(width: 16),
+              SizedBox(width: 16.w),
               _Meta(label: nodeIdLabel, value: row.device.id),
               if (showAlias) ...[
-                const SizedBox(width: 16),
+                SizedBox(width: 16.w),
                 Expanded(
                   child: Text(
                     '${CpdsMessages.tr(context, '别名', 'Alias', 'الاسم المستعار')}: '
@@ -1155,32 +1163,32 @@ class _DeviceRow extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     textAlign: TextAlign.left,
-                    style: const TextStyle(color: Colors.white54, fontSize: 12),
+                    style: TextStyle(color: Colors.white54, fontSize: 12.sp),
                   ),
                 ),
               ],
             ],
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: 4.h),
           Row(
             children: [
-              const SizedBox(width: 16),
+              SizedBox(width: 16.w),
               _Meta(label: t.cpds.device.esn, value: row.esnSuffix),
-              const SizedBox(width: 16),
+              SizedBox(width: 16.w),
               _Meta(label: t.cpds.device.ip, value: row.currentIp),
             ],
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: 4.h),
           _distributionIpRow(context, row),
           if (row.status == CpdsDeviceStatus.receiving) ...[
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h),
             CpdsProgressBar(value: row.progress),
           ],
           if (row.status == CpdsDeviceStatus.failed) ...[
-            const SizedBox(height: 6),
+            SizedBox(height: 6.h),
             Text(
               row.errorCode.apiName,
-              style: const TextStyle(color: Color(0xFFF15B64), fontSize: 11),
+              style: TextStyle(color: Color(0xFFF15B64), fontSize: 11.sp),
             ),
           ],
         ],
@@ -1215,7 +1223,7 @@ class _DeviceRow extends StatelessWidget {
     if (device.type == CpdsDeviceType.ccu) {
       return Row(
         children: [
-          const SizedBox(width: 16),
+          SizedBox(width: 16.w),
           Expanded(
             flex: 1,
             child: _DistributionIpCell(
@@ -1223,7 +1231,7 @@ class _DeviceRow extends StatelessWidget {
               value: device.distributionIp1,
             ),
           ),
-          const SizedBox(width: 16),
+          SizedBox(width: 16.w),
           Expanded(
             flex: 1,
             child: _DistributionIpCell(
@@ -1239,7 +1247,7 @@ class _DeviceRow extends StatelessWidget {
         : t.cpds.device.downCurrentIp;
     return Row(
       children: [
-        const SizedBox(width: 16),
+        SizedBox(width: 16.w),
         _Meta(label: label, value: device.distributionIp1),
       ],
     );
@@ -1284,28 +1292,28 @@ class _VeciInfoBox extends StatelessWidget {
     final remarkLabel = CpdsMessages.tr(context, '备注', 'Remark', 'ملاحظات');
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 8),
+      margin: EdgeInsets.only(bottom: 8.h),
       decoration: BoxDecoration(
         color: const Color(0xFF171C22),
         border: Border.all(color: const Color(0x26FFFFFF)),
-        borderRadius: BorderRadius.circular(4),
+        borderRadius: BorderRadius.circular(4.r),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(12, 10, 17, 0),
+            padding: EdgeInsets.fromLTRB(12.w, 10.h, 17.w, 0),
             child: SizedBox(
               width: double.infinity,
-              height: 28,
+              height: 28.h,
               child: Stack(
                 alignment: Alignment.center,
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: Colors.white,
-                      fontSize: 14,
+                      fontSize: 14.sp,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -1319,17 +1327,17 @@ class _VeciInfoBox extends StatelessWidget {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(
+                            Icon(
                               Icons.edit_outlined,
-                              size: 15,
+                              size: 15.w,
                               color: Color(0xFF00A2E9),
                             ),
-                            const SizedBox(width: 4),
+                            SizedBox(width: 4.w),
                             Text(
                               editLabel,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 color: Color(0xFF00A2E9),
-                                fontSize: 12,
+                                fontSize: 12.sp,
                               ),
                             ),
                           ],
@@ -1341,43 +1349,43 @@ class _VeciInfoBox extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: 6),
+          SizedBox(height: 6.h),
           Padding(
-            padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+            padding: EdgeInsets.fromLTRB(12.w, 0, 12.w, 12.h),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
-                    const SizedBox(width: 16),
+                    SizedBox(width: 16.w),
                     _Meta(label: equipNameLabel, value: veciInfo.equipName),
-                    const SizedBox(width: 16),
+                    SizedBox(width: 16.w),
                     _Meta(label: ipLabel, value: veciInfo.ip),
                   ],
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: 4.h),
                 Row(
                   children: [
-                    const SizedBox(width: 16),
+                    SizedBox(width: 16.w),
                     _Meta(label: plateNoLabel, value: veciInfo.plateNo),
-                    const SizedBox(width: 16),
+                    SizedBox(width: 16.w),
                     _Meta(
                       label: vehicleParamsLabel,
                       value: veciInfo.vehicleParams,
                     ),
                   ],
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: 4.h),
                 Row(
                   children: [
-                    const SizedBox(width: 16),
+                    SizedBox(width: 16.w),
                     _Meta(label: purposeLabel, value: veciInfo.purpose),
                   ],
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: 4.h),
                 Row(
                   children: [
-                    const SizedBox(width: 16),
+                    SizedBox(width: 16.w),
                     _Meta(label: remarkLabel, value: veciInfo.remark),
                   ],
                 ),
@@ -1403,7 +1411,7 @@ class _Meta extends StatelessWidget {
         '$label: ${value.isEmpty ? '--' : value}',
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
-        style: const TextStyle(color: Colors.white54, fontSize: 12),
+        style: TextStyle(color: Colors.white54, fontSize: 12.sp),
       ),
     );
   }
@@ -1421,7 +1429,7 @@ class _DistributionIpCell extends StatelessWidget {
       '$label: ${value.isEmpty ? '--' : value}',
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
-      style: const TextStyle(color: Colors.white54, fontSize: 12),
+      style: TextStyle(color: Colors.white54, fontSize: 12.sp),
     );
   }
 }

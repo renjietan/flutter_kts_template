@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_kts_template/core/cpds/model/cpds_enums.dart';
 import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class CpdsStatusBadge extends StatelessWidget {
   const CpdsStatusBadge({super.key, required this.status});
@@ -41,23 +42,23 @@ class CpdsStatusBadge extends StatelessWidget {
         break;
     }
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
       decoration: BoxDecoration(
         border: Border.all(color: color),
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(10.r),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: 5,
-            height: 5,
+            width: 5.w,
+            height: 5.h,
             decoration: BoxDecoration(color: color, shape: BoxShape.circle),
           ),
-          const SizedBox(width: 5),
+          SizedBox(width: 5.w),
           Text(
             text,
-            style: TextStyle(fontSize: 11, color: color),
+            style: TextStyle(fontSize: 11.sp, color: color),
           ),
         ],
       ),

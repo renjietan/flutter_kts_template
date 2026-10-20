@@ -1,4 +1,5 @@
 // ignore_for_file: cpd_lints/hardcoded_dimension
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_kts_template/utils/provider/keyloader.provider.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
@@ -106,36 +107,55 @@ mixin KeyLoaderMixin on State<KeyLoaderPager> {
 
     final isCreate = type == DialogTypeEnum.create;
 
-    SimpleFormDialog(
-      title: isCreate
-          ? t.button.injectEncrypt.createKeyLoader
-          : t.button.radioManager.edit,
-      confirmText: isCreate
-          ? t.button.injectEncrypt.create
-          : t.button.radioManager.save,
-      confirmBtnMinWidth: 160,
-      fields: [
-        FormFieldConfig(
-          name: 'name',
-          label: t.Form.injectEncrypt.name.label,
-          hintText: t.Form.injectEncrypt.name.placeholder,
-          textEditingController: nameTextEditController,
-          required: true,
-          validators: [
-            FormBuilderValidators.required(
-              errorText: t.Form.injectEncrypt.name.validate,
-            ),
-          ],
+    final title = isCreate
+        ? t.button.injectEncrypt.createKeyLoader
+        : t.button.radioManager.edit;
+    final confirmText = isCreate
+        ? t.button.injectEncrypt.create
+        : t.button.radioManager.save;
+    final fields = <FormFieldConfig>[
+      FormFieldConfig(
+        name: 'name',
+        label: t.Form.injectEncrypt.name.label,
+        hintText: t.Form.injectEncrypt.name.placeholder,
+        textEditingController: nameTextEditController,
+        required: true,
+        validators: [
+          FormBuilderValidators.required(
+            errorText: t.Form.injectEncrypt.name.validate,
+          ),
+        ],
+      ),
+    ];
+
+    void onConfirm(Map<String, dynamic> v) {
+      if (type == DialogTypeEnum.create) {
+        create(v);
+      } else {
+        update(data!, v);
+      }
+    }
+
+    if (defaultTargetPlatform != TargetPlatform.windows) {
+      await Navigator.of(context).push<void>(
+        MaterialPageRoute(
+          builder: (_) => SimpleFormPage(
+            title: title,
+            confirmText: confirmText,
+            fields: fields,
+            onConfirm: onConfirm,
+          ),
         ),
-      ],
-      onConfirm: (v) {
-        if (type == DialogTypeEnum.create) {
-          create(v);
-        } else {
-          update(data!, v);
-        }
-      },
-    );
+      );
+    } else {
+      SimpleFormDialog(
+        title: title,
+        confirmText: confirmText,
+        confirmBtnMinWidth: 160,
+        fields: fields,
+        onConfirm: onConfirm,
+      );
+    }
   }
 
   Widget buildEmptyWidget(BuildContext context) {

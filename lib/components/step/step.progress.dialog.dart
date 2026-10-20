@@ -1,5 +1,6 @@
 // ignore_for_file: cpd_lints/hardcoded_dimension
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_kts_template/components/button/base.button.dart';
 import 'package:flutter_kts_template/components/step/step.progress.model.dart';
 import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
@@ -78,23 +79,23 @@ class _StepProgressDialogState extends State<StepProgressDialog> {
       child: AlertDialog(
         backgroundColor: const Color(0xFF20262D),
         title: null,
-        contentPadding: const EdgeInsets.all(20),
+        contentPadding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 20.h),
         content: SizedBox(
-          width: 560,
+          width: 560.w,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               _buildStepBar(),
-              const SizedBox(height: 18),
+              SizedBox(height: 18.h),
               _buildDetailBox(),
               if (widget.onClose != null) ...[
-                const SizedBox(height: 16),
+                SizedBox(height: 16.h),
                 Center(
                   child: BaseButton(
                     label: Translations.of(context).common.close,
-                    minWidth: 96,
-                    height: 32,
+                    minWidth: 96.w,
+                    height: 32.h,
                     isLoading: _closing,
                     onPressed: _closing ? null : _handleClose,
                   ),
@@ -119,9 +120,9 @@ class _StepProgressDialogState extends State<StepProgressDialog> {
               if (i > 0)
                 Expanded(
                   child: Padding(
-                    padding: const EdgeInsets.only(top: 13),
+                    padding: EdgeInsets.only(top: 13.h),
                     child: Container(
-                      height: 2,
+                      height: 2.h,
                       color: i == widget.controller.terminatedStep
                           ? _danger
                           : i <= widget.controller.activeStep
@@ -158,32 +159,32 @@ class _StepProgressDialogState extends State<StepProgressDialog> {
         ? Colors.white
         : _dim;
     return SizedBox(
-      width: 64,
+      width: 64.w,
       child: Column(
         children: [
           Container(
-            width: 28,
-            height: 28,
+            width: 28.w,
+            height: 28.h,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: circleFill,
-              border: Border.all(color: circleBorder, width: 1.5),
+              border: Border.all(color: circleBorder, width: 1.5.w),
             ),
             alignment: Alignment.center,
             child: Text(
               localizeDigits(context, '$index'),
               style: TextStyle(
-                fontSize: 12,
+                fontSize: 12.sp,
                 fontWeight: FontWeight.w600,
                 color: numberColor,
               ),
             ),
           ),
-          const SizedBox(height: 6),
+          SizedBox(height: 6.h),
           Text(
             widget.controller.stepLabels[index],
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 12, color: labelColor),
+            style: TextStyle(fontSize: 12.sp, color: labelColor),
           ),
         ],
       ),
@@ -192,12 +193,12 @@ class _StepProgressDialogState extends State<StepProgressDialog> {
 
   Widget _buildDetailBox() {
     return Container(
-      height: 190,
-      padding: const EdgeInsets.all(10),
+      height: 190.h,
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 10.h),
       decoration: BoxDecoration(
         color: const Color(0xFF171C22),
         border: Border.all(color: _line),
-        borderRadius: BorderRadius.circular(4),
+        borderRadius: BorderRadius.circular(4.r),
       ),
       child: ListenableBuilder(
         listenable: widget.controller,
@@ -209,19 +210,19 @@ class _StepProgressDialogState extends State<StepProgressDialog> {
             itemBuilder: (context, index) {
               final line = lines[index];
               return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 3),
+                padding: EdgeInsets.symmetric(vertical: 3.h),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     if (line.number != null)
                       Text(
                         '[${localizeDigits(context, line.number ?? '')}] ',
-                        style: const TextStyle(fontSize: 12, color: _dim),
+                        style: TextStyle(fontSize: 12.sp, color: _dim),
                       ),
                     Expanded(
                       child: Text(
                         line.text,
-                        style: TextStyle(fontSize: 12, color: line.color),
+                        style: TextStyle(fontSize: 12.sp, color: line.color),
                       ),
                     ),
                   ],

@@ -27,6 +27,7 @@ import 'package:flutter_kts_template/core/entities/radios/radiosEntity.dart';
 import 'package:flutter_kts_template/core/rtc/managers/keyloader_usb_bulk_factory.dart';
 import 'package:flutter_kts_template/core/utils/director.dart';
 import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
+import 'package:flutter_kts_template/init/screen_strategy.dart';
 import 'package:flutter_kts_template/logger/logger.dart';
 import 'package:flutter_kts_template/objectbox.g.dart';
 import 'package:flutter_kts_template/pages/cpds/widgets/cpds_key_loader_file_dialog.dart';
@@ -34,13 +35,16 @@ import 'package:flutter_kts_template/pages/cpds/widgets/cpds_package_panel.dart'
 import 'package:flutter_kts_template/utils/devicePermission/requestPermissions.dart';
 import 'package:flutter_kts_template/utils/files/pick_files/FileSelector.dart';
 import 'package:flutter_kts_template/utils/provider/menu.provider.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:go_router/go_router.dart';
 import 'package:path/path.dart' as p;
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 
+import 'widgets/cpds_button_styles.dart';
 import 'widgets/cpds_change_password_dialog.dart';
+import 'widgets/cpds_change_password_page.dart';
 import 'widgets/cpds_device_panel.dart';
 import 'widgets/cpds_dialogs.dart';
 import 'widgets/cpds_messages.dart';
@@ -66,6 +70,7 @@ class _CpdsPageState extends State<CpdsPage> {
   StreamSubscription<CpdsApplicationState>? _subscription;
   final TextEditingController _nodeNameController = TextEditingController();
   final TextEditingController _veciRemarkController = TextEditingController();
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
@@ -340,14 +345,15 @@ class _CpdsPageState extends State<CpdsPage> {
           backgroundColor: const Color(0xFF20262D),
           title: Text(
             t.tips.title,
-            style: const TextStyle(color: Colors.white, fontSize: 17),
+            style: TextStyle(color: Colors.white, fontSize: 17.sp),
           ),
           content: Text(
             t.permission.no,
-            style: const TextStyle(color: Colors.white70, fontSize: 13),
+            style: TextStyle(color: Colors.white70, fontSize: 13.sp),
           ),
           actions: [
             TextButton(
+              style: cpdsTextButtonStyle(),
               onPressed: () {
                 if (closed) return;
                 closed = true;
@@ -359,6 +365,7 @@ class _CpdsPageState extends State<CpdsPage> {
               ),
             ),
             FilledButton(
+              style: cpdsFilledButtonStyle(),
               onPressed: () {
                 if (closed) return;
                 closed = true;
@@ -465,7 +472,7 @@ class _CpdsPageState extends State<CpdsPage> {
         backgroundColor: const Color(0xFF20262D),
         title: Text(
           Translations.of(dialogContext).tips.title,
-          style: const TextStyle(color: Colors.white, fontSize: 17),
+          style: TextStyle(color: Colors.white, fontSize: 17.sp),
         ),
         content: Text(
           CpdsMessages.tr(
@@ -474,10 +481,11 @@ class _CpdsPageState extends State<CpdsPage> {
             'File already exists. Overwrite?',
             'الملف موجود بالفعل. هل تريد الكتابة فوقه؟',
           ),
-          style: const TextStyle(color: Colors.white70, fontSize: 13),
+          style: TextStyle(color: Colors.white70, fontSize: 13.sp),
         ),
         actions: [
           TextButton(
+            style: cpdsTextButtonStyle(),
             onPressed: () => Navigator.of(dialogContext).pop(false),
             child: Text(
               Translations.of(dialogContext).tips.cancel,
@@ -485,6 +493,7 @@ class _CpdsPageState extends State<CpdsPage> {
             ),
           ),
           FilledButton(
+            style: cpdsFilledButtonStyle(),
             onPressed: () => Navigator.of(dialogContext).pop(true),
             child: Text(
               CpdsMessages.tr(dialogContext, '覆盖', 'Overwrite', 'الكتابة فوقه'),
@@ -569,7 +578,7 @@ class _CpdsPageState extends State<CpdsPage> {
             backgroundColor: const Color(0xFF20262D),
             title: Text(
               Translations.of(dialogContext).tips.title,
-              style: const TextStyle(color: Colors.white, fontSize: 17),
+              style: TextStyle(color: Colors.white, fontSize: 17.sp),
             ),
             content: Text(
               CpdsMessages.tr(
@@ -578,10 +587,11 @@ class _CpdsPageState extends State<CpdsPage> {
                 'No local file to load. Select now?',
                 'لا يوجد ملف محلي قابل للتحميل. هل تريد الاختيار الآن؟',
               ),
-              style: const TextStyle(color: Colors.white70, fontSize: 13),
+              style: TextStyle(color: Colors.white70, fontSize: 13.sp),
             ),
             actions: [
               TextButton(
+                style: cpdsTextButtonStyle(),
                 onPressed: () => Navigator.of(dialogContext).pop(false),
                 child: Text(
                   Translations.of(dialogContext).tips.cancel,
@@ -589,6 +599,7 @@ class _CpdsPageState extends State<CpdsPage> {
                 ),
               ),
               FilledButton(
+                style: cpdsFilledButtonStyle(),
                 onPressed: () => Navigator.of(dialogContext).pop(true),
                 child: Text(Translations.of(dialogContext).common.confirm),
               ),
@@ -645,21 +656,26 @@ class _CpdsPageState extends State<CpdsPage> {
           backgroundColor: const Color(0xFF20262D),
           title: Text(
             t.tips.title,
-            style: const TextStyle(color: Colors.white, fontSize: 17),
+            style: TextStyle(color: Colors.white, fontSize: 17.sp),
           ),
           content: Text(
             t.cpds.browseConfirm,
-            style: const TextStyle(color: Colors.white70, fontSize: 13),
+            style: TextStyle(color: Colors.white70, fontSize: 13.sp),
           ),
           actions: [
             TextButton(
+              style: cpdsTextButtonStyle(),
               onPressed: () => close(false),
               child: Text(
                 t.tips.cancel,
                 style: const TextStyle(color: Colors.white70),
               ),
             ),
-            FilledButton(onPressed: () => close(true), child: Text(t.tips.ok)),
+            FilledButton(
+              style: cpdsFilledButtonStyle(),
+              onPressed: () => close(true),
+              child: Text(t.tips.ok),
+            ),
           ],
         );
       },
@@ -672,6 +688,7 @@ class _CpdsPageState extends State<CpdsPage> {
   }
 
   Future<void> _selectNode(String nodeId) async {
+    _openDevicePanelOnPhone();
     if (_state.active) return;
     try {
       _applyState(await CpdsApi.selectNode(nodeId));
@@ -680,7 +697,18 @@ class _CpdsPageState extends State<CpdsPage> {
     }
   }
 
+  void _openDevicePanelOnPhone() {
+    final isPhone =
+        defaultTargetPlatform == TargetPlatform.android &&
+        MediaQuery.sizeOf(context).width <
+            ScreenStrategy.masterDetailBreakpoint;
+    if (isPhone) {
+      _scaffoldKey.currentState?.openEndDrawer();
+    }
+  }
+
   Future<void> _selectFutureWarrior(String unitId) async {
+    _openDevicePanelOnPhone();
     if (_state.active) return;
     try {
       _applyState(await CpdsApi.selectFutureWarrior(unitId));
@@ -861,7 +889,7 @@ class _CpdsPageState extends State<CpdsPage> {
           textEditingController: _veciRemarkController,
           showLabelText: false,
           fullWidth: true,
-          height: 120,
+          height: 120.h,
           inputFormatters: [LengthLimitingTextInputFormatter(200)],
           counterTextBuilder: (value) =>
               CpdsMessages.digits(context, '${value.characters.length}/200'),
@@ -932,24 +960,32 @@ class _CpdsPageState extends State<CpdsPage> {
 
   Future<void> _changePassword() async {
     if (_state.active) return;
-    final ok = await showDialog<bool>(
-      context: context,
-      barrierDismissible: false,
-      builder: (dialogContext) => CpdsChangePasswordDialog(
-        onSubmit: (oldPassword, newPassword) async {
-          try {
-            await CpdsManager.instance.changePcPassword(
-              oldPassword,
-              newPassword,
-            );
-            return null;
-          } catch (error) {
-            GlobalLogger.logError('CHANGE_PC_PASSWORD_FAILED $error');
-            return _pcPasswordChangeError(error);
-          }
-        },
-      ),
-    );
+    Future<String?> onSubmit(String oldPassword, String newPassword) async {
+      try {
+        await CpdsManager.instance.changePcPassword(oldPassword, newPassword);
+        return null;
+      } catch (error) {
+        GlobalLogger.logError('CHANGE_PC_PASSWORD_FAILED $error');
+        return _pcPasswordChangeError(error);
+      }
+    }
+
+    final bool? ok;
+    if (defaultTargetPlatform == TargetPlatform.windows) {
+      ok = await showDialog<bool>(
+        context: context,
+        barrierDismissible: false,
+        builder: (dialogContext) =>
+            CpdsChangePasswordDialog(onSubmit: onSubmit),
+      );
+    } else {
+      ok = await Navigator.of(context).push<bool>(
+        MaterialPageRoute(
+          builder: (_) => CpdsChangePasswordPage(onSubmit: onSubmit),
+        ),
+      );
+    }
+
     if (ok == true && mounted) {
       SimplePopup.success(
         CpdsMessages.tr(
@@ -1095,14 +1131,15 @@ class _CpdsPageState extends State<CpdsPage> {
             backgroundColor: const Color(0xFF20262D),
             title: Text(
               t.tips.title,
-              style: const TextStyle(color: Colors.white, fontSize: 17),
+              style: TextStyle(color: Colors.white, fontSize: 17.sp),
             ),
             content: Text(
               noDeviceMessage,
-              style: const TextStyle(color: Colors.white70, fontSize: 13),
+              style: TextStyle(color: Colors.white70, fontSize: 13.sp),
             ),
             actions: [
               FilledButton(
+                style: cpdsFilledButtonStyle(),
                 onPressed: () {
                   if (closed) return;
                   closed = true;
@@ -1133,14 +1170,15 @@ class _CpdsPageState extends State<CpdsPage> {
           backgroundColor: const Color(0xFF20262D),
           title: Text(
             t.tips.title,
-            style: const TextStyle(color: Colors.white, fontSize: 17),
+            style: TextStyle(color: Colors.white, fontSize: 17.sp),
           ),
           content: Text(
             t.cpds.keyLoaderPermissionDenied,
-            style: const TextStyle(color: Colors.white70, fontSize: 13),
+            style: TextStyle(color: Colors.white70, fontSize: 13.sp),
           ),
           actions: [
             TextButton(
+              style: cpdsTextButtonStyle(),
               onPressed: () {
                 if (closed) return;
                 closed = true;
@@ -1152,6 +1190,7 @@ class _CpdsPageState extends State<CpdsPage> {
               ),
             ),
             FilledButton(
+              style: cpdsFilledButtonStyle(),
               onPressed: () {
                 if (closed) return;
                 closed = true;
@@ -1225,18 +1264,24 @@ class _CpdsPageState extends State<CpdsPage> {
     }
 
     if (!mounted) return;
-    showDialog<void>(
-      context: context,
-      builder: (_) => CpdsFutureWarriorSaveDialog(
-        devices: devices,
-        unitId: unitId,
-        units: _state.package?.units ?? const [],
-        keyLoaders: keyLoaders,
-        onSave: (json) {
-          unawaited(_persistFutureWarrior(json));
-        },
-      ),
+    final Widget saveForm = CpdsFutureWarriorSaveDialog(
+      devices: devices,
+      unitId: unitId,
+      units: _state.package?.units ?? const [],
+      keyLoaders: keyLoaders,
+      usePage: defaultTargetPlatform != TargetPlatform.windows,
+      onSave: (json) {
+        unawaited(_persistFutureWarrior(json));
+      },
     );
+
+    if (defaultTargetPlatform != TargetPlatform.windows) {
+      await Navigator.of(
+        context,
+      ).push<void>(MaterialPageRoute(builder: (_) => saveForm));
+    } else {
+      showDialog<void>(context: context, builder: (_) => saveForm);
+    }
   }
 
   Future<void> _persistFutureWarrior(Map<String, dynamic> json) async {
@@ -1343,14 +1388,15 @@ class _CpdsPageState extends State<CpdsPage> {
           backgroundColor: const Color(0xFF20262D),
           title: Text(
             dialogTitle,
-            style: const TextStyle(color: Colors.white, fontSize: 17),
+            style: TextStyle(color: Colors.white, fontSize: 17.sp),
           ),
           content: Text(
             error.toString().replaceFirst('Exception: ', ''),
-            style: const TextStyle(color: Colors.white70, fontSize: 13),
+            style: TextStyle(color: Colors.white70, fontSize: 13.sp),
           ),
           actions: [
             FilledButton(
+              style: cpdsFilledButtonStyle(),
               onPressed: () {
                 if (closed) return;
                 closed = true;
@@ -1366,51 +1412,60 @@ class _CpdsPageState extends State<CpdsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final isPhone =
+        defaultTargetPlatform == TargetPlatform.android &&
+        MediaQuery.sizeOf(context).width <
+            ScreenStrategy.masterDetailBreakpoint;
+
+    final packagePanel = CpdsPackagePanel(
+      state: _state,
+      uploading: _uploading,
+      onBrowse: _browse,
+      onSelectNode: _selectNode,
+      onSelectFutureWarrior: _selectFutureWarrior,
+      onEditNode: _editNode,
+      onChangePassword: _changePassword,
+    );
+
+    final devicePanel = CpdsDevicePanel(
+      state: _state,
+      interfaces: CpdsManager.instance.interfaces,
+      selectedInterfaceName: CpdsManager.instance.selectedInterfaceName,
+      automaticInterface: CpdsManager.instance.automaticInterface,
+      interfacesLoading: CpdsManager.instance.interfacesLoading,
+      canDistribute: _state.canDistribute,
+      distributing: _distributing || _state.active,
+      onRefreshInterfaces: _refreshNetworkInterfaces,
+      onSelectInterface: _selectInterface,
+      onDistribute: _distribute,
+      onSaveFutureWarrior: _saveFutureWarrior,
+      onEditVeciInfo: _editVeciInfo,
+    );
+
     final page = Scaffold(
+      key: _scaffoldKey,
       backgroundColor: const Color(0xFF0E1114),
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          return Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Expanded(
-                child: CpdsPackagePanel(
-                  state: _state,
-                  uploading: _uploading,
-                  onBrowse: _browse,
-                  onSelectNode: _selectNode,
-                  onSelectFutureWarrior: _selectFutureWarrior,
-                  onEditNode: _editNode,
-                  onChangePassword: _changePassword,
+      endDrawer: isPhone
+          ? Drawer(
+              width: MediaQuery.sizeOf(context).width * 0.8,
+              backgroundColor: const Color(0xFF171C22),
+              child: devicePanel,
+            )
+          : null,
+      body: isPhone
+          ? packagePanel
+          : Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(child: packagePanel),
+                VerticalDivider(
+                  thickness: 1.w,
+                  width: 1.w,
+                  color: const Color(0x40FFFFFF),
                 ),
-                flex: 1,
-              ),
-              const VerticalDivider(
-                thickness: 1,
-                width: 1,
-                color: Color(0x40FFFFFF),
-              ),
-              Expanded(
-                child: CpdsDevicePanel(
-                  state: _state,
-                  interfaces: CpdsManager.instance.interfaces,
-                  selectedInterfaceName:
-                      CpdsManager.instance.selectedInterfaceName,
-                  automaticInterface: CpdsManager.instance.automaticInterface,
-                  interfacesLoading: CpdsManager.instance.interfacesLoading,
-                  canDistribute: _state.canDistribute,
-                  distributing: _distributing || _state.active,
-                  onRefreshInterfaces: _refreshNetworkInterfaces,
-                  onSelectInterface: _selectInterface,
-                  onDistribute: _distribute,
-                  onSaveFutureWarrior: _saveFutureWarrior,
-                  onEditVeciInfo: _editVeciInfo,
-                ),
-              ),
-            ],
-          );
-        },
-      ),
+                Expanded(child: devicePanel),
+              ],
+            ),
     );
 
     // Flutter Windows 引擎的已知无障碍语义树 bug：选中节点触发整页重建时，
@@ -1549,127 +1604,185 @@ class _CpdsPcPasswordDialogState extends State<_CpdsPcPasswordDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final dialog = AlertDialog(
-      backgroundColor: const Color(0xFF20262D),
-      title: Text(
-        CpdsMessages.tr(
-          context,
-          '输入注钥包密码',
-          'Enter keyloader password',
-          'أدخل كلمة مرور حزمة المفاتيح',
-        ),
-        style: const TextStyle(color: Colors.white, fontSize: 17),
+    final isPhone =
+        defaultTargetPlatform == TargetPlatform.android &&
+        MediaQuery.sizeOf(context).width <
+            ScreenStrategy.masterDetailBreakpoint;
+    debugPrint(
+      '[CPDS_PWD_DIALOG] platform=${defaultTargetPlatform.name} '
+      'size=${MediaQuery.sizeOf(context)} isPhone=$isPhone '
+      'viewInsetsBottom=${MediaQuery.viewInsetsOf(context).bottom}',
+    );
+    final title = Text(
+      CpdsMessages.tr(
+        context,
+        '输入注钥包密码',
+        'Enter keyloader password',
+        'أدخل كلمة مرور حزمة المفاتيح',
       ),
-      content: SizedBox(
-        width: 420,
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextFormField(
-                controller: _controller,
-                obscureText: _obscure,
-                keyboardType: TextInputType.number,
-                inputFormatters: [
-                  FilteringTextInputFormatter.digitsOnly,
-                  LengthLimitingTextInputFormatter(8),
-                ],
-                autofocus: true,
-                validator: _validate,
-                onFieldSubmitted: (_) => _submit(),
-                style: const TextStyle(color: Colors.white, fontSize: 14),
-                decoration: InputDecoration(
-                  labelText: CpdsMessages.tr(
-                    context,
-                    '密码',
-                    'Password',
-                    'كلمة المرور',
-                  ),
-                  hintText: CpdsMessages.tr(
-                    context,
-                    '请输入8位数字',
-                    'Please enter 8 digits',
-                    'أدخل 8 أرقام',
-                  ),
-                  labelStyle: const TextStyle(color: Colors.white70),
-                  hintStyle: const TextStyle(color: Colors.white38),
-                  suffixIcon: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        '${_controller.text.length}/8',
-                        style: const TextStyle(
-                          color: Colors.white54,
-                          fontSize: 12,
-                        ),
+      style: TextStyle(color: Colors.white, fontSize: 17.sp),
+    );
+
+    final form = SizedBox(
+      width: 420.w,
+      child: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextFormField(
+              controller: _controller,
+              obscureText: _obscure,
+              keyboardType: TextInputType.number,
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+                LengthLimitingTextInputFormatter(8),
+              ],
+              autofocus: true,
+              validator: _validate,
+              onFieldSubmitted: (_) => _submit(),
+              style: TextStyle(color: Colors.white, fontSize: 13.sp),
+              decoration: InputDecoration(
+                labelText: CpdsMessages.tr(
+                  context,
+                  '密码',
+                  'Password',
+                  'كلمة المرور',
+                ),
+                hintText: CpdsMessages.tr(
+                  context,
+                  '请输入8位数字',
+                  'Please enter 8 digits',
+                  'أدخل 8 أرقام',
+                ),
+                labelStyle: const TextStyle(color: Colors.white70),
+                hintStyle: const TextStyle(color: Colors.white38),
+                isDense: true,
+                contentPadding: EdgeInsets.symmetric(horizontal: 12.w),
+                suffixIcon: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      '${_controller.text.length}/8',
+                      style: TextStyle(color: Colors.white54, fontSize: 12.sp),
+                    ),
+                    IconButton(
+                      onPressed: () => setState(() => _obscure = !_obscure),
+                      iconSize: 18,
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      icon: Icon(
+                        _obscure ? Icons.visibility_off : Icons.visibility,
+                        color: Colors.white70,
                       ),
-                      IconButton(
-                        onPressed: () => setState(() => _obscure = !_obscure),
-                        icon: Icon(
-                          _obscure ? Icons.visibility_off : Icons.visibility,
-                          color: Colors.white70,
-                        ),
+                    ),
+                  ],
+                ),
+                filled: true,
+                fillColor: const Color(0xFF282D33),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(4.r),
+                ),
+              ),
+            ),
+            if (_errorText != null) ...[
+              SizedBox(height: 8.h),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  _errorText!,
+                  style: TextStyle(color: Color(0xFFF15B64), fontSize: 12.sp),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+
+    final actions = <Widget>[
+      if (CpdsManager.instance.showCancel)
+        TextButton(
+          style: cpdsTextButtonStyle(),
+          onPressed: _loading
+              ? null
+              : () {
+                  Navigator.of(context).pop(const _CpdsPcPasswordExit());
+                },
+          child: Text(
+            Translations.of(context).tips.cancel,
+            style: const TextStyle(color: Colors.white70),
+          ),
+        ),
+      FilledButton(
+        style: cpdsFilledButtonStyle(),
+        onPressed: _loading ? null : _submit,
+        child: _loading
+            ? SizedBox(
+                width: 16.w,
+                height: 16.h,
+                child: const CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Colors.white,
+                ),
+              )
+            : Text(Translations.of(context).common.confirm),
+      ),
+    ];
+
+    final Widget result;
+    if (isPhone) {
+      result = AnimatedPadding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.viewInsetsOf(context).bottom,
+        ),
+        duration: const Duration(milliseconds: 150),
+        curve: Curves.easeOut,
+        child: Align(
+          alignment: Alignment.bottomCenter,
+          child: OverflowBox(
+            alignment: Alignment.bottomCenter,
+            maxHeight: double.infinity,
+            child: Material(
+              color: const Color(0xFF20262D),
+              borderRadius: BorderRadius.circular(28.r),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minWidth: 280.w, maxWidth: 420.w),
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(24.w, 24.h, 24.w, 24.h),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      title,
+                      SizedBox(height: 16.h),
+                      form,
+                      SizedBox(height: 16.h),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: actions,
                       ),
                     ],
                   ),
-                  filled: true,
-                  fillColor: const Color(0xFF282D33),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(4),
-                  ),
                 ),
               ),
-              if (_errorText != null) ...[
-                const SizedBox(height: 8),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    _errorText!,
-                    style: const TextStyle(
-                      color: Color(0xFFF15B64),
-                      fontSize: 12,
-                    ),
-                  ),
-                ),
-              ],
-            ],
-          ),
-        ),
-      ),
-      actions: [
-        if (CpdsManager.instance.showCancel)
-          TextButton(
-            onPressed: _loading
-                ? null
-                : () {
-                    Navigator.of(context).pop(const _CpdsPcPasswordExit());
-                  },
-            child: Text(
-              Translations.of(context).tips.cancel,
-              style: const TextStyle(color: Colors.white70),
             ),
           ),
-        FilledButton(
-          onPressed: _loading ? null : _submit,
-          child: _loading
-              ? const SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: Colors.white,
-                  ),
-                )
-              : Text(Translations.of(context).common.confirm),
         ),
-      ],
-    );
+      );
+    } else {
+      result = AlertDialog(
+        backgroundColor: const Color(0xFF20262D),
+        title: title,
+        content: form,
+        actions: actions,
+      );
+    }
 
-    if (!widget.frostedGlass) return dialog;
+    if (!widget.frostedGlass) return result;
     return BackdropFilter(
       filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-      child: dialog,
+      child: result,
     );
   }
 }
@@ -1701,13 +1814,13 @@ class _CpdsBrowseSourceDialogState extends State<_CpdsBrowseSourceDialog> {
       backgroundColor: const Color(0xFF20262D),
       title: Text(
         t.cpds.browseSourceTitle,
-        style: const TextStyle(color: Colors.white, fontSize: 17),
+        style: TextStyle(color: Colors.white, fontSize: 17.sp),
       ),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           _buildOption(t.cpds.browseSourceLocal, _CpdsBrowseSource.local),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
           _buildOption(
             t.cpds.browseSourceKeyLoader,
             _CpdsBrowseSource.keyLoader,
@@ -1716,6 +1829,7 @@ class _CpdsBrowseSourceDialogState extends State<_CpdsBrowseSourceDialog> {
       ),
       actions: [
         TextButton(
+          style: cpdsTextButtonStyle(),
           onPressed: () => _close(null),
           child: Text(
             t.tips.cancel,
@@ -1723,6 +1837,7 @@ class _CpdsBrowseSourceDialogState extends State<_CpdsBrowseSourceDialog> {
           ),
         ),
         FilledButton(
+          style: cpdsFilledButtonStyle(),
           onPressed: () => _close(_selected),
           child: Text(t.tips.ok),
         ),
@@ -1738,7 +1853,7 @@ class _CpdsBrowseSourceDialogState extends State<_CpdsBrowseSourceDialog> {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         decoration: BoxDecoration(
           color: selected ? const Color(0xFF0E1114) : Colors.transparent,
-          borderRadius: BorderRadius.circular(4),
+          borderRadius: BorderRadius.circular(4.r),
           border: Border.all(
             color: selected ? const Color(0xFF00A2E9) : const Color(0x26FFFFFF),
           ),
@@ -1749,16 +1864,16 @@ class _CpdsBrowseSourceDialogState extends State<_CpdsBrowseSourceDialog> {
               selected
                   ? Icons.radio_button_checked
                   : Icons.radio_button_unchecked,
-              size: 18,
+              size: 18.w,
               color: selected ? const Color(0xFF00A2E9) : Colors.white54,
             ),
-            const SizedBox(width: 10),
+            SizedBox(width: 10.w),
             Expanded(
               child: Text(
                 label,
                 style: TextStyle(
                   color: selected ? Colors.white : Colors.white70,
-                  fontSize: 13,
+                  fontSize: 13.sp,
                 ),
               ),
             ),

@@ -9,6 +9,7 @@ import 'package:flutter_kts_template/core/utils/director.dart';
 import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 import 'package:flutter_kts_template/pages/layout/sideMenu/sideMenu.dart';
 import 'package:flutter_kts_template/pages/layout/switchLanguage/switchLanguage.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:go_router/go_router.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -103,24 +104,26 @@ class MainLayout extends StatelessWidget {
         // 键盘弹起时，页面重新调整大小以适应键盘
         resizeToAvoidBottomInset: false,
         appBar: PreferredSize(
-          preferredSize: const Size.fromHeight(48),
+          preferredSize: Size.fromHeight(48.h),
           child: AppBar(
+            primary: true,
+            toolbarHeight: 48.h,
             title: Row(
               mainAxisSize: MainAxisSize.max,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 // Icon(HyIcons., size: 20),
-                const SizedBox(width: 5),
+                SizedBox(width: 5.w),
                 Image.asset(
                   'assets/appbar/logo.png',
-                  height: 20,
+                  height: 20.h,
                   fit: BoxFit.contain,
                 ),
-                const SizedBox(width: 7),
-                const Text(
+                SizedBox(width: 7.w),
+                Text(
                   AppConfig.appName,
                   style: TextStyle(
-                    fontSize: 18,
+                    fontSize: 18.sp,
                     fontWeight: FontWeight.w500,
                     letterSpacing: 0.5,
                   ),
