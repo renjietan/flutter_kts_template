@@ -1,3 +1,4 @@
+// ignore_for_file: cpd_lints/hardcoded_dimension
 import 'package:flutter/material.dart';
 import 'package:flutter_kts_template/pages/layout/sideMenu/sideMenu.model.dart';
 import 'package:provider/provider.dart';

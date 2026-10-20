@@ -467,6 +467,7 @@ selfUpdate:
   writeSuccess: نجحت الكتابة
   writeFailedStatus: فشلت الكتابة
   writeTimeout: مهلة الكتابة
+  writeWriting: جارٍ الكتابة
   updateSuccess: نجح التحديث
   receiptFailedStatus: فشل الإيصال
   receiptTimeout: مهلة الإيصال

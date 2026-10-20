@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class TextTitle extends StatelessWidget {
   final String text;
@@ -21,7 +22,7 @@ class TextTitle extends StatelessWidget {
       overflow: TextOverflow.ellipsis,
       style: TextStyle(
         color: color ?? Colors.white,
-        fontSize: fontSize ?? 16,
+        fontSize: (fontSize ?? 16).sp,
         fontWeight: fontWeight ?? FontWeight.w500,
       ),
     );

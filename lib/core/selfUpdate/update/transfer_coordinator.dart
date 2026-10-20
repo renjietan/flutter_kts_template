@@ -492,30 +492,37 @@ class TransferCoordinator {
       fileName: _fileName,
     );
 
-    var lastReplies = <WriteResultReply>[];
+    _clearWriteResults();
+    for (final device in _selectedDevices) {
+      device.status = t.selfUpdate.writeWriting;
+      controller.updateDevice(device);
+    }
     for (var window = 0; window < UpdateSession.maxAttempts; window++) {
       _laterReplies.addAll(session.extractUpdateReplies());
 
-      final replies = await session.collectUntil<WriteResultReply>(
+      await session.collectUntil<WriteResultReply>(
         command: command,
         timeout: writeTimeout,
         attempts: 1,
         matches: (reply) => reply is WriteResultReply,
         isDone: (collected) {
-          final okKeys = collected
-              .where((r) => r.ok)
-              .map((r) => deviceKey(r.deviceType, r.ip))
-              .toSet();
-          return okKeys.containsAll(_deviceKeys);
+          _applyWriteReplies(collected);
+          return _allWriteSuccess();
         },
       );
-      lastReplies = replies;
-      if (_allWriteOk(lastReplies)) {
+      if (_allWriteSuccess()) {
         break;
       }
     }
 
-    _markWriteDevices(lastReplies);
+    for (final device in _selectedDevices) {
+      if (device.status != t.selfUpdate.writeSuccess &&
+          device.status != t.selfUpdate.writeFailedStatus) {
+        device.status = t.selfUpdate.writeTimeout;
+        device.result = t.selfUpdate.writeTimeout;
+        device.detail = '';
+      }
+    }
 
     if (_selectedDevices.every((d) => d.status == t.selfUpdate.writeSuccess)) {
       controller.setStepStatus(5, StepStatus.success);
@@ -546,18 +553,14 @@ class TransferCoordinator {
     await runWrite();
   }
 
-  bool _allWriteOk(List<WriteResultReply> replies) {
-    final okKeys = replies
-        .where((r) => r.ok)
-        .map((r) => deviceKey(r.deviceType, r.ip))
-        .toSet();
-    return okKeys.containsAll(_deviceKeys);
+  bool _allWriteSuccess() {
+    return _selectedDevices.every(
+      (d) => d.status == t.selfUpdate.writeSuccess,
+    );
   }
 
-  void _markWriteDevices(List<WriteResultReply> replies) {
-    final replied = <String>{};
+  void _applyWriteReplies(List<WriteResultReply> replies) {
     for (final reply in replies) {
-      replied.add(deviceKey(reply.deviceType, reply.ip));
       final device = _selectedDevices.where(
         (d) => d.rawIp == reply.ip && d.type == reply.deviceType,
       );
@@ -565,6 +568,10 @@ class TransferCoordinator {
         continue;
       }
       final target = device.first;
+      // 已经写入成功的设备，忽略后续任何回复（含重启后的重复 write 噪声）。
+      if (target.status == t.selfUpdate.writeSuccess) {
+        continue;
+      }
       if (reply.ok) {
         target.status = t.selfUpdate.writeSuccess;
         target.result = '';
@@ -574,13 +581,7 @@ class TransferCoordinator {
         target.result = t.selfUpdate.writeFailedStatus;
         target.detail = selfUpdateFailReasonText(reply.reason ?? 'unknown');
       }
-    }
-    for (final device in _selectedDevices) {
-      if (!replied.contains(deviceKey(device.type, device.rawIp))) {
-        device.status = t.selfUpdate.writeTimeout;
-        device.result = t.selfUpdate.writeTimeout;
-        device.detail = '';
-      }
+      controller.updateDevice(target);
     }
   }
 
@@ -702,6 +703,7 @@ class TransferCoordinator {
     for (final device in _selectedDevices) {
       device.status = '';
       device.result = '';
+      device.detail = '';
     }
   }
 

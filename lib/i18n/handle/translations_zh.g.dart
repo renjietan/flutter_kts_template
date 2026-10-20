@@ -980,6 +980,9 @@ class Translations$selfUpdate$zh {
 	/// zh: '写入超时'
 	String get writeTimeout => '写入超时';
 
+	/// zh: '写入中'
+	String get writeWriting => '写入中';
+
 	/// zh: '更新成功'
 	String get updateSuccess => '更新成功';
 

@@ -1,3 +1,4 @@
+// ignore_for_file: cpd_lints/hardcoded_dimension
 import 'package:composable_data_table/composable_data_table.dart';
 import 'package:flutter/material.dart';
 

@@ -33,6 +33,13 @@ class AndroidUsbBulkManager implements KeyLoaderUsbBulkManager {
   Stream<Uint8List>? _dataStream;
   Stream<void>? _disconnectStream;
 
+  /// 当前是否检测到目标注钥枪（已枚举到 USB 设备，但可能尚未授权）。
+  @override
+  Future<bool> hasDevice() async {
+    final value = await _channel.invokeMethod<bool>('hasDevice');
+    return value ?? false;
+  }
+
   /// 当前是否有目标注钥枪的 USB 权限。
   @override
   Future<bool> hasPermission() async {

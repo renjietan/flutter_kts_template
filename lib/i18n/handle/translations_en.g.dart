@@ -516,6 +516,7 @@ class _Translations$selfUpdate$en extends Translations$selfUpdate$zh {
 	@override String get writeSuccess => 'Write succeeded';
 	@override String get writeFailedStatus => 'Write failed';
 	@override String get writeTimeout => 'Write timeout';
+	@override String get writeWriting => 'Writing';
 	@override String get updateSuccess => 'Update succeeded';
 	@override String get receiptFailedStatus => 'Receipt failed';
 	@override String get receiptTimeout => 'Receipt timeout';

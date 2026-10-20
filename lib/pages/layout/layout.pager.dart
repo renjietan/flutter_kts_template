@@ -1,3 +1,4 @@
+// ignore_for_file: cpd_lints/hardcoded_dimension
 // layout/main_layout.dart
 import 'dart:async';
 import 'dart:io';

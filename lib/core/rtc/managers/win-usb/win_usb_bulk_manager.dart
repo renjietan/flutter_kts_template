@@ -53,6 +53,9 @@ class WinUsbBulkManager implements KeyLoaderUsbBulkManager {
   Future<bool> isConnected() async => _connected;
 
   @override
+  Future<bool> hasDevice() async => true;
+
+  @override
   Future<bool> hasPermission() async => true;
 
   @override

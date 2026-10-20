@@ -23,6 +23,7 @@ Flutter 多平台应用（Android / iOS / Windows 等），业务聚焦 CPD/CPDS
 
 ## 验证命令（全部通过才算完成）
 - 静态分析：`fvm flutter analyze`
+- 防回归规则（analysis_server_plugin；`flutter analyze` 在 Flutter 3.44+ 会漏掉插件诊断，故单独用 `dart analyze` 作规则门禁）：`fvm dart analyze --no-use-aot-snapshot`
 - 单元/组件测试：`fvm flutter test`
 - 格式校验：`fvm dart format --output=none --set-exit-if-changed lib test`
 - 构建（按需）：`fvm flutter build apk --release --split-per-abi`

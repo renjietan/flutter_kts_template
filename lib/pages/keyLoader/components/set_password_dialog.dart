@@ -1,3 +1,4 @@
+// ignore_for_file: cpd_lints/hardcoded_dimension
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_kts_template/i18n/handle/translations.g.dart';

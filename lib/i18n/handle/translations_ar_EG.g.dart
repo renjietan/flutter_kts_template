@@ -516,6 +516,7 @@ class Translations$selfUpdate$ar_EG extends Translations$selfUpdate$zh {
 	@override String get writeSuccess => 'نجحت الكتابة';
 	@override String get writeFailedStatus => 'فشلت الكتابة';
 	@override String get writeTimeout => 'مهلة الكتابة';
+	@override String get writeWriting => 'جارٍ الكتابة';
 	@override String get updateSuccess => 'نجح التحديث';
 	@override String get receiptFailedStatus => 'فشل الإيصال';
 	@override String get receiptTimeout => 'مهلة الإيصال';
