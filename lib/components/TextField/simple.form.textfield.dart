@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
@@ -65,40 +66,40 @@ class _SimpleFormTextFieldState extends State<SimpleFormTextField> {
             : null,
         isDense: true,
         contentPadding: EdgeInsets.symmetric(
-          vertical: widget.contentPadding,
-          horizontal: 14,
+          vertical: widget.contentPadding.h,
+          horizontal: 14.w,
         ),
         labelStyle: TextStyle(
           color: Colors.white,
-          fontSize: (widget.labelFontSize ?? 13),
+          fontSize: (widget.labelFontSize ?? 13).sp,
         ),
         hintStyle: TextStyle(
           color: Colors.white,
-          fontSize: (widget.labelFontSize ?? 13),
+          fontSize: (widget.labelFontSize ?? 13).sp,
         ),
         suffixText: counter,
-        suffixStyle: const TextStyle(color: Colors.white54, fontSize: 12),
+        suffixStyle: TextStyle(color: Colors.white54, fontSize: 12.sp),
         filled: true,
         fillColor: widget.fillColor,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(5),
+          borderRadius: BorderRadius.circular(5.r),
           borderSide: BorderSide(color: Color(0xFF404040)),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(5),
+          borderRadius: BorderRadius.circular(5.r),
           borderSide: BorderSide(color: Color(0xFF404040)),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(5),
+          borderRadius: BorderRadius.circular(5.r),
           borderSide: BorderSide(color: Color(0xFF64B5F6)),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(5),
+          borderRadius: BorderRadius.circular(5.r),
           borderSide: const BorderSide(color: Colors.red),
         ),
         focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: Colors.red, width: 2),
+          borderRadius: BorderRadius.circular(8.r),
+          borderSide: BorderSide(color: Colors.red, width: 2.w),
         ),
       ),
     );
@@ -106,7 +107,7 @@ class _SimpleFormTextFieldState extends State<SimpleFormTextField> {
     if (height == null) {
       return textField;
     }
-    return SizedBox(height: height, child: textField);
+    return SizedBox(height: height.h, child: textField);
   }
 }
 

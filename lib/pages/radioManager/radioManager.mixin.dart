@@ -1,6 +1,7 @@
 import 'package:composable_data_table/composable_data_table.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/material.dart' as material;
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_kts_template/components/button/base.button.dart';
@@ -115,11 +116,11 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
         backgroundColor: const Color(0xFF20262D),
         title: Text(
           t.tips.title,
-          style: const TextStyle(color: Colors.white, fontSize: 17),
+          style: TextStyle(color: Colors.white, fontSize: 17.sp),
         ),
         content: Text(
           t.tips.keyLoaders.confirmDelete,
-          style: const TextStyle(color: Colors.white70, fontSize: 13),
+          style: TextStyle(color: Colors.white70, fontSize: 13.sp),
         ),
         actions: [
           TextButton(
@@ -234,16 +235,16 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
   Widget buildToolbar(BuildContext context) {
     final t = Translations.of(context);
     return TableFilterToolbar(
-      padding: EdgeInsets.all(12),
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
       mainFilters: [
         Padding(
-          padding: EdgeInsets.only(top: 6),
+          padding: EdgeInsets.only(top: 6.h),
           child: TextTitle(text: t.pager.radioManager.title),
         ),
       ],
       trailingActions: [
         SimpleFilterSearchField(
-          height: 36,
+          height: 34.h,
           controller: searchFieldController,
           textInputAction: TextInputAction.done,
           onChanged: (value) {
@@ -266,10 +267,10 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
             getList();
           },
         ),
-        const SizedBox(width: 8),
+        SizedBox(width: 8.w),
         SimpleDarkDropdown<String>(
-          width: 140,
-          height: 36,
+          width: 140.w,
+          height: 34.h,
           hintText: t.tableColumn.radioManager.radioType,
           value: selectedRadioType,
           onChanged: (value) {
@@ -296,7 +297,9 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
         ),
         BaseButton(
           label: t.button.radioManager.createRadio,
-          minWidth: 110,
+          minWidth: 110.w,
+          height: 34.h,
+          textStyle: TextStyle(fontSize: 13.sp, color: Colors.white),
           onPressed: () {
             aliasTextEditController.text = "";
             consumerTextEditController.text = "";
@@ -362,7 +365,7 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
       // mainAxisSize: MainAxisSize.min,
       children: [
         IconButton(
-          icon: Icon(Icons.edit_outlined, size: 16, color: Color(0xFF00A2E9)),
+          icon: Icon(Icons.edit_outlined, size: 16.sp, color: Color(0xFF00A2E9)),
           tooltip: t.button.radioManager.edit,
           onPressed: () {
             showDialog(DialogTypeEnum.edit, data);
@@ -374,9 +377,9 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
           padding: EdgeInsets.zero,
           constraints: const BoxConstraints(),
         ),
-        SizedBox(width: 10),
+        SizedBox(width: 10.w),
         IconButton(
-          icon: Icon(Icons.delete_outline, size: 16, color: Color(0xFFF15B64)),
+          icon: Icon(Icons.delete_outline, size: 16.sp, color: Color(0xFFF15B64)),
           tooltip: t.button.radioManager.delete,
           onPressed: () {
             delete(data);
@@ -392,20 +395,20 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
   Widget buildEmptyWidget(BuildContext context) {
     final t = Translations.of(context);
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 48),
+      padding: EdgeInsets.symmetric(vertical: 48.h),
       child: Center(
         child: Column(
           children: [
             Icon(
               Icons.search_off,
-              size: 48,
+              size: 48.sp,
               color: isDark ? Colors.grey[600] : Colors.grey[400],
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
             Text(
               t.common.noData,
               style: TextStyle(
-                fontSize: 14,
+                fontSize: 14.sp,
                 color: isDark ? Colors.grey[500] : Colors.grey[600],
               ),
             ),

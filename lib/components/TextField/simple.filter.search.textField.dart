@@ -1,5 +1,7 @@
+// ignore_for_file: cpd_lints/hardcoded_dimension
 import 'package:composable_data_table/composable_data_table.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 // =============================================================================
 // 2026/6/30 下午6:12  搜索框
@@ -50,7 +52,7 @@ class SimpleFilterSearchField extends StatelessWidget {
         onChanged: onChanged,
         keyboardType: keyboardType,
         textInputAction: textInputAction,
-        style: TextStyle(fontSize: 13, color: theme.textPrimaryColor),
+        style: TextStyle(fontSize: 13.sp, color: theme.textPrimaryColor),
         onSubmitted: onSubmit,
         decoration: InputDecoration(
           hintText: hint,

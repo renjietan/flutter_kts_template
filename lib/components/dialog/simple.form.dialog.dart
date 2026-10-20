@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_kts_template/components/TextField/simple.form.selectField.dart';
 import 'package:flutter_kts_template/components/text/text.title.dart';
@@ -43,37 +44,37 @@ Future<void> SimpleFormDialog({
       scrollable: true,
       backgroundColor: backgroundColor,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(borderRadius),
+        borderRadius: BorderRadius.circular(borderRadius.r),
       ),
-      titlePadding: EdgeInsets.symmetric(vertical: 7),
-      contentPadding: EdgeInsets.fromLTRB(5, 15, 0, 0),
-      titleTextStyle: TextStyle(fontSize: 16, color: titleColor),
+      titlePadding: EdgeInsets.symmetric(vertical: 7.h),
+      contentPadding: EdgeInsets.fromLTRB(5.w, 15.h, 0, 0),
+      titleTextStyle: TextStyle(fontSize: 16.sp, color: titleColor),
       title: Container(
-        padding: EdgeInsets.fromLTRB(5, 5, 5, 5),
+        padding: EdgeInsets.fromLTRB(5.w, 5.h, 5.w, 5.h),
         decoration: BoxDecoration(
           color: Colors.transparent,
-          border: Border(bottom: BorderSide(color: Colors.white38, width: 1)),
+          border: Border(bottom: BorderSide(color: Colors.white38, width: 1.w)),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            SizedBox(width: 15),
+            SizedBox(width: 15.w),
             TextTitle(text: title, fontSize: titleFontSize, color: titleColor),
             const Spacer(),
             IconButton(
               onPressed: () => SmartDialog.dismiss(),
-              icon: Icon(Icons.close_rounded, size: 16, color: Colors.blueGrey),
+              icon: Icon(Icons.close_rounded, size: 16.sp, color: Colors.blueGrey),
             ),
           ],
         ),
       ),
       actionsAlignment: MainAxisAlignment.center,
       content: SizedBox(
-        width: dialogWidth ?? 320,
+        width: dialogWidth ?? 320.w,
         child: FormBuilder(
           key: formKey,
           child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 15),
+            padding: EdgeInsets.symmetric(horizontal: 15.w),
             child: twoColumn
                 ? _buildTwoColumnFields(
                     context,
@@ -101,7 +102,9 @@ Future<void> SimpleFormDialog({
       ),
       actions: [
         BaseButton(
-          minWidth: confirmBtnMinWidth,
+          minWidth: confirmBtnMinWidth?.w,
+          height: 34.h,
+          textStyle: TextStyle(fontSize: 13.sp, color: Colors.white),
           label: confirmText ?? context.t.common.confirm,
           onPressed: () {
             // 验证通过，获取表单数据
@@ -134,7 +137,7 @@ List<Widget> _buildFormFields(
     widgets.add(
       Container(
         alignment: AlignmentDirectional.centerStart,
-        margin: EdgeInsetsGeometry.only(top: i == 0 ? 0 : 20, bottom: 20),
+        margin: EdgeInsetsGeometry.only(top: i == 0 ? 0 : 20.h, bottom: 20.h),
         child: _buildFieldLabel(context, field, labelColor, labelFontSize),
       ),
     );
@@ -159,30 +162,30 @@ List<Widget> _buildFormFields(
           decoration: InputDecoration(
             labelText: field.hintText ?? field.label,
             isDense: true,
-            contentPadding: EdgeInsets.symmetric(vertical: 14, horizontal: 12),
-            labelStyle: TextStyle(color: Colors.white, fontSize: labelFontSize),
-            hintStyle: TextStyle(color: Colors.white, fontSize: labelFontSize),
+            contentPadding: EdgeInsets.symmetric(vertical: 14.h, horizontal: 12.w),
+            labelStyle: TextStyle(color: Colors.white, fontSize: labelFontSize.sp),
+            hintStyle: TextStyle(color: Colors.white, fontSize: labelFontSize.sp),
             filled: true,
             fillColor: fillColor,
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(5),
+              borderRadius: BorderRadius.circular(5.r),
               borderSide: BorderSide(color: Color(0xFF404040)),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(5),
+              borderRadius: BorderRadius.circular(5.r),
               borderSide: BorderSide(color: Color(0xFF404040)),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(5),
+              borderRadius: BorderRadius.circular(5.r),
               borderSide: BorderSide(color: Color(0xFF64B5F6)),
             ),
             errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(5),
+              borderRadius: BorderRadius.circular(5.r),
               borderSide: const BorderSide(color: Colors.red),
             ),
             focusedErrorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Colors.red, width: 2),
+              borderRadius: BorderRadius.circular(8.r),
+              borderSide: BorderSide(color: Colors.red, width: 2.w),
             ),
           ),
           validator: field.validators != null
@@ -200,7 +203,7 @@ List<Widget> _buildFormFields(
     }
   }
   // 最后加一个底部间距
-  widgets.add(SizedBox(height: 60));
+  widgets.add(SizedBox(height: 60.h));
   return widgets;
 }
 
@@ -257,16 +260,16 @@ Widget _buildTwoColumnFields(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(child: first),
-            const SizedBox(width: 16),
+            SizedBox(width: 16.w),
             Expanded(child: second),
           ],
         ),
       );
       i += hasSecond ? 2 : 1;
     }
-    rows.add(const SizedBox(height: 14));
+    rows.add(SizedBox(height: 14.h));
   }
-  rows.add(const SizedBox(height: 48));
+  rows.add(SizedBox(height: 48.h));
   return Column(mainAxisSize: MainAxisSize.min, children: rows);
 }
 
@@ -298,32 +301,32 @@ Widget _buildFieldItem(
             labelText: field.hintText ?? field.label,
             isDense: true,
             contentPadding: EdgeInsets.symmetric(
-              vertical: contentPadding,
-              horizontal: 12,
+              vertical: contentPadding.h,
+              horizontal: 12.w,
             ),
-            labelStyle: TextStyle(color: Colors.white, fontSize: labelFontSize),
-            hintStyle: TextStyle(color: Colors.white, fontSize: labelFontSize),
+            labelStyle: TextStyle(color: Colors.white, fontSize: labelFontSize.sp),
+            hintStyle: TextStyle(color: Colors.white, fontSize: labelFontSize.sp),
             filled: true,
             fillColor: fillColor,
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(5),
+              borderRadius: BorderRadius.circular(5.r),
               borderSide: BorderSide(color: Color(0xFF404040)),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(5),
+              borderRadius: BorderRadius.circular(5.r),
               borderSide: BorderSide(color: Color(0xFF404040)),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(5),
+              borderRadius: BorderRadius.circular(5.r),
               borderSide: BorderSide(color: Color(0xFF64B5F6)),
             ),
             errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(5),
+              borderRadius: BorderRadius.circular(5.r),
               borderSide: const BorderSide(color: Colors.red),
             ),
             focusedErrorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Colors.red, width: 2),
+              borderRadius: BorderRadius.circular(8.r),
+              borderSide: BorderSide(color: Colors.red, width: 2.w),
             ),
           ),
           validator: field.validators != null
@@ -342,7 +345,7 @@ Widget _buildFieldItem(
     children: [
       Container(
         alignment: AlignmentDirectional.centerStart,
-        margin: const EdgeInsets.only(bottom: 14),
+        margin: EdgeInsets.only(bottom: 14.h),
         child: label,
       ),
       input,
@@ -366,7 +369,7 @@ Widget _buildFieldLabel(
               ),
               TextSpan(
                 text: field.label,
-                style: TextStyle(color: labelColor, fontSize: labelFontSize),
+                style: TextStyle(color: labelColor, fontSize: labelFontSize.sp),
               ),
             ],
           ),
@@ -375,7 +378,7 @@ Widget _buildFieldLabel(
       : Text(
           field.label,
           textAlign: TextAlign.start,
-          style: TextStyle(color: labelColor, fontSize: labelFontSize),
+          style: TextStyle(color: labelColor, fontSize: labelFontSize.sp),
         );
 
   final helpText = field.labelHelpText;
@@ -385,7 +388,7 @@ Widget _buildFieldLabel(
     mainAxisSize: MainAxisSize.min,
     children: [
       text,
-      const SizedBox(width: 6),
+      SizedBox(width: 6.w),
       GestureDetector(
         onTap: () {
           showDialog<void>(
@@ -394,11 +397,11 @@ Widget _buildFieldLabel(
               backgroundColor: const Color(0xFF20262D),
               title: Text(
                 context.t.tips.title,
-                style: TextStyle(color: Colors.white, fontSize: 17),
+                style: TextStyle(color: Colors.white, fontSize: 17.sp),
               ),
               content: Text(
                 helpText,
-                style: const TextStyle(color: Colors.white70, fontSize: 13),
+                style: TextStyle(color: Colors.white70, fontSize: 13.sp),
               ),
               actions: [
                 TextButton(
@@ -410,14 +413,14 @@ Widget _buildFieldLabel(
           );
         },
         child: Container(
-          width: 16,
-          height: 16,
+          width: 16.w,
+          height: 16.h,
           alignment: Alignment.center,
           decoration: const BoxDecoration(
             color: Color(0xFF00A2E9),
             shape: BoxShape.circle,
           ),
-          child: const Icon(Icons.priority_high, color: Colors.white, size: 12),
+          child: Icon(Icons.priority_high, color: Colors.white, size: 12.sp),
         ),
       ),
     ],

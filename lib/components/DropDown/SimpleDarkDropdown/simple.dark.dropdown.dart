@@ -1,4 +1,6 @@
+// ignore_for_file: cpd_lints/hardcoded_dimension
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_kts_template/components/DropDown/SimpleDarkDropdown/simple.dark.dropdown.item.dart';
 import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 
@@ -163,7 +165,7 @@ class _SimpleDarkDropdownState<T> extends State<SimpleDarkDropdown<T>> {
                     displayText,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      fontSize: 12,
+                      fontSize: 13.sp,
                       color: hasSelection
                           ? (widget.enabled
                                 ? const Color(0xFFFFFFFF)
@@ -292,8 +294,8 @@ class _MenuItem<T> extends StatelessWidget {
       onTap: onTap,
       hoverColor: const Color(0x26004098),
       child: Container(
-        height: 32,
-        padding: const EdgeInsets.symmetric(horizontal: 10),
+        height: 32.h,
+        padding: EdgeInsets.symmetric(horizontal: 10.w),
         color: isSelected ? const Color(0x40004098) : Colors.transparent,
         child: Row(
           children: [
@@ -312,7 +314,7 @@ class _MenuItem<T> extends StatelessWidget {
                 item.label,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                  fontSize: 12,
+                  fontSize: 13.sp,
                   fontWeight: isSelected ? FontWeight.w500 : FontWeight.w400,
                   color: isSelected
                       ? const Color(0xFF0CB5FF)
@@ -408,8 +410,8 @@ class _MobileSheet<T> extends StatelessWidget {
                 return InkWell(
                   onTap: () => onSelected(item.value),
                   child: Container(
-                    height: 48,
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    height: 48.h,
+                    padding: EdgeInsets.symmetric(horizontal: 16.w),
                     color: isSelected
                         ? const Color(0x40004098)
                         : Colors.transparent,
@@ -429,7 +431,7 @@ class _MobileSheet<T> extends StatelessWidget {
                           child: Text(
                             item.label,
                             style: TextStyle(
-                              fontSize: 14,
+                              fontSize: 13.sp,
                               fontWeight: isSelected
                                   ? FontWeight.w500
                                   : FontWeight.w400,

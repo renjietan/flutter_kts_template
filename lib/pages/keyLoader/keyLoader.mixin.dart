@@ -1,3 +1,4 @@
+// ignore_for_file: cpd_lints/hardcoded_dimension
 import 'package:flutter/material.dart';
 import 'package:flutter_kts_template/utils/provider/keyloader.provider.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';

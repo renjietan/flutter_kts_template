@@ -1,5 +1,6 @@
 import 'package:composable_data_table/composable_data_table.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_kts_template/components/loading/simple.loading.dart';
 import 'package:flutter_kts_template/core/entities/radios/radiosEntity.dart';
 import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
@@ -81,12 +82,12 @@ class _RadioManagerPagerState extends State<RadioManagerPager>
     return Container(
       decoration: BoxDecoration(
         // color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
+            blurRadius: 10.r,
+            offset: Offset(0, 2.h),
           ),
         ],
       ),
@@ -106,21 +107,21 @@ class _RadioManagerPagerState extends State<RadioManagerPager>
                   side: BorderSide(
                     color: widget.theme.accentColor.withValues(alpha: 0.4),
                   ),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 10,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 14.w,
+                    vertical: 10.h,
                   ),
-                  minimumSize: const Size(0, 36),
+                  minimumSize: Size(0, 36.h),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(8.r),
                   ),
                 ),
                 child: Text(
                   allSelected
                       ? t.checkbox.DeselectAll
                       : t.checkbox.SelectAll(count: data.length),
-                  style: const TextStyle(
-                    fontSize: 13,
+                  style: TextStyle(
+                    fontSize: 13.sp,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -130,54 +131,54 @@ class _RadioManagerPagerState extends State<RadioManagerPager>
                   onPressed: clearSelection,
                   icon: Icon(
                     Icons.close,
-                    size: 16,
+                    size: 16.sp,
                     color: widget.theme.textSecondaryColor,
                   ),
                   label: Text(
                     t.button.radioManager.clear,
                     style: TextStyle(
-                      fontSize: 13,
+                      fontSize: 13.sp,
                       color: widget.theme.textSecondaryColor,
                     ),
                   ),
                   style: OutlinedButton.styleFrom(
-                    minimumSize: const Size(0, 36),
+                    minimumSize: Size(0, 36.h),
                     side: BorderSide(color: widget.theme.borderColor),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 10,
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 14.w,
+                      vertical: 10.h,
                     ),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(8.r),
                     ),
                   ),
                 ),
-                const SizedBox(width: 4),
+                SizedBox(width: 4.w),
                 FilledButton.icon(
                   onPressed: () {
                     patchDelete();
                   },
-                  icon: const Icon(Icons.delete_outline, size: 16),
+                  icon: Icon(Icons.delete_outline, size: 16.sp),
                   label: Text(
                     '${t.button.radioManager.delete} (${selectedIds.length})',
                   ),
                   style: FilledButton.styleFrom(
                     backgroundColor: widget.theme.dangerColor,
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 12,
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 12.w,
+                      vertical: 12.h,
                     ),
-                    minimumSize: const Size(0, 36),
+                    minimumSize: Size(0, 36.h),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(6),
+                      borderRadius: BorderRadius.circular(6.r),
                     ),
                   ),
                 ),
               ],
             ),
           ),
-          const Divider(height: 1, thickness: 1, color: Color(0xFF353A41)),
+          Divider(height: 1.h, thickness: 1, color: Color(0xFF353A41)),
           Expanded(
             child: SingleChildScrollView(
               child: DataTablePlusThemeProvider(

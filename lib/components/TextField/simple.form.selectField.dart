@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 
@@ -63,7 +64,13 @@ class SimpleFormSelectField<T> extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = Translations.of(context);
     final dropdownItems = items.map<DropdownMenuItem<T>>((item) {
-      return DropdownMenuItem<T>(value: item, child: Text(labelBuilder(item)));
+      return DropdownMenuItem<T>(
+        value: item,
+        child: Text(
+          labelBuilder(item),
+          style: TextStyle(fontSize: 13.sp, color: Colors.white),
+        ),
+      );
     }).toList();
 
     final effectiveDecoration = (decoration ?? const InputDecoration())
@@ -79,12 +86,13 @@ class SimpleFormSelectField<T> extends StatelessWidget {
       autovalidateMode: autovalidateMode,
       decoration: effectiveDecoration,
       style: dropdownButtonStyle?.textStyle ??
-          const TextStyle(fontSize: 14, color: Colors.white),
+          TextStyle(fontSize: 14.sp, color: Colors.white),
       dropdownColor:
           dropdownButtonStyle?.dropdownColor ?? const Color(0xFF23272D),
       // 可扩展更多属性
       isExpanded: true,
-      menuMaxHeight: 150,
+      itemHeight: 48.h,
+      menuMaxHeight: 150.h,
     );
   }
 }

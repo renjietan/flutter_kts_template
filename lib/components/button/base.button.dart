@@ -1,3 +1,4 @@
+// ignore_for_file: cpd_lints/hardcoded_dimension
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';

@@ -1,0 +1,11 @@
+name: cpd_lints
+description: Analyzer plugin with regression rules for the CPDS responsive-layout conventions.
+version: 0.1.0
+publish_to: 'none'
+
+environment:
+  sdk: ^3.10.9
+
+dependencies:
+  analysis_server_plugin: 0.3.7
+  analyzer: 10.0.1
