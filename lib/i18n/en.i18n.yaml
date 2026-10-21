@@ -340,6 +340,7 @@ cpds:
     detailPackFail: Package {index} packaging failed
     detailMerge: Merging tar packages into a ZIP package
     detailEncrypt: Encrypting the ZIP package
+  versionLabel: "Key loader version:"
   usbProgress:
     stepPermission: Permission
     stepConnect: Connect
@@ -354,10 +355,14 @@ cpds:
     detailConnectStart: Connecting key loader
     detailConnectSuccess: Connected
     detailConnectFail: Connection failed
-    detailHandshakeStart: Sending LIGHT, waiting for FILE_OK
+    detailHandshakeStart: Sending LIGHT_GREEN, waiting for FILE_OK
     detailHandshakeSuccess: Handshake succeeded
     detailHandshakeTimeout: Handshake timed out
     detailHandshakeFail: Handshake failed
+    detailVersionStart: Sending GET_VERSION, waiting for version
+    detailVersionSuccess: Version received
+    detailVersionTimeout: Get version timed out
+    detailVersionFail: Failed to get version
     detailClearStart: Sending FILE_CPD_CLEAR, waiting for FILE_OK
     detailClearSuccess: Clear completed
     detailClearTimeout: Clear timed out
@@ -365,6 +370,12 @@ cpds:
     detailReadySuccess: Device is ready
     detailReadyTimeout: Ready timed out
     detailReadyFail: Ready failed
+    detailBlinkStart: Sending LIGHT_GREEN_BLINK, waiting for FILE_OK
+    detailBlinkSuccess: Indicator blinking
+    detailBlinkTimeout: Indicator blink timed out
+    detailGreenStart: Sending LIGHT_GREEN, waiting for FILE_OK
+    detailGreenSuccess: Indicator steady on
+    detailGreenTimeout: Indicator steady on timed out
     detailTransferStart: Chunked sending
     detailTransferTimeout: File receive timed out, replug the key loader
     detailComplete: Key loader received successfully

@@ -161,4 +161,52 @@ void main() {
     expect(replies.single.deviceType, 'CCU');
     expect(replies.single.ip, '192.168.1.10');
   });
+
+  test('collectWindow sends all commands and early-exits on isDone', () async {
+    final transport = _MockTransport();
+    final session = UpdateSession(transport: transport);
+
+    final future = session.collectWindow<AuthAckReply>(
+      commands: [
+        UpdateProtocol.encodeAuth(),
+        UpdateProtocol.encodeAuth(),
+        UpdateProtocol.encodeAuth(),
+      ],
+      timeout: const Duration(milliseconds: 200),
+      matches: (r) => r is AuthAckReply,
+      isDone: (collected) =>
+          collected.map((r) => '${r.deviceType}#${r.ip}').toSet().length >= 2,
+    );
+    await Future<void>.delayed(const Duration(milliseconds: 10));
+    transport.emitBytes(_authAck('CCU', '192.168.1.10'));
+    transport.emitBytes(_authAck('CCU-Audio', '192.168.1.11'));
+
+    final replies = await future;
+    expect(transport.sent.length, 3);
+    expect(replies.length, 2);
+  });
+
+  test(
+    'collectWindow returns collected replies when cancelled early',
+    () async {
+      final transport = _MockTransport();
+      final session = UpdateSession(transport: transport);
+      final cancel = Completer<void>();
+
+      final future = session.collectWindow<AuthAckReply>(
+        commands: [UpdateProtocol.encodeAuth()],
+        timeout: const Duration(seconds: 5),
+        matches: (r) => r is AuthAckReply,
+        isDone: (collected) => collected.isNotEmpty,
+        cancelSignal: cancel.future,
+      );
+      await Future<void>.delayed(const Duration(milliseconds: 10));
+      transport.emitBytes(_authAck('CCU', '192.168.1.10'));
+      cancel.complete();
+
+      final replies = await future;
+      expect(transport.sent.length, 1);
+      expect(replies.length, 1);
+    },
+  );
 }

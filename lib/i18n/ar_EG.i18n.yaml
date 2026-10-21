@@ -336,6 +336,7 @@ cpds:
     detailPackFail: "فشل ضغط الحزمة رقم {index}"
     detailMerge: بدء الدمج لدمج الحزم المتعددة في حزمة ZIP
     detailEncrypt: تشفير حزمة ZIP
+  versionLabel: "إصدار جهاز تحميل المفاتيح:"
   usbProgress:
     stepPermission: الإذن
     stepConnect: الاتصال
@@ -350,10 +351,14 @@ cpds:
     detailConnectStart: الاتصال بجهاز تحميل المفاتيح
     detailConnectSuccess: نجح الاتصال
     detailConnectFail: فشل الاتصال
-    detailHandshakeStart: إرسال LIGHT وانتظار FILE_OK
+    detailHandshakeStart: إرسال LIGHT_GREEN وانتظار FILE_OK
     detailHandshakeSuccess: نجحت المصافحة
     detailHandshakeTimeout: انتهت مهلة المصافحة
     detailHandshakeFail: فشلت المصافحة
+    detailVersionStart: إرسال GET_VERSION وانتظار الإصدار
+    detailVersionSuccess: تم استلام الإصدار
+    detailVersionTimeout: انتهت مهلة الحصول على الإصدار
+    detailVersionFail: فشل الحصول على الإصدار
     detailClearStart: إرسال FILE_CPD_CLEAR وانتظار FILE_OK
     detailClearSuccess: اكتمل المسح
     detailClearTimeout: انتهت مهلة المسح
@@ -361,6 +366,12 @@ cpds:
     detailReadySuccess: الجهاز جاهز
     detailReadyTimeout: انتهت مهلة التحضير
     detailReadyFail: فشل التحضير
+    detailBlinkStart: إرسال LIGHT_GREEN_BLINK وانتظار FILE_OK
+    detailBlinkSuccess: تم وميض المؤشر
+    detailBlinkTimeout: انتهت مهلة وميض المؤشر
+    detailGreenStart: إرسال LIGHT_GREEN وانتظار FILE_OK
+    detailGreenSuccess: المؤشر مضاء باستمرار
+    detailGreenTimeout: انتهت مهلة إضاءة المؤشر
     detailTransferStart: الإرسال على شكل حزم
     detailTransferTimeout: انتهت مهلة استقبال الملف، يرجى إعادة توصيل جهاز تحميل المفاتيح
     detailComplete: استلم جهاز تحميل المفاتيح بنجاح

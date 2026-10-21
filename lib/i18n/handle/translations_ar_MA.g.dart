@@ -418,6 +418,7 @@ class Translations$cpds$ar_MA extends Translations$cpds$zh {
 	@override late final Translations$cpds$setPassword$ar_MA setPassword = Translations$cpds$setPassword$ar_MA.internal(_root);
 	@override late final Translations$cpds$export$ar_MA export = Translations$cpds$export$ar_MA.internal(_root);
 	@override late final Translations$cpds$exportProgress$ar_MA exportProgress = Translations$cpds$exportProgress$ar_MA.internal(_root);
+	@override String get versionLabel => 'إصدار جهاز تحميل المفاتيح:';
 	@override late final Translations$cpds$usbProgress$ar_MA usbProgress = Translations$cpds$usbProgress$ar_MA.internal(_root);
 }
 
@@ -874,10 +875,14 @@ class Translations$cpds$usbProgress$ar_MA extends Translations$cpds$usbProgress$
 	@override String get detailConnectStart => 'الاتصال بجهاز تحميل المفاتيح';
 	@override String get detailConnectSuccess => 'نجح الاتصال';
 	@override String get detailConnectFail => 'فشل الاتصال';
-	@override String get detailHandshakeStart => 'إرسال LIGHT وانتظار FILE_OK';
+	@override String get detailHandshakeStart => 'إرسال LIGHT_GREEN وانتظار FILE_OK';
 	@override String get detailHandshakeSuccess => 'نجحت المصافحة';
 	@override String get detailHandshakeTimeout => 'انتهت مهلة المصافحة';
 	@override String get detailHandshakeFail => 'فشلت المصافحة';
+	@override String get detailVersionStart => 'إرسال GET_VERSION وانتظار الإصدار';
+	@override String get detailVersionSuccess => 'تم استلام الإصدار';
+	@override String get detailVersionTimeout => 'انتهت مهلة الحصول على الإصدار';
+	@override String get detailVersionFail => 'فشل الحصول على الإصدار';
 	@override String get detailClearStart => 'إرسال FILE_CPD_CLEAR وانتظار FILE_OK';
 	@override String get detailClearSuccess => 'اكتمل المسح';
 	@override String get detailClearTimeout => 'انتهت مهلة المسح';
@@ -885,6 +890,12 @@ class Translations$cpds$usbProgress$ar_MA extends Translations$cpds$usbProgress$
 	@override String get detailReadySuccess => 'الجهاز جاهز';
 	@override String get detailReadyTimeout => 'انتهت مهلة التحضير';
 	@override String get detailReadyFail => 'فشل التحضير';
+	@override String get detailBlinkStart => 'إرسال LIGHT_GREEN_BLINK وانتظار FILE_OK';
+	@override String get detailBlinkSuccess => 'تم وميض المؤشر';
+	@override String get detailBlinkTimeout => 'انتهت مهلة وميض المؤشر';
+	@override String get detailGreenStart => 'إرسال LIGHT_GREEN وانتظار FILE_OK';
+	@override String get detailGreenSuccess => 'المؤشر مضاء باستمرار';
+	@override String get detailGreenTimeout => 'انتهت مهلة إضاءة المؤشر';
 	@override String get detailTransferStart => 'الإرسال على شكل حزم';
 	@override String get detailTransferTimeout => 'انتهت مهلة استقبال الملف، يرجى إعادة توصيل جهاز تحميل المفاتيح';
 	@override String get detailComplete => 'استلم جهاز تحميل المفاتيح بنجاح';

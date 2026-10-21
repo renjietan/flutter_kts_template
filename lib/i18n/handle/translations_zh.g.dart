@@ -705,6 +705,8 @@ class Translations$cpds$zh {
 	late final Translations$cpds$setPassword$zh setPassword = Translations$cpds$setPassword$zh.internal(_root);
 	late final Translations$cpds$export$zh export = Translations$cpds$export$zh.internal(_root);
 	late final Translations$cpds$exportProgress$zh exportProgress = Translations$cpds$exportProgress$zh.internal(_root);
+	/// zh: '注钥枪版本号：'
+	String get versionLabel => '注钥枪版本号：';
 	late final Translations$cpds$usbProgress$zh usbProgress = Translations$cpds$usbProgress$zh.internal(_root);
 }
 
@@ -1606,8 +1608,8 @@ class Translations$cpds$usbProgress$zh {
 	/// zh: '连接失败'
 	String get detailConnectFail => '连接失败';
 
-	/// zh: '发送 LIGHT，等待 FILE_OK'
-	String get detailHandshakeStart => '发送 LIGHT，等待 FILE_OK';
+	/// zh: '发送 LIGHT_GREEN，等待 FILE_OK'
+	String get detailHandshakeStart => '发送 LIGHT_GREEN，等待 FILE_OK';
 
 	/// zh: '握手成功'
 	String get detailHandshakeSuccess => '握手成功';
@@ -1617,6 +1619,18 @@ class Translations$cpds$usbProgress$zh {
 
 	/// zh: '握手失败'
 	String get detailHandshakeFail => '握手失败';
+
+	/// zh: '发送 GET_VERSION，等待版本号'
+	String get detailVersionStart => '发送 GET_VERSION，等待版本号';
+
+	/// zh: '获取版本成功'
+	String get detailVersionSuccess => '获取版本成功';
+
+	/// zh: '获取版本超时'
+	String get detailVersionTimeout => '获取版本超时';
+
+	/// zh: '获取版本失败'
+	String get detailVersionFail => '获取版本失败';
 
 	/// zh: '发送 FILE_CPD_CLEAR，等待 FILE_OK'
 	String get detailClearStart => '发送 FILE_CPD_CLEAR，等待 FILE_OK';
@@ -1638,6 +1652,24 @@ class Translations$cpds$usbProgress$zh {
 
 	/// zh: '准备失败'
 	String get detailReadyFail => '准备失败';
+
+	/// zh: '发送 LIGHT_GREEN_BLINK，等待 FILE_OK'
+	String get detailBlinkStart => '发送 LIGHT_GREEN_BLINK，等待 FILE_OK';
+
+	/// zh: '指示灯已闪烁'
+	String get detailBlinkSuccess => '指示灯已闪烁';
+
+	/// zh: '指示灯闪烁超时'
+	String get detailBlinkTimeout => '指示灯闪烁超时';
+
+	/// zh: '发送 LIGHT_GREEN，等待 FILE_OK'
+	String get detailGreenStart => '发送 LIGHT_GREEN，等待 FILE_OK';
+
+	/// zh: '指示灯已常亮'
+	String get detailGreenSuccess => '指示灯已常亮';
+
+	/// zh: '指示灯常亮超时'
+	String get detailGreenTimeout => '指示灯常亮超时';
 
 	/// zh: '分包发送'
 	String get detailTransferStart => '分包发送';

@@ -575,6 +575,7 @@ void main() {
       storage: storage,
       baseName: 'install_xxx',
       transferTimeout: const Duration(seconds: 3),
+      windowTimeout: const Duration(milliseconds: 200),
       validTimeout: const Duration(seconds: 5),
     );
 
@@ -650,6 +651,7 @@ void main() {
         storage: storage,
         baseName: 'install_xxx',
         transferTimeout: const Duration(milliseconds: 200),
+        windowTimeout: const Duration(milliseconds: 200),
         validTimeout: const Duration(milliseconds: 200),
       );
 
@@ -673,77 +675,157 @@ void main() {
     },
   );
 
-  test('multiple sequences rewind to the minimum missing packet number',
-      () async {
-    final tempDir = await Directory.systemTemp.createTemp(
-      'transfer_multi_seq_test',
-    );
-    addTearDown(() {
-      if (tempDir.existsSync()) {
-        tempDir.deleteSync(recursive: true);
+  test(
+    'multiple sequences rewind to the minimum missing packet number',
+    () async {
+      final tempDir = await Directory.systemTemp.createTemp(
+        'transfer_multi_seq_test',
+      );
+      addTearDown(() {
+        if (tempDir.existsSync()) {
+          tempDir.deleteSync(recursive: true);
+        }
+      });
+
+      final installDir = Directory(p.join(tempDir.path, 'install'));
+      for (final type in ['MR9360', 'MMR200']) {
+        final dir = Directory(p.join(installDir.path, 'install_xxx', type));
+        await dir.create(recursive: true);
+        await File(
+          p.join(dir.path, 'cpdc_config.json'),
+        ).writeAsString(jsonEncode({'version': '0.1.1.1'}));
       }
-    });
-
-    final installDir = Directory(p.join(tempDir.path, 'install'));
-    for (final type in ['MR9360', 'MMR200']) {
-      final dir = Directory(p.join(installDir.path, 'install_xxx', type));
-      await dir.create(recursive: true);
+      final rnd = Random(42);
       await File(
-        p.join(dir.path, 'cpdc_config.json'),
+        p.join(installDir.path, 'install_xxx', 'MR9360', 'payload.bin'),
+      ).writeAsBytes(List<int>.generate(10000, (_) => rnd.nextInt(256)));
+      final storage = InstallPackageStorage(installDirectory: installDir);
+
+      final devices = [
+        UpdateDevice(ip: '192.168.1.10', type: 'MR9360'),
+        UpdateDevice(ip: '192.168.1.11', type: 'MMR200'),
+      ];
+      final transport = _MultiSequenceTransport([
+        ('MR9360', '192.168.1.10'),
+        ('MMR200', '192.168.1.11'),
+      ]);
+      final session = UpdateSession(transport: transport);
+      final controller = UpdateStepController(
+        version: '0.1.1.1',
+        fileName: 'a.zip',
+      );
+      controller.devices.addAll(devices);
+      final coordinator = TransferCoordinator(
+        session: session,
+        controller: controller,
+        storage: storage,
+        baseName: 'install_xxx',
+        transferTimeout: const Duration(milliseconds: 200),
+        windowTimeout: const Duration(milliseconds: 200),
+        validTimeout: const Duration(milliseconds: 200),
+      );
+
+      final future = coordinator.run(devices);
+      await _waitForStep(controller, 4, StepStatus.running);
+      transport.emitValid();
+      final result = await future;
+
+      expect(result, isTrue);
+      int countPacket(int n) => transport.sent.where((d) {
+        final text = String.fromCharCodes(d);
+        if (!text.startsWith('packet:')) {
+          return false;
+        }
+        return ByteData.sublistView(d).getUint32(11, Endian.big) == n;
+      }).length;
+      // 回退到最小 S=3：包 3/4 重发各 2 次，包 2 只发 1 次。
+      expect(countPacket(3), 2);
+      expect(countPacket(4), 2);
+      expect(countPacket(2), 1);
+    },
+  );
+
+  test(
+    'packet length/crc error does not early-exit and retries after window',
+    () async {
+      final tempDir = await Directory.systemTemp.createTemp(
+        'transfer_crc_window_test',
+      );
+      addTearDown(() {
+        if (tempDir.existsSync()) {
+          tempDir.deleteSync(recursive: true);
+        }
+      });
+
+      final installDir = Directory(p.join(tempDir.path, 'install'));
+      final typeDir = Directory(
+        p.join(installDir.path, 'install_xxx', 'MR9360'),
+      );
+      await typeDir.create(recursive: true);
+      await File(
+        p.join(typeDir.path, 'cpdc_config.json'),
       ).writeAsString(jsonEncode({'version': '0.1.1.1'}));
-    }
-    final rnd = Random(42);
-    await File(
-      p.join(installDir.path, 'install_xxx', 'MR9360', 'payload.bin'),
-    ).writeAsBytes(List<int>.generate(10000, (_) => rnd.nextInt(256)));
-    final storage = InstallPackageStorage(installDirectory: installDir);
+      final storage = InstallPackageStorage(installDirectory: installDir);
 
-    final devices = [
-      UpdateDevice(ip: '192.168.1.10', type: 'MR9360'),
-      UpdateDevice(ip: '192.168.1.11', type: 'MMR200'),
-    ];
-    final transport = _MultiSequenceTransport([
-      ('MR9360', '192.168.1.10'),
-      ('MMR200', '192.168.1.11'),
-    ]);
-    final session = UpdateSession(transport: transport);
-    final controller = UpdateStepController(
-      version: '0.1.1.1',
-      fileName: 'a.zip',
-    );
-    controller.devices.addAll(devices);
-    final coordinator = TransferCoordinator(
-      session: session,
-      controller: controller,
-      storage: storage,
-      baseName: 'install_xxx',
-      transferTimeout: const Duration(milliseconds: 200),
-      validTimeout: const Duration(milliseconds: 200),
-    );
+      final devices = [UpdateDevice(ip: '192.168.1.10', type: 'MR9360')];
+      final transport = _ManualPacketTransport();
+      final session = UpdateSession(transport: transport);
+      final controller = UpdateStepController(
+        version: '0.1.1.1',
+        fileName: 'a.zip',
+      );
+      controller.devices.addAll(devices);
+      final coordinator = TransferCoordinator(
+        session: session,
+        controller: controller,
+        storage: storage,
+        baseName: 'install_xxx',
+        transferTimeout: const Duration(milliseconds: 150),
+        windowTimeout: const Duration(milliseconds: 150),
+        validTimeout: const Duration(milliseconds: 200),
+      );
 
-    final future = coordinator.run(devices);
-    await _waitForStep(controller, 4, StepStatus.running);
-    transport.emitValid();
-    final result = await future;
+      final future = coordinator.run(devices);
 
-    expect(result, isTrue);
-    int countPacket(int n) => transport.sent.where((d) {
-          final text = String.fromCharCodes(d);
-          if (!text.startsWith('packet:')) {
-            return false;
-          }
-          return ByteData.sublistView(d).getUint32(11, Endian.big) == n;
-        }).length;
-    // 回退到最小 S=3：包 3/4 重发各 2 次，包 2 只发 1 次。
-    expect(countPacket(3), 2);
-    expect(countPacket(4), 2);
-    expect(countPacket(2), 1);
-  });
+      // 等 file 指令发出并回 fileAck。
+      await _waitFor(() => transport.sent.isNotEmpty);
+      transport.emitFileAck('MR9360', '192.168.1.10');
+      await _waitFor(() => transport.packetCount() >= 1);
 
-  test('packet length/crc error does not early-exit and retries after window',
-      () async {
+      final view = ByteData.sublistView(transport.sent.last);
+      final crc = view.getUint32(7, Endian.big);
+      final number = view.getUint32(11, Endian.big);
+      final length = view.getUint32(15, Endian.big);
+      transport.emitPacketFail(
+        'MR9360',
+        '192.168.1.10',
+        crc,
+        number,
+        length,
+        'crc',
+      );
+
+      final countBefore = transport.packetCount();
+      // 窗口不应提前结束：等待小于 timeout 后不应发新包。
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+      expect(transport.packetCount(), countBefore);
+
+      // 窗口满 150ms 后应重发同一包。
+      await _waitFor(() => transport.packetCount() > countBefore);
+      expect(transport.packetCount(), countBefore + 1);
+
+      // 收尾：回 packet_ok 让流程进入 valid 并结束。
+      transport.emitPacketOk('MR9360', '192.168.1.10', crc, number, length);
+      await _waitForStep(controller, 4, StepStatus.running);
+      transport.emitValid('MR9360', '192.168.1.10');
+      final result = await future;
+      expect(result, isTrue);
+    },
+  );
+
+  test('windowed transfer sends windowSize packets per burst', () async {
     final tempDir = await Directory.systemTemp.createTemp(
-      'transfer_crc_window_test',
+      'transfer_window_burst_test',
     );
     addTearDown(() {
       if (tempDir.existsSync()) {
@@ -757,6 +839,10 @@ void main() {
     await File(
       p.join(typeDir.path, 'cpdc_config.json'),
     ).writeAsString(jsonEncode({'version': '0.1.1.1'}));
+    final rnd = Random(7);
+    await File(
+      p.join(typeDir.path, 'payload.bin'),
+    ).writeAsBytes(List<int>.generate(9000, (_) => rnd.nextInt(256)));
     final storage = InstallPackageStorage(installDirectory: installDir);
 
     final devices = [UpdateDevice(ip: '192.168.1.10', type: 'MR9360')];
@@ -772,45 +858,60 @@ void main() {
       controller: controller,
       storage: storage,
       baseName: 'install_xxx',
-      transferTimeout: const Duration(milliseconds: 150),
+      windowSize: 3,
+      transferTimeout: const Duration(milliseconds: 200),
       validTimeout: const Duration(milliseconds: 200),
     );
 
     final future = coordinator.run(devices);
 
-    // 等 file 指令发出并回 fileAck。
     await _waitFor(() => transport.sent.isNotEmpty);
     transport.emitFileAck('MR9360', '192.168.1.10');
-    await _waitFor(() => transport.packetCount() >= 1);
 
-    final view = ByteData.sublistView(transport.sent.last);
-    final crc = view.getUint32(7, Endian.big);
-    final number = view.getUint32(11, Endian.big);
-    final length = view.getUint32(15, Endian.big);
-    transport.emitPacketFail(
-      'MR9360',
-      '192.168.1.10',
-      crc,
-      number,
-      length,
-      'crc',
-    );
+    // 从 file 指令读取总包数（file: 后偏移 9 为 uint32BE 包数量）。
+    final totalPackets = ByteData.sublistView(
+      transport.sent.first,
+    ).getUint32(9, Endian.big);
+    expect(totalPackets, greaterThan(3));
 
-    final countBefore = transport.packetCount();
-    // 窗口不应提前结束：等待小于 timeout 后不应发新包。
-    await Future<void>.delayed(const Duration(milliseconds: 50));
-    expect(transport.packetCount(), countBefore);
+    Uint8List packetData(int n) {
+      for (final d in transport.sent) {
+        final text = String.fromCharCodes(d);
+        if (text.startsWith('packet:') &&
+            ByteData.sublistView(d).getUint32(11, Endian.big) == n) {
+          return d;
+        }
+      }
+      throw StateError('packet $n not sent');
+    }
 
-    // 窗口满 150ms 后应重发同一包。
-    await _waitFor(() => transport.packetCount() > countBefore);
-    expect(transport.packetCount(), countBefore + 1);
+    var acked = 0;
+    while (acked < totalPackets) {
+      final want = acked + 3 <= totalPackets ? 3 : totalPackets - acked;
+      final target = acked + want;
+      await _waitFor(() => transport.packetCount() >= target);
+      // 每个窗口应一次性连发 want 包，而不是逐包等 ACK。
+      expect(transport.packetCount(), target);
 
-    // 收尾：回 packet_ok 让流程进入 valid 并结束。
-    transport.emitPacketOk('MR9360', '192.168.1.10', crc, number, length);
+      for (var n = acked + 1; n <= target; n++) {
+        final data = packetData(n);
+        final view = ByteData.sublistView(data);
+        transport.emitPacketOk(
+          'MR9360',
+          '192.168.1.10',
+          view.getUint32(7, Endian.big),
+          n,
+          view.getUint32(15, Endian.big),
+        );
+      }
+      acked = target;
+    }
+
     await _waitForStep(controller, 4, StepStatus.running);
     transport.emitValid('MR9360', '192.168.1.10');
     final result = await future;
     expect(result, isTrue);
+    expect(controller.steps[3].status, StepStatus.success);
   });
 
   test('valid timeout enters recoverable failure state', () async {
@@ -905,10 +1006,7 @@ void main() {
     expect(controller.devices[0].result, t.selfUpdate.updateSuccess);
     expect(controller.devices[0].detail, 'v0.1.1.1');
     expect(controller.devices[1].status, t.selfUpdate.receiptFailedStatus);
-    expect(
-      controller.summary,
-      '更新完成：成功 1 台，失败 1 台，超时 0 台',
-    );
+    expect(controller.summary, '更新完成：成功 1 台，失败 1 台，超时 0 台');
   });
 
   test('runUpdate all ok keeps receipt step green', () async {
@@ -965,5 +1063,4 @@ void main() {
     expect(controller.phase, UpdatePhase.finished);
     expect(controller.summary, '更新完成：成功 2 台，失败 0 台，超时 0 台');
   });
-
 }

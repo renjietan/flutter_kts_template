@@ -55,6 +55,7 @@ class _CpdsKeyLoaderFileDialogState extends State<CpdsKeyLoaderFileDialog> {
   String? _error;
   bool _listFailed = false;
   bool _readyFailed = false;
+  String _versionText = '';
 
   final TextEditingController _passwordController = TextEditingController();
   bool _obscurePassword = true;
@@ -187,6 +188,7 @@ class _CpdsKeyLoaderFileDialogState extends State<CpdsKeyLoaderFileDialog> {
     setState(() {
       _step = _CpdsStep.connect;
       _error = null;
+      _versionText = '';
     });
     final connected = await manager.connect();
     if (!mounted) return;
@@ -204,26 +206,16 @@ class _CpdsKeyLoaderFileDialogState extends State<CpdsKeyLoaderFileDialog> {
     final reader = _UsbLineReader(manager.listenData())..start();
     _reader = reader;
 
-    // 步骤 2：就绪（LIGHT → FILE_OK）。
+    // 步骤 2：就绪（LIGHT_GREEN → FILE_OK → GET_VERSION）。
     setState(() {
       _step = _CpdsStep.ready;
     });
-    await _writeUsb(manager, Uint8List.fromList(utf8.encode('LIGHT\n')));
+    await _writeUsb(manager, Uint8List.fromList(utf8.encode('LIGHT_GREEN\n')));
     _setCancelLoading(true);
     try {
+      String readyLine;
       try {
-        final readyLine = await reader.nextLine(
-          timeout: const Duration(seconds: 3),
-        );
-        if (!mounted) return;
-        if (readyLine != 'FILE_OK\n') {
-          setState(() {
-            _error = t.cpds.keyLoaderReadyTimeout;
-            _readyFailed = true;
-          });
-          await _cleanupUsbAndReaders();
-          return;
-        }
+        readyLine = await reader.nextLine(timeout: const Duration(seconds: 3));
       } on TimeoutException {
         if (!mounted) return;
         setState(() {
@@ -236,6 +228,46 @@ class _CpdsKeyLoaderFileDialogState extends State<CpdsKeyLoaderFileDialog> {
         // 弹窗已关闭。
         return;
       }
+
+      if (!mounted) return;
+      if (readyLine != 'FILE_OK\n') {
+        setState(() {
+          _error = t.cpds.keyLoaderReadyTimeout;
+          _readyFailed = true;
+        });
+        await _cleanupUsbAndReaders();
+        return;
+      }
+
+      await _writeUsb(
+        manager,
+        Uint8List.fromList(utf8.encode('GET_VERSION\n')),
+      );
+      String versionLine;
+      try {
+        versionLine = await reader.nextLine(
+          timeout: const Duration(seconds: 3),
+        );
+      } on TimeoutException {
+        if (!mounted) return;
+        setState(() {
+          _error = t.cpds.keyLoaderReadyTimeout;
+          _readyFailed = true;
+        });
+        await _cleanupUsbAndReaders();
+        return;
+      } on StateError {
+        // 弹窗已关闭。
+        return;
+      }
+
+      if (!mounted) return;
+      final rawVersion = versionLine.trim();
+      setState(() {
+        _versionText = rawVersion.startsWith('VERSION:')
+            ? rawVersion.substring('VERSION:'.length).trim()
+            : rawVersion;
+      });
     } finally {
       _setCancelLoading(false);
     }
@@ -282,7 +314,8 @@ class _CpdsKeyLoaderFileDialogState extends State<CpdsKeyLoaderFileDialog> {
               .split(',')
               .map((item) => item.trim())
               .where(
-                (item) => item.isNotEmpty && item.toLowerCase().contains('.pc'),
+                (item) =>
+                    item.isNotEmpty && item.toLowerCase().contains('.cpdata'),
               )
               .toList();
         }
@@ -478,6 +511,35 @@ class _CpdsKeyLoaderFileDialogState extends State<CpdsKeyLoaderFileDialog> {
 
     try {
       if (_cancelled) return;
+      await _writeUsb(
+        manager,
+        Uint8List.fromList(utf8.encode('LIGHT_GREEN_BLINK\n')),
+      );
+      try {
+        final blinkLine = await reader.nextLine(
+          timeout: const Duration(seconds: 3),
+        );
+        if (!mounted) return;
+        if (blinkLine != 'FILE_OK\n') {
+          setState(() {
+            _downloading = false;
+            _downloadFailed = true;
+            _downloadError = t.cpds.keyLoaderDecryptFail;
+          });
+          return;
+        }
+      } on TimeoutException {
+        if (!mounted) return;
+        setState(() {
+          _downloading = false;
+          _downloadFailed = true;
+          _downloadError = t.cpds.keyLoaderDecryptTimeout;
+        });
+        return;
+      } on StateError {
+        return;
+      }
+
       // 1. 发送 FILE_DOWN 和文件名，再等待回复。
       await _writeUsb(manager, Uint8List.fromList(utf8.encode('FILE_DOWN\n')));
       if (_cancelled) return;
@@ -569,6 +631,41 @@ class _CpdsKeyLoaderFileDialogState extends State<CpdsKeyLoaderFileDialog> {
         await _writeUsb(manager, Uint8List.fromList(utf8.encode('FILE_OK\n')));
       } finally {
         _setCancelLoading(false);
+      }
+
+      // 下载完成后，发送 LIGHT_GREEN 并等待 FILE_OK，再进入下一步。
+      final confirmReader = _UsbLineReader(manager.listenData())..start();
+      _reader = confirmReader;
+      try {
+        await _writeUsb(
+          manager,
+          Uint8List.fromList(utf8.encode('LIGHT_GREEN\n')),
+        );
+        final confirmLine = await confirmReader.nextLine(
+          timeout: const Duration(seconds: 3),
+        );
+        if (!mounted) return;
+        if (confirmLine != 'FILE_OK\n') {
+          setState(() {
+            _downloading = false;
+            _downloadFailed = true;
+            _downloadError = t.cpds.keyLoaderDecryptFail;
+          });
+          return;
+        }
+      } on TimeoutException {
+        if (!mounted) return;
+        setState(() {
+          _downloading = false;
+          _downloadFailed = true;
+          _downloadError = t.cpds.keyLoaderDecryptTimeout;
+        });
+        return;
+      } on StateError {
+        return;
+      } finally {
+        confirmReader.stop();
+        if (_reader == confirmReader) _reader = null;
       }
 
       // 6. 保存为设备列表中选择的原始文件名（保留 .pc / .pad 等后缀）。
@@ -884,9 +981,19 @@ class _CpdsKeyLoaderFileDialogState extends State<CpdsKeyLoaderFileDialog> {
     return AlertDialog(
       backgroundColor: const Color(0xFF20262D),
       insetPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
-      title: Text(
-        t.cpds.browseSourceKeyLoader,
-        style: TextStyle(color: Colors.white, fontSize: 17.sp),
+      title: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            t.cpds.browseSourceKeyLoader,
+            style: TextStyle(color: Colors.white, fontSize: 17.sp),
+          ),
+          if (_versionText.isNotEmpty)
+            Text(
+              '${CpdsMessages.tr(context, '注钥枪版本号：', 'Key loader version: ', 'رقم إصدار جهاز تحميل المفاتيح: ')}$_versionText',
+              style: TextStyle(color: Colors.white70, fontSize: 13.sp),
+            ),
+        ],
       ),
       content: SizedBox(
         width: dialogWidth,

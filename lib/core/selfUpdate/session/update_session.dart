@@ -42,6 +42,7 @@ class UpdateSession {
   static const authTimeout = Duration(seconds: 5);
   static const versionTimeout = Duration(seconds: 5);
   static const transferTimeout = Duration(seconds: 3);
+  static const packetWindowTimeout = Duration(seconds: 5);
   static const validTimeout = Duration(seconds: 5);
   static const maxAttempts = 3;
 
@@ -58,7 +59,6 @@ class UpdateSession {
     }
   }
 
-
   /// 提取并移除 update 回执（`update_ok` / `update_fail`），供传输阶段窗口之间
   /// 保留提前到达的回执；不回删 valid / write 回复。
   List<UpdateReply> extractUpdateReplies() {
@@ -74,7 +74,12 @@ class UpdateSession {
   /// 「最后一包触发的 valid_ok」被丢弃导致校验超时。
   List<UpdateReply> extractLaterReplies() {
     final extracted = _buffer
-        .where((r) => r is ValidReply || r is WriteResultReply || r is UpdateResultReply)
+        .where(
+          (r) =>
+              r is ValidReply ||
+              r is WriteResultReply ||
+              r is UpdateResultReply,
+        )
         .toList();
     _buffer.removeWhere(
       (r) => r is ValidReply || r is WriteResultReply || r is UpdateResultReply,
@@ -176,6 +181,49 @@ class UpdateSession {
       isDone: (collected) => isDone(collected.cast<T>()),
     );
     return replies.cast<T>();
+  }
+
+  /// 连发一组指令（一个分包窗口）后收集回复，直到 [isDone] 满足或超时。
+  ///
+  /// 适用于 packet 窗口这类「广播一组分包后需所有目标设备都 ACK」的场景。
+  /// 本方法不内置重试，整窗重发次数由调用方（TransferCoordinator）决定。
+  Future<List<T>> collectWindow<T extends UpdateReply>({
+    required List<Uint8List> commands,
+    required Duration timeout,
+    required bool Function(UpdateReply reply) matches,
+    required bool Function(List<T> collected) isDone,
+    Future<void>? cancelSignal,
+  }) async {
+    if (_disposed) {
+      return const [];
+    }
+    _buffer.clear();
+    final done = Completer<void>();
+    void check() {
+      final matching = _buffer.where(matches).toList();
+      if (isDone(matching.cast<T>()) && !done.isCompleted) {
+        done.complete();
+      }
+    }
+
+    late StreamSubscription<UpdateReply> sub;
+    sub = _notifier.stream.listen((_) => check());
+    for (final command in commands) {
+      await transport.send(command);
+    }
+    check();
+    try {
+      if (cancelSignal != null) {
+        await Future.any([done.future, cancelSignal]).timeout(timeout);
+      } else {
+        await done.future.timeout(timeout);
+      }
+    } on TimeoutException {
+      // 超时后返回已收集到的回复。
+    } finally {
+      await sub.cancel();
+    }
+    return _buffer.where(matches).cast<T>().toList();
   }
 
   /// 复位：关闭 UDP 并禁止后续请求/收集。

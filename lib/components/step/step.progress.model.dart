@@ -25,6 +25,7 @@ class StepProgressController extends ChangeNotifier {
   int _activeStep = 0;
   int _nextId = 0;
   int _terminatedStep = -1;
+  String? _versionText;
 
   StepProgressController(List<String> stepLabels)
     : _stepLabels = List.of(stepLabels);
@@ -33,6 +34,14 @@ class StepProgressController extends ChangeNotifier {
   List<String> get stepLabels => List.unmodifiable(_stepLabels);
   int get terminatedStep => _terminatedStep;
   List<StepProgressLine> get lines => List.unmodifiable(_lines);
+
+  String? get versionText => _versionText;
+
+  set versionText(String? value) {
+    if (_versionText == value) return;
+    _versionText = value;
+    notifyListeners();
+  }
 
   /// 向步骤条末尾追加一个步骤。
   ///

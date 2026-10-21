@@ -213,7 +213,7 @@ settings:
   arEg: 阿拉伯语（东）
   arMa: 阿拉伯语（西）
 cpds:
-  : 文件解析
+  fileTitle: 文件解析
   browse: 浏览
   goNow: 立即前往
   parse: 解析
@@ -340,6 +340,7 @@ cpds:
     detailPackFail: 第 {index} 个压缩包打包失败
     detailMerge: 开始整合，将多个压缩包合并为 ZIP 包
     detailEncrypt: 对 ZIP 包进行加密
+  versionLabel: 注钥枪版本号：
   usbProgress:
     stepPermission: 权限
     stepConnect: 连接
@@ -354,10 +355,14 @@ cpds:
     detailConnectStart: 连接注钥枪
     detailConnectSuccess: 连接成功
     detailConnectFail: 连接失败
-    detailHandshakeStart: 发送 LIGHT，等待 FILE_OK
+    detailHandshakeStart: 发送 LIGHT_GREEN，等待 FILE_OK
     detailHandshakeSuccess: 握手成功
     detailHandshakeTimeout: 握手超时
     detailHandshakeFail: 握手失败
+    detailVersionStart: 发送 GET_VERSION，等待版本号
+    detailVersionSuccess: 获取版本成功
+    detailVersionTimeout: 获取版本超时
+    detailVersionFail: 获取版本失败
     detailClearStart: 发送 FILE_CPD_CLEAR，等待 FILE_OK
     detailClearSuccess: 清空完成
     detailClearTimeout: 清空超时
@@ -365,6 +370,12 @@ cpds:
     detailReadySuccess: 设备已就绪
     detailReadyTimeout: 准备超时
     detailReadyFail: 准备失败
+    detailBlinkStart: 发送 LIGHT_GREEN_BLINK，等待 FILE_OK
+    detailBlinkSuccess: 指示灯已闪烁
+    detailBlinkTimeout: 指示灯闪烁超时
+    detailGreenStart: 发送 LIGHT_GREEN，等待 FILE_OK
+    detailGreenSuccess: 指示灯已常亮
+    detailGreenTimeout: 指示灯常亮超时
     detailTransferStart: 分包发送
     detailTransferTimeout: 文件接收超时，重新插拔注钥枪
     detailComplete: 注钥枪接收成功

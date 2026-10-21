@@ -87,7 +87,28 @@ class _StepProgressDialogState extends State<StepProgressDialog> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               _buildStepBar(),
-              SizedBox(height: 18.h),
+              ListenableBuilder(
+                listenable: widget.controller,
+                builder: (context, _) {
+                  final version = widget.controller.versionText;
+                  if (version == null) {
+                    return SizedBox(height: 18.h);
+                  }
+                  return Padding(
+                    padding: EdgeInsets.only(top: 8.h, bottom: 8.h),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        version,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 13.sp,
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
               _buildDetailBox(),
               if (widget.onClose != null) ...[
                 SizedBox(height: 16.h),

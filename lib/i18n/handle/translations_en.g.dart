@@ -418,6 +418,7 @@ class _Translations$cpds$en extends Translations$cpds$zh {
 	@override late final _Translations$cpds$setPassword$en setPassword = _Translations$cpds$setPassword$en._(_root);
 	@override late final _Translations$cpds$export$en export = _Translations$cpds$export$en._(_root);
 	@override late final _Translations$cpds$exportProgress$en exportProgress = _Translations$cpds$exportProgress$en._(_root);
+	@override String get versionLabel => 'Key loader version:';
 	@override late final _Translations$cpds$usbProgress$en usbProgress = _Translations$cpds$usbProgress$en._(_root);
 }
 
@@ -875,10 +876,14 @@ class _Translations$cpds$usbProgress$en extends Translations$cpds$usbProgress$zh
 	@override String get detailConnectStart => 'Connecting key loader';
 	@override String get detailConnectSuccess => 'Connected';
 	@override String get detailConnectFail => 'Connection failed';
-	@override String get detailHandshakeStart => 'Sending LIGHT, waiting for FILE_OK';
+	@override String get detailHandshakeStart => 'Sending LIGHT_GREEN, waiting for FILE_OK';
 	@override String get detailHandshakeSuccess => 'Handshake succeeded';
 	@override String get detailHandshakeTimeout => 'Handshake timed out';
 	@override String get detailHandshakeFail => 'Handshake failed';
+	@override String get detailVersionStart => 'Sending GET_VERSION, waiting for version';
+	@override String get detailVersionSuccess => 'Version received';
+	@override String get detailVersionTimeout => 'Get version timed out';
+	@override String get detailVersionFail => 'Failed to get version';
 	@override String get detailClearStart => 'Sending FILE_CPD_CLEAR, waiting for FILE_OK';
 	@override String get detailClearSuccess => 'Clear completed';
 	@override String get detailClearTimeout => 'Clear timed out';
@@ -886,6 +891,12 @@ class _Translations$cpds$usbProgress$en extends Translations$cpds$usbProgress$zh
 	@override String get detailReadySuccess => 'Device is ready';
 	@override String get detailReadyTimeout => 'Ready timed out';
 	@override String get detailReadyFail => 'Ready failed';
+	@override String get detailBlinkStart => 'Sending LIGHT_GREEN_BLINK, waiting for FILE_OK';
+	@override String get detailBlinkSuccess => 'Indicator blinking';
+	@override String get detailBlinkTimeout => 'Indicator blink timed out';
+	@override String get detailGreenStart => 'Sending LIGHT_GREEN, waiting for FILE_OK';
+	@override String get detailGreenSuccess => 'Indicator steady on';
+	@override String get detailGreenTimeout => 'Indicator steady on timed out';
 	@override String get detailTransferStart => 'Chunked sending';
 	@override String get detailTransferTimeout => 'File receive timed out, replug the key loader';
 	@override String get detailComplete => 'Key loader received successfully';

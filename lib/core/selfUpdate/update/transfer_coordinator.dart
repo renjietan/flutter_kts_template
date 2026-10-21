@@ -57,6 +57,8 @@ class TransferCoordinator {
     this.validTimeout = UpdateSession.validTimeout,
     this.receiptTimeout = const Duration(seconds: 60),
     this.writeTimeout = const Duration(seconds: 15),
+    this.windowSize = 16,
+    this.windowTimeout = UpdateSession.packetWindowTimeout,
   });
 
   final UpdateSession session;
@@ -67,6 +69,8 @@ class TransferCoordinator {
   final Duration validTimeout;
   final Duration receiptTimeout;
   final Duration writeTimeout;
+  final int windowSize;
+  final Duration windowTimeout;
 
   TransferState _state = TransferState.idle;
   TransferState _resumeState = TransferState.idle;
@@ -78,6 +82,7 @@ class TransferCoordinator {
   Set<String> _deviceKeys = {};
   List<UpdateDevice> _selectedDevices = [];
   List<int> _prefix = [];
+  final Map<String, int> _ackedThrough = {};
   final List<UpdateReply> _laterReplies = [];
   int _fileCrc32 = 0;
   int _filePacketCount = 0;
@@ -144,6 +149,7 @@ class TransferCoordinator {
     }
 
     _cursor = 0;
+    _ackedThrough.clear();
     _state = TransferState.sendingFile;
     _resumeState = TransferState.sendingFile;
     _pauseSignal = Completer<void>();
@@ -200,7 +206,7 @@ class TransferCoordinator {
           _state = TransferState.finished;
           return true;
         }
-        final outcome = await _sendPacketOnce(_cursor);
+        final outcome = await _sendWindow(_cursor);
         if (_state == TransferState.paused ||
             _state == TransferState.cancelled) {
           continue;
@@ -216,15 +222,16 @@ class TransferCoordinator {
           _terminate(t.selfUpdate.transferPacketTimeout);
           return false;
         }
-        // 成功：更新进度。
+        // 成功：整窗已确认，更新进度并推进游标。
+        final windowEnd = _windowEnd(_cursor);
         for (final device in _selectedDevices) {
-          device.transferredBytes = _prefix[_cursor];
+          device.transferredBytes = _prefix[windowEnd - 1];
           device.progress = device.totalBytes > 0
               ? device.transferredBytes / device.totalBytes
               : 0;
         }
-        controller.setTotalProgress((_cursor + 1) / _packets.length);
-        _cursor++;
+        controller.setTotalProgress(windowEnd / _packets.length);
+        _cursor = windowEnd;
         continue;
       }
       break;
@@ -250,38 +257,38 @@ class TransferCoordinator {
     return keys.containsAll(_deviceKeys);
   }
 
-  Future<_PacketSendOutcome> _sendPacketOnce(int cursor) async {
+  /// 发送 [start] 起的一个分包窗口（至多 [windowSize] 包），收集所有设备 ACK。
+  ///
+  /// 按 go-back-N 语义处理：任一 `sequence:S` 回退到 S；`length` / `crc` 失败
+  /// 回退到最小失败包号；窗口内没收齐则整窗重发，最多 [UpdateSession.maxAttempts] 次。
+  Future<_PacketSendOutcome> _sendWindow(int start) async {
+    final end = _windowEnd(start);
+    final commands = _packets.sublist(start, end);
     for (var attempt = 0; attempt < UpdateSession.maxAttempts; attempt++) {
       if (_state != TransferState.sendingPacket) {
         return const _PacketSendFailure();
       }
-      final replies = await session.collectUntil<UpdateReply>(
-        command: _packets[cursor],
-        timeout: transferTimeout,
-        attempts: 1,
+      final replies = await session.collectWindow<UpdateReply>(
+        commands: commands,
+        timeout: windowTimeout,
         matches: (reply) => reply is PacketOkReply || reply is PacketFailReply,
         isDone: (collected) {
-          // 只在「所有目标设备都回 packet_ok」时提前结束窗口；
-          // length/crc 与 sequence 都等整窗口结束后再处理。
-          final ackKeys = collected
-              .whereType<PacketOkReply>()
-              .map((r) => deviceKey(r.deviceType, r.ip))
-              .toSet();
-          return ackKeys.containsAll(_deviceKeys);
+          _applyWindowAcks(collected);
+          return _allDevicesAckedThrough(end);
         },
         cancelSignal: _pauseSignal.future,
       );
       if (_state == TransferState.paused || _state == TransferState.cancelled) {
         return const _PacketSendFailure();
       }
+      _applyWindowAcks(replies);
 
       // sequence 优先：回退到最小的缺失包号（最靠前的缺失包），
       // 让所有落后设备从该包开始依次补发。
       int? minMissing;
       for (final fail in replies.whereType<PacketFailReply>()) {
         final missing = fail.missingPacketNumber;
-        if (missing != null &&
-            (minMissing == null || missing < minMissing)) {
+        if (missing != null && (minMissing == null || missing < minMissing)) {
           minMissing = missing;
         }
       }
@@ -289,20 +296,50 @@ class TransferCoordinator {
         return _PacketSendResend(minMissing);
       }
 
-      final ackKeys = replies
-          .whereType<PacketOkReply>()
-          .map((r) => deviceKey(r.deviceType, r.ip))
-          .toSet();
-      final errorKeys = replies
-          .whereType<PacketFailReply>()
-          .where((r) => r.missingPacketNumber == null)
-          .map((r) => deviceKey(r.deviceType, r.ip))
-          .toSet();
-      if (ackKeys.containsAll(_deviceKeys) && errorKeys.isEmpty) {
+      // length / crc 失败：回退到最小的失败包号。
+      int? minFail;
+      for (final fail in replies.whereType<PacketFailReply>()) {
+        if (fail.missingPacketNumber == null &&
+            (minFail == null || fail.packetNumber < minFail)) {
+          minFail = fail.packetNumber;
+        }
+      }
+      if (minFail != null) {
+        return _PacketSendResend(minFail);
+      }
+
+      if (_allDevicesAckedThrough(end)) {
         return const _PacketSendSuccess();
       }
     }
     return const _PacketSendFailure();
+  }
+
+  /// 返回 [start] 起一个窗口的末尾索引（0-based 排他，等于最后包的 1-based 包号）。
+  int _windowEnd(int start) {
+    final end = start + windowSize;
+    return end < _packets.length ? end : _packets.length;
+  }
+
+  /// 把窗口内收到的 `packet_ok` 归并进每台设备的连续 ACK 进度。
+  ///
+  /// 只有「刚好接上上一包」的 ok 才推进计数；重复包不推进、不倒退。
+  void _applyWindowAcks(List<UpdateReply> replies) {
+    for (final reply in replies) {
+      if (reply is! PacketOkReply) {
+        continue;
+      }
+      final key = deviceKey(reply.deviceType, reply.ip);
+      final next = (_ackedThrough[key] ?? 0) + 1;
+      if (reply.packetNumber == next) {
+        _ackedThrough[key] = reply.packetNumber;
+      }
+    }
+  }
+
+  /// 是否所有目标设备都已连续 ACK 到 [end]（窗口末尾包号）。
+  bool _allDevicesAckedThrough(int end) {
+    return _deviceKeys.every((d) => (_ackedThrough[d] ?? 0) >= end);
   }
 
   /// 暂停：立即中断当前等待，游标不变，保留 valid/update 回复。
@@ -353,6 +390,7 @@ class TransferCoordinator {
     _deviceKeys = {};
     _selectedDevices = [];
     _prefix = [];
+    _ackedThrough.clear();
     _laterReplies.clear();
     _resumeState = TransferState.idle;
     controller.setTransferStage(TransferStage.finished);
@@ -395,13 +433,19 @@ class TransferCoordinator {
 
     _markValidDevices(lastReplies);
 
-    if (_selectedDevices.every((d) => d.status == t.selfUpdate.validationPassed)) {
+    if (_selectedDevices.every(
+      (d) => d.status == t.selfUpdate.validationPassed,
+    )) {
       controller.setStepStatus(4, StepStatus.success);
       return true;
     }
 
     final fail = _selectedDevices
-        .where((d) => d.status != t.selfUpdate.validationPassed && d.status != t.selfUpdate.validationTimeout)
+        .where(
+          (d) =>
+              d.status != t.selfUpdate.validationPassed &&
+              d.status != t.selfUpdate.validationTimeout,
+        )
         .length;
     final timeout = _selectedDevices
         .where((d) => d.status == t.selfUpdate.validationTimeout)
@@ -532,7 +576,11 @@ class TransferCoordinator {
     }
 
     final fail = _selectedDevices
-        .where((d) => d.status != t.selfUpdate.writeSuccess && d.status != t.selfUpdate.writeTimeout)
+        .where(
+          (d) =>
+              d.status != t.selfUpdate.writeSuccess &&
+              d.status != t.selfUpdate.writeTimeout,
+        )
         .length;
     final timeout = _selectedDevices
         .where((d) => d.status == t.selfUpdate.writeTimeout)
@@ -554,9 +602,7 @@ class TransferCoordinator {
   }
 
   bool _allWriteSuccess() {
-    return _selectedDevices.every(
-      (d) => d.status == t.selfUpdate.writeSuccess,
-    );
+    return _selectedDevices.every((d) => d.status == t.selfUpdate.writeSuccess);
   }
 
   void _applyWriteReplies(List<WriteResultReply> replies) {
@@ -584,7 +630,6 @@ class TransferCoordinator {
       controller.updateDevice(target);
     }
   }
-
 
   /// 回执阶段（步骤 6）：write 成功后被动等待 30 秒，收集 `update_ok` / `update_fail`。
   ///
@@ -649,7 +694,8 @@ class TransferCoordinator {
     var allUpdated = true;
     for (final device in _selectedDevices) {
       final key = deviceKey(device.type, device.rawIp);
-      if (writeOkKeys.contains(key) && device.status != t.selfUpdate.updateSuccess) {
+      if (writeOkKeys.contains(key) &&
+          device.status != t.selfUpdate.updateSuccess) {
         allUpdated = false;
         break;
       }
@@ -710,7 +756,11 @@ class TransferCoordinator {
   void _terminate(String summary) {
     _state = TransferState.cancelled;
     for (final device in _selectedDevices) {
-      device.result = (summary == t.selfUpdate.transferFileTimeout || summary == t.selfUpdate.transferPacketTimeout) ? t.selfUpdate.transferTimeout : t.selfUpdate.transferFailedStatus;
+      device.result =
+          (summary == t.selfUpdate.transferFileTimeout ||
+              summary == t.selfUpdate.transferPacketTimeout)
+          ? t.selfUpdate.transferTimeout
+          : t.selfUpdate.transferFailedStatus;
       device.detail = summary;
     }
     controller.markFailed(controller.activeStep);

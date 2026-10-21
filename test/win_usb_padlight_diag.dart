@@ -42,9 +42,9 @@ void main() {
   setPipeTimeout(interfaceHandle, outPipe, 3000);
   setPipeTimeout(interfaceHandle, inPipe, 3000);
 
-  final cmd = Uint8List.fromList(utf8.encode('LIGHT\n'));
+  final cmd = Uint8List.fromList(utf8.encode('LIGHT_GREEN\n'));
   final written = winUsbWritePipe(interfaceHandle, outPipe, cmd);
-  print('WRITE LIGHT written=$written');
+  print('WRITE LIGHT_GREEN written=$written');
 
   try {
     final data = winUsbReadPipe(interfaceHandle, inPipe, 512);
