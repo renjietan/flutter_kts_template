@@ -2,16 +2,19 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_kts_template/utils/provider/keyloader.provider.dart';
+import 'package:flutter_kts_template/utils/provider/radios.provider.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:provider/provider.dart';
 
 import '../../api/KeyLoaders.api.dart';
+import '../../api/RadiosManagerApi.dart';
 import '../../components/TextField/simple.form.textfield.dart';
 import '../../components/dialog/simple.form.dialog.dart';
 import '../../components/loading/simple.loading.dart';
 import '../../core/entities/keyLoaders/keyLoadersEntity.dart';
 import '../../core/cpds/service/cpds_manager.dart';
 import '../../i18n/handle/translations.g.dart';
+import '../../logger/logger.dart';
 import '../../utils/enum/dialog_enum.dart';
 import 'keyLoader.pager.dart';
 
@@ -37,6 +40,16 @@ mixin KeyLoaderMixin on State<KeyLoaderPager> {
         selectKeyLoader = data.isNotEmpty ? data[0] : null;
         refreshToken++;
       });
+    });
+  }
+
+  void getRadios() {
+    RadiosManagerApi.getAll().then((res) {
+      if (mounted) {
+        context.read<RadiosProvider>().setRadios = res.data.list;
+      }
+    }).catchError((Object error) {
+      GlobalLogger.logError('refresh radios failed: $error');
     });
   }
 

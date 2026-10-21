@@ -47,7 +47,10 @@ class _InjectEncryptStickPagerState extends State<KeyLoaderPager>
     final isVisible = TickerMode.of(context);
     if (isVisible && !_wasVisible) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) getList();
+        if (mounted) {
+          getList();
+          getRadios();
+        }
       });
     }
     _wasVisible = isVisible;
