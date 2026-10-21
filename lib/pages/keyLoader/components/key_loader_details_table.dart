@@ -408,7 +408,7 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
   }
 
   /// USB 上传：连接注钥枪 → LIGHT_GREEN 握手 → GET_VERSION 版本 →
-  /// FILE_CPD_CLEAR 清空 → FILE_UPLOAD 准备 → LIGHT_GREEN_BLINK 闪烁 →
+  /// FILE_CPD_CLEAR 清空 → LIGHT_GREEN_BLINK 闪烁 → FILE_UPLOAD 准备 →
   /// 分块传输 → LIGHT_GREEN 常亮 → MD5 校验。
   /// 检查/申请注钥枪 USB 权限（仅 Android 需要；Windows 无授权弹窗）。
   Future<bool> _ensureUsbPermission() async {
@@ -540,8 +540,45 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
       );
       if (!clearOk) return false;
 
-      // 4-5 准备
-      controller?.addLine(usb.detailReadyStart, number: '4-5');
+      // 4-5 闪烁
+      controller?.addLine(usb.detailBlinkStart, number: '4-5');
+      await _writeUsb(
+        manager,
+        Uint8List.fromList(utf8.encode('LIGHT_GREEN_BLINK\n')),
+      );
+      if (_exportCancelled) return false;
+      final blinkResult = await _waitReplyResult(reader);
+      if (_handleUsbDisconnected(
+        blinkResult,
+        controller,
+        usb,
+        failColor,
+        '4-5',
+      )) {
+        return false;
+      }
+      if (blinkResult == _UsbReplyResult.timeout) {
+        controller?.addLine(
+          usb.detailBlinkTimeout,
+          color: failColor,
+          number: '4-5',
+        );
+        controller?.appendStep(usb.terminated, terminated: true);
+        return false;
+      }
+      if (blinkResult != _UsbReplyResult.ok) {
+        controller?.addLine(
+          _replyFailureText(usb, blinkResult),
+          color: failColor,
+          number: '4-5',
+        );
+        controller?.appendStep(usb.terminated, terminated: true);
+        return false;
+      }
+      controller?.addLine(usb.detailBlinkSuccess, number: '4-5');
+
+      // 4-6 准备
+      controller?.addLine(usb.detailReadyStart, number: '4-6');
       await _writeUsb(
         manager,
         Uint8List.fromList(utf8.encode('FILE_UPLOAD\n')),
@@ -556,7 +593,7 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
         controller,
         usb,
         failColor,
-        '4-5',
+        '4-6',
       )) {
         return false;
       }
@@ -564,7 +601,7 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
         controller?.addLine(
           usb.detailReadyTimeout,
           color: failColor,
-          number: '4-5',
+          number: '4-6',
         );
         controller?.appendStep(usb.terminated, terminated: true);
         return false;
@@ -573,49 +610,12 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
         controller?.addLine(
           _replyFailureText(usb, readyResult),
           color: failColor,
-          number: '4-5',
-        );
-        controller?.appendStep(usb.terminated, terminated: true);
-        return false;
-      }
-      controller?.addLine(usb.detailReadySuccess, number: '4-5');
-
-      // 4-6 闪烁
-      controller?.addLine(usb.detailBlinkStart, number: '4-6');
-      await _writeUsb(
-        manager,
-        Uint8List.fromList(utf8.encode('LIGHT_GREEN_BLINK\n')),
-      );
-      if (_exportCancelled) return false;
-      final blinkResult = await _waitReplyResult(reader);
-      if (_handleUsbDisconnected(
-        blinkResult,
-        controller,
-        usb,
-        failColor,
-        '4-6',
-      )) {
-        return false;
-      }
-      if (blinkResult == _UsbReplyResult.timeout) {
-        controller?.addLine(
-          usb.detailBlinkTimeout,
-          color: failColor,
           number: '4-6',
         );
         controller?.appendStep(usb.terminated, terminated: true);
         return false;
       }
-      if (blinkResult != _UsbReplyResult.ok) {
-        controller?.addLine(
-          _replyFailureText(usb, blinkResult),
-          color: failColor,
-          number: '4-6',
-        );
-        controller?.appendStep(usb.terminated, terminated: true);
-        return false;
-      }
-      controller?.addLine(usb.detailBlinkSuccess, number: '4-6');
+      controller?.addLine(usb.detailReadySuccess, number: '4-6');
 
       // 4-7 传输
       controller?.addLine(usb.detailTransferStart, number: '4-7');
@@ -696,8 +696,37 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
         }
       }
 
-      // 4-8 常亮
-      controller?.addLine(usb.detailGreenStart, number: '4-8');
+      // 4-8 校验：发送整个文件内容的 16 字节 MD5，然后等待 FILE_OK。
+      final md5Bytes = md5.convert(fileBytes).bytes;
+      await _writeUsb(manager, Uint8List.fromList(md5Bytes));
+      if (_exportCancelled) return false;
+      final result = await _waitReplyResult(reader);
+
+      // 设备已拔出时无法再发送 LIGHT_GREEN，直接终止。
+      if (_handleUsbDisconnected(result, controller, usb, failColor, '4-8')) {
+        return false;
+      }
+
+      var md5Ok = result == _UsbReplyResult.ok;
+      if (result == _UsbReplyResult.timeout) {
+        GlobalLogger.logWarn('USB_FILE_VERIFY_TIMEOUT');
+        controller?.addLine(
+          usb.detailVerifyTimeout,
+          color: failColor,
+          number: '4-8',
+        );
+      } else if (result != _UsbReplyResult.ok) {
+        GlobalLogger.logWarn('USB_FILE_VERIFY_FAILED result=${result.name}');
+        controller?.addLine(
+          _replyFailureText(usb, result),
+          color: failColor,
+          number: '4-8',
+        );
+      }
+
+      // 4-9 常亮：无论 MD5 成功或失败都发送 LIGHT_GREEN。
+      if (_exportCancelled) return false;
+      controller?.addLine(usb.detailGreenStart, number: '4-9');
       await _writeUsb(
         manager,
         Uint8List.fromList(utf8.encode('LIGHT_GREEN\n')),
@@ -709,7 +738,7 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
         controller,
         usb,
         failColor,
-        '4-8',
+        '4-9',
       )) {
         return false;
       }
@@ -717,7 +746,7 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
         controller?.addLine(
           usb.detailGreenTimeout,
           color: failColor,
-          number: '4-8',
+          number: '4-9',
         );
         controller?.appendStep(usb.terminated, terminated: true);
         return false;
@@ -726,39 +755,14 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
         controller?.addLine(
           _replyFailureText(usb, greenResult),
           color: failColor,
-          number: '4-8',
-        );
-        controller?.appendStep(usb.terminated, terminated: true);
-        return false;
-      }
-      controller?.addLine(usb.detailGreenSuccess, number: '4-8');
-
-      // 4-9 校验：发送整个文件内容的 16 字节 MD5，然后等待 FILE_OK。
-      final md5Bytes = md5.convert(fileBytes).bytes;
-      await _writeUsb(manager, Uint8List.fromList(md5Bytes));
-      if (_exportCancelled) return false;
-      final result = await _waitReplyResult(reader);
-
-      if (_handleUsbDisconnected(result, controller, usb, failColor, '4-9')) {
-        return false;
-      }
-      if (result == _UsbReplyResult.timeout) {
-        GlobalLogger.logWarn('USB_FILE_VERIFY_TIMEOUT');
-        controller?.addLine(
-          usb.detailVerifyTimeout,
-          color: failColor,
           number: '4-9',
         );
         controller?.appendStep(usb.terminated, terminated: true);
         return false;
       }
-      if (result != _UsbReplyResult.ok) {
-        GlobalLogger.logWarn('USB_FILE_VERIFY_FAILED result=${result.name}');
-        controller?.addLine(
-          _replyFailureText(usb, result),
-          color: failColor,
-          number: '4-9',
-        );
+      controller?.addLine(usb.detailGreenSuccess, number: '4-9');
+
+      if (!md5Ok) {
         controller?.appendStep(usb.terminated, terminated: true);
         return false;
       }
@@ -1040,11 +1044,6 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
       return;
     }
     if (_exportCancelled) return;
-
-    if (selectedRows.any((item) => item.radioId == null)) {
-      SimplePopup.error(t.cpds.export.radioRequired);
-      return;
-    }
     if (!mounted) return;
 
     final password = await showDialog<String>(
@@ -1353,6 +1352,17 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
     return builder.takeBytes();
   }
 
+  /// 从通信参数包名（dc_xxx_xxx）中取最后一个纯数字段作为 dcId。
+  String _lastNumberInDcPackageName(String dcPackageName) {
+    final parts = dcPackageName.split('_');
+    for (var i = parts.length - 1; i >= 0; i--) {
+      if (RegExp(r'^\d+$').hasMatch(parts[i])) {
+        return parts[i];
+      }
+    }
+    return parts.isNotEmpty ? parts.last : '';
+  }
+
   Future<String?> _exportOneRow(
     KeyLoaderDetailsEntity row,
     String outPath,
@@ -1389,7 +1399,7 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
           innerDir: '3_device_config',
           transform: (originalBytes) {
             final json = jsonDecode(utf8.decode(originalBytes));
-            if (json is Map) {
+            if (json is Map && row.radioId != null) {
               json['Alias'] = radioAlias;
             }
             return Uint8List.fromList(utf8.encode(jsonEncode(json)));
@@ -1444,7 +1454,14 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
       'MR9360' => 'HF',
       _ => raw,
     };
-    final zipName = '${row.SN ?? ''}-$mapped-$radioAlias';
+    final String zipName;
+    if (row.radioId == null) {
+      final dcId = _lastNumberInDcPackageName(row.dcPackageName);
+      final rowAlias = row.dcPackageAlias ?? '';
+      zipName = '@$dcId--$mapped-$rowAlias';
+    } else {
+      zipName = '${row.SN ?? ''}-$mapped-$radioAlias';
+    }
     final tarPath = await FileTools.filesToZipFormPath(
       entries: entries,
       outputPath: savePath,

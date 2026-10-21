@@ -47,6 +47,7 @@ class _KeyLoaderFileDeleteDialogState extends State<KeyLoaderFileDeleteDialog> {
   String? _refreshError;
   bool _refreshLoading = false;
   String _fileTypeFilter = 'all';
+  String _versionText = '';
 
   @override
   void initState() {
@@ -101,7 +102,7 @@ class _KeyLoaderFileDeleteDialogState extends State<KeyLoaderFileDeleteDialog> {
 
     if (!mounted) return;
     setState(() => _step = _DeleteStep.ready);
-    await _writeUsb(manager, Uint8List.fromList(utf8.encode('LIGHT\n')));
+    await _writeUsb(manager, Uint8List.fromList(utf8.encode('LIGHT_GREEN\n')));
     try {
       final line = await reader.nextLine(timeout: const Duration(seconds: 3));
       if (!mounted || _closed) return;
@@ -114,6 +115,45 @@ class _KeyLoaderFileDeleteDialogState extends State<KeyLoaderFileDeleteDialog> {
       _showError(_tr('响应超时', 'Response timeout', 'انتهت مهلة الاستجابة'));
       return;
     } on StateError {
+      return;
+    }
+
+    // 获取版本号：GET_VERSION → VERSION:xxxxx；3 秒超时，共 3 次尝试。
+    var versionAcquired = false;
+    for (var attempt = 0; attempt < 3 && !versionAcquired; attempt++) {
+      await _writeUsb(
+        manager,
+        Uint8List.fromList(utf8.encode('GET_VERSION\n')),
+      );
+      try {
+        final versionLine = await reader.nextLine(
+          timeout: const Duration(seconds: 3),
+        );
+        if (!mounted || _closed) return;
+        if (versionLine.startsWith('VERSION:')) {
+          final version = versionLine.substring('VERSION:'.length).trim();
+          setState(() => _versionText = version);
+          versionAcquired = true;
+        } else {
+          // 收到非 VERSION: 开头码流：直接失败。
+          break;
+        }
+      } on TimeoutException {
+        // 超时：继续重试。
+      } on StateError {
+        return;
+      }
+    }
+
+    if (!mounted) return;
+    if (!versionAcquired) {
+      _showError(
+        _tr(
+          '获取版本失败',
+          'Failed to get version',
+          'فشل الحصول على الإصدار',
+        ),
+      );
       return;
     }
 
@@ -542,7 +582,7 @@ class _KeyLoaderFileDeleteDialogState extends State<KeyLoaderFileDeleteDialog> {
 
   String _fileTypeOf(String name) {
     final lower = name.toLowerCase();
-    if (lower.endsWith('.pc')) return 'pc';
+    if (lower.endsWith('.cpdata')) return 'pc';
     if (lower.endsWith('.pad')) return 'pad';
     if (lower.endsWith('.key')) return 'key';
     return 'unknown';
@@ -634,13 +674,27 @@ class _KeyLoaderFileDeleteDialogState extends State<KeyLoaderFileDeleteDialog> {
     return AlertDialog(
       backgroundColor: const Color(0xFF20262D),
       insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-      title: Text(
-        _tr(
-          '从注钥枪中删除文件',
-          'Delete files from key loader',
-          'حذف الملفات من جهاز تحميل المفاتيح',
-        ),
-        style: const TextStyle(color: Colors.white, fontSize: 17),
+      title: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            _tr(
+              '从注钥枪中删除文件',
+              'Delete files from key loader',
+              'حذف الملفات من جهاز تحميل المفاتيح',
+            ),
+            style: const TextStyle(color: Colors.white, fontSize: 17),
+          ),
+          if (_versionText.isNotEmpty)
+            Text(
+              '${_tr('注钥枪版本号：', 'Key loader version: ', 'رقم إصدار جهاز تحميل المفاتيح: ')}$_versionText',
+              style: const TextStyle(
+                color: Colors.white70,
+                fontSize: 13,
+                fontWeight: FontWeight.normal,
+              ),
+            ),
+        ],
       ),
       content: SizedBox(
         width: 720,
