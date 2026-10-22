@@ -295,6 +295,7 @@ class _SelfUpdatePagerState extends State<SelfUpdatePager> {
   ) async {
     Future<void> fullReset() async {
       transfer.cancel();
+      flow.cancel();
       await session.reset();
       stepController.reset();
       scanController.reset();

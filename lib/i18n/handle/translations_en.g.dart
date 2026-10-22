@@ -947,6 +947,7 @@ class _Translations$selfUpdate$failReason$en extends Translations$selfUpdate$fai
 	@override String get overwriteIniTempFail => 'Overwrite ini: temp write failed';
 	@override String get overwriteIniRenameFail => 'Overwrite ini: rename failed';
 	@override String get writeMarkerFail => 'Write receipt marker failed';
+	@override String get insufficientSpace => 'Insufficient disk space';
 	@override String get versionWriteFail => 'Write version failed';
 	@override String get emptyCommand => 'Empty startup command';
 	@override String get mkdirFail => 'Create directory failed';

@@ -69,13 +69,11 @@ class UpdateProtocolLogger {
     debugPrint(describe(bytes, outgoing: false, sourceIp: sourceIp));
   }
 
-  /// off 模式下的分包进度摘要：每 100 包（及最后一包）打印一次。
+  /// off 模式下的分包进度摘要：每发送一包打印一次。
   static void _logPacketProgress(Uint8List bytes) {
     const prefix = 'packet:';
     final packetNumber = _uint32(bytes, prefix.length + 4);
-    if (packetNumber % 100 == 0 || packetNumber == _totalPackets) {
-      debugPrint('分包 $packetNumber/$_totalPackets 已发送');
-    }
+    debugPrint('分包 $packetNumber/$_totalPackets 已发送');
   }
 
   /// 打印 UDP 打开连接日志。
@@ -271,6 +269,10 @@ class UpdateProtocolLogger {
       lines.add(_field('指令', 'fileAck:', 8));
       _appendId(lines, bytes, 8);
       _appendFileAckFields(lines, bytes);
+      return;
+    }
+    if (_hasPrefix(bytes, UpdateProtocol.fileFailPrefix)) {
+      _prefixWithIdAndTail(lines, bytes, 'file_fail:', 10, '原因');
       return;
     }
     if (_hasPrefix(bytes, UpdateProtocol.packetOkPrefix)) {

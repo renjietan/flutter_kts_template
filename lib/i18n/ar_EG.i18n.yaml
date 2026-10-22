@@ -512,6 +512,7 @@ selfUpdate:
     overwriteIniTempFail: فشل كتابة الملف المؤقت لـ ini
     overwriteIniRenameFail: فشل إعادة تسمية ini
     writeMarkerFail: فشل كتابة علامة الاستلام
+    insufficientSpace: مساحة القرص غير كافية
     versionWriteFail: فشل كتابة الإصدار
     emptyCommand: أمر بدء التشغيل فارغ
     mkdirFail: فشل إنشاء الدليل

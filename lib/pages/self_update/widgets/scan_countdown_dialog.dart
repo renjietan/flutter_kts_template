@@ -94,12 +94,20 @@ class _ScanCountdownDialogState extends State<ScanCountdownDialog> {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    localizeDigits(context, t.selfUpdate.scannedCount(n: controller.deviceCount)),
+                    localizeDigits(
+                      context,
+                      t.selfUpdate.scannedCount(n: controller.deviceCount),
+                    ),
                     style: const TextStyle(color: Colors.white, fontSize: 14),
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    localizeDigits(context, t.selfUpdate.remainingSeconds(n: controller.remainingSeconds)),
+                    localizeDigits(
+                      context,
+                      t.selfUpdate.remainingSeconds(
+                        n: controller.remainingSeconds,
+                      ),
+                    ),
                     style: const TextStyle(color: Colors.white70, fontSize: 13),
                   ),
                 ],
@@ -109,16 +117,16 @@ class _ScanCountdownDialogState extends State<ScanCountdownDialog> {
         ),
       ),
       actions: [
-        if (controller.deviceCount >= 1)
-          TextButton(onPressed: _next, child: Text(t.selfUpdate.next))
-        else
+        if (controller.state == ScanState.scanning)
           TextButton(
-            onPressed: controller.state == ScanState.scanning ? _cancel : null,
+            onPressed: _cancel,
             child: Text(
               t.selfUpdate.cancel,
               style: const TextStyle(color: Colors.white70),
             ),
           ),
+        if (controller.deviceCount >= 1)
+          TextButton(onPressed: _next, child: Text(t.selfUpdate.next)),
       ],
     );
   }

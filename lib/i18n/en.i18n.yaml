@@ -516,6 +516,7 @@ selfUpdate:
     overwriteIniTempFail: "Overwrite ini: temp write failed"
     overwriteIniRenameFail: "Overwrite ini: rename failed"
     writeMarkerFail: Write receipt marker failed
+    insufficientSpace: Insufficient disk space
     versionWriteFail: Write version failed
     emptyCommand: Empty startup command
     mkdirFail: Create directory failed

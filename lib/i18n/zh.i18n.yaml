@@ -516,6 +516,7 @@ selfUpdate:
     overwriteIniTempFail: 覆盖 ini：写临时文件失败
     overwriteIniRenameFail: 覆盖 ini：改名替换失败
     writeMarkerFail: 写回执标记失败
+    insufficientSpace: 磁盘空间不足
     versionWriteFail: 回填版本失败
     emptyCommand: 启动命令行为空
     mkdirFail: 创建目录失败

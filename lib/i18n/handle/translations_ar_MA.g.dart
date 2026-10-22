@@ -946,6 +946,7 @@ class Translations$selfUpdate$failReason$ar_MA extends Translations$selfUpdate$f
 	@override String get overwriteIniTempFail => 'فشل كتابة الملف المؤقت لـ ini';
 	@override String get overwriteIniRenameFail => 'فشل إعادة تسمية ini';
 	@override String get writeMarkerFail => 'فشل كتابة علامة الاستلام';
+	@override String get insufficientSpace => 'مساحة القرص غير كافية';
 	@override String get versionWriteFail => 'فشل كتابة الإصدار';
 	@override String get emptyCommand => 'أمر بدء التشغيل فارغ';
 	@override String get mkdirFail => 'فشل إنشاء الدليل';

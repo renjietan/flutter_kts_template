@@ -19,6 +19,7 @@ class UpdateProtocol {
   static const String versionFailPrefix = 'version_fail:';
   static const String filePrefix = 'file:';
   static const String fileAckPrefix = 'fileAck:';
+  static const String fileFailPrefix = 'file_fail:';
   static const String packetPrefix = 'packet:';
   static const String packetOkPrefix = 'packet_ok:';
   static const String packetFailPrefix = 'packet_fail:';
@@ -204,6 +205,9 @@ class UpdateProtocol {
     if (_startsWith(bytes, fileAckPrefix)) {
       return _parseFileAck(bytes);
     }
+    if (_startsWith(bytes, fileFailPrefix)) {
+      return _parseFileFail(bytes);
+    }
     if (_startsWith(bytes, packetOkPrefix)) {
       return _parsePacketOk(bytes);
     }
@@ -282,6 +286,15 @@ class UpdateProtocol {
       totalBytes: totalBytes,
       fileName: fileName,
     );
+  }
+
+  static FileFailReply? _parseFileFail(Uint8List bytes) {
+    final id = _parseId(bytes, fileFailPrefix.length);
+    if (id == null) {
+      return null;
+    }
+    final reason = utf8.decode(bytes.sublist(id.$3));
+    return FileFailReply(deviceType: id.$1, ip: id.$2, reason: reason);
   }
 
   static PacketOkReply? _parsePacketOk(Uint8List bytes) {
@@ -491,6 +504,18 @@ final class FileAckReply extends UpdateReply {
   final int packetCount;
   final int totalBytes;
   final String fileName;
+}
+
+final class FileFailReply extends UpdateReply {
+  const FileFailReply({
+    required this.deviceType,
+    required this.ip,
+    required this.reason,
+  });
+
+  final String deviceType;
+  final String ip;
+  final String reason;
 }
 
 final class PacketOkReply extends UpdateReply {

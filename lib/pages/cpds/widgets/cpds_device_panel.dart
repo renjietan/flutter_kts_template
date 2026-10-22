@@ -600,6 +600,12 @@ class _CpdsFutureWarriorPanelState extends State<CpdsFutureWarriorPanel> {
       height: 32.h,
       isLoading: _saving,
       onPressed: _saving ? null : _handleSave,
+      colors: const [
+        Color(0xFFE6A23C),
+        Color(0xFFE6A23C),
+        Color(0xFFE6A23C),
+        Color(0xFFE6A23C),
+      ],
     );
     final normalToolbar = SizedBox(
       height: 48.h,

@@ -38,6 +38,7 @@ class UpdateSession {
   final List<UpdateReply> _buffer = [];
   final StreamController<UpdateReply> _notifier =
       StreamController<UpdateReply>.broadcast();
+  final Completer<void> _resetSignal = Completer<void>();
 
   static const authTimeout = Duration(seconds: 5);
   static const versionTimeout = Duration(seconds: 5);
@@ -213,13 +214,12 @@ class UpdateSession {
     }
     check();
     try {
-      if (cancelSignal != null) {
-        await Future.any([done.future, cancelSignal]).timeout(timeout);
-      } else {
-        await done.future.timeout(timeout);
-      }
-    } on TimeoutException {
-      // 超时后返回已收集到的回复。
+      await Future.any(<Future<void>>[
+        done.future,
+        Future<void>.delayed(timeout),
+        _resetSignal.future,
+        ?cancelSignal,
+      ]);
     } finally {
       await sub.cancel();
     }
@@ -230,6 +230,9 @@ class UpdateSession {
   Future<void> reset() async {
     // 无论是否已复位，都先清空缓存，保证幂等调用仍能释放残留回复。
     _buffer.clear();
+    if (!_resetSignal.isCompleted) {
+      _resetSignal.complete();
+    }
     if (_disposed) {
       return;
     }
@@ -289,17 +292,12 @@ class UpdateSession {
     }
     check();
     try {
-      if (isDone != null) {
-        if (cancelSignal != null) {
-          await Future.any([done.future, cancelSignal]).timeout(timeout);
-        } else {
-          await done.future.timeout(timeout);
-        }
-      } else {
-        await Future<void>.delayed(timeout);
-      }
-    } on TimeoutException {
-      // 超时后返回已收集到的回复。
+      await Future.any(<Future<void>>[
+        if (isDone != null) done.future,
+        Future<void>.delayed(timeout),
+        _resetSignal.future,
+        ?cancelSignal,
+      ]);
     } finally {
       await sub.cancel();
     }

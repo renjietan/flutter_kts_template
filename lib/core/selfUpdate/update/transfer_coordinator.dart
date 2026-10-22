@@ -57,7 +57,7 @@ class TransferCoordinator {
     this.validTimeout = UpdateSession.validTimeout,
     this.receiptTimeout = const Duration(seconds: 60),
     this.writeTimeout = const Duration(seconds: 15),
-    this.windowSize = 16,
+    this.windowSize = 1,
     this.windowTimeout = UpdateSession.packetWindowTimeout,
   });
 
@@ -206,7 +206,9 @@ class TransferCoordinator {
           _state = TransferState.finished;
           return true;
         }
-        final outcome = await _sendWindow(_cursor);
+        final outcome = windowSize <= 1
+            ? await _sendPacketOnce(_cursor)
+            : await _sendWindow(_cursor);
         if (_state == TransferState.paused ||
             _state == TransferState.cancelled) {
           continue;
@@ -240,12 +242,15 @@ class TransferCoordinator {
   }
 
   Future<bool> _sendFileOnce() async {
-    final acks = await session.collectUntil<UpdateReply>(
+    final replies = await session.collectUntil<UpdateReply>(
       command: _fileCommand!,
       timeout: transferTimeout,
-      matches: (reply) => reply is FileAckReply,
+      matches: (reply) => reply is FileAckReply || reply is FileFailReply,
       isDone: (collected) {
-        final keys = collected.map(_replyKey).toSet();
+        if (collected.any((r) => r is FileFailReply)) {
+          return true;
+        }
+        final keys = collected.whereType<FileAckReply>().map(_replyKey).toSet();
         return keys.containsAll(_deviceKeys);
       },
       cancelSignal: _pauseSignal.future,
@@ -253,8 +258,88 @@ class TransferCoordinator {
     if (_state == TransferState.paused || _state == TransferState.cancelled) {
       return false;
     }
-    final keys = acks.map(_replyKey).toSet();
+    final fails = replies.whereType<FileFailReply>().toList();
+    if (fails.isNotEmpty) {
+      _terminateFileFail(fails);
+      return false;
+    }
+    final keys = replies.whereType<FileAckReply>().map(_replyKey).toSet();
     return keys.containsAll(_deviceKeys);
+  }
+
+  /// 任一设备 file_fail（磁盘空间不足等）→ 终止整个传输。
+  void _terminateFileFail(List<FileFailReply> fails) {
+    _state = TransferState.cancelled;
+    final failByKey = <String, FileFailReply>{
+      for (final f in fails) deviceKey(f.deviceType, f.ip): f,
+    };
+    for (final device in _selectedDevices) {
+      final key = deviceKey(device.type, device.rawIp);
+      device.status = t.selfUpdate.transferFailedStatus;
+      device.result = t.selfUpdate.transferFailedStatus;
+      device.detail = failByKey.containsKey(key)
+          ? selfUpdateFailReasonText(failByKey[key]!.reason)
+          : '';
+    }
+    controller.markFailed(controller.activeStep);
+    controller.setSummary(t.selfUpdate.transferFailedStatus);
+    controller.setPhase(UpdatePhase.finished);
+    controller.setTransferStage(TransferStage.finished);
+    session.reset();
+  }
+
+  Future<_PacketSendOutcome> _sendPacketOnce(int cursor) async {
+    for (var attempt = 0; attempt < UpdateSession.maxAttempts; attempt++) {
+      if (_state != TransferState.sendingPacket) {
+        return const _PacketSendFailure();
+      }
+      final replies = await session.collectUntil<UpdateReply>(
+        command: _packets[cursor],
+        timeout: transferTimeout,
+        attempts: 1,
+        matches: (reply) => reply is PacketOkReply || reply is PacketFailReply,
+        isDone: (collected) {
+          // 只在「所有目标设备都回 packet_ok」时提前结束窗口；
+          // length/crc 与 sequence 都等整窗口结束后再处理。
+          final ackKeys = collected
+              .whereType<PacketOkReply>()
+              .map((r) => deviceKey(r.deviceType, r.ip))
+              .toSet();
+          return ackKeys.containsAll(_deviceKeys);
+        },
+        cancelSignal: _pauseSignal.future,
+      );
+      if (_state == TransferState.paused || _state == TransferState.cancelled) {
+        return const _PacketSendFailure();
+      }
+
+      // sequence 优先：回退到最小的缺失包号（最靠前的缺失包），
+      // 让所有落后设备从该包开始依次补发。
+      int? minMissing;
+      for (final fail in replies.whereType<PacketFailReply>()) {
+        final missing = fail.missingPacketNumber;
+        if (missing != null && (minMissing == null || missing < minMissing)) {
+          minMissing = missing;
+        }
+      }
+      if (minMissing != null) {
+        return _PacketSendResend(minMissing);
+      }
+
+      final ackKeys = replies
+          .whereType<PacketOkReply>()
+          .map((r) => deviceKey(r.deviceType, r.ip))
+          .toSet();
+      final errorKeys = replies
+          .whereType<PacketFailReply>()
+          .where((r) => r.missingPacketNumber == null)
+          .map((r) => deviceKey(r.deviceType, r.ip))
+          .toSet();
+      if (ackKeys.containsAll(_deviceKeys) && errorKeys.isEmpty) {
+        return const _PacketSendSuccess();
+      }
+    }
+    return const _PacketSendFailure();
   }
 
   /// 发送 [start] 起的一个分包窗口（至多 [windowSize] 包），收集所有设备 ACK。

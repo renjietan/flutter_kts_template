@@ -202,7 +202,9 @@ class _UpdateStepDialogState extends State<UpdateStepDialog> {
                     onPressed: showPause
                         ? widget.onPause
                         : (showResume ? widget.onResume : null),
-                    child: Text(showPause ? t.selfUpdate.pause : t.selfUpdate.resume),
+                    child: Text(
+                      showPause ? t.selfUpdate.pause : t.selfUpdate.resume,
+                    ),
                   ),
                 ],
               ],
@@ -361,14 +363,20 @@ class _UpdateStepDialogState extends State<UpdateStepDialog> {
                     DataCell(Text(device.type)),
                     DataCell(
                       Text(
-                        localizeDigits(context, device.currentVersion.isEmpty
-                            ? '--'
-                            : device.currentVersion),
+                        localizeDigits(
+                          context,
+                          device.currentVersion.isEmpty
+                              ? '--'
+                              : device.currentVersion,
+                        ),
                       ),
                     ),
                     DataCell(
                       Text(
-                        localizeDigits(context, device.newVersion.isEmpty ? '--' : device.newVersion),
+                        localizeDigits(
+                          context,
+                          device.newVersion.isEmpty ? '--' : device.newVersion,
+                        ),
                       ),
                     ),
                     DataCell(
@@ -376,7 +384,10 @@ class _UpdateStepDialogState extends State<UpdateStepDialog> {
                     ),
                     DataCell(
                       Text(
-                        localizeDigits(context, '${(device.progress * 100).round()}% · ${_formatBytes(device.transferredBytes)}/${_formatBytes(device.totalBytes)}'),
+                        localizeDigits(
+                          context,
+                          '${(device.progress * 100).round()}% · ${_formatBytes(device.transferredBytes)}/${_formatBytes(device.totalBytes)}',
+                        ),
                       ),
                     ),
                     DataCell(
@@ -413,7 +424,10 @@ class _UpdateStepDialogState extends State<UpdateStepDialog> {
             style: const TextStyle(color: Colors.white, fontSize: 16),
           ),
           content: Text(
-            localizeDigits(context, device.detail.isNotEmpty ? device.detail : device.result),
+            localizeDigits(
+              context,
+              device.detail.isNotEmpty ? device.detail : device.result,
+            ),
             style: const TextStyle(color: Colors.white70, fontSize: 13),
           ),
           actions: [
@@ -429,13 +443,17 @@ class _UpdateStepDialogState extends State<UpdateStepDialog> {
 
   List<Widget> _buildActions(UpdateStepController controller) {
     final phase = controller.phase;
+    final inAuth = controller.activeStep == 1 && phase == UpdatePhase.running;
+    final inVersion =
+        controller.activeStep == 2 && phase == UpdatePhase.running;
     final inTransfer =
         controller.activeStep == 3 && phase == UpdatePhase.running;
-    final inValid =
-        controller.activeStep == 4 && phase == UpdatePhase.running;
+    final inValid = controller.activeStep == 4 && phase == UpdatePhase.running;
     final showStart =
         inTransfer && controller.transferStage == TransferStage.notStarted;
     final showCancel =
+        inAuth ||
+        inVersion ||
         inTransfer ||
         inValid ||
         phase == UpdatePhase.authFailed ||

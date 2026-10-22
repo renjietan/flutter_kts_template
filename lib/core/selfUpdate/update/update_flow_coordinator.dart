@@ -33,6 +33,8 @@ class UpdateFlowCoordinator {
   final Duration authTimeout;
   final Duration versionTimeout;
 
+  bool _cancelled = false;
+
   /// 无对应更新文件夹、不支持更新的设备类型。
   static const Set<String> unsupportedTypes = {'TEDS', 'SmallHandheld'};
 
@@ -41,6 +43,12 @@ class UpdateFlowCoordinator {
 
   /// 版本校验窗口数量：每个窗口独立广播收集一次，最多 3 次。
   static const int versionWindows = 3;
+
+  /// 取消当前认证/版本校验：配合会话复位信号让在途等待立即返回，
+  /// 并阻止后续窗口继续向步骤控制器写入状态。
+  void cancel() {
+    _cancelled = true;
+  }
 
   /// 认证 → 版本校验（首次进入步骤弹窗）。
   ///
@@ -85,16 +93,30 @@ class UpdateFlowCoordinator {
 
     var lastUnique = <AuthAckReply>[];
     for (var window = 0; window < authWindows; window++) {
-      final replies = await session.collect<AuthAckReply>(
+      final replies = await session.collectUntil<UpdateReply>(
         command: UpdateProtocol.encodeAuth(),
         timeout: authTimeout,
         matches: (reply) => reply is AuthAckReply,
         attempts: 1,
+        isDone: (collected) =>
+            _dedupeAuthReplies(
+              collected.whereType<AuthAckReply>().toList(),
+            ).length >=
+            expectedDeviceCount,
       );
-      lastUnique = _dedupeAuthReplies(replies);
+      if (_cancelled) {
+        return false;
+      }
+      lastUnique = _dedupeAuthReplies(
+        replies.whereType<AuthAckReply>().toList(),
+      );
       if (lastUnique.length >= expectedDeviceCount) {
         break;
       }
+    }
+
+    if (_cancelled) {
+      return false;
     }
 
     if (lastUnique.isEmpty) {
@@ -165,10 +187,17 @@ class UpdateFlowCoordinator {
         isDone: (collected) =>
             _dedupeVersionReplies(collected).length >= expectedDeviceCount,
       );
+      if (_cancelled) {
+        return false;
+      }
       lastReplies = _dedupeVersionReplies(replies);
       if (lastReplies.length >= expectedDeviceCount) {
         break;
       }
+    }
+
+    if (_cancelled) {
+      return false;
     }
 
     if (lastReplies.isEmpty) {

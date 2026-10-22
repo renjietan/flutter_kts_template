@@ -9,7 +9,6 @@ import 'package:composable_data_table/composable_data_table.dart';
 import 'package:crypto/crypto.dart';
 import 'package:dage/dage.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_kts_template/api/KeyLoaders.api.dart';
 import 'package:flutter_kts_template/api/RadiosManagerApi.dart';
 import 'package:flutter_kts_template/components/button/base.button.dart';
@@ -32,6 +31,7 @@ import 'package:flutter_kts_template/pages/cpds/widgets/cpds_save_dialog.dart';
 import 'package:flutter_kts_template/theme/table.theme.dart';
 import 'package:flutter_kts_template/utils/files/FileTools.dart';
 import 'package:flutter_kts_template/utils/provider/radios.provider.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:path/path.dart' as p;
 import 'package:provider/provider.dart';
 
@@ -62,6 +62,7 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
   final TextEditingController _searchController = TextEditingController();
   List<KeyLoaderDetailsEntity> _allData = [];
   final Set<String> _selectedIds = {};
+  final Map<int, bool> _enableAliasByRowId = {};
   Future<List<KeyLoaderDetailsEntity>>? _future;
   RadiosProvider? _radiosProvider;
   List<RadiosEntity> _radios = [];
@@ -169,6 +170,7 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
       _currentPage = 1;
       _allData = [];
       _selectedIds.clear();
+      _enableAliasByRowId.clear();
       _searchController.clear();
       _keyword = '';
     }
@@ -236,6 +238,10 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
       _pagedData.isNotEmpty &&
       _pagedData.every((item) => _selectedIds.contains(item.id.toString()));
 
+  bool get _allEnableAlias =>
+      _pagedData.isNotEmpty &&
+      _pagedData.every((item) => _enableAliasByRowId[item.id] ?? false);
+
   void _toggleSelection(String id) {
     setState(() {
       if (_selectedIds.contains(id)) {
@@ -260,6 +266,14 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
     });
   }
 
+  void _toggleAllEnableAlias(bool value) {
+    setState(() {
+      for (final item in _pagedData) {
+        _enableAliasByRowId[item.id] = value;
+      }
+    });
+  }
+
   void _clearSelection() {
     setState(() {
       _selectedIds.clear();
@@ -280,6 +294,58 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildEnableAliasSwitch(KeyLoaderDetailsEntity item) {
+    return Center(
+      child: SizedBox(
+        width: 48.w,
+        height: 28.h,
+        child: FittedBox(
+          fit: BoxFit.contain,
+          alignment: Alignment.center,
+          child: Switch(
+            value: _enableAliasByRowId[item.id] ?? false,
+            onChanged: (next) {
+              setState(() {
+                _enableAliasByRowId[item.id] = next;
+              });
+            },
+          ),
+        ),
+      ),
+    );
+    // return Center(
+    //   child: Transform.scale(
+    //     scale: 0.7,
+    //     alignment: Alignment.center,
+    //     child: Switch(
+    //       value: _enableAliasByRowId[item.id] ?? false,
+    //       onChanged: (next) {
+    //         setState(() {
+    //           _enableAliasByRowId[item.id] = next;
+    //         });
+    //       },
+    //     ),
+    //   ),
+    // );
+  }
+
+  Widget _buildEnableAliasHeader(String label) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(label, style: _theme.getHeaderTextStyle()),
+        Transform.scale(
+          scale: 0.7,
+          alignment: Alignment.center,
+          child: Switch(
+            value: _allEnableAlias,
+            onChanged: _toggleAllEnableAlias,
+          ),
+        ),
+      ],
     );
   }
 
@@ -834,9 +900,7 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
         return null;
       }
       try {
-        line = await reader.nextLine(
-          timeout: const Duration(seconds: 3),
-        );
+        line = await reader.nextLine(timeout: const Duration(seconds: 3));
       } on TimeoutException {
         line = null;
       } on _UsbDisconnected {
@@ -1036,6 +1100,21 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
 
     if (selectedRows.isEmpty) {
       SimplePopup.error(t.cpds.export.noSelection);
+      return;
+    }
+
+    if (selectedRows.any(
+      (item) =>
+          (_enableAliasByRowId[item.id] ?? false) && item.radioId == null,
+    )) {
+      SimplePopup.error(
+        CpdsMessages.tr(
+          context,
+          '启用别名后，必须选择 配对电台！！！',
+          'You must select a paired radio after enabling the alias!',
+          'يجب تحديد راديو مقترن بعد تمكين الاسم المستعار!',
+        ),
+      );
       return;
     }
 
@@ -1384,6 +1463,8 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
         break;
       }
     }
+    final usePairedAlias =
+        row.radioId != null && (_enableAliasByRowId[row.id] ?? false);
 
     final dcFile = File(dcFilePath);
     if (await dcFile.exists()) {
@@ -1399,7 +1480,7 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
           innerDir: '3_device_config',
           transform: (originalBytes) {
             final json = jsonDecode(utf8.decode(originalBytes));
-            if (json is Map && row.radioId != null) {
+            if (json is Map && usePairedAlias) {
               json['Alias'] = radioAlias;
             }
             return Uint8List.fromList(utf8.encode(jsonEncode(json)));
@@ -1455,7 +1536,7 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
       _ => raw,
     };
     final String zipName;
-    if (row.radioId == null) {
+    if (!usePairedAlias) {
       final dcId = _lastNumberInDcPackageName(row.dcPackageName);
       final rowAlias = row.dcPackageAlias ?? '';
       zipName = '@$dcId--$mapped-$rowAlias';
@@ -1845,6 +1926,17 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
         cellBuilder: TextCellBuilder.text<KeyLoaderDetailsEntity>(
           (item) => item.SN ?? '',
         ),
+      ),
+      ColumnDefinition<KeyLoaderDetailsEntity>(
+        label: CpdsMessages.tr(
+          context,
+          '启用别名',
+          'Enable alias',
+          'تمكين الاسم المستعار',
+        ),
+        flex: 1,
+        headerBuilder: _buildEnableAliasHeader,
+        cellBuilder: (item) => _buildEnableAliasSwitch(item),
       ),
       ColumnDefinition<KeyLoaderDetailsEntity>(
         label: t.tableColumn.base.actions,

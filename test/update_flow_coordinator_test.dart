@@ -531,4 +531,83 @@ void main() {
     expect(controller.activeStep, 3);
     expect(controller.phase, UpdatePhase.running);
   });
+
+  test('auth early-exits once all devices collected', () async {
+    final transport = _MockTransport();
+    final session = UpdateSession(transport: transport);
+    final controller = UpdateStepController(
+      version: '0.1.1.1',
+      fileName: 'a.zip',
+    );
+    final (tempDir, storage) = await _createStorage();
+    addTearDown(() {
+      if (tempDir.existsSync()) {
+        tempDir.deleteSync(recursive: true);
+      }
+    });
+    final coordinator = UpdateFlowCoordinator(
+      session: session,
+      controller: controller,
+      storage: storage,
+      baseName: 'install_xxx',
+      targetVersion: '0.1.1.1',
+      authTimeout: const Duration(seconds: 5),
+      versionTimeout: const Duration(seconds: 5),
+    );
+
+    final future = coordinator.runAuth(2);
+    await Future<void>.delayed(const Duration(milliseconds: 20));
+
+    final start = DateTime.now();
+    transport.emitBytes(_authAck('MR9360', '192.168.1.10'));
+    transport.emitBytes(_authAck('MMR200', '192.168.1.11'));
+
+    final result = await future;
+    final elapsed = DateTime.now().difference(start);
+
+    expect(result, isTrue);
+    expect(controller.steps[1].status, StepStatus.success);
+    // 收齐后应立即返回，而不是等满 5 秒窗口。
+    expect(elapsed, lessThan(const Duration(seconds: 2)));
+  });
+
+  test('cancel interrupts in-flight auth immediately', () async {
+    final transport = _MockTransport();
+    final session = UpdateSession(transport: transport);
+    final controller = UpdateStepController(
+      version: '0.1.1.1',
+      fileName: 'a.zip',
+    );
+    final (tempDir, storage) = await _createStorage();
+    addTearDown(() {
+      if (tempDir.existsSync()) {
+        tempDir.deleteSync(recursive: true);
+      }
+    });
+    final coordinator = UpdateFlowCoordinator(
+      session: session,
+      controller: controller,
+      storage: storage,
+      baseName: 'install_xxx',
+      targetVersion: '0.1.1.1',
+      authTimeout: const Duration(seconds: 5),
+      versionTimeout: const Duration(seconds: 5),
+    );
+
+    final future = coordinator.runAuthAndVersion(2);
+    await Future<void>.delayed(const Duration(milliseconds: 50));
+
+    final start = DateTime.now();
+    coordinator.cancel();
+    await session.reset();
+    await future;
+    final elapsed = DateTime.now().difference(start);
+
+    // 5 秒窗口应在 cancel + reset 后立即返回，而不是等满 5 秒。
+    expect(elapsed, lessThan(const Duration(seconds: 1)));
+    // 取消后不进入版本校验，也不写入失败态。
+    expect(controller.activeStep, 1);
+    expect(controller.phase, UpdatePhase.idle);
+    expect(transport.closed, isTrue);
+  });
 }

@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_kts_template/core/selfUpdate/scan/scan_controller.dart';
 import 'package:flutter_kts_template/core/selfUpdate/session/update_session.dart';
+import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 import 'package:flutter_kts_template/pages/self_update/widgets/scan_countdown_dialog.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -26,16 +27,19 @@ class _MockTransport implements UpdateTransport {
     await _controller.close();
   }
 
-  void emit(String text, {String sourceIp = '192.168.1.10'}) =>
-      _controller.add(
-        UpdateDatagram(
-          data: Uint8List.fromList(text.codeUnits),
-          sourceIp: sourceIp,
-        ),
-      );
+  void emit(String text, {String sourceIp = '192.168.1.10'}) => _controller.add(
+    UpdateDatagram(
+      data: Uint8List.fromList(text.codeUnits),
+      sourceIp: sourceIp,
+    ),
+  );
 }
 
 void main() {
+  setUp(() {
+    LocaleSettings.setLocaleSync(AppLocale.zh);
+  });
+
   testWidgets('shows initial countdown and counts devices', (tester) async {
     final transport = _MockTransport();
     final controller = ScanController(
@@ -46,8 +50,10 @@ void main() {
     addTearDown(controller.dispose);
 
     await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(body: ScanCountdownDialog(controller: controller)),
+      TranslationProvider(
+        child: MaterialApp(
+          home: Scaffold(body: ScanCountdownDialog(controller: controller)),
+        ),
       ),
     );
     await tester.pump();
@@ -77,11 +83,13 @@ void main() {
     addTearDown(controller.dispose);
 
     await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(
-          body: ScanCountdownDialog(
-            controller: controller,
-            onComplete: (count) => completedCount = count,
+      TranslationProvider(
+        child: MaterialApp(
+          home: Scaffold(
+            body: ScanCountdownDialog(
+              controller: controller,
+              onComplete: (count) => completedCount = count,
+            ),
           ),
         ),
       ),
@@ -110,8 +118,10 @@ void main() {
     addTearDown(controller.dispose);
 
     await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(body: ScanCountdownDialog(controller: controller)),
+      TranslationProvider(
+        child: MaterialApp(
+          home: Scaffold(body: ScanCountdownDialog(controller: controller)),
+        ),
       ),
     );
     await tester.pump();
@@ -142,11 +152,13 @@ void main() {
     addTearDown(controller.dispose);
 
     await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(
-          body: ScanCountdownDialog(
-            controller: controller,
-            onCancel: () => cancelled = true,
+      TranslationProvider(
+        child: MaterialApp(
+          home: Scaffold(
+            body: ScanCountdownDialog(
+              controller: controller,
+              onCancel: () => cancelled = true,
+            ),
           ),
         ),
       ),
@@ -159,5 +171,34 @@ void main() {
     expect(cancelled, isTrue);
     expect(transport.closed, isTrue);
     expect(controller.state, ScanState.cancelled);
+  });
+
+  testWidgets('shows cancel alongside next after devices found', (
+    tester,
+  ) async {
+    final transport = _MockTransport();
+    final controller = ScanController(
+      transport: transport,
+      duration: const Duration(seconds: 10),
+      tick: const Duration(seconds: 1),
+    );
+    addTearDown(controller.dispose);
+
+    await tester.pumpWidget(
+      TranslationProvider(
+        child: MaterialApp(
+          home: Scaffold(body: ScanCountdownDialog(controller: controller)),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    transport.emit('Scan:success');
+    await tester.pump();
+
+    expect(find.text('下一步'), findsOneWidget);
+    expect(find.text('取消'), findsOneWidget);
+
+    await controller.cancel();
   });
 }

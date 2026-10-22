@@ -38,6 +38,8 @@ String selfUpdateFailReasonText(String code) {
       return reasons.size;
     case 'zip':
       return reasons.zip;
+    case 'insufficient_space':
+      return reasons.insufficientSpace;
     case 'no_header':
       return reasons.noHeader;
     case 'mismatch':

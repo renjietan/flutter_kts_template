@@ -120,22 +120,38 @@ void main() {
     );
 
     Future<void> pump() => pumpDialog(
-          tester,
-          controller,
-          onStart: () {},
-          onPause: () {},
-          onResume: () {},
-          onReAuth: () async {},
-          onReVersion: () async {},
-          onCancel: () async {},
-          onClose: () async {},
-        );
+      tester,
+      controller,
+      onStart: () {},
+      onPause: () {},
+      onResume: () {},
+      onReAuth: () async {},
+      onReVersion: () async {},
+      onCancel: () async {},
+      onClose: () async {},
+    );
 
     // idle：发现/认证/版本校验阶段无按钮
     await pump();
     expect(buttonEnabled(tester, '开始'), isFalse);
     expect(buttonEnabled(tester, '暂停'), isFalse);
     expect(buttonEnabled(tester, '取消'), isFalse);
+    expect(buttonEnabled(tester, '关闭'), isFalse);
+
+    // 认证：运行中显示取消
+    controller.setActiveStep(1);
+    controller.setPhase(UpdatePhase.running);
+    await tester.pump();
+    expect(buttonEnabled(tester, '取消'), isTrue);
+    expect(buttonEnabled(tester, '开始'), isFalse);
+    expect(buttonEnabled(tester, '关闭'), isFalse);
+
+    // 版本校验：运行中显示取消
+    controller.setActiveStep(2);
+    controller.setPhase(UpdatePhase.running);
+    await tester.pump();
+    expect(buttonEnabled(tester, '取消'), isTrue);
+    expect(buttonEnabled(tester, '开始'), isFalse);
     expect(buttonEnabled(tester, '关闭'), isFalse);
 
     // 传输：待开始

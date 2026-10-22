@@ -42,6 +42,7 @@ class _KeyLoaderFileDeleteDialogState extends State<KeyLoaderFileDeleteDialog> {
 
   bool _deleting = false;
   bool _reconnectRequired = false;
+  String _reconnectMessage = '';
   bool _closed = false;
   _DeleteFileItem? _currentFile;
   String? _refreshError;
@@ -507,16 +508,18 @@ class _KeyLoaderFileDeleteDialogState extends State<KeyLoaderFileDeleteDialog> {
 
   void _onDisconnected() {
     if (!mounted || _closed) return;
+    final disconnectedText = _tr(
+      '注钥枪断开连接',
+      'Key loader disconnected',
+      'تم فصل جهاز تحميل المفاتيح',
+    );
     if (_deleting && _currentFile != null) {
-      _currentFile!.status = _tr(
-        '注钥枪断开连接',
-        'Key loader disconnected',
-        'تم فصل جهاز تحميل المفاتيح',
-      );
+      _currentFile!.status = disconnectedText;
     }
     _reader?.abort(const _UsbDisconnected());
     setState(() {
       _reconnectRequired = true;
+      _reconnectMessage = disconnectedText;
       _deleting = false;
       _currentFile = null;
     });
@@ -618,6 +621,7 @@ class _KeyLoaderFileDeleteDialogState extends State<KeyLoaderFileDeleteDialog> {
     setState(() {
       _currentFile = null;
       _reconnectRequired = true;
+      _reconnectMessage = message;
       _step = _DeleteStep.select;
       _files.clear();
       _selected.clear();
@@ -747,11 +751,13 @@ class _KeyLoaderFileDeleteDialogState extends State<KeyLoaderFileDeleteDialog> {
               child: _reconnectRequired
                   ? Center(
                       child: Text(
-                        _tr(
-                          '注钥枪断开连接',
-                          'Key loader disconnected',
-                          'تم فصل جهاز تحميل المفاتيح',
-                        ),
+                        _reconnectMessage.isEmpty
+                            ? _tr(
+                                '注钥枪断开连接',
+                                'Key loader disconnected',
+                                'تم فصل جهاز تحميل المفاتيح',
+                              )
+                            : _reconnectMessage,
                         style: const TextStyle(
                           color: Color(0xFFF15B64),
                           fontSize: 13,

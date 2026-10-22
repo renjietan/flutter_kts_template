@@ -160,17 +160,18 @@ ID = [类型字节长度 uint16BE] + [类型 UTF-8] + [IP字节长度 uint16BE] 
 逻辑：
 
 1. 点击【开始】后，对「需更新」设备按类型去重打包成**一个 ZIP**。
-2. 广播 `file:`，等所有目标设备都回 `fileAck`。
+2. 广播 `file:`，等所有目标设备都回 `fileAck`；任一设备回 `file_fail`（磁盘空间不足）→ 立即终止传输。
 
 #### CPDC 返回
 
 | 指令 | 指令前缀（字节长度） | 参数1 | 参数2 | 参数3 | 参数4 | 参数5 |
 |---|---|---|---|---|---|---|
 | `fileAck` | `"fileAck:"`（8 字节） | ID | CRC32 整 ZIP（4，大端） | 包数量（4，大端） | 文件总字节（4，大端） | 文件名（变长） |
+| `file_fail` | `"file_fail:"`（10 字节） | ID | 原因码 | — | — | — |
 
 逻辑：
 
-1. 收到 `file:` → 解析头（CRC32、包数量>0、总字节、文件名非空）→ 记录组装元信息 → 回 `fileAck`。
+1. 收到 `file:` → 解析头（CRC32、包数量>0、总字节、文件名非空）→ 磁盘空间预检查（按 `文件总字节` 检查运行目录文件系统）→ 不足回 `file_fail:insufficient_space`；足够则创建组装临时文件并回 `fileAck`。
 
 ### 6.5 传输分包 packet
 
@@ -320,6 +321,7 @@ ID = [类型字节长度 uint16BE] + [类型 UTF-8] + [IP字节长度 uint16BE] 
 | `zip` | valid_fail | 解压失败 | Decompression failed | فشل فك الضغط |
 | `mismatch` | valid_fail / write_fail | 文件头不匹配 | File header mismatch | عدم تطابق رأس الملف |
 | `unzip_fail` | write_fail | 解压 ZIP 失败 | Unzip failed | فشل فك ضغط الملف |
+| `insufficient_space` | file_fail / write_fail | 磁盘空间不足 | Insufficient disk space | مساحة القرص غير كافية |
 | `type_dir_not_found:<类型>` | write_fail | 找不到设备类型文件夹 | Device type directory not found | لم يتم العثور على مجلد نوع الجهاز |
 | `install_file_not_found` | write_fail | 找不到安装文件 | Install file not found | لم يتم العثور على ملف التثبيت |
 | `install_file_multiple` | write_fail | 存在多个安装文件 | Multiple install files | توجد ملفات تثبيت متعددة |
@@ -377,7 +379,8 @@ ID = [类型字节长度 uint16BE] + [类型 UTF-8] + [IP字节长度 uint16BE] 
 | `cpdc_config.json` | 设备基础配置；write 阶段覆盖，并回填 `version` |
 | `cpdc_config.<类型>.json` | 设备类型独有配置；write 阶段按需覆盖 |
 | `ReReadJson.ini` 或 `ReReadjsonPath` 指向文件 | write 阶段按需覆盖 |
-| `系统临时目录/cpdc-update-<随机串>` | write 阶段解压 ZIP 的临时目录，流程结束删除 |
+| `<运行目录>/temp/cpdc-update-<随机串>` | write 阶段解压 ZIP 的临时目录，流程结束删除 |
+| `<运行目录>/temp/.cpdc-assemble-<随机串>` | 传输阶段流式组装的 ZIP 临时文件（替代内存整包），Scan/重置/启动时清理 |
 | `<运行目录>/install_cpdc/new_exe` | write 阶段暂存的新可执行文件 |
 | `<dataDir>/finalize_params.json` | finalize 参数文件（含 `old_version`、`config_path`、`old_exe`、`new_exe` 等） |
 | `<dataDir>/finalize_fail` | finalize 失败标记 |

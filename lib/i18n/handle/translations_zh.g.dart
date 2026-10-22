@@ -705,8 +705,10 @@ class Translations$cpds$zh {
 	late final Translations$cpds$setPassword$zh setPassword = Translations$cpds$setPassword$zh.internal(_root);
 	late final Translations$cpds$export$zh export = Translations$cpds$export$zh.internal(_root);
 	late final Translations$cpds$exportProgress$zh exportProgress = Translations$cpds$exportProgress$zh.internal(_root);
+
 	/// zh: '注钥枪版本号：'
 	String get versionLabel => '注钥枪版本号：';
+
 	late final Translations$cpds$usbProgress$zh usbProgress = Translations$cpds$usbProgress$zh.internal(_root);
 }
 
@@ -1802,6 +1804,9 @@ class Translations$selfUpdate$failReason$zh {
 
 	/// zh: '写回执标记失败'
 	String get writeMarkerFail => '写回执标记失败';
+
+	/// zh: '磁盘空间不足'
+	String get insufficientSpace => '磁盘空间不足';
 
 	/// zh: '回填版本失败'
 	String get versionWriteFail => '回填版本失败';
