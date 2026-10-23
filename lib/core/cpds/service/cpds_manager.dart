@@ -74,7 +74,8 @@ class CpdsManager {
       canDistribute:
           _uploadPath != null &&
           _package != null &&
-          _selectedNodeId.isNotEmpty &&
+          (_selectedNodeId.isNotEmpty ||
+              _selectedFutureWarriorUnitId.isNotEmpty) &&
           _interfaceName.isNotEmpty &&
           !_active,
       active: _active,
@@ -187,14 +188,14 @@ class CpdsManager {
     _notify();
   }
 
-  /// 缓存当前通信包的 `.pc` 源文件路径与 age 密码，
-  /// 用于后续把节点名称等修改持久化回 `.pc`。
+  /// 缓存当前通信包的 `.cpdata` 源文件路径与 age 密码，
+  /// 用于后续把节点名称等修改持久化回 `.cpdata`。
   void cachePcSource({required String pcPath, required String password}) {
     _pcSourcePath = pcPath;
     _pcPassword = password;
   }
 
-  /// 修改节点名称：更新内存 + 写回 `.zip` + 重新加密写回 `.pc`。
+  /// 修改节点名称：更新内存 + 写回 `.zip` + 重新加密写回 `.cpdata`。
   Future<void> updateNodeName(String nodeId, String newName) async {
     _ensureIdle();
     final package = _package;
@@ -276,7 +277,7 @@ class CpdsManager {
   }
 
   /// 修改节点车辆信息备注：只写回 `VeciInfo.Remark`，重新打包 zip、
-  /// 重新加密覆盖 `.pc`，并刷新内存中的 package。
+  /// 重新加密覆盖 `.cpdata`，并刷新内存中的 package。
   Future<void> updateVeciInfoRemark(String nodeId, String remark) async {
     _ensureIdle();
     final package = _package;
@@ -363,7 +364,7 @@ class CpdsManager {
     _uploadSize = package.fileSize;
   }
 
-  /// 修改 `.pc` 的 age 密码：校验原密码、用新密码重新加密写回 `.pc`，
+  /// 修改 `.cpdata` 的 age 密码：校验原密码、用新密码重新加密写回 `.cpdata`，
   /// 并更新内存中的密码缓存。`.zip` 保持不变。
   Future<void> changePcPassword(String oldPassword, String newPassword) async {
     _ensureIdle();
@@ -392,7 +393,7 @@ class CpdsManager {
       );
     }
 
-    // 校验原密码：优先比对缓存，缓存为空时用原密码解密 `.pc` 验证。
+    // 校验原密码：优先比对缓存，缓存为空时用原密码解密 `.cpdata` 验证。
     final cached = _pcPassword;
     if (cached != null) {
       if (cached != oldPassword) {
@@ -724,9 +725,68 @@ class CpdsManager {
         message: 'distribution already running',
       );
     }
+    final package = _package;
+    if (package == null || _selectedNodeId.isEmpty) {
+      throw CpdsException(
+        CpdsErrorCode.invalidPackage,
+        params: {'field': 'distributionInput'},
+        message: 'distribution input is incomplete',
+      );
+    }
+    CpdsNode? node;
+    for (final item in package.nodes) {
+      if (item.id == _selectedNodeId) {
+        node = item;
+        break;
+      }
+    }
+    if (node == null || node.devices.isEmpty) {
+      throw CpdsException(
+        CpdsErrorCode.invalidPackage,
+        params: {'field': 'nodeDevices'},
+      );
+    }
+    final targetNode = node;
+    await _startDistributionWithTargets(
+      targetNode.devices
+          .map(
+            (device) =>
+                CpdsDistributionDevice(device: device, nodeId: targetNode.id),
+          )
+          .toList(),
+    );
+  }
+
+  Future<void> startFutureWarriorDistribution({
+    required String nodeId,
+    required String deviceId,
+  }) async {
+    if (_active) {
+      throw CpdsException(
+        CpdsErrorCode.busy,
+        message: 'distribution already running',
+      );
+    }
+    final package = _package;
+    if (package == null || _selectedFutureWarriorUnitId.isEmpty) {
+      throw CpdsException(
+        CpdsErrorCode.invalidPackage,
+        params: {'field': 'distributionInput'},
+        message: 'distribution input is incomplete',
+      );
+    }
+    await _startDistributionWithTargets(
+      _futureWarriorTarget(package, nodeId, deviceId),
+    );
+  }
+
+  Future<void> _startDistributionWithTargets(
+    List<CpdsDistributionDevice> targets,
+  ) async {
     final uploadPath = _uploadPath;
     final package = _package;
-    if (uploadPath == null || package == null || _selectedNodeId.isEmpty) {
+    final sha = _packageSha256;
+    if (uploadPath == null || package == null || sha == null) {
       throw CpdsException(
         CpdsErrorCode.invalidPackage,
         params: {'field': 'distributionInput'},
@@ -754,34 +814,8 @@ class CpdsManager {
         params: {'interface': _interfaceName},
       );
     }
-
-    CpdsNode? node;
-    for (final item in package.nodes) {
-      if (item.id == _selectedNodeId) {
-        node = item;
-        break;
-      }
-    }
-    if (node == null || node.devices.isEmpty) {
-      throw CpdsException(
-        CpdsErrorCode.invalidPackage,
-        params: {'field': 'nodeDevices'},
-      );
-    }
-
-    final sha = _packageSha256;
-    if (sha == null) {
-      throw CpdsException(
-        CpdsErrorCode.invalidPackage,
-        params: {'field': 'sha256'},
-        message: 'package hash is not frozen',
-      );
-    }
     final sessionId = _randomUuid();
-    final machine = CpdsSessionMachine(
-      nodeId: _selectedNodeId,
-      expected: node.devices,
-    );
+    final machine = CpdsSessionMachine(targets: targets);
     machine.begin(sessionId);
     final transport = CpdsUdpTransport();
     await transport.init(interfaceIp: selectedInterface.ipv4);
@@ -813,6 +847,45 @@ class CpdsManager {
     _notify();
 
     unawaited(_runDistribution(runner, machine, transport, decisionController));
+  }
+
+  List<CpdsDistributionDevice> _futureWarriorTarget(
+    CpdsPackage package,
+    String nodeId,
+    String deviceId,
+  ) {
+    final unit = _findUnit(package.units, _selectedFutureWarriorUnitId);
+    if (unit == null || !unit.nodeIds.contains(nodeId)) {
+      throw CpdsException(
+        CpdsErrorCode.invalidPackage,
+        params: {'field': 'nodeId', 'actual': nodeId},
+        message: 'unknown future warrior node in unit',
+      );
+    }
+    CpdsNode? node;
+    for (final item in package.nodes) {
+      if (item.id == nodeId) {
+        node = item;
+        break;
+      }
+    }
+    if (node == null || node.nodeType != 1 || node.hasTeds) {
+      throw CpdsException(
+        CpdsErrorCode.invalidPackage,
+        params: {'field': 'nodeId', 'actual': nodeId},
+        message: 'node is not a future warrior node',
+      );
+    }
+    for (final device in node.devices) {
+      if (device.id == deviceId) {
+        return [CpdsDistributionDevice(device: device, nodeId: node.id)];
+      }
+    }
+    throw CpdsException(
+      CpdsErrorCode.invalidPackage,
+      params: {'field': 'deviceId', 'actual': deviceId},
+      message: 'unknown future warrior device',
+    );
   }
 
   Future<void> _runDistribution(

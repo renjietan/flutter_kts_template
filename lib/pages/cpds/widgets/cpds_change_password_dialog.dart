@@ -8,7 +8,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'cpds_button_styles.dart';
 import 'cpds_messages.dart';
 
-/// 修改 `.pc` 密码的弹窗：原密码 + 新密码 + 确认新密码。
+/// 修改 `.cpdata` 密码的弹窗：原密码 + 新密码 + 确认新密码。
 class CpdsChangePasswordDialog extends StatefulWidget {
   const CpdsChangePasswordDialog({super.key, required this.onSubmit});
 

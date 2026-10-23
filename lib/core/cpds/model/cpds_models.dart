@@ -106,6 +106,14 @@ class CpdsFutureWarriorDevice {
   String get key => '$nodeId:${device.key}';
 }
 
+/// 一次下发会话的目标设备：设备本身 + 它所属网络节点的 id。
+class CpdsDistributionDevice {
+  const CpdsDistributionDevice({required this.device, required this.nodeId});
+
+  final CpdsDevice device;
+  final String nodeId;
+}
+
 class CpdsVeciInfo {
   CpdsVeciInfo({
     this.equipName = '',

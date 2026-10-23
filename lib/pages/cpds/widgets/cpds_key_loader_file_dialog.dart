@@ -668,7 +668,7 @@ class _CpdsKeyLoaderFileDialogState extends State<CpdsKeyLoaderFileDialog> {
         if (_reader == confirmReader) _reader = null;
       }
 
-      // 6. 保存为设备列表中选择的原始文件名（保留 .pc / .pad 等后缀）。
+      // 6. 保存为设备列表中选择的原始文件名（保留 .cpdata / .pad 等后缀）。
       final storedName = p.basename(fileName);
       final padPath = p.join(
         await DirectoryManager.instance.getUploadsPath(),

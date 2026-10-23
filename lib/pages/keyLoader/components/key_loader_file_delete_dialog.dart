@@ -149,11 +149,7 @@ class _KeyLoaderFileDeleteDialogState extends State<KeyLoaderFileDeleteDialog> {
     if (!mounted) return;
     if (!versionAcquired) {
       _showError(
-        _tr(
-          '获取版本失败',
-          'Failed to get version',
-          'فشل الحصول على الإصدار',
-        ),
+        _tr('获取版本失败', 'Failed to get version', 'فشل الحصول على الإصدار'),
       );
       return;
     }
@@ -585,7 +581,7 @@ class _KeyLoaderFileDeleteDialogState extends State<KeyLoaderFileDeleteDialog> {
 
   String _fileTypeOf(String name) {
     final lower = name.toLowerCase();
-    if (lower.endsWith('.cpdata')) return 'pc';
+    if (lower.endsWith('.cpdata')) return 'cpdata';
     if (lower.endsWith('.pad')) return 'pad';
     if (lower.endsWith('.key')) return 'key';
     return 'unknown';
@@ -593,7 +589,7 @@ class _KeyLoaderFileDeleteDialogState extends State<KeyLoaderFileDeleteDialog> {
 
   List<_DeleteFileItem> _sortFilesByType(List<_DeleteFileItem> files) {
     final groups = <String, List<_DeleteFileItem>>{
-      'pc': [],
+      'cpdata': [],
       'pad': [],
       'key': [],
       'unknown': [],
@@ -602,7 +598,7 @@ class _KeyLoaderFileDeleteDialogState extends State<KeyLoaderFileDeleteDialog> {
       groups[_fileTypeOf(file.name)]!.add(file);
     }
     return [
-      ...groups['pc']!,
+      ...groups['cpdata']!,
       ...groups['pad']!,
       ...groups['key']!,
       ...groups['unknown']!,
@@ -819,7 +815,7 @@ class _KeyLoaderFileDeleteDialogState extends State<KeyLoaderFileDeleteDialog> {
               child: Text(_tr('全部类型', 'All types', 'كل الأنواع')),
             ),
             DropdownMenuItem(
-              value: 'pc',
+              value: 'cpdata',
               child: Text(
                 _tr(
                   '通信参数包',
@@ -854,7 +850,7 @@ class _KeyLoaderFileDeleteDialogState extends State<KeyLoaderFileDeleteDialog> {
 
   String _fileTypeLabel(String name) {
     return switch (_fileTypeOf(name)) {
-      'pc' => _tr(
+      'cpdata' => _tr(
         '通信参数包',
         'Communication parameter package',
         'حزمة معلمات الاتصال',
@@ -871,7 +867,7 @@ class _KeyLoaderFileDeleteDialogState extends State<KeyLoaderFileDeleteDialog> {
 
   Color _fileTypeColor(String name) {
     return switch (_fileTypeOf(name)) {
-      'pc' => const Color(0xFF00C6FF),
+      'cpdata' => const Color(0xFF00C6FF),
       'pad' => const Color(0xFFFFB84D),
       'key' => const Color(0xFFB78CFF),
       _ => const Color(0xFF9AA5B1),

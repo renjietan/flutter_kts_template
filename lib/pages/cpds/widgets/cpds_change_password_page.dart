@@ -6,7 +6,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'cpds_button_styles.dart';
 import 'cpds_messages.dart';
 
-/// 修改 `.pc` 密码的页面（移动端使用）：表单项与弹窗版保持一致。
+/// 修改 `.cpdata` 密码的页面（移动端使用）：表单项与弹窗版保持一致。
 class CpdsChangePasswordPage extends StatefulWidget {
   const CpdsChangePasswordPage({super.key, required this.onSubmit});
 

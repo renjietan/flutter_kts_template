@@ -68,12 +68,26 @@ class CpdsApi {
   static Future<CpdsApplicationState> selectNetworkInterface(
     String name,
   ) async {
-    final data = await _post('/network-interfaces/select', data: {'name': name});
+    final data = await _post(
+      '/network-interfaces/select',
+      data: {'name': name},
+    );
     return CpdsApplicationState.fromJson(_asMap(data));
   }
 
   static Future<CpdsApplicationState> startDistribution() async {
     final data = await _post('/distributions');
+    return CpdsApplicationState.fromJson(_asMap(data));
+  }
+
+  static Future<CpdsApplicationState> startFutureWarriorDistribution({
+    required String nodeId,
+    required String deviceId,
+  }) async {
+    final data = await _post(
+      '/distributions/start-future-warrior',
+      data: {'nodeId': nodeId, 'deviceId': deviceId},
+    );
     return CpdsApplicationState.fromJson(_asMap(data));
   }
 
@@ -92,10 +106,12 @@ class CpdsApi {
     void Function(CpdsApplicationState state) onState,
   ) {
     final channel = IOWebSocketChannel.connect(_webSocketUri());
-    return channel.stream.map((event) {
-      final decoded = jsonDecode(event as String);
-      return CpdsApplicationState.fromJson(_asMap(decoded));
-    }).listen(onState);
+    return channel.stream
+        .map((event) {
+          final decoded = jsonDecode(event as String);
+          return CpdsApplicationState.fromJson(_asMap(decoded));
+        })
+        .listen(onState);
   }
 
   static Future<dynamic> _get(String path) async {
@@ -107,10 +123,7 @@ class CpdsApi {
     }
   }
 
-  static Future<dynamic> _post(
-    String path, {
-    Object? data,
-  }) async {
+  static Future<dynamic> _post(String path, {Object? data}) async {
     try {
       final response = await _dio.post(path, data: data);
       return response.data;

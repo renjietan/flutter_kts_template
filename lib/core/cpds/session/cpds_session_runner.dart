@@ -4,6 +4,7 @@ import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:crypto/crypto.dart';
+import 'package:flutter_kts_template/logger/logger.dart';
 
 import '../model/cpds_enums.dart';
 import '../model/cpds_models.dart';
@@ -109,6 +110,7 @@ class CpdsSessionRunner {
       return;
     }
     await _sendAll(packets);
+    _logAuthAssignments(packets);
     final deadline = DateTime.now().add(const Duration(seconds: 5));
     while (!_cancelled && !_terminal) {
       await Future<void>.delayed(const Duration(seconds: 1));
@@ -121,6 +123,21 @@ class CpdsSessionRunner {
     }
     if (!_terminal) machine.finishAuthentication();
     _updated();
+  }
+
+  void _logAuthAssignments(List<CpdPacket> packets) {
+    for (final packet in packets) {
+      final assignments = packet.body[1];
+      if (assignments is! List) continue;
+      for (final item in assignments) {
+        if (item is! Map) continue;
+        final deviceType = CpdsDeviceType.fromValue(item[1]);
+        GlobalLogger.logInfo(
+          'CPDS_AUTH_ASSIGNMENT_SENT deviceType=${deviceType.apiName} '
+          'nodeId=${item[3]} deviceId=${item[4]} esn=${item[2]}',
+        );
+      }
+    }
   }
 
   List<CpdPacket> _buildAuthPackets(List<Map<int, dynamic>> assignments) {
@@ -349,6 +366,11 @@ class CpdsSessionRunner {
     final types = _enumList(body, 3);
     final currentIp = _string(body, 4);
     final mask = _string(body, 5);
+    GlobalLogger.logInfo(
+      'CPDS_DISCOVER_RSP_RECEIVED esn=$esn '
+      'types=${types.map((item) => item.apiName).join(',')} '
+      'ip=$currentIp mask=$mask',
+    );
     machine.recordDiscovery(esn, nonce, types, currentIp, mask);
     _updated();
   }

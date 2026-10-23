@@ -282,9 +282,9 @@ class _CpdsPageState extends State<CpdsPage> {
     final browseFailedTitle = Translations.of(context).common.OperationError;
     final invalidFileMessage = CpdsMessages.tr(
       context,
-      '只允许选择 .pc 文件',
-      'Only .pc files are allowed',
-      'يُسمح فقط بملفات .pc',
+      '只允许选择 .cpdata 文件',
+      'Only .cpdata files are allowed',
+      'يُسمح فقط بملفات .cpdata',
     );
     final unreadableFileMessage = CpdsMessages.tr(
       context,
@@ -299,12 +299,12 @@ class _CpdsPageState extends State<CpdsPage> {
       _uploading = true;
     });
     try {
-      final file = await FileSelector.pickFile(['pc']);
+      final file = await FileSelector.pickFile(['cpdata']);
       if (file == null) {
         SimplePopup.warn(placeholder);
         return;
       }
-      if (p.extension(file.name).toLowerCase() != '.pc') {
+      if (p.extension(file.name).toLowerCase() != '.cpdata') {
         SimplePopup.warn(invalidFileMessage);
         return;
       }
@@ -562,13 +562,14 @@ class _CpdsPageState extends State<CpdsPage> {
       if (!await dir.exists()) return;
       final pcFiles = <File>[];
       await for (final entity in dir.list()) {
-        if (entity is File && p.extension(entity.path).toLowerCase() == '.pc') {
+        if (entity is File &&
+            p.extension(entity.path).toLowerCase() == '.cpdata') {
           pcFiles.add(entity);
         }
       }
 
       if (pcFiles.isEmpty) {
-        // 没有待加载的 `.pc`：进入手动浏览流程，不再是“可取消的启动密码框”。
+        // 没有待加载的 `.cpdata`：进入手动浏览流程，不再是“可取消的启动密码框”。
         CpdsManager.instance.setShowCancel(false);
         if (!mounted) return;
         final proceed = await showDialog<bool>(
@@ -929,9 +930,9 @@ class _CpdsPageState extends State<CpdsPage> {
       if (field == 'pcSource') {
         message = CpdsMessages.tr(
           context,
-          '找不到 .pc 文件',
-          'PC file not found',
-          'لم يتم العثور على ملف PC',
+          '找不到 .cpdata 文件',
+          'CPDATA file not found',
+          'لم يتم العثور على ملف CPDATA',
         );
       } else if (field == 'pcPassword') {
         message = CpdsMessages.tr(
@@ -1011,9 +1012,9 @@ class _CpdsPageState extends State<CpdsPage> {
       } else if (field == 'pcSource') {
         return CpdsMessages.tr(
           context,
-          '找不到 .pc 文件',
-          'PC file not found',
-          'لم يتم العثور على ملف PC',
+          '找不到 .cpdata 文件',
+          'CPDATA file not found',
+          'لم يتم العثور على ملف CPDATA',
         );
       }
     }
@@ -1055,6 +1056,47 @@ class _CpdsPageState extends State<CpdsPage> {
     try {
       await GlobalLogger.runWithCategory(LogCategory.udpDistribution, () async {
         _applyState(await CpdsApi.startDistribution());
+      });
+    } catch (error) {
+      _showError(error, title: distributionFailedTitle);
+    } finally {
+      if (mounted) {
+        setState(() {
+          _distributing = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _distributeFutureWarrior(
+    CpdsFutureWarriorDevice fwDevice,
+  ) async {
+    if (_distributing || _state.active) return;
+    if (CpdsManager.instance.selectedInterfaceName.isEmpty) {
+      SimplePopup.warn(
+        CpdsMessages.tr(
+          context,
+          '请先选择业务网卡',
+          'Please select the business NIC first',
+          'يرجى تحديد بطاقة شبكة الأعمال أولاً',
+        ),
+      );
+      return;
+    }
+    if (!_state.canDistribute) return;
+    _distributing = true;
+    final distributionFailedTitle = CpdsMessages.resultTitle(
+      context,
+      CpdsActiveState.failed,
+    );
+    try {
+      await GlobalLogger.runWithCategory(LogCategory.udpDistribution, () async {
+        _applyState(
+          await CpdsApi.startFutureWarriorDistribution(
+            nodeId: fwDevice.nodeId,
+            deviceId: fwDevice.device.id,
+          ),
+        );
       });
     } catch (error) {
       _showError(error, title: distributionFailedTitle);
@@ -1438,6 +1480,7 @@ class _CpdsPageState extends State<CpdsPage> {
       onRefreshInterfaces: _refreshNetworkInterfaces,
       onSelectInterface: _selectInterface,
       onDistribute: _distribute,
+      onDistributeFutureWarrior: _distributeFutureWarrior,
       onSaveFutureWarrior: _saveFutureWarrior,
       onEditVeciInfo: _editVeciInfo,
     );

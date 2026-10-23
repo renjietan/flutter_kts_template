@@ -58,7 +58,7 @@ class MainLayout extends StatelessWidget {
       }
       if (entity is! File) continue;
       final lower = entity.path.toLowerCase();
-      if (lower.endsWith('.pc')) {
+      if (lower.endsWith('.cpdata')) {
         pcFiles.add(entity);
       } else if (lower.endsWith('.pad')) {
         padFiles.add(entity);

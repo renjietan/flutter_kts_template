@@ -13,43 +13,42 @@ function Ensure-Admin {
     exit
 }
 
-function Resolve-DebugExe {
+function Resolve-ExePaths {
     param(
         [string]$Root
     )
 
-    $preferred = Join-Path $Root 'build\windows\x64\runner\Debug\flutter_kts_template.exe'
-    if (Test-Path -LiteralPath $preferred) {
-        return (Resolve-Path -LiteralPath $preferred).Path
-    }
-
-    $runnerRoot = Join-Path $Root 'build\windows\x64\runner'
-    if (Test-Path -LiteralPath $runnerRoot) {
-        $candidates = Get-ChildItem -LiteralPath $runnerRoot -Recurse -Filter 'flutter_kts_template.exe' -ErrorAction SilentlyContinue |
-            Where-Object { $_.FullName -match '\\Debug\\' } |
-            Sort-Object FullName
-        if ($candidates.Count -gt 0) {
-            return $candidates[0].FullName
+    $paths = @(
+        (Join-Path $Root 'build\windows\x64\runner\Debug\CPD.exe'),
+        (Join-Path $Root 'build\windows\x64\runner\Release\CPD.exe')
+    )
+    $resolved = @()
+    foreach ($candidate in $paths) {
+        if (Test-Path -LiteralPath $candidate) {
+            $resolved += (Resolve-Path -LiteralPath $candidate).Path
         }
     }
-
-    throw "未找到 Debug 程序：$preferred"
+    if ($resolved.Count -eq 0) {
+        throw "未找到 CPD.exe：$($paths -join ' / ')"
+    }
+    return $resolved
 }
 
 Ensure-Admin
 
 $projectRoot = $PSScriptRoot
-$exePath = Resolve-DebugExe -Root $projectRoot
-$ruleName = [System.IO.Path]::GetFileNameWithoutExtension($exePath)
+$exePaths = Resolve-ExePaths -Root $projectRoot
 
 Write-Host "项目根目录: $projectRoot"
-Write-Host "Debug 程序: $exePath"
-Write-Host "防火墙规则名: $ruleName"
 
-netsh advfirewall firewall delete rule name="$ruleName" protocol=UDP dir=in | Out-Null
-netsh advfirewall firewall delete rule name="$ruleName" protocol=TCP dir=in | Out-Null
-
-netsh advfirewall firewall add rule name="$ruleName" dir=in action=allow program="$exePath" protocol=UDP profile=any | Out-Null
-netsh advfirewall firewall add rule name="$ruleName" dir=in action=allow program="$exePath" protocol=TCP profile=any | Out-Null
+foreach ($exePath in $exePaths) {
+    $buildType = Split-Path -Leaf (Split-Path -Parent $exePath)
+    $ruleName = "CPD-$buildType"
+    netsh advfirewall firewall delete rule name="$ruleName" | Out-Null
+    Write-Host "放行 $buildType 程序: $exePath"
+    Write-Host "防火墙规则名: $ruleName"
+    netsh advfirewall firewall add rule name="$ruleName" dir=in action=allow program="$exePath" protocol=UDP profile=any | Out-Null
+    netsh advfirewall firewall add rule name="$ruleName" dir=in action=allow program="$exePath" protocol=TCP profile=any | Out-Null
+}
 
 Write-Host "已应用 Allow 防火墙规则。"

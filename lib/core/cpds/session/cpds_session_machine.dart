@@ -50,6 +50,7 @@ class _CpdsClientState {
   final _CpdsDiscoveredClient discovery;
   final List<_CpdsAssignment> assignments = [];
   final List<int> statusIndexes = [];
+  String nodeId = '';
   bool authenticated = false;
   bool transferDone = false;
   bool terminal = false;
@@ -64,11 +65,12 @@ class _CpdsClientState {
 }
 
 class CpdsSessionMachine {
-  CpdsSessionMachine({required this.nodeId, required List<CpdsDevice> expected})
-    : _expected = List<CpdsDevice>.from(expected);
+  CpdsSessionMachine({required List<CpdsDistributionDevice> targets})
+    : _targets = List<CpdsDistributionDevice>.from(targets),
+      _expectedTypes = {for (final target in targets) target.device.type};
 
-  final String nodeId;
-  final List<CpdsDevice> _expected;
+  final List<CpdsDistributionDevice> _targets;
+  final Set<CpdsDeviceType> _expectedTypes;
 
   Uint8List _sessionId = Uint8List(0);
   CpdsActiveState _state = CpdsActiveState.idle;
@@ -159,12 +161,21 @@ class CpdsSessionMachine {
     final clientsByType = <CpdsDeviceType, List<_CpdsDiscoveredClient>>{};
     for (final discovery in _discoveries.values) {
       for (final type in discovery.deviceTypes) {
+        if (!_expectedTypes.contains(type)) continue;
         clientsByType.putIfAbsent(type, () => []).add(discovery);
       }
     }
+    GlobalLogger.logInfo(
+      'CPDS_DISCOVERY_FINISH expected='
+      '${_expectedTypes.map((item) => item.apiName).join(',')} '
+      'clients='
+      '${clientsByType.entries.map((entry) => '${entry.key.apiName}:${entry.value.length}').join(',')}',
+    );
     final expectedByType = <CpdsDeviceType, List<CpdsDevice>>{};
-    for (final device in _expected) {
-      expectedByType.putIfAbsent(device.type, () => []).add(device);
+    for (final target in _targets) {
+      expectedByType
+          .putIfAbsent(target.device.type, () => [])
+          .add(target.device);
     }
     final types = <CpdsDeviceType>{
       ...expectedByType.keys,
@@ -188,7 +199,8 @@ class CpdsSessionMachine {
     }
 
     final nextByType = <CpdsDeviceType, int>{};
-    for (final device in _expected) {
+    for (final target in _targets) {
+      final device = target.device;
       final list = clientsByType[device.type] ?? const [];
       final index = nextByType[device.type] ?? 0;
       if (index >= list.length) {
@@ -205,7 +217,7 @@ class CpdsSessionMachine {
       final assignment = _CpdsAssignment(
         deviceType: device.type,
         esn: discovery.esn,
-        nodeId: nodeId,
+        nodeId: target.nodeId,
         deviceId: device.id,
       );
       _assignments.add(assignment);
@@ -213,6 +225,7 @@ class CpdsSessionMachine {
         discovery.esn,
         () => _CpdsClientState(discovery),
       );
+      client.nodeId = target.nodeId;
       client.assignments.add(assignment);
       client.statusIndexes.add(_statuses.length);
       _statuses.add(
@@ -320,7 +333,7 @@ class CpdsSessionMachine {
     final bindings = _messageList(body, 4);
     final errorCode = CpdsErrorCode.fromValue(body[5]);
     if (errorCode != CpdsErrorCode.unspecified ||
-        node != nodeId ||
+        node != client.nodeId ||
         !_bindingsMatch(client.assignments, bindings)) {
       _failClient(client, 'AUTHENTICATION', CpdsErrorCode.authBindingMissing);
       _failRemaining(client, 'AUTHENTICATION');
@@ -495,7 +508,7 @@ class CpdsSessionMachine {
     final deviceTypes = _enumList(_message(body, 1), 2);
 
     if (!_validParseComplete(
-      nodeId,
+      client.nodeId,
       client.assignments,
       deviceTypes,
       result,
@@ -629,6 +642,15 @@ class CpdsSessionMachine {
     return _assignments.map((assignment) => assignment.toBody()).toList();
   }
 
+  String get _commonNodeId {
+    if (_targets.isEmpty) return '';
+    final first = _targets.first.nodeId;
+    for (final target in _targets.skip(1)) {
+      if (target.nodeId != first) return '';
+    }
+    return first;
+  }
+
   CpdsSessionView view() {
     final stageIndex = _stageIndexOf(_state);
     if (stageIndex >= 0) {
@@ -640,7 +662,7 @@ class CpdsSessionMachine {
     return CpdsSessionView(
       sessionId: hexEncode(_sessionId),
       activeState: _state,
-      nodeId: nodeId,
+      nodeId: _commonNodeId,
       devices: _statusView(),
       failures: List<CpdsFailure>.from(_failures),
       sentChunks: _sentChunks,
@@ -697,7 +719,8 @@ class CpdsSessionMachine {
     }
     final next = <CpdsDeviceType, int>{};
     final statuses = <CpdsDeviceStatusView>[];
-    for (final device in _expected) {
+    for (final target in _targets) {
+      final device = target.device;
       final list = byType[device.type] ?? const [];
       final index = next[device.type] ?? 0;
       if (index >= list.length) continue;

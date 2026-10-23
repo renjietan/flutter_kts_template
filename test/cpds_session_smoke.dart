@@ -9,14 +9,16 @@ import 'package:flutter_kts_template/core/cpds/session/cpds_session_machine.dart
 Future<void> main() async {
   final sessionId = Uint8List.fromList(List<int>.generate(16, (i) => i));
   final machine = CpdsSessionMachine(
-    nodeId: 'nn_1',
-    expected: [
-      const CpdsDevice(
-        id: 'dev_1',
-        type: CpdsDeviceType.teds,
-        model: 'TEDS',
-        alias: '',
-        ip: '10.0.0.10',
+    targets: [
+      const CpdsDistributionDevice(
+        device: CpdsDevice(
+          id: 'dev_1',
+          type: CpdsDeviceType.teds,
+          model: 'TEDS',
+          alias: '',
+          ip: '10.0.0.10',
+        ),
+        nodeId: 'nn_1',
       ),
     ],
   );

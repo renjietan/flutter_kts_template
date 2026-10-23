@@ -121,14 +121,16 @@ void _assertDropped(CpdsSessionMachine machine) {
 
 CpdsSessionMachine _transferringMachine() {
   final machine = CpdsSessionMachine(
-    nodeId: 'nn_1',
-    expected: const [
-      CpdsDevice(
-        id: 'dev_1',
-        type: CpdsDeviceType.teds,
-        model: 'TEDS',
-        alias: '',
-        ip: '10.0.0.10',
+    targets: const [
+      CpdsDistributionDevice(
+        device: CpdsDevice(
+          id: 'dev_1',
+          type: CpdsDeviceType.teds,
+          model: 'TEDS',
+          alias: '',
+          ip: '10.0.0.10',
+        ),
+        nodeId: 'nn_1',
       ),
     ],
   );

@@ -18,7 +18,10 @@ class CpdsRoutes extends BaseRouteGroup {
     router.post('/package/upload', CpdsController.upload);
     router.post('/package/parse', CpdsController.parse);
     router.post('/nodes/select', CpdsController.selectNode);
-    router.post('/nodes/select-future-warrior', CpdsController.selectFutureWarrior);
+    router.post(
+      '/nodes/select-future-warrior',
+      CpdsController.selectFutureWarrior,
+    );
     router.get('/network-interfaces', CpdsController.listNetworkInterfaces);
     router.post(
       '/network-interfaces/select',
@@ -26,28 +29,29 @@ class CpdsRoutes extends BaseRouteGroup {
     );
     router.post('/distributions', CpdsController.startDistribution);
     router.post(
+      '/distributions/start-future-warrior',
+      CpdsController.startFutureWarriorDistribution,
+    );
+    router.post(
       '/distributions/decision',
       CpdsController.resolveDiscoveryMismatch,
     );
     router.get(
       '/events',
-      webSocketHandler(
-        (WebSocketChannel webSocket, String? protocol) {
-          final manager = CpdsManager.instance;
-          webSocket.sink.add(jsonEncode(manager.state().toJson()));
-          final subscription = manager.stateStream.listen((state) {
-            if (webSocket.closeCode != null) return;
-            webSocket.sink.add(jsonEncode(state.toJson()));
-          });
-          webSocket.stream.listen(
-            (_) {},
-            onDone: () => subscription.cancel(),
-            onError: (_) => subscription.cancel(),
-            cancelOnError: true,
-          );
-        },
-        pingInterval: const Duration(seconds: 20),
-      ),
+      webSocketHandler((WebSocketChannel webSocket, String? protocol) {
+        final manager = CpdsManager.instance;
+        webSocket.sink.add(jsonEncode(manager.state().toJson()));
+        final subscription = manager.stateStream.listen((state) {
+          if (webSocket.closeCode != null) return;
+          webSocket.sink.add(jsonEncode(state.toJson()));
+        });
+        webSocket.stream.listen(
+          (_) {},
+          onDone: () => subscription.cancel(),
+          onError: (_) => subscription.cancel(),
+          cancelOnError: true,
+        );
+      }, pingInterval: const Duration(seconds: 20)),
     );
     return router;
   }

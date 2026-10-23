@@ -25,10 +25,7 @@ class CpdsController {
         );
       }
       final bytes = Uint8List.fromList(await file.readAsBytes());
-      final state = await CpdsManager.instance.uploadPackage(
-        file.name,
-        bytes,
-      );
+      final state = await CpdsManager.instance.uploadPackage(file.name, bytes);
       return _ok(state.toJson());
     } on CpdsException {
       rethrow;
@@ -87,6 +84,19 @@ class CpdsController {
     return _ok(CpdsManager.instance.state().toJson());
   }
 
+  static Future<Response> startFutureWarriorDistribution(
+    Request request,
+  ) async {
+    final body = _readBody(request);
+    final nodeId = body['nodeId']?.toString() ?? '';
+    final deviceId = body['deviceId']?.toString() ?? '';
+    await CpdsManager.instance.startFutureWarriorDistribution(
+      nodeId: nodeId,
+      deviceId: deviceId,
+    );
+    return _ok(CpdsManager.instance.state().toJson());
+  }
+
   static Future<Response> resolveDiscoveryMismatch(Request request) async {
     final body = _readBody(request);
     final sessionId = body['sessionId']?.toString() ?? '';
@@ -107,5 +117,4 @@ class CpdsController {
       headers: {'content-type': 'application/json; charset=utf-8'},
     );
   }
-
 }

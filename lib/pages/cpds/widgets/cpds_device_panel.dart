@@ -28,6 +28,7 @@ class CpdsDevicePanel extends StatelessWidget {
     required this.onRefreshInterfaces,
     required this.onSelectInterface,
     required this.onDistribute,
+    required this.onDistributeFutureWarrior,
     this.onSaveFutureWarrior,
     this.onEditVeciInfo,
   });
@@ -42,6 +43,8 @@ class CpdsDevicePanel extends StatelessWidget {
   final VoidCallback onRefreshInterfaces;
   final ValueChanged<String?> onSelectInterface;
   final VoidCallback onDistribute;
+  final Future<void> Function(CpdsFutureWarriorDevice device)
+  onDistributeFutureWarrior;
   final Future<void> Function(List<CpdsFutureWarriorDevice>, String unitId)?
   onSaveFutureWarrior;
   final ValueChanged<String>? onEditVeciInfo;
@@ -116,6 +119,14 @@ class CpdsDevicePanel extends StatelessWidget {
           state.selectedFutureWarriorUnitId,
         ),
         unitId: state.selectedFutureWarriorUnitId,
+        state: state,
+        interfaces: interfaces,
+        selectedInterfaceName: selectedInterfaceName,
+        automaticInterface: automaticInterface,
+        interfacesLoading: interfacesLoading,
+        onRefreshInterfaces: onRefreshInterfaces,
+        onSelectInterface: onSelectInterface,
+        onDistributeFutureWarrior: onDistributeFutureWarrior,
         onSave: onSaveFutureWarrior,
       );
     }
@@ -133,6 +144,14 @@ class CpdsDevicePanel extends StatelessWidget {
             )
             .toList(),
         unitId: _findUnitIdForNode(state.package?.units ?? const [], node.id),
+        state: state,
+        interfaces: interfaces,
+        selectedInterfaceName: selectedInterfaceName,
+        automaticInterface: automaticInterface,
+        interfacesLoading: interfacesLoading,
+        onRefreshInterfaces: onRefreshInterfaces,
+        onSelectInterface: onSelectInterface,
+        onDistributeFutureWarrior: onDistributeFutureWarrior,
         onSave: onSaveFutureWarrior,
       );
     }
@@ -469,11 +488,28 @@ class CpdsFutureWarriorPanel extends StatefulWidget {
     super.key,
     required this.devices,
     required this.unitId,
+    required this.state,
+    required this.interfaces,
+    required this.selectedInterfaceName,
+    required this.automaticInterface,
+    required this.interfacesLoading,
+    required this.onRefreshInterfaces,
+    required this.onSelectInterface,
+    required this.onDistributeFutureWarrior,
     this.onSave,
   });
 
   final List<CpdsFutureWarriorDevice> devices;
   final String unitId;
+  final CpdsApplicationState state;
+  final List<CpdsNetworkInterface> interfaces;
+  final String selectedInterfaceName;
+  final bool automaticInterface;
+  final bool interfacesLoading;
+  final VoidCallback onRefreshInterfaces;
+  final ValueChanged<String?> onSelectInterface;
+  final Future<void> Function(CpdsFutureWarriorDevice device)
+  onDistributeFutureWarrior;
   final Future<void> Function(List<CpdsFutureWarriorDevice>, String unitId)?
   onSave;
 
@@ -594,6 +630,15 @@ class _CpdsFutureWarriorPanelState extends State<CpdsFutureWarriorPanel> {
     final selectedCount = _selectedKeys.length;
     final groups = _groupedDevices();
     final tableTheme = getThemePreset(ThemePreset.dark);
+    final session = widget.state.session;
+    final statusByKey = {
+      for (final item in session?.devices ?? const <CpdsDeviceStatusView>[])
+        item.device.key: item,
+    };
+    final stageIndex = _stageIndexOf(session);
+    final transferring =
+        session?.activeState == CpdsActiveState.transferring ||
+        session?.activeState == CpdsActiveState.drainingAfterFailure;
     final saveButton = BaseButton(
       label: t.button.radioManager.save,
       minWidth: 80.w,
@@ -644,6 +689,16 @@ class _CpdsFutureWarriorPanelState extends State<CpdsFutureWarriorPanel> {
               ],
             ),
           ),
+          BaseButton(
+            label: t.cpds.refresh,
+            minWidth: 72.w,
+            height: 32.h,
+            isLoading: widget.interfacesLoading,
+            onPressed: widget.state.active || widget.interfacesLoading
+                ? null
+                : widget.onRefreshInterfaces,
+          ),
+          SizedBox(width: 8.w),
           saveButton,
         ],
       ),
@@ -719,6 +774,53 @@ class _CpdsFutureWarriorPanelState extends State<CpdsFutureWarriorPanel> {
               ],
             ),
           ),
+          CpdsNetworkInterfaceBar(
+            interfaces: widget.interfaces,
+            selectedName: widget.selectedInterfaceName,
+            automatic: widget.automaticInterface,
+            loading: widget.interfacesLoading,
+            disabled: widget.state.active,
+            onSelected: widget.onSelectInterface,
+          ),
+          _StageStrip(activeIndex: stageIndex),
+          if (transferring) ...[
+            Container(
+              height: 64.h,
+              margin: EdgeInsets.only(bottom: 8.h),
+              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+              decoration: BoxDecoration(
+                color: const Color(0x24004098),
+                border: Border.all(color: const Color(0x7300A2E9)),
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          t.cpds.stages.transfer,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 12.sp,
+                          ),
+                        ),
+                      ),
+                      Text(
+                        '${session?.sentChunks ?? 0}/${session?.totalChunks ?? 0}',
+                        style: TextStyle(
+                          color: const Color(0xFFB7BCC6),
+                          fontSize: 12.sp,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 7.h),
+                  CpdsProgressBar(value: session?.sendingProgress ?? 0),
+                ],
+              ),
+            ),
+          ],
           SizedBox(height: 8.h),
           Expanded(
             child: Container(
@@ -752,9 +854,29 @@ class _CpdsFutureWarriorPanelState extends State<CpdsFutureWarriorPanel> {
                               final selected = _selectedKeys.contains(
                                 fwDevice.key,
                               );
+                              final statusView =
+                                  statusByKey[fwDevice.device.key];
                               return _FutureWarriorDeviceRow(
                                 fwDevice: fwDevice,
                                 selected: selected,
+                                status:
+                                    statusView?.status ??
+                                    CpdsDeviceStatus.pending,
+                                esnSuffix: statusView?.esnSuffix ?? '',
+                                currentIp: statusView?.currentIp ?? '',
+                                progress: statusView?.progress ?? 0,
+                                errorCode:
+                                    statusView?.errorCode ??
+                                    CpdsErrorCode.unspecified,
+                                onDistribute: () {
+                                  if (!widget.state.active &&
+                                      !widget.interfacesLoading) {
+                                    widget.onDistributeFutureWarrior(fwDevice);
+                                  }
+                                },
+                                distributeDisabled:
+                                    widget.state.active ||
+                                    widget.interfacesLoading,
                                 onChanged: (checked) {
                                   setState(() {
                                     if (checked) {
@@ -775,21 +897,58 @@ class _CpdsFutureWarriorPanelState extends State<CpdsFutureWarriorPanel> {
       ),
     );
   }
+
+  int _stageIndexOf(CpdsSessionView? session) {
+    if (session == null) return -1;
+    if ((session.activeState == CpdsActiveState.failed ||
+            session.activeState == CpdsActiveState.partialSuccess) &&
+        !session.devices.any(
+          (item) => item.status == CpdsDeviceStatus.completed,
+        )) {
+      return session.lastStageIndex;
+    }
+    return switch (session.activeState) {
+      CpdsActiveState.discovering ||
+      CpdsActiveState.awaitingDiscoveryConfirmation => 0,
+      CpdsActiveState.authenticating => 1,
+      CpdsActiveState.transferring || CpdsActiveState.drainingAfterFailure => 2,
+      CpdsActiveState.waitingParse => 3,
+      CpdsActiveState.completed ||
+      CpdsActiveState.partialSuccess ||
+      CpdsActiveState.failed => 4,
+      CpdsActiveState.idle => -1,
+    };
+  }
 }
 
 class _FutureWarriorDeviceRow extends StatelessWidget {
   const _FutureWarriorDeviceRow({
     required this.fwDevice,
     required this.selected,
+    required this.status,
+    required this.esnSuffix,
+    required this.currentIp,
+    required this.progress,
+    required this.errorCode,
+    required this.onDistribute,
+    required this.distributeDisabled,
     required this.onChanged,
   });
 
   final CpdsFutureWarriorDevice fwDevice;
   final bool selected;
+  final CpdsDeviceStatus status;
+  final String esnSuffix;
+  final String currentIp;
+  final int progress;
+  final CpdsErrorCode errorCode;
+  final VoidCallback? onDistribute;
+  final bool distributeDisabled;
   final ValueChanged<bool> onChanged;
 
   @override
   Widget build(BuildContext context) {
+    final t = Translations.of(context);
     final device = fwDevice.device;
     return InkWell(
       onTap: () => onChanged(!selected),
@@ -829,6 +988,8 @@ class _FutureWarriorDeviceRow extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(color: Colors.white70, fontSize: 14.sp),
                 ),
+                SizedBox(width: 12.w),
+                CpdsStatusBadge(status: status),
               ],
             ),
             Row(
@@ -860,7 +1021,58 @@ class _FutureWarriorDeviceRow extends StatelessWidget {
               ],
             ),
             SizedBox(height: 4.h),
+            Row(
+              children: [
+                SizedBox(width: 56.w),
+                Expanded(
+                  flex: 1,
+                  child: Text(
+                    '${t.cpds.device.esn}: ${esnSuffix.isEmpty ? '--' : esnSuffix}',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(color: Colors.white54, fontSize: 12.sp),
+                  ),
+                ),
+                SizedBox(width: 16.w),
+                Expanded(
+                  flex: 1,
+                  child: Text(
+                    '${t.cpds.device.ip}: ${currentIp.isEmpty ? '--' : currentIp}',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(color: Colors.white54, fontSize: 12.sp),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 4.h),
             _distributionIpRow(context, device),
+            if (status == CpdsDeviceStatus.receiving) ...[
+              SizedBox(height: 8.h),
+              CpdsProgressBar(value: progress),
+            ],
+            if (status == CpdsDeviceStatus.failed) ...[
+              SizedBox(height: 6.h),
+              Text(
+                errorCode.apiName,
+                style: TextStyle(
+                  color: const Color(0xFFF15B64),
+                  fontSize: 11.sp,
+                ),
+              ),
+            ],
+            if (onDistribute != null) ...[
+              SizedBox(height: 6.h),
+              Align(
+                alignment: Alignment.centerRight,
+                child: BaseButton(
+                  label: t.cpds.distribute,
+                  minWidth: 76.w,
+                  height: 30.h,
+                  onPressed: distributeDisabled ? null : onDistribute,
+                ),
+              ),
+            ],
           ],
         ),
       ),

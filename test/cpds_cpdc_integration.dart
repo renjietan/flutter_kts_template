@@ -13,7 +13,8 @@ import 'package:flutter_kts_template/core/cpds/session/cpds_session_machine.dart
 import 'package:flutter_kts_template/core/cpds/session/cpds_session_runner.dart';
 
 Future<void> main() async {
-  const zipPath = r'D:\work\flutter\template\3-38-10\CPDS-main\build\dist\bin\8-12-valid.zip';
+  const zipPath =
+      r'D:\work\flutter\template\3-38-10\CPDS-main\build\dist\bin\8-12-valid.zip';
   const fileName = '8-12-valid.zip';
   const nodeId = 'nn_hytis_8194';
 
@@ -30,14 +31,16 @@ Future<void> main() async {
   final sha = sha256.convert(bytes).bytes;
 
   final machine = CpdsSessionMachine(
-    nodeId: nodeId,
-    expected: [
-      const CpdsDevice(
-        id: 'dc_PMR200_978256516',
-        type: CpdsDeviceType.multiBandHandheld,
-        model: 'PMR200',
-        alias: '03',
-        ip: '10.3.0.134',
+    targets: [
+      CpdsDistributionDevice(
+        device: const CpdsDevice(
+          id: 'dc_PMR200_978256516',
+          type: CpdsDeviceType.multiBandHandheld,
+          model: 'PMR200',
+          alias: '03',
+          ip: '10.3.0.134',
+        ),
+        nodeId: nodeId,
       ),
     ],
   );
