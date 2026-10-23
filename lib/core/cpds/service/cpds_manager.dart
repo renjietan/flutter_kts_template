@@ -212,7 +212,7 @@ class CpdsManager {
       throw CpdsException(
         CpdsErrorCode.invalidPackage,
         params: {'field': 'pcSource'},
-        message: 'pc source file is missing',
+        message: 'cpdata source file is missing',
       );
     }
     final password = _pcPassword;
@@ -220,7 +220,7 @@ class CpdsManager {
       throw CpdsException(
         CpdsErrorCode.invalidPackage,
         params: {'field': 'pcPassword'},
-        message: 'pc password is missing',
+        message: 'cpdata password is missing',
       );
     }
 
@@ -245,7 +245,7 @@ class CpdsManager {
       throw CpdsException(
         CpdsErrorCode.invalidPackage,
         params: {'field': 'pcSource', 'path': pcPath},
-        message: 'pc source file is missing',
+        message: 'cpdata source file is missing',
       );
     }
 
@@ -301,7 +301,7 @@ class CpdsManager {
       throw CpdsException(
         CpdsErrorCode.invalidPackage,
         params: {'field': 'pcSource'},
-        message: 'pc source file is missing',
+        message: 'cpdata source file is missing',
       );
     }
     final password = _pcPassword;
@@ -309,7 +309,7 @@ class CpdsManager {
       throw CpdsException(
         CpdsErrorCode.invalidPackage,
         params: {'field': 'pcPassword'},
-        message: 'pc password is missing',
+        message: 'cpdata password is missing',
       );
     }
 
@@ -318,7 +318,7 @@ class CpdsManager {
       throw CpdsException(
         CpdsErrorCode.invalidPackage,
         params: {'field': 'pcSource', 'path': pcPath},
-        message: 'pc source file is missing',
+        message: 'cpdata source file is missing',
       );
     }
 
@@ -381,7 +381,7 @@ class CpdsManager {
       throw CpdsException(
         CpdsErrorCode.invalidPackage,
         params: {'field': 'pcSource'},
-        message: 'pc source file is missing',
+        message: 'cpdata source file is missing',
       );
     }
     final pcFile = File(pcPath);
@@ -389,7 +389,7 @@ class CpdsManager {
       throw CpdsException(
         CpdsErrorCode.invalidPackage,
         params: {'field': 'pcSource', 'path': pcPath},
-        message: 'pc source file is missing',
+        message: 'cpdata source file is missing',
       );
     }
 
