@@ -1104,8 +1104,7 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
     }
 
     if (selectedRows.any(
-      (item) =>
-          (_enableAliasByRowId[item.id] ?? false) && item.radioId == null,
+      (item) => (_enableAliasByRowId[item.id] ?? false) && item.radioId == null,
     )) {
       SimplePopup.error(
         CpdsMessages.tr(
@@ -1539,7 +1538,7 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
     if (!usePairedAlias) {
       final dcId = _lastNumberInDcPackageName(row.dcPackageName);
       final rowAlias = row.dcPackageAlias ?? '';
-      zipName = '@$dcId--$mapped-$rowAlias';
+      zipName = '@$dcId-$mapped-$rowAlias';
     } else {
       zipName = '${row.SN ?? ''}-$mapped-$radioAlias';
     }
