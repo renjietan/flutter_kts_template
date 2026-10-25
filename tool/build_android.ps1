@@ -8,8 +8,8 @@ $versionInfo = Get-VersionInfo -ProjectRoot $projectRoot
 
 Push-Location $projectRoot
 try {
-    Write-Host "==> fvm flutter build apk --release --split-per-abi"
-    fvm flutter build apk --release --split-per-abi
+    Write-Host "==> fvm flutter build apk --release --split-per-abi --dart-define=APP_VERSION=$($versionInfo.Display)"
+    fvm flutter build apk --release --split-per-abi --dart-define=APP_VERSION=$($versionInfo.Display)
     if ($LASTEXITCODE -ne 0) {
         Write-Error "flutter build apk failed with exit code: $LASTEXITCODE"
         exit $LASTEXITCODE
