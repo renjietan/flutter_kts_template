@@ -249,7 +249,7 @@ class _AppVersionLabelState extends State<_AppVersionLabel> {
   /// （arm32=1000、arm64=2000、x86_64=4000），取余 1000 还原真实的 build 号。
   /// Windows / iOS 无此偏移，直接返回原值。
   static String _normalizedBuildNumber(String raw) {
-    if (defaultTargetPlatform != TargetPlatform.android) return raw;
+    if (!Platform.isAndroid) return raw;
     final code = int.tryParse(raw);
     if (code != null && code >= 1000) {
       return '${code % 1000}';
