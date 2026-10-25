@@ -180,12 +180,12 @@ class _CpdsRadioSidePanelState extends State<CpdsRadioSidePanel> {
                           suffixIcon: _searchController.text.isEmpty
                               ? null
                               : IconButton(
-                                  iconSize: 18,
+                                  iconSize: 18.sp,
                                   padding: EdgeInsets.zero,
                                   constraints: const BoxConstraints(),
                                   icon: Icon(
                                     Icons.clear,
-                                    size: 16.w,
+                                    size: 16.sp,
                                     color: Colors.white54,
                                   ),
                                   onPressed: () {
