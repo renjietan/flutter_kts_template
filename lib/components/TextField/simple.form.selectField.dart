@@ -1,7 +1,9 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class SimpleFormSelectField<T> extends StatelessWidget {
   /// FormBuilder 字段名，选中值会自动写入 FormBuilder 的 value。
@@ -92,7 +94,7 @@ class SimpleFormSelectField<T> extends StatelessWidget {
           dropdownButtonStyle?.dropdownColor ?? const Color(0xFF23272D),
       // 可扩展更多属性
       isExpanded: true,
-      itemHeight: 48.h,
+      itemHeight: math.max(48.0, 48.h),
       menuMaxHeight: 150.h,
     );
   }

@@ -1,6 +1,7 @@
 // ignore_for_file: cpd_lints/hardcoded_dimension
 import 'package:flutter/material.dart';
 import 'package:flutter_kts_template/pages/layout/sideMenu/sideMenu.model.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 
 import '../../../i18n/handle/translations.g.dart';
@@ -48,27 +49,26 @@ mixin SideMenuMixin<T extends StatefulWidget> on State<T> {
           });
         },
         child: Container(
-          width: 70,
+          width: 70.w,
           // margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
           decoration: BoxDecoration(color: style!["bg_color"] as Color),
-          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 0),
+          padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 0),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
                 item.icon,
-                size: 28,
+                size: 28.sp,
                 // color:  Colors.white.withOpacity(0.85),
                 color: style["color"] as Color,
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8.h),
               Text(
                 item.label,
                 style: TextStyle(
-                  fontSize: 11.5,
+                  fontSize: 11.5.sp,
                   fontWeight: style["font-weight"] as FontWeight,
-                  // color: Colors.white.withOpacity(0.9),
                   color: style["color"] as Color,
                   letterSpacing: 0.3,
                 ),

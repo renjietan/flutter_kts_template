@@ -334,7 +334,7 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
 
   Widget _buildEnableAliasHeader(String label) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Text(label, style: _theme.getHeaderTextStyle()),
         Transform.scale(
@@ -1613,7 +1613,7 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
                   const Spacer(),
                   SizedBox(
                     width: 220.w,
-                    height: 36.h,
+                    height: 32.h,
                     child: TextField(
                       controller: _searchController,
                       textInputAction: TextInputAction.search,
@@ -1666,19 +1666,19 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
                   const SizedBox(width: 8),
                   BaseButton(
                     label: t.button.injectEncrypt.export,
-                    minWidth: 70,
                     isLoading: _exporting,
                     onPressed: _exporting ? null : () => _exportSelected(),
+                    height: 32.h,
                   ),
                   const SizedBox(width: 8),
                   BaseButton(
+                    height: 32.h,
                     label: CpdsMessages.tr(
                       context,
                       '从注钥枪中删除文件',
                       'Delete files from key loader',
                       'حذف الملفات من جهاز تحميل المفاتيح',
                     ),
-                    minWidth: 140,
                     onPressed: _exporting
                         ? null
                         : _openKeyLoaderFileDeleteDialog,
@@ -1933,7 +1933,7 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
           'Enable alias',
           'تمكين الاسم المستعار',
         ),
-        flex: 1,
+        flex: 2,
         headerBuilder: _buildEnableAliasHeader,
         cellBuilder: (item) => _buildEnableAliasSwitch(item),
       ),

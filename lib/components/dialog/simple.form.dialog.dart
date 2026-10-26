@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_kts_template/components/TextField/simple.form.selectField.dart';
 import 'package:flutter_kts_template/components/text/text.title.dart';
+import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 
 import '../TextField/simple.form.textfield.dart';
 import '../button/base.button.dart';
-import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 
 /// 表单字段配置模型
 
@@ -218,7 +218,7 @@ List<Widget> _buildFormFields(
     }
   }
   // 最后加一个底部间距
-  widgets.add(SizedBox(height: 60.h));
+  widgets.add(SizedBox(height: 40.h));
   return widgets;
 }
 

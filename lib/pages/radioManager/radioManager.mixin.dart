@@ -1,14 +1,13 @@
 import 'package:composable_data_table/composable_data_table.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/material.dart' as material;
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
-import 'package:flutter_kts_template/components/button/base.button.dart';
-import 'package:flutter_kts_template/components/dialog/simple.form.dialog.dart';
 import 'package:flutter_kts_template/components/DropDown/SimpleDarkDropdown/simple.dark.dropdown.dart';
 import 'package:flutter_kts_template/components/DropDown/SimpleDarkDropdown/simple.dark.dropdown.item.dart';
+import 'package:flutter_kts_template/components/button/base.button.dart';
+import 'package:flutter_kts_template/components/dialog/simple.form.dialog.dart';
 import 'package:flutter_kts_template/components/loading/simple.loading.dart';
 import 'package:flutter_kts_template/components/text/text.title.dart';
 import 'package:flutter_kts_template/core/databaseManager/databaseManager.dart';
@@ -19,6 +18,7 @@ import 'package:flutter_kts_template/pages/radioManager/radioManager.pager.dart'
 import 'package:flutter_kts_template/utils/arabic_digits.dart';
 import 'package:flutter_kts_template/utils/enum/dialog_enum.dart';
 import 'package:flutter_kts_template/utils/provider/radios.provider.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:provider/provider.dart';
 
@@ -245,7 +245,7 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
       ],
       trailingActions: [
         SimpleFilterSearchField(
-          height: 36.h,
+          height: 33.h,
           controller: searchFieldController,
           textInputAction: TextInputAction.done,
           onChanged: (value) {
@@ -271,7 +271,7 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
         SizedBox(width: 8.w),
         SimpleDarkDropdown<String>(
           width: 140.w,
-          height: 36.h,
+          height: 33.h,
           hintText: t.tableColumn.radioManager.radioType,
           value: selectedRadioType,
           onChanged: (value) {
@@ -298,8 +298,7 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
         ),
         BaseButton(
           label: t.button.radioManager.createRadio,
-          minWidth: 110.w,
-          height: 34.h,
+          height: 33.h,
           textStyle: TextStyle(fontSize: 13.sp, color: Colors.white),
           onPressed: () {
             aliasTextEditController.text = "";
