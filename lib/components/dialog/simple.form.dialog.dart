@@ -494,7 +494,7 @@ class _SimpleFormPageState extends State<SimpleFormPage> {
     return Scaffold(
       backgroundColor: widget.backgroundColor,
       appBar: PreferredSize(
-        preferredSize: Size.fromHeight(32.h),
+        preferredSize: Size.fromHeight(36.h),
         child: AppBar(
           backgroundColor: widget.backgroundColor,
           foregroundColor: Colors.white,

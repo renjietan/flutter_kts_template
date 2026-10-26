@@ -59,7 +59,7 @@ class SimpleFilterSearchField extends StatelessWidget {
           hintStyle: TextStyle(color: theme.textMutedColor),
           prefixIcon: Icon(
             Icons.search,
-            size: 18.w,
+            size: 18.sp,
             color: theme.textMutedColor,
           ),
           suffixIcon:

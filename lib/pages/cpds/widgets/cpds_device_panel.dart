@@ -218,7 +218,7 @@ class CpdsDevicePanel extends StatelessWidget {
                 BaseButton(
                   label: t.cpds.refresh,
                   minWidth: 72.w,
-                  height: 32.h,
+                  height: 36.h,
                   isLoading: interfacesLoading,
                   onPressed: state.active || interfacesLoading
                       ? null
@@ -228,7 +228,7 @@ class CpdsDevicePanel extends StatelessWidget {
                 BaseButton(
                   label: t.cpds.distribute,
                   minWidth: 88.w,
-                  height: 32.h,
+                  height: 36.h,
                   isLoading: distributing,
                   onPressed: distributing || state.active || interfacesLoading
                       ? null
@@ -642,7 +642,7 @@ class _CpdsFutureWarriorPanelState extends State<CpdsFutureWarriorPanel> {
     final saveButton = BaseButton(
       label: t.button.radioManager.save,
       minWidth: 80.w,
-      height: 32.h,
+      height: 36.h,
       isLoading: _saving,
       onPressed: _saving ? null : _handleSave,
       colors: const [
@@ -656,7 +656,7 @@ class _CpdsFutureWarriorPanelState extends State<CpdsFutureWarriorPanel> {
       height: 48.h,
       child: Row(
         children: [
-          Container(width: 4.w, height: 32.h, color: const Color(0xFF00A2E9)),
+          Container(width: 4.w, height: 36.h, color: const Color(0xFF00A2E9)),
           SizedBox(width: 10.w),
           Expanded(
             child: Column(
@@ -692,7 +692,7 @@ class _CpdsFutureWarriorPanelState extends State<CpdsFutureWarriorPanel> {
           BaseButton(
             label: t.cpds.refresh,
             minWidth: 72.w,
-            height: 32.h,
+            height: 36.h,
             isLoading: widget.interfacesLoading,
             onPressed: widget.state.active || widget.interfacesLoading
                 ? null
@@ -727,7 +727,7 @@ class _CpdsFutureWarriorPanelState extends State<CpdsFutureWarriorPanel> {
                     horizontal: 14.w,
                     vertical: 10.h,
                   ),
-                  minimumSize: Size(0, 32.h),
+                  minimumSize: Size(0, 36.h),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8.r),
                   ),
@@ -1235,7 +1235,7 @@ class _DeviceGroupHeader extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         child: Container(
-          height: 32.h,
+          height: 36.h,
           padding: EdgeInsets.symmetric(horizontal: 12.w),
           child: Row(
             children: [

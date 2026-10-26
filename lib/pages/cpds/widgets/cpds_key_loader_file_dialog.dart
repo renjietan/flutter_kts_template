@@ -7,8 +7,6 @@ import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
 import 'package:dage/dage.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'cpds_button_styles.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_kts_template/core/cpds/parser/cpds_package_parser.dart';
 import 'package:flutter_kts_template/core/cpds/service/cpds_manager.dart';
@@ -19,9 +17,11 @@ import 'package:flutter_kts_template/core/rtc/managers/keyloader_usb_bulk_manage
 import 'package:flutter_kts_template/core/utils/director.dart';
 import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 import 'package:flutter_kts_template/logger/logger.dart';
+import 'package:flutter_kts_template/pages/cpds/widgets/cpds_messages.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:path/path.dart' as p;
 
-import 'package:flutter_kts_template/pages/cpds/widgets/cpds_messages.dart';
+import 'cpds_button_styles.dart';
 
 /// 注钥枪文件列表弹窗。
 ///
@@ -1009,7 +1009,7 @@ class _CpdsKeyLoaderFileDialogState extends State<CpdsKeyLoaderFileDialog> {
             SizedBox(height: 12.h),
             Flexible(
               child: ConstrainedBox(
-                constraints: const BoxConstraints(maxHeight: 220),
+                constraints: BoxConstraints(maxHeight: 220.h),
                 child: _buildContentArea(t),
               ),
             ),
@@ -1025,7 +1025,7 @@ class _CpdsKeyLoaderFileDialogState extends State<CpdsKeyLoaderFileDialog> {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(4.r),
               ),
-              minimumSize: Size(0, 32.h),
+              minimumSize: Size(0, 36.h),
               textStyle: TextStyle(fontSize: 13.sp),
             ),
             child: Row(

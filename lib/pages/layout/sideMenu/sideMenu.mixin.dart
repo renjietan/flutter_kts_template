@@ -49,25 +49,25 @@ mixin SideMenuMixin<T extends StatefulWidget> on State<T> {
           });
         },
         child: Container(
-          width: 70.w,
+          width: 60.w,
           // margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
           decoration: BoxDecoration(color: style!["bg_color"] as Color),
-          padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 0),
+          padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 0),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
                 item.icon,
-                size: 28.sp,
+                size: 25.sp,
                 // color:  Colors.white.withOpacity(0.85),
                 color: style["color"] as Color,
               ),
-              SizedBox(height: 8.h),
+              SizedBox(height: 5.h),
               Text(
                 item.label,
                 style: TextStyle(
-                  fontSize: 11.5.sp,
+                  fontSize: 11.sp,
                   fontWeight: style["font-weight"] as FontWeight,
                   color: style["color"] as Color,
                   letterSpacing: 0.3,

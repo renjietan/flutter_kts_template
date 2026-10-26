@@ -116,7 +116,7 @@ class _StepProgressDialogState extends State<StepProgressDialog> {
                   child: BaseButton(
                     label: Translations.of(context).common.close,
                     minWidth: 96.w,
-                    height: 32.h,
+                    height: 36.h,
                     isLoading: _closing,
                     onPressed: _closing ? null : _handleClose,
                   ),

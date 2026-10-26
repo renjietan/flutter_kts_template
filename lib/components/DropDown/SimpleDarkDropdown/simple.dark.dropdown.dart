@@ -1,8 +1,8 @@
 // ignore_for_file: cpd_lints/hardcoded_dimension
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_kts_template/components/DropDown/SimpleDarkDropdown/simple.dark.dropdown.item.dart';
 import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 深色主题下拉框，适配桌面端与手机端
 /// - 桌面端：点击后在字段下方弹出菜单
@@ -294,7 +294,7 @@ class _MenuItem<T> extends StatelessWidget {
       onTap: onTap,
       hoverColor: const Color(0x26004098),
       child: Container(
-        height: 32.h,
+        height: 36.h,
         padding: EdgeInsets.symmetric(horizontal: 10.w),
         color: isSelected ? const Color(0x40004098) : Colors.transparent,
         child: Row(

@@ -8,6 +8,7 @@ import 'package:flutter_kts_template/core/rtc/managers/keyloader_usb_bulk_factor
 import 'package:flutter_kts_template/core/rtc/managers/keyloader_usb_bulk_manager.dart';
 import 'package:flutter_kts_template/logger/logger.dart';
 import 'package:flutter_kts_template/pages/cpds/widgets/cpds_messages.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class KeyLoaderFileDeleteDialog extends StatefulWidget {
   const KeyLoaderFileDeleteDialog({super.key});
@@ -334,7 +335,7 @@ class _KeyLoaderFileDeleteDialogState extends State<KeyLoaderFileDeleteDialog> {
           backgroundColor: const Color(0xFF20262D),
           title: Text(
             _tr('删除', 'Delete', 'حذف'),
-            style: const TextStyle(color: Colors.white, fontSize: 17),
+            style: const TextStyle(color: Colors.white, fontSize: 13),
           ),
           content: Text(
             _tr(
@@ -707,7 +708,7 @@ class _KeyLoaderFileDeleteDialogState extends State<KeyLoaderFileDeleteDialog> {
               statuses: _stepStatuses(),
               activeIndex: _step.index,
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 12.h),
             if (showRefresh)
               Row(
                 children: [
@@ -1001,9 +1002,9 @@ class _KeyLoaderFileDeleteDialogState extends State<KeyLoaderFileDeleteDialog> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const SizedBox(
-            width: 18,
-            height: 18,
+          SizedBox(
+            width: 18.w,
+            height: 18.h,
             child: CircularProgressIndicator(
               strokeWidth: 2,
               color: Color(0xFF00A2E9),
@@ -1012,7 +1013,7 @@ class _KeyLoaderFileDeleteDialogState extends State<KeyLoaderFileDeleteDialog> {
           const SizedBox(height: 10),
           Text(
             label,
-            style: const TextStyle(color: Colors.white54, fontSize: 13),
+            style: const TextStyle(color: Colors.white54, fontSize: 13.sp),
           ),
         ],
       ),
@@ -1101,8 +1102,8 @@ class _DeleteStepStrip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 50,
-      padding: const EdgeInsets.symmetric(horizontal: 8),
+      height: 50.h,
+      padding: EdgeInsets.symmetric(horizontal: 8.w),
       decoration: BoxDecoration(
         color: const Color(0xFF14191F),
         border: Border.all(color: const Color(0xFF353A41)),

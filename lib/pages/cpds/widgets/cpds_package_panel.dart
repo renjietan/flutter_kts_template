@@ -187,7 +187,7 @@ class _CpdsPackagePanelState extends State<CpdsPackagePanel> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           SizedBox(
-            height: 32.h,
+            height: 36.h,
             child: Align(
               alignment: Alignment.centerLeft,
               child: Text(
@@ -201,12 +201,12 @@ class _CpdsPackagePanelState extends State<CpdsPackagePanel> {
             ),
           ),
           SizedBox(
-            height: 32.h,
+            height: 36.h,
             child: Row(
               children: [
                 Expanded(
                   child: Container(
-                    height: 32.h,
+                    height: 36.h,
                     padding: EdgeInsets.symmetric(horizontal: 8.w),
                     alignment: Alignment.centerLeft,
                     decoration: BoxDecoration(
@@ -231,7 +231,7 @@ class _CpdsPackagePanelState extends State<CpdsPackagePanel> {
                 BaseButton(
                   label: t.cpds.browse,
                   minWidth: 100.w,
-                  height: 32.h,
+                  height: 36.h,
                   icon: HyIcons.wenjian,
                   isLoading: widget.uploading,
                   onPressed: widget.state.active || widget.uploading
@@ -259,7 +259,7 @@ class _CpdsPackagePanelState extends State<CpdsPackagePanel> {
                     Color(0xFFF3D19E),
                   ],
                   minWidth: 110.w,
-                  height: 32.h,
+                  height: 36.h,
                   icon: Icons.lock_outline,
                   onPressed:
                       widget.state.active ||
@@ -417,7 +417,7 @@ class _CpdsTreeRow extends StatelessWidget {
       return GestureDetector(
         onTap: onTap,
         child: Container(
-          height: 32.h,
+          height: 36.h,
           padding: EdgeInsetsDirectional.only(start: 12.0 + item.depth * 24),
           color: selected ? const Color(0xFF004098) : Colors.transparent,
           child: _buildRowBody(),
@@ -431,7 +431,7 @@ class _CpdsTreeRow extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         child: Container(
-          height: 32.h,
+          height: 36.h,
           padding: EdgeInsetsDirectional.only(start: 12.0 + item.depth * 24),
           child: _buildRowBody(),
         ),

@@ -1,6 +1,6 @@
 // ignore_for_file: cpd_lints/hardcoded_dimension
-import 'package:flutter/material.dart';
 import 'package:composable_data_table/composable_data_table.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_kts_template/components/TextField/simple.filter.search.textField.dart';
 import 'package:flutter_kts_template/components/button/base.button.dart';
 import 'package:flutter_kts_template/core/cpds/model/cpds_models.dart';
@@ -10,8 +10,9 @@ import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 import 'package:flutter_kts_template/pages/cpds/widgets/cpds_network_interface_bar.dart';
 import 'package:flutter_kts_template/pages/self_update/widgets/edit_package_dialog.dart';
 import 'package:flutter_kts_template/theme/app_colors.dart';
-import 'package:flutter_kts_template/utils/arabic_digits.dart';
 import 'package:flutter_kts_template/theme/table.theme.dart';
+import 'package:flutter_kts_template/utils/arabic_digits.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 自更新安装包上传页面。
 ///
@@ -124,11 +125,13 @@ class _SelfUpdatePageState extends State<SelfUpdatePage> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               DataTablePlusThemeProvider(
                 theme: getThemePreset(ThemePreset.dark),
                 child: SimpleFilterSearchField(
-                  height: 36,
+                  width: 180.w,
+                  height: 36.h,
                   controller: _searchController,
                   onChanged: (value) {
                     _keyword = value;
@@ -148,7 +151,7 @@ class _SelfUpdatePageState extends State<SelfUpdatePage> {
               ),
               const Spacer(),
               SizedBox(
-                width: 340,
+                width: 340.w,
                 child: CpdsNetworkInterfaceBar(
                   interfaces: widget.interfaces,
                   selectedName: widget.selectedInterfaceName,
@@ -159,27 +162,26 @@ class _SelfUpdatePageState extends State<SelfUpdatePage> {
                   onSelected: widget.onSelectInterface ?? (_) {},
                 ),
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: 8.w),
               BaseButton(
+                height: 36.h,
                 label: Translations.of(context).cpds.refresh,
-                minWidth: 72,
-                height: 32,
                 isLoading: widget.interfacesLoading,
                 onPressed: widget.interfacesLoading
                     ? null
                     : widget.onRefreshInterfaces,
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: 8.w),
               BaseButton(
+                height: 36.h,
                 label: t.selfUpdate.fileUpload,
-                minWidth: 110,
                 onPressed: widget.onUpload,
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           Expanded(child: _buildTable()),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
           _buildPagination(),
         ],
       ),
@@ -256,7 +258,12 @@ class _SelfUpdatePageState extends State<SelfUpdatePage> {
                       DataCell(
                         SizedBox(
                           width: timeWidth,
-                          child: Text(localizeDigits(context, _formatTime(entity.createdAt))),
+                          child: Text(
+                            localizeDigits(
+                              context,
+                              _formatTime(entity.createdAt),
+                            ),
+                          ),
                         ),
                       ),
                       DataCell(
@@ -355,7 +362,16 @@ class _SelfUpdatePageState extends State<SelfUpdatePage> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        Text(localizeDigits(context, t.selfUpdate.pagination(page: _page + 1, pageCount: _pageCount, total: _filtered.length))),
+        Text(
+          localizeDigits(
+            context,
+            t.selfUpdate.pagination(
+              page: _page + 1,
+              pageCount: _pageCount,
+              total: _filtered.length,
+            ),
+          ),
+        ),
         IconButton(
           onPressed: _page > 0 ? () => setState(() => _page--) : null,
           icon: Icon(rtl ? Icons.chevron_right : Icons.chevron_left),

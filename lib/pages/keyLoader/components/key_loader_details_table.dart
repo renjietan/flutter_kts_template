@@ -1613,7 +1613,7 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
                   const Spacer(),
                   SizedBox(
                     width: 220.w,
-                    height: 32.h,
+                    height: 36.h,
                     child: TextField(
                       controller: _searchController,
                       textInputAction: TextInputAction.search,
@@ -1668,11 +1668,11 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
                     label: t.button.injectEncrypt.export,
                     isLoading: _exporting,
                     onPressed: _exporting ? null : () => _exportSelected(),
-                    height: 32.h,
+                    height: 36.h,
                   ),
                   const SizedBox(width: 8),
                   BaseButton(
-                    height: 32.h,
+                    height: 36.h,
                     label: CpdsMessages.tr(
                       context,
                       '从注钥枪中删除文件',

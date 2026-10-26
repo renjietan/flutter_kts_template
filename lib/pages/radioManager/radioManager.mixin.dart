@@ -236,7 +236,7 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
   Widget buildToolbar(BuildContext context) {
     final t = Translations.of(context);
     return TableFilterToolbar(
-      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 12.h),
       mainFilters: [
         Padding(
           padding: EdgeInsets.only(top: 6.h),
@@ -245,7 +245,7 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
       ],
       trailingActions: [
         SimpleFilterSearchField(
-          height: 32.h,
+          height: 36.h,
           controller: searchFieldController,
           textInputAction: TextInputAction.done,
           onChanged: (value) {
@@ -271,7 +271,7 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
         SizedBox(width: 8.w),
         SimpleDarkDropdown<String>(
           width: 140.w,
-          height: 32.h,
+          height: 36.h,
           hintText: t.tableColumn.radioManager.radioType,
           value: selectedRadioType,
           onChanged: (value) {
@@ -298,7 +298,7 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
         ),
         BaseButton(
           label: t.button.radioManager.createRadio,
-          height: 32.h,
+          height: 36.h,
           textStyle: TextStyle(fontSize: 13.sp, color: Colors.white),
           onPressed: () {
             aliasTextEditController.text = "";
@@ -308,17 +308,20 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
             showDialog(DialogTypeEnum.create, null);
           },
         ),
-        FilterResetButton(
-          tooltip: t.button.radioManager.resetRadio,
-          onReset: () {
-            setState(() {
-              searchQuery = '';
-              searchFieldController.text = "";
-              selectedRadioType = null;
-              SimplePopup.loading();
-              getList();
-            });
-          },
+        SizedBox(
+          height: 36.h,
+          child: FilterResetButton(
+            tooltip: t.button.radioManager.resetRadio,
+            onReset: () {
+              setState(() {
+                searchQuery = '';
+                searchFieldController.text = "";
+                selectedRadioType = null;
+                SimplePopup.loading();
+                getList();
+              });
+            },
+          ),
         ),
       ],
     );

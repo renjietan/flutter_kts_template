@@ -763,7 +763,7 @@ class _CpdsFutureWarriorSaveDialogState
       return Scaffold(
         backgroundColor: const Color(0xFF20262D),
         appBar: PreferredSize(
-          preferredSize: Size.fromHeight(32.h),
+          preferredSize: Size.fromHeight(36.h),
           child: AppBar(
             backgroundColor: const Color(0xFF20262D),
             foregroundColor: Colors.white,

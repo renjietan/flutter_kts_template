@@ -108,8 +108,8 @@ class _RadioManagerPagerState extends State<RadioManagerPager>
                     color: widget.theme.accentColor.withValues(alpha: 0.4),
                   ),
                   padding: EdgeInsets.symmetric(
-                    horizontal: 14.w,
-                    vertical: 10.h,
+                    vertical: 8.h,
+                    horizontal: 12.w,
                   ),
                   minimumSize: Size(0, 36.h),
                   shape: RoundedRectangleBorder(
@@ -131,13 +131,13 @@ class _RadioManagerPagerState extends State<RadioManagerPager>
                   onPressed: clearSelection,
                   icon: Icon(
                     Icons.close,
-                    size: 16.sp,
+                    size: 15.sp,
                     color: widget.theme.textSecondaryColor,
                   ),
                   label: Text(
                     t.button.radioManager.clear,
                     style: TextStyle(
-                      fontSize: 13.sp,
+                      fontSize: 15.sp,
                       color: widget.theme.textSecondaryColor,
                     ),
                   ),
@@ -158,7 +158,7 @@ class _RadioManagerPagerState extends State<RadioManagerPager>
                   onPressed: () {
                     patchDelete();
                   },
-                  icon: Icon(Icons.delete_outline, size: 16.sp),
+                  icon: Icon(Icons.delete_outline, size: 13.sp),
                   label: Text(
                     '${t.button.radioManager.delete} (${selectedIds.length})',
                   ),
@@ -167,7 +167,7 @@ class _RadioManagerPagerState extends State<RadioManagerPager>
                     foregroundColor: Colors.white,
                     padding: EdgeInsets.symmetric(
                       horizontal: 12.w,
-                      vertical: 12.h,
+                      vertical: 8.h,
                     ),
                     minimumSize: Size(0, 36.h),
                     shape: RoundedRectangleBorder(

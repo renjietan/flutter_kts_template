@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 
 class SimpleFormTextField extends StatefulWidget {
@@ -84,19 +84,19 @@ class _SimpleFormTextFieldState extends State<SimpleFormTextField> {
         filled: true,
         fillColor: widget.fillColor,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(5.r),
+          borderRadius: BorderRadius.circular(3.r),
           borderSide: BorderSide(color: Color(0xFF404040)),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(5.r),
+          borderRadius: BorderRadius.circular(3.r),
           borderSide: BorderSide(color: Color(0xFF404040)),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(5.r),
+          borderRadius: BorderRadius.circular(3.r),
           borderSide: BorderSide(color: Color(0xFF64B5F6)),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(5.r),
+          borderRadius: BorderRadius.circular(3.r),
           borderSide: const BorderSide(color: Colors.red),
         ),
         focusedErrorBorder: OutlineInputBorder(
