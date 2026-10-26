@@ -245,7 +245,7 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
       ],
       trailingActions: [
         SimpleFilterSearchField(
-          height: 33.h,
+          height: 32.h,
           controller: searchFieldController,
           textInputAction: TextInputAction.done,
           onChanged: (value) {
@@ -271,7 +271,7 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
         SizedBox(width: 8.w),
         SimpleDarkDropdown<String>(
           width: 140.w,
-          height: 33.h,
+          height: 32.h,
           hintText: t.tableColumn.radioManager.radioType,
           value: selectedRadioType,
           onChanged: (value) {
@@ -298,7 +298,7 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
         ),
         BaseButton(
           label: t.button.radioManager.createRadio,
-          height: 33.h,
+          height: 32.h,
           textStyle: TextStyle(fontSize: 13.sp, color: Colors.white),
           onPressed: () {
             aliasTextEditController.text = "";
