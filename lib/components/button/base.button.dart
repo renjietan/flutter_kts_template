@@ -51,7 +51,7 @@ class BaseButton extends StatefulWidget {
     this.minWidth,
     this.maxWidth,
     this.height = 34,
-    this.textStyle = const TextStyle(fontSize: 13, color: Colors.white),
+    this.textStyle,
     this.icon,
     this.isLoading = false,
     this.loadingColor,
@@ -240,7 +240,7 @@ class _BaseButtonState extends State<BaseButton> with TickerProviderStateMixin {
                                             widget.textStyle ??
                                             TextStyle(
                                               color: Colors.white,
-                                              fontSize: 16.sp,
+                                              fontSize: 13.sp,
                                               fontWeight: FontWeight.w600,
                                               letterSpacing: 0.5,
                                             ),
