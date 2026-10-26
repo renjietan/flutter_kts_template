@@ -245,13 +245,6 @@ class CpdsDevicePanel extends StatelessWidget {
             disabled: state.active,
             onSelected: onSelectInterface,
           ),
-          if (selectedNode?.nodeType == 2 && selectedNode?.veciInfo != null)
-            _VeciInfoBox(
-              veciInfo: selectedNode!.veciInfo!,
-              onEdit: onEditVeciInfo == null
-                  ? null
-                  : () => onEditVeciInfo!(selectedNode!.id),
-            ),
           _StageStrip(activeIndex: stageIndex),
           if (transferring) ...[
             Container(
@@ -291,6 +284,13 @@ class CpdsDevicePanel extends StatelessWidget {
               ),
             ),
           ],
+          // if (selectedNode?.nodeType == 2 && selectedNode?.veciInfo != null)
+          //   _VeciInfoBox(
+          //     veciInfo: selectedNode!.veciInfo!,
+          //     onEdit: onEditVeciInfo == null
+          //         ? null
+          //         : () => onEditVeciInfo!(selectedNode!.id),
+          //   ),
           SizedBox(height: 8.h),
           Expanded(
             child: Container(
@@ -314,6 +314,8 @@ class CpdsDevicePanel extends StatelessWidget {
                       groups: groups,
                       groupTitle: (key) => _groupTitle(context, key),
                       showAlias: showAlias,
+                      selectedLeftNode: selectedNode,
+                      onVecInfoEdit: onEditVeciInfo,
                     ),
             ),
           ),
@@ -1279,11 +1281,15 @@ class _CpdsDeviceGroupList extends StatefulWidget {
     required this.groups,
     required this.groupTitle,
     required this.showAlias,
+    required this.selectedLeftNode,
+    this.onVecInfoEdit,
   });
 
   final List<_DeviceGroupData> groups;
   final String Function(String titleKey) groupTitle;
   final bool showAlias;
+  final CpdsNode selectedLeftNode;
+  final ValueChanged<String>? onVecInfoEdit;
 
   @override
   State<_CpdsDeviceGroupList> createState() => _CpdsDeviceGroupListState();
@@ -1305,21 +1311,31 @@ class _CpdsDeviceGroupListState extends State<_CpdsDeviceGroupList> {
   @override
   Widget build(BuildContext context) {
     return ListView(
-      children: widget.groups.expand((group) {
-        final expanded = !_collapsedGroups.contains(group.titleKey);
-        return [
-          _DeviceGroupHeader(
-            title: widget.groupTitle(group.titleKey),
-            count: group.rows.length,
-            expanded: expanded,
-            onTap: () => _toggleGroup(group.titleKey),
+      children: [
+        if (widget.selectedLeftNode.nodeType == 2 &&
+            widget.selectedLeftNode.veciInfo != null)
+          _VeciInfoBox(
+            veciInfo: widget.selectedLeftNode.veciInfo!,
+            onEdit: widget.onVecInfoEdit == null
+                ? null
+                : () => widget.onVecInfoEdit!(widget.selectedLeftNode.id),
           ),
-          if (expanded)
-            ...group.rows.map(
-              (row) => _DeviceRow(row: row, showAlias: widget.showAlias),
+        ...widget.groups.expand((group) {
+          final expanded = !_collapsedGroups.contains(group.titleKey);
+          return [
+            _DeviceGroupHeader(
+              title: widget.groupTitle(group.titleKey),
+              count: group.rows.length,
+              expanded: expanded,
+              onTap: () => _toggleGroup(group.titleKey),
             ),
-        ];
-      }).toList(),
+            if (expanded)
+              ...group.rows.map(
+                (row) => _DeviceRow(row: row, showAlias: widget.showAlias),
+              ),
+          ];
+        }).toList(),
+      ],
     );
   }
 }
@@ -1510,7 +1526,7 @@ class _VeciInfoBox extends StatelessWidget {
     final remarkLabel = CpdsMessages.tr(context, '备注', 'Remark', 'ملاحظات');
 
     return Container(
-      margin: EdgeInsets.only(bottom: 8.h),
+      margin: EdgeInsets.only(top: 0, bottom: 0),
       decoration: BoxDecoration(
         color: const Color(0xFF171C22),
         border: Border.all(color: const Color(0x26FFFFFF)),
@@ -1520,7 +1536,7 @@ class _VeciInfoBox extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: EdgeInsets.fromLTRB(12.w, 10.h, 17.w, 0),
+            padding: EdgeInsets.fromLTRB(12.w, 5.h, 17.w, 0),
             child: SizedBox(
               width: double.infinity,
               height: 28.h,
