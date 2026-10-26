@@ -1314,11 +1314,12 @@ class _CpdsDeviceGroupListState extends State<_CpdsDeviceGroupList> {
       children: [
         if (widget.selectedLeftNode.nodeType == 2 &&
             widget.selectedLeftNode.veciInfo != null)
-          _VeciInfoBox(
+          _VecInfoBox(
             veciInfo: widget.selectedLeftNode.veciInfo!,
             onEdit: widget.onVecInfoEdit == null
                 ? null
                 : () => widget.onVecInfoEdit!(widget.selectedLeftNode.id),
+            // expanded: false,
           ),
         ...widget.groups.expand((group) {
           final expanded = !_collapsedGroups.contains(group.titleKey);
@@ -1488,12 +1489,18 @@ class _DeviceRow extends StatelessWidget {
   }
 }
 
-class _VeciInfoBox extends StatelessWidget {
-  const _VeciInfoBox({required this.veciInfo, required this.onEdit});
-
+class _VecInfoBox extends StatefulWidget {
   final CpdsVeciInfo veciInfo;
   final VoidCallback? onEdit;
 
+  const _VecInfoBox({super.key, required this.veciInfo, required this.onEdit});
+
+  @override
+  State<_VecInfoBox> createState() => _VecInfoBoxState();
+}
+
+class _VecInfoBoxState extends State<_VecInfoBox> {
+  bool expanded = false;
   @override
   Widget build(BuildContext context) {
     final title = CpdsMessages.tr(
@@ -1524,7 +1531,6 @@ class _VeciInfoBox extends StatelessWidget {
     );
     final purposeLabel = CpdsMessages.tr(context, '用途', 'Purpose', 'الغرض');
     final remarkLabel = CpdsMessages.tr(context, '备注', 'Remark', 'ملاحظات');
-
     return Container(
       margin: EdgeInsets.only(top: 0, bottom: 0),
       decoration: BoxDecoration(
@@ -1543,21 +1549,13 @@ class _VeciInfoBox extends StatelessWidget {
               child: Stack(
                 alignment: Alignment.center,
                 children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
                   Positioned(
-                    right: 0,
+                    left: 0,
                     top: 0,
                     bottom: 0,
                     child: Center(
                       child: GestureDetector(
-                        onTap: onEdit,
+                        onTap: widget.onEdit,
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
@@ -1579,6 +1577,34 @@ class _VeciInfoBox extends StatelessWidget {
                       ),
                     ),
                   ),
+                  Text(
+                    title,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  Positioned(
+                    right: 0,
+                    top: 0,
+                    bottom: 0,
+                    child: Center(
+                      child: InkWell(
+                        onTap: () {
+                          setState(() {
+                            expanded = !expanded;
+                          });
+                        },
+                        child: AnimatedRotation(
+                          turns: expanded ? 0.5 : 0.0, // 0.5 圈 = 180°
+                          duration: const Duration(milliseconds: 200),
+                          curve: Curves.easeInOut,
+                          child: Icon(Icons.keyboard_arrow_down, size: 20.sp),
+                        ),
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -1588,42 +1614,56 @@ class _VeciInfoBox extends StatelessWidget {
             padding: EdgeInsets.fromLTRB(12.w, 0, 12.w, 12.h),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    SizedBox(width: 16.w),
-                    _Meta(label: equipNameLabel, value: veciInfo.equipName),
-                    SizedBox(width: 16.w),
-                    _Meta(label: ipLabel, value: veciInfo.ip),
-                  ],
-                ),
-                SizedBox(height: 4.h),
-                Row(
-                  children: [
-                    SizedBox(width: 16.w),
-                    _Meta(label: plateNoLabel, value: veciInfo.plateNo),
-                    SizedBox(width: 16.w),
-                    _Meta(
-                      label: vehicleParamsLabel,
-                      value: veciInfo.vehicleParams,
-                    ),
-                  ],
-                ),
-                SizedBox(height: 4.h),
-                Row(
-                  children: [
-                    SizedBox(width: 16.w),
-                    _Meta(label: purposeLabel, value: veciInfo.purpose),
-                  ],
-                ),
-                SizedBox(height: 4.h),
-                Row(
-                  children: [
-                    SizedBox(width: 16.w),
-                    _Meta(label: remarkLabel, value: veciInfo.remark),
-                  ],
-                ),
-              ],
+              children: expanded
+                  ? [
+                      Row(
+                        children: [
+                          SizedBox(width: 16.w),
+                          _Meta(
+                            label: equipNameLabel,
+                            value: widget.veciInfo.equipName,
+                          ),
+                          SizedBox(width: 16.w),
+                          _Meta(label: ipLabel, value: widget.veciInfo.ip),
+                        ],
+                      ),
+                      SizedBox(height: 4.h),
+                      Row(
+                        children: [
+                          SizedBox(width: 16.w),
+                          _Meta(
+                            label: plateNoLabel,
+                            value: widget.veciInfo.plateNo,
+                          ),
+                          SizedBox(width: 16.w),
+                          _Meta(
+                            label: vehicleParamsLabel,
+                            value: widget.veciInfo.vehicleParams,
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 4.h),
+                      Row(
+                        children: [
+                          SizedBox(width: 16.w),
+                          _Meta(
+                            label: purposeLabel,
+                            value: widget.veciInfo.purpose,
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 4.h),
+                      Row(
+                        children: [
+                          SizedBox(width: 16.w),
+                          _Meta(
+                            label: remarkLabel,
+                            value: widget.veciInfo.remark,
+                          ),
+                        ],
+                      ),
+                    ]
+                  : [],
             ),
           ),
         ],
