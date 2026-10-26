@@ -488,63 +488,116 @@ class _SimpleFormPageState extends State<SimpleFormPage> {
 
   @override
   Widget build(BuildContext context) {
+    final isKeyboardVisible = MediaQuery.of(context).viewInsets.bottom > 0;
+    const duration = Duration(milliseconds: 200);
     const labelColor = Colors.white;
     const fillColor = Color(0x9921262C);
     const borderColor = Colors.white;
+    final viewInsets = MediaQuery.viewInsetsOf(context);
+
     return Scaffold(
       backgroundColor: widget.backgroundColor,
-      appBar: PreferredSize(
-        preferredSize: Size.fromHeight(36.h),
-        child: AppBar(
-          backgroundColor: widget.backgroundColor,
-          foregroundColor: Colors.white,
-          elevation: 0,
-          centerTitle: true,
-          title: Text(widget.title, style: TextStyle(fontSize: 15.sp)),
-        ),
-      ),
+      // appBar: PreferredSize(
+      //   preferredSize: Size.fromHeight(isKeyboardVisible ? 0 : 36.h),
+      //   child: AnimatedContainer(
+      //     duration: duration,
+      //     curve: Curves.easeInOut,
+      //     height: isKeyboardVisible ? 0 : 36.h,
+      //     child: ClipRect(
+      //       child: OverflowBox(
+      //         alignment: Alignment.topCenter,
+      //         maxHeight: 36.h, // 固定 AppBar 原始高度，动画只做裁剪
+      //         child: AppBar(
+      //           toolbarHeight: 36.h,
+      //           backgroundColor: widget.backgroundColor,
+      //           foregroundColor: Colors.white,
+      //           elevation: 0,
+      //           centerTitle: true,
+      //           title: Text(widget.title, style: TextStyle(fontSize: 15.sp)),
+      //         ),
+      //       ),
+      //     ),
+      //   ),
+      // ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-          padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 24.h),
-          child: FormBuilder(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                widget.twoColumn
-                    ? _buildTwoColumnFields(
-                        context,
-                        widget.fields,
-                        labelColor,
-                        fillColor,
-                        borderColor,
-                        widget.labelFontSize,
-                        widget.fieldContentPadding,
-                      )
-                    : Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: _buildFormFields(
-                          context,
-                          widget.fields,
-                          labelColor,
-                          fillColor,
-                          borderColor,
-                          widget.labelFontSize,
-                          widget.fieldContentPadding,
+        top: !isKeyboardVisible, // 键盘弹起时 AppBar 消失，SafeArea 接管状态栏
+        child: Column(
+          children: [
+            AnimatedSize(
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeInOut,
+              child: isKeyboardVisible
+                  ? const SizedBox.shrink()
+                  : SizedBox(
+                      height: 36.h,
+                      child: AppBar(
+                        toolbarHeight: 36.h,
+                        automaticallyImplyLeading: true,
+                        backgroundColor: widget.backgroundColor,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        centerTitle: true,
+                        title: Text(
+                          widget.title,
+                          style: TextStyle(fontSize: 15.sp),
                         ),
                       ),
-                SizedBox(height: 12.h),
-                BaseButton(
-                  minWidth: double.infinity,
-                  height: 36.h,
-                  textStyle: TextStyle(fontSize: 13.sp, color: Colors.white),
-                  label: widget.confirmText ?? context.t.common.confirm,
-                  onPressed: _submit,
-                ),
-              ],
+                    ),
             ),
-          ),
+            Expanded(
+              child: SingleChildScrollView(
+                keyboardDismissBehavior:
+                    ScrollViewKeyboardDismissBehavior.onDrag,
+                padding: EdgeInsets.fromLTRB(
+                  16.w,
+                  12.h,
+                  16.w,
+                  viewInsets.bottom,
+                ),
+                child: FormBuilder(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      widget.twoColumn
+                          ? _buildTwoColumnFields(
+                              context,
+                              widget.fields,
+                              labelColor,
+                              fillColor,
+                              borderColor,
+                              widget.labelFontSize,
+                              widget.fieldContentPadding,
+                            )
+                          : Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: _buildFormFields(
+                                context,
+                                widget.fields,
+                                labelColor,
+                                fillColor,
+                                borderColor,
+                                widget.labelFontSize,
+                                widget.fieldContentPadding,
+                              ),
+                            ),
+                      SizedBox(height: 12.h),
+                      BaseButton(
+                        minWidth: double.infinity,
+                        height: 36.h,
+                        textStyle: TextStyle(
+                          fontSize: 13.sp,
+                          color: Colors.white,
+                        ),
+                        label: widget.confirmText ?? context.t.common.confirm,
+                        onPressed: _submit,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
