@@ -1675,7 +1675,7 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
                     height: 36.h,
                     label: CpdsMessages.tr(
                       context,
-                      '从注钥枪中删除文件',
+                      '  从注钥枪中删除文件',
                       'Delete files from key loader',
                       'حذف الملفات من جهاز تحميل المفاتيح',
                     ),
@@ -1718,32 +1718,31 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
                 onPressed: _clearSelection,
                 icon: Icon(
                   Icons.close,
-                  size: 16,
+                  size: 16.sp,
                   color: _theme.textSecondaryColor,
                 ),
                 label: Text(
                   t.button.radioManager.clear,
                   style: TextStyle(
-                    fontSize: 13,
+                    fontSize: 13.sp,
                     color: _theme.textSecondaryColor,
                   ),
                 ),
                 style: OutlinedButton.styleFrom(
-                  minimumSize: const Size(0, 36),
+                  minimumSize: Size(0, 36.h),
                   side: BorderSide(color: _theme.borderColor),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 10,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 14.w,
+                    vertical: 10.h,
                   ),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(8.r),
                   ),
                 ),
               ),
-              const SizedBox(width: 4),
+              SizedBox(width: 4.w),
               BaseButton(
                 label: t.button.radioManager.delete,
-                minWidth: 70,
                 colors: const [
                   Color(0xFFF15B64),
                   Color(0xFFF15B64),
@@ -1752,22 +1751,22 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
                 ],
                 onPressed: _selectedIds.isEmpty ? null : _deleteSelected,
               ),
-              const SizedBox(width: 4),
+              SizedBox(width: 4.w),
               BaseButton(
+                height: 36.h,
                 label: t.button.injectEncrypt.export,
-                minWidth: 70,
                 isLoading: _exporting,
                 onPressed: _exporting ? null : () => _exportSelected(),
               ),
-              const SizedBox(width: 4),
+              SizedBox(width: 4.w),
               BaseButton(
+                height: 36.h,
                 label: CpdsMessages.tr(
                   context,
                   '从注钥枪中删除文件',
                   'Delete files from key loader',
                   'حذف الملفات من جهاز تحميل المفاتيح',
                 ),
-                minWidth: 140,
                 onPressed: _exporting ? null : _openKeyLoaderFileDeleteDialog,
               ),
             ],
@@ -1797,7 +1796,7 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
                       'No search results',
                       'لا توجد نتائج بحث',
                     ),
-                    style: const TextStyle(color: Colors.white38, fontSize: 13),
+                    style: TextStyle(color: Colors.white38, fontSize: 13.sp),
                   ),
                 );
               }
@@ -1860,10 +1859,51 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
       ),
       ColumnDefinition<KeyLoaderDetailsEntity>(
         label: CpdsMessages.tr(context, '别名', 'Alias', 'الاسم المستعار'),
-        flex: 1,
-        cellBuilder: TextCellBuilder.text<KeyLoaderDetailsEntity>(
-          (item) => item.dcPackageAlias ?? '',
-        ),
+        flex: 2,
+        cellBuilder: (item) {
+          return GestureDetector(
+            onTap: () async {
+              await showDialog<void>(
+                context: context,
+                barrierDismissible: false,
+                builder: (dialogContext) {
+                  var closed = false;
+                  return AlertDialog(
+                    backgroundColor: const Color(0xFF20262D),
+                    title: Text(
+                      CpdsMessages.tr(context, '别名', 'Alias', 'الاسم المستعار'),
+                      style: TextStyle(color: Colors.white, fontSize: 17.sp),
+                    ),
+                    content: Text(
+                      item.dcPackageAlias ?? '--',
+                      style: TextStyle(color: Colors.white70, fontSize: 13.sp),
+                    ),
+                    actions: [
+                      BaseButton(
+                        textStyle: TextStyle(fontSize: 13.sp),
+                        onPressed: () {
+                          if (closed) return;
+                          closed = true;
+                          Navigator.of(dialogContext).pop();
+                        },
+                        label: t.common.confirm,
+                      ),
+                    ],
+                  );
+                },
+              );
+            },
+            child: Text(
+              item.dcPackageAlias ?? '--',
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: Color(0xFF00A2E9),
+                decoration: TextDecoration.underline,
+              ),
+            ),
+          );
+        },
       ),
       ColumnDefinition<KeyLoaderDetailsEntity>(
         label: CpdsMessages.tr(context, '下发IP', 'Downlink IP', 'IP الإرسال'),

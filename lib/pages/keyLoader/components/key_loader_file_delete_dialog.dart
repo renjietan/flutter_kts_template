@@ -4,11 +4,13 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_kts_template/components/button/base.button.dart';
 import 'package:flutter_kts_template/core/rtc/managers/keyloader_usb_bulk_factory.dart';
 import 'package:flutter_kts_template/core/rtc/managers/keyloader_usb_bulk_manager.dart';
 import 'package:flutter_kts_template/logger/logger.dart';
 import 'package:flutter_kts_template/pages/cpds/widgets/cpds_messages.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:path/path.dart' as p;
 
 class KeyLoaderFileDeleteDialog extends StatefulWidget {
   const KeyLoaderFileDeleteDialog({super.key});
@@ -200,7 +202,11 @@ class _KeyLoaderFileDeleteDialogState extends State<KeyLoaderFileDeleteDialog> {
             content
                 .split(',')
                 .map((item) => item.trim())
-                .where((item) => item.isNotEmpty)
+                .where(
+                  (item) =>
+                      item.isNotEmpty &&
+                      p.extension(item).toLowerCase() != '.pad',
+                )
                 .map(_DeleteFileItem.new)
                 .toList(),
           ),
@@ -266,7 +272,11 @@ class _KeyLoaderFileDeleteDialogState extends State<KeyLoaderFileDeleteDialog> {
               content
                   .split(',')
                   .map((item) => item.trim())
-                  .where((item) => item.isNotEmpty)
+                  .where(
+                    (item) =>
+                        item.isNotEmpty &&
+                        p.extension(item).toLowerCase() != '.pad',
+                  )
                   .map(_DeleteFileItem.new)
                   .toList(),
             ),
@@ -684,22 +694,22 @@ class _KeyLoaderFileDeleteDialogState extends State<KeyLoaderFileDeleteDialog> {
               'Delete files from key loader',
               'حذف الملفات من جهاز تحميل المفاتيح',
             ),
-            style: const TextStyle(color: Colors.white, fontSize: 17),
+            style: TextStyle(color: Colors.white, fontSize: 15.sp),
           ),
           if (_versionText.isNotEmpty)
             Text(
               '${_tr('注钥枪版本号：', 'Key loader version: ', 'رقم إصدار جهاز تحميل المفاتيح: ')}$_versionText',
-              style: const TextStyle(
+              style: TextStyle(
                 color: Colors.white70,
-                fontSize: 13,
+                fontSize: 13.sp,
                 fontWeight: FontWeight.normal,
               ),
             ),
         ],
       ),
       content: SizedBox(
-        width: 720,
-        height: 460,
+        width: 720.w,
+        height: 460.h,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -708,7 +718,7 @@ class _KeyLoaderFileDeleteDialogState extends State<KeyLoaderFileDeleteDialog> {
               statuses: _stepStatuses(),
               activeIndex: _step.index,
             ),
-            const SizedBox(height: 12.h),
+            SizedBox(height: 12.h),
             if (showRefresh)
               Row(
                 children: [
@@ -717,25 +727,25 @@ class _KeyLoaderFileDeleteDialogState extends State<KeyLoaderFileDeleteDialog> {
                   if (_refreshError != null) ...[
                     Text(
                       _refreshError!,
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: Color(0xFFF15B64),
-                        fontSize: 12,
+                        fontSize: 12.sp,
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    SizedBox(width: 8.w),
                   ],
                   OutlinedButton.icon(
                     onPressed: _refreshLoading ? null : _refreshList,
                     icon: _refreshLoading
-                        ? const SizedBox(
-                            width: 14,
-                            height: 14,
+                        ? SizedBox(
+                            width: 14.w,
+                            height: 14.w,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
                               color: Color(0xFF00A2E9),
                             ),
                           )
-                        : const Icon(Icons.refresh, size: 16),
+                        : Icon(Icons.refresh, size: 16.sp),
                     label: Text(
                       _tr('刷新文件列表', 'Refresh file list', 'تحديث قائمة الملفات'),
                       style: const TextStyle(fontSize: 13),
@@ -775,34 +785,46 @@ class _KeyLoaderFileDeleteDialogState extends State<KeyLoaderFileDeleteDialog> {
             child: Text(_tr('关闭', 'Close', 'إغلاق')),
           ),
         if (showReconnect)
-          FilledButton(
+          BaseButton(
+            label: _tr('重新连接', 'Reconnect', 'إعادة الاتصال'),
+            height: 36.h,
             onPressed: _reconnect,
-            child: Text(_tr('重新连接', 'Reconnect', 'إعادة الاتصال')),
           ),
         if (showDelete)
-          FilledButton(
+          BaseButton(
+            label: _tr('删除', 'Delete', 'حذف'),
+            height: 36.h,
             onPressed: _selected.isEmpty ? null : _deleteSelectedFiles,
-            child: Text(_tr('删除', 'Delete', 'حذف')),
+            colors: [
+              Color(0xFFF56C6C),
+              Color(0xFFF56C6C),
+              Color(0xFFF56C6C),
+              Color(0xFFF56C6C),
+            ],
           ),
+        // FilledButton(
+        //   onPressed: _selected.isEmpty ? null : _deleteSelectedFiles,
+        //   child: Text(_tr('删除', 'Delete', 'حذف')),
+        // ),
       ],
     );
   }
 
   Widget _buildFileTypeFilter() {
     return Container(
-      height: 36,
-      padding: const EdgeInsets.symmetric(horizontal: 10),
+      height: 36.h,
+      padding: EdgeInsets.symmetric(horizontal: 10.w),
       decoration: BoxDecoration(
         color: const Color(0xFF1B2026),
         border: Border.all(color: const Color(0xFF353A41)),
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: BorderRadius.circular(6.r),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
           value: _fileTypeFilter,
           isDense: true,
           dropdownColor: const Color(0xFF282D33),
-          style: const TextStyle(color: Colors.white70, fontSize: 13),
+          style: TextStyle(color: Colors.white70, fontSize: 13.sp),
           onChanged: (value) {
             if (value == null) return;
             setState(() {
@@ -813,7 +835,10 @@ class _KeyLoaderFileDeleteDialogState extends State<KeyLoaderFileDeleteDialog> {
           items: [
             DropdownMenuItem(
               value: 'all',
-              child: Text(_tr('全部类型', 'All types', 'كل الأنواع')),
+              child: Text(
+                _tr('全部类型', 'All types', 'كل الأنواع'),
+                style: TextStyle(fontSize: 13.sp),
+              ),
             ),
             DropdownMenuItem(
               value: 'cpdata',
@@ -823,18 +848,20 @@ class _KeyLoaderFileDeleteDialogState extends State<KeyLoaderFileDeleteDialog> {
                   'Communication parameter package',
                   'حزمة معلمات الاتصال',
                 ),
+                style: TextStyle(fontSize: 13.sp),
               ),
             ),
-            DropdownMenuItem(
-              value: 'pad',
-              child: Text(
-                _tr(
-                  '通信参数包（单兵）',
-                  'Communication parameter package (individual)',
-                  'حزمة معلمات الاتصال (فردي)',
-                ),
-              ),
-            ),
+            // DropdownMenuItem(
+            //   value: 'pad',
+            //   child: Text(
+            //     _tr(
+            //       '通信参数包（单兵）',
+            //       'Communication parameter package (individual)',
+            //       'حزمة معلمات الاتصال (فردي)',
+            //     ),
+            //     style: TextStyle(fontSize: 13.sp),
+            //   ),
+            // ),
             DropdownMenuItem(
               value: 'key',
               child: Text(_tr('密钥包', 'Key package', 'حزمة المفاتيح')),
@@ -1013,7 +1040,7 @@ class _KeyLoaderFileDeleteDialogState extends State<KeyLoaderFileDeleteDialog> {
           const SizedBox(height: 10),
           Text(
             label,
-            style: const TextStyle(color: Colors.white54, fontSize: 13.sp),
+            style: const TextStyle(color: Colors.white54, fontSize: 13),
           ),
         ],
       ),

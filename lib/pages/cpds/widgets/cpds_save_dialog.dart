@@ -4,8 +4,6 @@ import 'dart:convert';
 
 import 'package:composable_data_table/composable_data_table.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'cpds_button_styles.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_kts_template/api/KeyLoaders.api.dart';
 import 'package:flutter_kts_template/api/RadiosManagerApi.dart';
@@ -17,9 +15,12 @@ import 'package:flutter_kts_template/core/entities/radios/radiosEntity.dart';
 import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 import 'package:flutter_kts_template/logger/logger.dart';
 import 'package:flutter_kts_template/objectbox.g.dart';
-import 'package:flutter_kts_template/theme/table.theme.dart';
 import 'package:flutter_kts_template/pages/cpds/widgets/cpds_messages.dart';
 import 'package:flutter_kts_template/pages/cpds/widgets/cpds_radio_picker.dart';
+import 'package:flutter_kts_template/theme/table.theme.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+
+import 'cpds_button_styles.dart';
 
 String cpdsDetailKey(
   String netNodePackageName,
@@ -499,6 +500,13 @@ class _CpdsFutureWarriorSaveDialogState
               DropdownButtonFormField<int>(
                 initialValue: _selectedKeyLoaderId,
                 isExpanded: true,
+                isDense: true,
+                style: TextStyle(
+                  fontSize: 12.sp, // 字号
+                  color: Colors.white,
+                  fontWeight: FontWeight.w500,
+                ),
+                iconSize: 20.sp,
                 decoration: InputDecoration(
                   labelText: t.Form.paramsInject.selectKeyLoader.text,
                   hintText: t.Form.paramsInject.selectKeyLoader.placeholder,
@@ -507,12 +515,19 @@ class _CpdsFutureWarriorSaveDialogState
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(4.r),
                   ),
+                  contentPadding: EdgeInsets.symmetric(
+                    vertical: 0,
+                    horizontal: 12.w,
+                  ),
                 ),
                 items: _keyLoaders
                     .map(
                       (item) => DropdownMenuItem<int>(
                         value: item.id,
-                        child: Text(item.name),
+                        child: Text(
+                          item.name,
+                          style: TextStyle(fontSize: 13.sp),
+                        ),
                       ),
                     )
                     .toList(),
@@ -521,12 +536,12 @@ class _CpdsFutureWarriorSaveDialogState
                     ? t.Form.paramsInject.selectKeyLoader.placeholder
                     : null,
               ),
-              SizedBox(height: 16.h),
+              SizedBox(height: 12.h),
               Text(
                 t.pager.injectEncrypt.paramPairing,
                 style: TextStyle(
                   color: Colors.white,
-                  fontSize: 18.sp,
+                  fontSize: 15.sp,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -878,71 +893,76 @@ class CpdsFutureWarriorDuplicateDialog extends StatelessWidget {
               ),
               style: TextStyle(color: Colors.white70, fontSize: 13.sp),
             ),
-            SizedBox(height: 12.h),
-            Container(
-              constraints: const BoxConstraints(maxHeight: 260),
-              child: SingleChildScrollView(
-                child: Table(
-                  border: TableBorder.all(color: const Color(0xFF6B7480)),
-                  columnWidths: const {
-                    0: FlexColumnWidth(1),
-                    1: FlexColumnWidth(1),
-                    2: FlexColumnWidth(1),
-                    3: FlexColumnWidth(1.2),
-                    4: FlexColumnWidth(1.2),
-                  },
-                  children: [
-                    TableRow(
-                      children: [
-                        _headerCell(t.pager.radioManager.netNode),
-                        _headerCell(
-                          '${t.tableColumn.injectEncrypt.parameterPacket}'
-                          '${CpdsMessages.tr(context, '别名', ' Alias', 'الاسم المستعار')}',
-                        ),
-                        _headerCell(
-                          t.tableColumn.injectEncrypt.parameterPacket,
-                        ),
-                        _headerCell(
-                          CpdsMessages.tr(
-                            context,
-                            '配对电台(旧)',
-                            'Matching Radio (Old)',
-                            'جهاز الراديو المقترن (قديم)',
-                          ),
-                        ),
-                        _headerCell(
-                          CpdsMessages.tr(
-                            context,
-                            '配对电台(新)',
-                            'Matching Radio (New)',
-                            'جهاز الراديو المقترن (جديد)',
-                          ),
-                        ),
-                      ],
-                    ),
-                    for (final item in duplicates)
+            SizedBox(height: 5.h),
+            Expanded(
+              child: Container(
+                constraints: BoxConstraints(maxHeight: 260.h),
+                child: SingleChildScrollView(
+                  child: Table(
+                    border: TableBorder.all(color: const Color(0xFF6B7480)),
+                    columnWidths: const {
+                      0: FlexColumnWidth(1),
+                      1: FlexColumnWidth(1),
+                      2: FlexColumnWidth(1),
+                      3: FlexColumnWidth(1.2),
+                      4: FlexColumnWidth(1.2),
+                    },
+                    children: [
                       TableRow(
                         children: [
-                          _bodyCell(item['nodeName']?.toString() ?? '--'),
-                          _bodyCell(item['deviceAlias']?.toString() ?? '--'),
-                          _bodyCell(item['dcPackageName']?.toString() ?? '--'),
-                          _bodyCell(
-                            _radioAliasOrDash(
-                              item['originalRadioAlias']?.toString(),
+                          _headerCell(t.pager.radioManager.netNode),
+                          _headerCell(
+                            '${t.tableColumn.injectEncrypt.parameterPacket}'
+                            '${CpdsMessages.tr(context, '别名', ' Alias', 'الاسم المستعار')}',
+                          ),
+                          _headerCell(
+                            t.tableColumn.injectEncrypt.parameterPacket,
+                          ),
+                          _headerCell(
+                            CpdsMessages.tr(
+                              context,
+                              '配对电台(旧)',
+                              'Matching Radio (Old)',
+                              'جهاز الراديو المقترن (قديم)',
                             ),
                           ),
-                          _bodyCell(
-                            _radioAliasOrDash(item['radioAlias']?.toString()),
+                          _headerCell(
+                            CpdsMessages.tr(
+                              context,
+                              '配对电台(新)',
+                              'Matching Radio (New)',
+                              'جهاز الراديو المقترن (جديد)',
+                            ),
                           ),
                         ],
                       ),
-                  ],
+                      for (final item in duplicates)
+                        TableRow(
+                          children: [
+                            _bodyCell(item['nodeName']?.toString() ?? '--'),
+                            _bodyCell(item['deviceAlias']?.toString() ?? '--'),
+                            _bodyCell(
+                              item['dcPackageName']?.toString() ?? '--',
+                            ),
+                            _bodyCell(
+                              _radioAliasOrDash(
+                                item['originalRadioAlias']?.toString(),
+                              ),
+                            ),
+                            _bodyCell(
+                              _radioAliasOrDash(item['radioAlias']?.toString()),
+                            ),
+                          ],
+                        ),
+                    ],
+                  ),
                 ),
               ),
             ),
           ],
         ),
       ),
+      // actionsPadding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 8),
       actions: [
         TextButton(
           style: cpdsTextButtonStyle(),
