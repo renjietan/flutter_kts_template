@@ -7,6 +7,7 @@ import 'package:flutter_kts_template/components/button/base.button.dart';
 import 'package:flutter_kts_template/core/entities/installPackage/installPackageEntity.dart';
 import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 import 'package:flutter_kts_template/utils/arabic_digits.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 编辑安装包信息弹窗（样式对齐文件上传弹窗）。
 ///
@@ -16,10 +17,12 @@ class EditPackageDialog extends StatefulWidget {
     super.key,
     required this.entity,
     this.onConfirm,
+    this.usePage = false,
   });
 
   final InstallPackageEntity entity;
   final void Function(String version, String? remark)? onConfirm;
+  final bool usePage;
 
   @override
   State<EditPackageDialog> createState() => _EditPackageDialogState();
@@ -73,89 +76,122 @@ class _EditPackageDialogState extends State<EditPackageDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final title = Text(
+      t.selfUpdate.editTitle,
+      style: TextStyle(color: Colors.white, fontSize: 15.sp),
+    );
+    final actions = <Widget>[
+      TextButton(
+        onPressed: () => Navigator.of(context).pop(),
+        child: Text(
+          t.selfUpdate.cancel,
+          style: TextStyle(color: Colors.white70),
+        ),
+      ),
+      BaseButton(
+        label: t.selfUpdate.ok,
+        minWidth: 100,
+        borderRadius: 5,
+        onPressed: _submit,
+      ),
+    ];
+
+    if (widget.usePage) {
+      return Scaffold(
+        backgroundColor: const Color(0xFF20262D),
+        appBar: AppBar(
+          backgroundColor: const Color(0xFF20262D),
+          foregroundColor: Colors.white,
+          elevation: 0,
+          title: title,
+        ),
+        body: SafeArea(
+          child: SingleChildScrollView(
+            padding: EdgeInsets.all(16.w),
+            child: _buildForm(),
+          ),
+        ),
+        bottomNavigationBar: SafeArea(
+          child: Padding(
+            padding: EdgeInsets.all(16.w),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: actions,
+            ),
+          ),
+        ),
+      );
+    }
+
     return AlertDialog(
       backgroundColor: const Color(0xFF20262D),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10),
-      ),
-      title: Text(
-        t.selfUpdate.editTitle,
-        style: TextStyle(color: Colors.white, fontSize: 16),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      title: title,
       content: SizedBox(
-        width: 560,
-        child: FormBuilder(
-          key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _buildFieldLabel(t.selfUpdate.version, required: true),
-              const SizedBox(height: 8),
-              SimpleFormTextField(
-                key: const ValueKey('edit_version_field'),
-                field: FormFieldConfig(
-                  name: 'version',
-                  label: t.selfUpdate.version,
-                  hintText: localizeDigits(context, t.selfUpdate.versionHint),
-                  textEditingController: _versionController,
-                  required: true,
-                  inputFormatters: [
-                    FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
-                    LengthLimitingTextInputFormatter(30),
-                  ],
-                  validators: [_validateVersion],
-                ),
-              ),
-              const SizedBox(height: 16),
-              _buildFieldLabel(t.selfUpdate.remarkOptional),
-              const SizedBox(height: 8),
-              SimpleFormTextField(
-                key: const ValueKey('edit_remark_field'),
-                field: FormFieldConfig(
-                  name: 'remark',
-                  label: t.selfUpdate.remarkOptional,
-                  hintText: t.selfUpdate.remarkHint,
-                  textEditingController: _remarkController,
-                  keyboardType: TextInputType.multiline,
-                  maxLines: null,
-                  minLines: 3,
-                  inputFormatters: [LengthLimitingTextInputFormatter(150)],
-                  counterTextBuilder: (value) => localizeDigits(context, '${value.length}/150'),
-                ),
-              ),
-              const SizedBox(height: 16),
-              _buildFieldLabel(t.selfUpdate.packageLabel, required: true),
-              const SizedBox(height: 8),
-              SimpleFormTextField(
-                key: const ValueKey('edit_file_field'),
-                field: FormFieldConfig(
-                  name: 'fileName',
-                  label: t.selfUpdate.packageLabel,
-                  hintText: t.selfUpdate.packageLabel,
-                  textEditingController: _fileNameController,
-                  readonly: true,
-                ),
-              ),
-            ],
-          ),
-        ),
+        width: 560.w,
+        child: _buildForm(),
       ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: Text(
-            t.selfUpdate.cancel,
-            style: TextStyle(color: Colors.white70),
+      actions: actions,
+    );
+  }
+
+  Widget _buildForm() {
+    return FormBuilder(
+      key: _formKey,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _buildFieldLabel(t.selfUpdate.version, required: true),
+          SizedBox(height: 8.h),
+          SimpleFormTextField(
+            key: const ValueKey('edit_version_field'),
+            field: FormFieldConfig(
+              name: 'version',
+              label: t.selfUpdate.version,
+              hintText: localizeDigits(context, t.selfUpdate.versionHint),
+              textEditingController: _versionController,
+              required: true,
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                LengthLimitingTextInputFormatter(30),
+              ],
+              validators: [_validateVersion],
+            ),
           ),
-        ),
-        BaseButton(
-          label: t.selfUpdate.ok,
-          minWidth: 100,
-          borderRadius: 5,
-          onPressed: _submit,
-        ),
-      ],
+          SizedBox(height: 16.h),
+          _buildFieldLabel(t.selfUpdate.remarkOptional),
+          SizedBox(height: 8.h),
+          SimpleFormTextField(
+            key: const ValueKey('edit_remark_field'),
+            field: FormFieldConfig(
+              name: 'remark',
+              label: t.selfUpdate.remarkOptional,
+              hintText: t.selfUpdate.remarkHint,
+              textEditingController: _remarkController,
+              keyboardType: TextInputType.multiline,
+              maxLines: null,
+              minLines: 3,
+              inputFormatters: [LengthLimitingTextInputFormatter(150)],
+              counterTextBuilder: (value) =>
+                  localizeDigits(context, '${value.length}/150'),
+            ),
+          ),
+          const SizedBox(height: 16),
+          _buildFieldLabel(t.selfUpdate.packageLabel, required: true),
+          const SizedBox(height: 8),
+          SimpleFormTextField(
+            key: const ValueKey('edit_file_field'),
+            field: FormFieldConfig(
+              name: 'fileName',
+              label: t.selfUpdate.packageLabel,
+              hintText: t.selfUpdate.packageLabel,
+              textEditingController: _fileNameController,
+              readonly: true,
+            ),
+          ),
+        ],
+      ),
     );
   }
 

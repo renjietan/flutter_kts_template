@@ -1,5 +1,6 @@
 // ignore_for_file: cpd_lints/hardcoded_dimension
 import 'package:composable_data_table/composable_data_table.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_kts_template/components/TextField/simple.filter.search.textField.dart';
 import 'package:flutter_kts_template/components/button/base.button.dart';
@@ -219,6 +220,9 @@ class _SelfUpdatePageState extends State<SelfUpdatePage> {
           ),
           child: SingleChildScrollView(
             child: DataTable(
+              dataRowMinHeight: 36.h,
+              dataRowMaxHeight: 36.h,
+              headingRowHeight: 36.h,
               columnSpacing: columnSpacing,
               columns: [
                 DataColumn(label: Text(t.selfUpdate.version)),
@@ -234,7 +238,10 @@ class _SelfUpdatePageState extends State<SelfUpdatePage> {
                       DataCell(
                         SizedBox(
                           width: versionWidth,
-                          child: Text(localizeDigits(context, entity.version)),
+                          child: Text(
+                            localizeDigits(context, entity.version),
+                            style: TextStyle(fontSize: 13.sp),
+                          ),
                         ),
                       ),
                       DataCell(
@@ -243,6 +250,7 @@ class _SelfUpdatePageState extends State<SelfUpdatePage> {
                           child: Text(
                             localizeDigits(context, entity.fileName),
                             overflow: TextOverflow.ellipsis,
+                            style: TextStyle(fontSize: 13.sp),
                           ),
                         ),
                       ),
@@ -252,6 +260,7 @@ class _SelfUpdatePageState extends State<SelfUpdatePage> {
                           child: Text(
                             entity.remark ?? '',
                             overflow: TextOverflow.ellipsis,
+                            style: TextStyle(fontSize: 13.sp),
                           ),
                         ),
                       ),
@@ -263,6 +272,7 @@ class _SelfUpdatePageState extends State<SelfUpdatePage> {
                               context,
                               _formatTime(entity.createdAt),
                             ),
+                            style: TextStyle(fontSize: 13.sp),
                           ),
                         ),
                       ),
@@ -312,17 +322,23 @@ class _SelfUpdatePageState extends State<SelfUpdatePage> {
   }
 
   Future<void> _showEditDialog(InstallPackageEntity entity) async {
+    final editDialog = EditPackageDialog(
+      entity: entity,
+      usePage: defaultTargetPlatform != TargetPlatform.windows,
+      onConfirm: (version, remark) {
+        Navigator.of(context).pop();
+        widget.onEdit?.call(entity, version, remark);
+      },
+    );
+    if (defaultTargetPlatform != TargetPlatform.windows) {
+      await Navigator.of(context).push<void>(
+        MaterialPageRoute(builder: (_) => editDialog),
+      );
+      return;
+    }
     await showDialog<void>(
       context: context,
-      builder: (dialogContext) {
-        return EditPackageDialog(
-          entity: entity,
-          onConfirm: (version, remark) {
-            Navigator.of(dialogContext).pop();
-            widget.onEdit?.call(entity, version, remark);
-          },
-        );
-      },
+      builder: (_) => editDialog,
     );
   }
 

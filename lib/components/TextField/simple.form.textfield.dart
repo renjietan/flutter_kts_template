@@ -14,8 +14,8 @@ class SimpleFormTextField extends StatefulWidget {
     super.key,
     required this.field,
     this.fillColor = const Color(0x9921262C),
-    this.labelFontSize = 14,
-    this.contentPadding = 8,
+    this.labelFontSize = 13,
+    this.contentPadding = 12,
   });
 
   @override
@@ -68,7 +68,7 @@ class _SimpleFormTextFieldState extends State<SimpleFormTextField> {
             : null,
         isDense: true,
         contentPadding: EdgeInsets.symmetric(
-          vertical: widget.contentPadding.h,
+          vertical: widget.contentPadding.h ?? 12.h,
           horizontal: 14.w,
         ),
         labelStyle: TextStyle(
