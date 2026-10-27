@@ -20,6 +20,7 @@ class UploadPackageDialog extends StatefulWidget {
     super.key,
     this.onPickFile,
     this.onConfirm,
+    this.usePage = false,
   });
 
   /// 选择/上传文件，返回文件名；取消返回 null，失败抛出异常。
@@ -28,6 +29,8 @@ class UploadPackageDialog extends StatefulWidget {
   /// 校验通过后回调（version、备注、文件名）。
   final void Function(String version, String? remark, String fileName)?
   onConfirm;
+
+  final bool usePage;
 
   @override
   State<UploadPackageDialog> createState() => _UploadPackageDialogState();
@@ -111,107 +114,141 @@ class _UploadPackageDialogState extends State<UploadPackageDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final title = Text(
+      t.selfUpdate.uploadTitle,
+      style: TextStyle(color: Colors.white, fontSize: 16),
+    );
+    final actions = <Widget>[
+      TextButton(
+        onPressed: () => Navigator.of(context).pop(),
+        child: Text(
+          t.selfUpdate.cancel,
+          style: TextStyle(color: Colors.white70),
+        ),
+      ),
+      BaseButton(
+        label: t.selfUpdate.ok,
+        minWidth: 100,
+        borderRadius: 5,
+        onPressed: _submit,
+      ),
+    ];
+
+    if (widget.usePage) {
+      return Scaffold(
+        backgroundColor: const Color(0xFF20262D),
+        appBar: AppBar(
+          backgroundColor: const Color(0xFF20262D),
+          foregroundColor: Colors.white,
+          elevation: 0,
+          title: title,
+        ),
+        body: SafeArea(
+          child: SingleChildScrollView(
+            padding: EdgeInsets.all(16),
+            child: _buildForm(),
+          ),
+        ),
+        bottomNavigationBar: SafeArea(
+          child: Padding(
+            padding: EdgeInsets.all(16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: actions,
+            ),
+          ),
+        ),
+      );
+    }
+
     return AlertDialog(
       backgroundColor: const Color(0xFF20262D),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
       ),
-      title: Text(
-        t.selfUpdate.uploadTitle,
-        style: TextStyle(color: Colors.white, fontSize: 16),
-      ),
+      title: title,
       content: SizedBox(
         width: 560,
-        child: FormBuilder(
-          key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _buildFieldLabel(t.selfUpdate.version, required: true),
-              const SizedBox(height: 8),
-              SimpleFormTextField(
-                key: const ValueKey('version_field'),
-                field: FormFieldConfig(
-                  name: 'version',
-                  label: t.selfUpdate.version,
-                  hintText: localizeDigits(context, t.selfUpdate.versionHint),
-                  textEditingController: _versionController,
-                  required: true,
-                  inputFormatters: [
-                    FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
-                    LengthLimitingTextInputFormatter(30),
-                  ],
-                  validators: [_validateVersion],
-                ),
-              ),
-              const SizedBox(height: 16),
-              _buildFieldLabel(t.selfUpdate.remarkOptional),
-              const SizedBox(height: 8),
-              SimpleFormTextField(
-                key: const ValueKey('remark_field'),
-                field: FormFieldConfig(
-                  name: 'remark',
-                  label: t.selfUpdate.remarkOptional,
-                  hintText: t.selfUpdate.remarkHint,
-                  textEditingController: _remarkController,
-                  keyboardType: TextInputType.multiline,
-                  maxLines: null,
-                  minLines: 3,
-                  inputFormatters: [LengthLimitingTextInputFormatter(150)],
-                  counterTextBuilder: (value) => localizeDigits(context, '${value.length}/150'),
-                ),
-              ),
-              const SizedBox(height: 16),
-              _buildFieldLabel(t.selfUpdate.packageLabel, required: true),
-              const SizedBox(height: 8),
-              DataTablePlusThemeProvider(
-                theme: getThemePreset(ThemePreset.dark),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Expanded(
-                      child: SimpleFormTextField(
-                        key: const ValueKey('file_field'),
-                        field: FormFieldConfig(
-                          name: 'fileName',
-                          label: t.selfUpdate.packageLabel,
-                          hintText: t.selfUpdate.packageHint,
-                          textEditingController: _fileNameController,
-                          readonly: true,
-                          validators: [_validateFile],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    BaseButton(
-                      label: t.selfUpdate.upload,
-                      minWidth: 80,
-                      isLoading: _uploading,
-                      onPressed: _uploading ? null : _pickFile,
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
+        child: _buildForm(),
       ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: Text(
-            t.selfUpdate.cancel,
-            style: TextStyle(color: Colors.white70),
+      actions: actions,
+    );
+  }
+
+  Widget _buildForm() {
+    return FormBuilder(
+      key: _formKey,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _buildFieldLabel(t.selfUpdate.version, required: true),
+          const SizedBox(height: 8),
+          SimpleFormTextField(
+            key: const ValueKey('version_field'),
+            field: FormFieldConfig(
+              name: 'version',
+              label: t.selfUpdate.version,
+              hintText: localizeDigits(context, t.selfUpdate.versionHint),
+              textEditingController: _versionController,
+              required: true,
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                LengthLimitingTextInputFormatter(30),
+              ],
+              validators: [_validateVersion],
+            ),
           ),
-        ),
-        BaseButton(
-          label: t.selfUpdate.ok,
-          minWidth: 100,
-          borderRadius: 5,
-          onPressed: _submit,
-        ),
-      ],
+          const SizedBox(height: 16),
+          _buildFieldLabel(t.selfUpdate.remarkOptional),
+          const SizedBox(height: 8),
+          SimpleFormTextField(
+            key: const ValueKey('remark_field'),
+            field: FormFieldConfig(
+              name: 'remark',
+              label: t.selfUpdate.remarkOptional,
+              hintText: t.selfUpdate.remarkHint,
+              textEditingController: _remarkController,
+              keyboardType: TextInputType.multiline,
+              maxLines: null,
+              minLines: 3,
+              inputFormatters: [LengthLimitingTextInputFormatter(150)],
+              counterTextBuilder: (value) => localizeDigits(context, '${value.length}/150'),
+            ),
+          ),
+          const SizedBox(height: 16),
+          _buildFieldLabel(t.selfUpdate.packageLabel, required: true),
+          const SizedBox(height: 8),
+          DataTablePlusThemeProvider(
+            theme: getThemePreset(ThemePreset.dark),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Expanded(
+                  child: SimpleFormTextField(
+                    key: const ValueKey('file_field'),
+                    field: FormFieldConfig(
+                      name: 'fileName',
+                      label: t.selfUpdate.packageLabel,
+                      hintText: t.selfUpdate.packageHint,
+                      textEditingController: _fileNameController,
+                      readonly: true,
+                      validators: [_validateFile],
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                BaseButton(
+                  label: t.selfUpdate.upload,
+                  minWidth: 80,
+                  isLoading: _uploading,
+                  onPressed: _uploading ? null : _pickFile,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 

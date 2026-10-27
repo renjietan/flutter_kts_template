@@ -1,5 +1,4 @@
-import 'dart:typed_data';
-
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_kts_template/core/cpds/service/cpds_manager.dart';
 import 'package:flutter_kts_template/core/entities/installPackage/installPackageEntity.dart';
@@ -79,33 +78,37 @@ class _SelfUpdatePagerState extends State<SelfUpdatePager> {
   }
 
   Future<void> _handleUpload() async {
+    final uploadDialog = UploadPackageDialog(
+      usePage: defaultTargetPlatform != TargetPlatform.windows,
+      onPickFile: () async {
+        final bytes = await widget.pickZipFile();
+        if (bytes == null) {
+          return null;
+        }
+        return widget.service.uploadZip(bytes);
+      },
+      onConfirm: (version, remark, fileName) async {
+        await widget.service.savePackage(
+          version: version,
+          remark: remark,
+          fileName: fileName,
+        );
+        if (!mounted) {
+          return;
+        }
+        Navigator.of(context).pop();
+        _reload();
+      },
+    );
+    if (defaultTargetPlatform != TargetPlatform.windows) {
+      await Navigator.of(context).push<void>(
+        MaterialPageRoute(builder: (_) => uploadDialog),
+      );
+      return;
+    }
     await showDialog<void>(
       context: context,
-      builder: (dialogContext) {
-        return UploadPackageDialog(
-          onPickFile: () async {
-            final bytes = await widget.pickZipFile();
-            if (bytes == null) {
-              return null;
-            }
-            return widget.service.uploadZip(bytes);
-          },
-          onConfirm: (version, remark, fileName) async {
-            await widget.service.savePackage(
-              version: version,
-              remark: remark,
-              fileName: fileName,
-            );
-            if (!mounted) {
-              return;
-            }
-            if (dialogContext.mounted) {
-              Navigator.of(dialogContext).pop();
-            }
-            _reload();
-          },
-        );
-      },
+      builder: (_) => uploadDialog,
     );
   }
 
