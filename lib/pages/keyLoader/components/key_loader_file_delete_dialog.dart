@@ -3,6 +3,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_kts_template/components/button/base.button.dart';
 import 'package:flutter_kts_template/core/rtc/managers/keyloader_usb_bulk_factory.dart';
@@ -682,131 +683,172 @@ class _KeyLoaderFileDeleteDialogState extends State<KeyLoaderFileDeleteDialog> {
     final showRefresh =
         _step == _DeleteStep.select && !_deleting && !_reconnectRequired;
 
-    return AlertDialog(
-      backgroundColor: const Color(0xFF20262D),
-      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-      title: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            _tr(
-              '从注钥枪中删除文件',
-              'Delete files from key loader',
-              'حذف الملفات من جهاز تحميل المفاتيح',
-            ),
-            style: TextStyle(color: Colors.white, fontSize: 15.sp),
+    final title = Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          _tr(
+            '从注钥枪中删除文件',
+            'Delete files from key loader',
+            'حذف الملفات من جهاز تحميل المفاتيح',
           ),
-          if (_versionText.isNotEmpty)
-            Text(
-              '${_tr('注钥枪版本号：', 'Key loader version: ', 'رقم إصدار جهاز تحميل المفاتيح: ')}$_versionText',
-              style: TextStyle(
-                color: Colors.white70,
-                fontSize: 13.sp,
-                fontWeight: FontWeight.normal,
-              ),
-            ),
-        ],
-      ),
-      content: SizedBox(
-        width: 720.w,
-        height: 460.h,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            _DeleteStepStrip(
-              labels: _stepLabels(),
-              statuses: _stepStatuses(),
-              activeIndex: _step.index,
-            ),
-            SizedBox(height: 12.h),
-            if (showRefresh)
-              Row(
-                children: [
-                  _buildFileTypeFilter(),
-                  const Spacer(),
-                  if (_refreshError != null) ...[
-                    Text(
-                      _refreshError!,
-                      style: TextStyle(
-                        color: Color(0xFFF15B64),
-                        fontSize: 12.sp,
-                      ),
-                    ),
-                    SizedBox(width: 8.w),
-                  ],
-                  OutlinedButton.icon(
-                    onPressed: _refreshLoading ? null : _refreshList,
-                    icon: _refreshLoading
-                        ? SizedBox(
-                            width: 14.w,
-                            height: 14.w,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Color(0xFF00A2E9),
-                            ),
-                          )
-                        : Icon(Icons.refresh, size: 16.sp),
-                    label: Text(
-                      _tr('刷新文件列表', 'Refresh file list', 'تحديث قائمة الملفات'),
-                      style: const TextStyle(fontSize: 13),
-                    ),
-                  ),
-                ],
-              ),
-            const SizedBox(height: 8),
-            Expanded(
-              child: _reconnectRequired
-                  ? Center(
-                      child: Text(
-                        _reconnectMessage.isEmpty
-                            ? _tr(
-                                '注钥枪断开连接',
-                                'Key loader disconnected',
-                                'تم فصل جهاز تحميل المفاتيح',
-                              )
-                            : _reconnectMessage,
-                        style: const TextStyle(
-                          color: Color(0xFFF15B64),
-                          fontSize: 13,
-                        ),
-                      ),
-                    )
-                  : _step == _DeleteStep.select
-                  ? _buildFileTable()
-                  : _buildProgress(_stepLabel(_step)),
-            ),
-          ],
+          style: TextStyle(color: Colors.white, fontSize: 15.sp),
         ),
-      ),
-      actions: [
-        if (showClose)
-          TextButton(
-            onPressed: _close,
-            child: Text(_tr('关闭', 'Close', 'إغلاق')),
+        if (_versionText.isNotEmpty)
+          Text(
+            '${_tr('注钥枪版本号：', 'Key loader version: ', 'رقم إصدار جهاز تحميل المفاتيح: ')}$_versionText',
+            style: TextStyle(
+              color: Colors.white70,
+              fontSize: 13.sp,
+              fontWeight: FontWeight.normal,
+            ),
           ),
-        if (showReconnect)
-          BaseButton(
-            label: _tr('重新连接', 'Reconnect', 'إعادة الاتصال'),
-            height: 36.h,
-            onPressed: _reconnect,
-          ),
-        if (showDelete)
-          BaseButton(
-            label: _tr('删除', 'Delete', 'حذف'),
-            height: 36.h,
-            onPressed: _selected.isEmpty ? null : _deleteSelectedFiles,
-            colors: [
-              Color(0xFFF56C6C),
-              Color(0xFFF56C6C),
-              Color(0xFFF56C6C),
-              Color(0xFFF56C6C),
+      ],
+    );
+
+    final body = Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _DeleteStepStrip(
+          labels: _stepLabels(),
+          statuses: _stepStatuses(),
+          activeIndex: _step.index,
+        ),
+        if (showRefresh)
+          Row(
+            children: [
+              _buildFileTypeFilter(),
+              const Spacer(),
+              if (_refreshError != null) ...[
+                Text(
+                  _refreshError!,
+                  style: TextStyle(
+                    color: Color(0xFFF15B64),
+                    fontSize: 12.sp,
+                  ),
+                ),
+                SizedBox(width: 8.w),
+              ],
+              OutlinedButton.icon(
+                onPressed: _refreshLoading ? null : _refreshList,
+                style: OutlinedButton.styleFrom(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 12.w,
+                    vertical: 8.h,
+                  ),
+                  minimumSize: Size(0, 36.h),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(18.r),
+                  ),
+                ),
+                icon: _refreshLoading
+                    ? SizedBox(
+                        width: 13.w,
+                        height: 13.w,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Color(0xFF00A2E9),
+                        ),
+                      )
+                    : Icon(Icons.refresh, size: 16.sp),
+                label: Text(
+                  _tr('刷新文件列表', 'Refresh file list', 'تحديث قائمة الملفات'),
+                  style: TextStyle(fontSize: 13.sp),
+                ),
+              ),
             ],
           ),
-        // FilledButton(
-        //   onPressed: _selected.isEmpty ? null : _deleteSelectedFiles,
-        //   child: Text(_tr('删除', 'Delete', 'حذف')),
-        // ),
+        SizedBox(height: 4.h),
+        Expanded(
+          child: _reconnectRequired
+              ? Center(
+                  child: Text(
+                    _reconnectMessage.isEmpty
+                        ? _tr(
+                            '注钥枪断开连接',
+                            'Key loader disconnected',
+                            'تم فصل جهاز تحميل المفاتيح',
+                          )
+                        : _reconnectMessage,
+                    style: const TextStyle(
+                      color: Color(0xFFF15B64),
+                      fontSize: 13,
+                    ),
+                  ),
+                )
+              : _step == _DeleteStep.select
+              ? _buildFileTable()
+              : _buildProgress(_stepLabel(_step)),
+        ),
       ],
+    );
+
+    final actions = <Widget>[
+      if (showClose)
+        TextButton(
+          onPressed: _close,
+          child: Text(_tr('关闭', 'Close', 'إغلاق')),
+        ),
+      if (showReconnect)
+        BaseButton(
+          label: _tr('重新连接', 'Reconnect', 'إعادة الاتصال'),
+          height: 36.h,
+          onPressed: _reconnect,
+        ),
+      if (showDelete)
+        BaseButton(
+          label: _tr('删除', 'Delete', 'حذف'),
+          height: 36.h,
+          onPressed: _selected.isEmpty ? null : _deleteSelectedFiles,
+          colors: [
+            Color(0xFFF56C6C),
+            Color(0xFFF56C6C),
+            Color(0xFFF56C6C),
+            Color(0xFFF56C6C),
+          ],
+        ),
+    ];
+
+    if (defaultTargetPlatform == TargetPlatform.windows) {
+      return AlertDialog(
+        backgroundColor: const Color(0xFF20262D),
+        insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        title: title,
+        content: SizedBox(
+          width: 720.w,
+          height: 460.h,
+          child: body,
+        ),
+        actions: actions,
+      );
+    }
+
+    return Scaffold(
+      backgroundColor: const Color(0xFF20262D),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF20262D),
+        foregroundColor: Colors.white,
+        elevation: 0,
+        centerTitle: false,
+        title: title,
+      ),
+      body: SafeArea(
+        child: Padding(
+          padding: EdgeInsets.all(12.w),
+          child: body,
+        ),
+      ),
+      bottomNavigationBar: actions.isEmpty
+          ? null
+          : SafeArea(
+              child: Padding(
+                padding: EdgeInsets.all(12.w),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: actions,
+                ),
+              ),
+            ),
     );
   }
 
@@ -864,11 +906,17 @@ class _KeyLoaderFileDeleteDialogState extends State<KeyLoaderFileDeleteDialog> {
             // ),
             DropdownMenuItem(
               value: 'key',
-              child: Text(_tr('密钥包', 'Key package', 'حزمة المفاتيح')),
+              child: Text(
+                _tr('密钥包', 'Key package', 'حزمة المفاتيح'),
+                style: TextStyle(fontSize: 13.sp),
+              ),
             ),
             DropdownMenuItem(
               value: 'unknown',
-              child: Text(_tr('未知类型', 'Unknown type', 'نوع غير معروف')),
+              child: Text(
+                _tr('未知类型', 'Unknown type', 'نوع غير معروف'),
+                style: TextStyle(fontSize: 13.sp),
+              ),
             ),
           ],
         ),

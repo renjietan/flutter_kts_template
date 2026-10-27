@@ -8,6 +8,7 @@ import 'package:archive/archive_io.dart';
 import 'package:composable_data_table/composable_data_table.dart';
 import 'package:crypto/crypto.dart';
 import 'package:dage/dage.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_kts_template/api/KeyLoaders.api.dart';
 import 'package:flutter_kts_template/api/RadiosManagerApi.dart';
@@ -497,10 +498,18 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
 
   Future<void> _openKeyLoaderFileDeleteDialog() async {
     if (_exporting) return;
-    await showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      builder: (dialogContext) => const KeyLoaderFileDeleteDialog(),
+    if (defaultTargetPlatform == TargetPlatform.windows) {
+      await showDialog<void>(
+        context: context,
+        barrierDismissible: false,
+        builder: (dialogContext) => const KeyLoaderFileDeleteDialog(),
+      );
+      return;
+    }
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute<void>(
+        builder: (_) => const KeyLoaderFileDeleteDialog(),
+      ),
     );
   }
 
@@ -1718,13 +1727,13 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
                 onPressed: _clearSelection,
                 icon: Icon(
                   Icons.close,
-                  size: 16.sp,
+                  size: 15.sp,
                   color: _theme.textSecondaryColor,
                 ),
                 label: Text(
                   t.button.radioManager.clear,
                   style: TextStyle(
-                    fontSize: 13.sp,
+                    fontSize: 15.sp,
                     color: _theme.textSecondaryColor,
                   ),
                 ),
@@ -1741,34 +1750,77 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
                 ),
               ),
               SizedBox(width: 4.w),
-              BaseButton(
-                label: t.button.radioManager.delete,
-                colors: const [
-                  Color(0xFFF15B64),
-                  Color(0xFFF15B64),
-                  Color(0xFFF15B64),
-                  Color(0xFFF15B64),
-                ],
+              // 删除
+              FilledButton.icon(
                 onPressed: _selectedIds.isEmpty ? null : _deleteSelected,
-              ),
-              SizedBox(width: 4.w),
-              BaseButton(
-                height: 36.h,
-                label: t.button.injectEncrypt.export,
-                isLoading: _exporting,
-                onPressed: _exporting ? null : () => _exportSelected(),
-              ),
-              SizedBox(width: 4.w),
-              BaseButton(
-                height: 36.h,
-                label: CpdsMessages.tr(
-                  context,
-                  '从注钥枪中删除文件',
-                  'Delete files from key loader',
-                  'حذف الملفات من جهاز تحميل المفاتيح',
+                icon: Icon(Icons.delete_outline, size: 13.sp),
+                label: Text(
+                  '${t.button.radioManager.delete} (${_selectedIds.length})',
                 ),
-                onPressed: _exporting ? null : _openKeyLoaderFileDeleteDialog,
+                style: FilledButton.styleFrom(
+                  backgroundColor: _theme.dangerColor,
+                  foregroundColor: Colors.white,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 12.w,
+                    vertical: 8.h,
+                  ),
+                  minimumSize: Size(0, 36.h),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(6.r),
+                  ),
+                ),
               ),
+              // 导出
+              FilledButton.icon(
+                onPressed: _exporting ? null : () => _exportSelected(),
+                icon: Icon(Icons.import_export_outlined, size: 13.sp),
+                label: Text(
+                  '${t.button.injectEncrypt.export} (${_selectedIds.length})',
+                ),
+                style: FilledButton.styleFrom(
+                  backgroundColor: Color(0xFF00A2E9),
+                  foregroundColor: Colors.white,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 12.w,
+                    vertical: 8.h,
+                  ),
+                  minimumSize: Size(0, 36.h),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(6.r),
+                  ),
+                ),
+              ),
+              SizedBox(width: 4.w),
+              // 从注钥枪中删除文件
+              FilledButton.icon(
+                onPressed: _exporting ? null : _openKeyLoaderFileDeleteDialog,
+                icon: Icon(Icons.delete_forever_sharp, size: 13.sp),
+                label: Text(
+                  '${CpdsMessages.tr(context, '从注钥枪中删除文件', 'Delete files from key loader', 'حذف الملفات من جهاز تحميل المفاتيح')} ',
+                ),
+                style: FilledButton.styleFrom(
+                  backgroundColor: Color(0xFF00A2E9),
+                  foregroundColor: Colors.white,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 12.w,
+                    vertical: 8.h,
+                  ),
+                  minimumSize: Size(0, 36.h),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(6.r),
+                  ),
+                ),
+              ),
+              // BaseButton(
+              //   height: 36.h,
+              //   label: CpdsMessages.tr(
+              //     context,
+              //     '从注钥枪中删除文件',
+              //     'Delete files from key loader',
+              //     'حذف الملفات من جهاز تحميل المفاتيح',
+              //   ),
+              //   onPressed: _exporting ? null : _openKeyLoaderFileDeleteDialog,
+              // ),
             ],
           ),
         ),

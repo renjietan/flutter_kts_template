@@ -2,6 +2,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
+import 'package:flutter_kts_template/pages/cpds/widgets/cpds_button_styles.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class SetPasswordDialog extends StatefulWidget {
   const SetPasswordDialog({super.key});
@@ -51,13 +53,17 @@ class _SetPasswordDialogState extends State<SetPasswordDialog> {
   @override
   Widget build(BuildContext context) {
     final t = Translations.of(context);
+    final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
+    final keyboardVisible = bottomInset > 0;
+    final keyboardHeight = bottomInset;
     return AlertDialog(
+      scrollable: true,
       backgroundColor: const Color(0xFF20262D),
       title: Text(
         t.cpds.setPassword.title,
-        style: const TextStyle(
+        style: TextStyle(
           color: Colors.white,
-          fontSize: 18,
+          fontSize: 15.sp,
           fontWeight: FontWeight.w700,
         ),
       ),
@@ -102,9 +108,7 @@ class _SetPasswordDialogState extends State<SetPasswordDialog> {
             ),
             filled: true,
             fillColor: const Color(0xFF282D33),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(4),
-            ),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(4)),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(4),
               borderSide: const BorderSide(color: Color(0xFF353A41)),
@@ -116,19 +120,22 @@ class _SetPasswordDialogState extends State<SetPasswordDialog> {
           ),
         ),
       ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: Text(
-            t.common.cancel,
-            style: const TextStyle(color: Colors.white70),
-          ),
-        ),
-        FilledButton(
-          onPressed: _confirm,
-          child: Text(t.common.confirm),
-        ),
-      ],
+      actions: keyboardVisible
+          ? [Padding(padding: EdgeInsets.only(bottom: 1.h))]
+          : [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: Text(
+                  t.common.cancel,
+                  style: TextStyle(color: Colors.white70, fontSize: 13.sp),
+                ),
+              ),
+              FilledButton(
+                style: cpdsFilledButtonStyle(),
+                onPressed: _confirm,
+                child: Text(t.common.confirm),
+              ),
+            ],
     );
   }
 }

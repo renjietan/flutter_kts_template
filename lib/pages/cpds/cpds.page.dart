@@ -820,17 +820,14 @@ class _CpdsPageState extends State<CpdsPage> {
 
     _veciRemarkController.text = veci.remark;
 
-    SimpleFormDialog(
-      title: CpdsMessages.tr(
-        context,
-        '编辑车辆信息',
-        'Edit Vehicle Information',
-        'تحرير معلومات المركبة',
-      ),
-      confirmText: Translations.of(context).common.confirm,
-      dialogWidth: MediaQuery.sizeOf(context).width * 0.7,
-      twoColumn: true,
-      fields: [
+    final title = CpdsMessages.tr(
+      context,
+      '编辑车辆信息',
+      'Edit Vehicle Information',
+      'تحرير معلومات المركبة',
+    );
+    final confirmText = Translations.of(context).common.confirm;
+    final fields = <FormFieldConfig>[
         FormFieldConfig(
           name: 'equipName',
           label: CpdsMessages.tr(
@@ -895,11 +892,36 @@ class _CpdsPageState extends State<CpdsPage> {
           counterTextBuilder: (value) =>
               CpdsMessages.digits(context, '${value.characters.length}/200'),
         ),
-      ],
-      onConfirm: (formData) {
-        final remark = (formData['remark'] as String? ?? '').trim();
-        unawaited(_saveVeciInfoRemark(nodeId, remark));
-      },
+    ];
+    void handleConfirm(Map<String, dynamic> formData) {
+      final remark = (formData['remark'] as String? ?? '').trim();
+      unawaited(_saveVeciInfoRemark(nodeId, remark));
+    }
+
+    if (defaultTargetPlatform != TargetPlatform.windows) {
+      await Navigator.of(
+        context,
+      ).push<void>(
+        MaterialPageRoute(
+          builder: (_) => SimpleFormPage(
+            title: title,
+            confirmText: confirmText,
+            twoColumn: true,
+            fields: fields,
+            onConfirm: handleConfirm,
+          ),
+        ),
+      );
+      return;
+    }
+
+    await SimpleFormDialog(
+      title: title,
+      confirmText: confirmText,
+      dialogWidth: MediaQuery.sizeOf(context).width * 0.7,
+      twoColumn: true,
+      fields: fields,
+      onConfirm: handleConfirm,
     );
   }
 

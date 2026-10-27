@@ -978,114 +978,267 @@ class _CpdsKeyLoaderFileDialogState extends State<CpdsKeyLoaderFileDialog> {
     final t = Translations.of(context);
     final screenWidth = MediaQuery.sizeOf(context).width;
     final dialogWidth = (screenWidth * 0.9).clamp(0.0, 960.0);
-    return AlertDialog(
+    final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
+    final keyboardVisible = bottomInset > 0;
+    final keyboardHeight = bottomInset;
+    return Dialog(
       backgroundColor: const Color(0xFF20262D),
       insetPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
-      title: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            t.cpds.browseSourceKeyLoader,
-            style: TextStyle(color: Colors.white, fontSize: 17.sp),
-          ),
-          if (_versionText.isNotEmpty)
-            Text(
-              '${CpdsMessages.tr(context, '注钥枪版本号：', 'Key loader version: ', 'رقم إصدار جهاز تحميل المفاتيح: ')}$_versionText',
-              style: TextStyle(color: Colors.white70, fontSize: 13.sp),
-            ),
-        ],
-      ),
-      content: SizedBox(
-        width: dialogWidth,
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxWidth: dialogWidth,
+          // ★ 关键：Dialog 最大高度扣掉键盘高度
+          maxHeight:
+              MediaQuery.sizeOf(context).height -
+              MediaQuery.viewInsetsOf(context).bottom -
+              24, // insetPadding 上下之和
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            _KeyLoaderStepStrip(
-              labels: _labels(t),
-              statuses: _computeStepStatuses(),
-              activeIndex: _step.index,
-            ),
-            SizedBox(height: 12.h),
-            Flexible(
-              child: ConstrainedBox(
-                constraints: BoxConstraints(maxHeight: 220.h),
-                child: _buildContentArea(t),
+            // ===== 固定 title =====
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    t.cpds.browseSourceKeyLoader,
+                    style: TextStyle(color: Colors.white, fontSize: 17.sp),
+                  ),
+                  if (_versionText.isNotEmpty)
+                    Text(
+                      '...$_versionText',
+                      style: TextStyle(color: Colors.white70, fontSize: 13.sp),
+                    ),
+                ],
               ),
             ),
+            // ===== 可滚动 content =====
+            Flexible(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _KeyLoaderStepStrip(
+                      labels: _labels(t),
+                      statuses: _computeStepStatuses(),
+                      activeIndex: _step.index,
+                    ),
+                    SizedBox(height: 12.h),
+                    ConstrainedBox(
+                      constraints: BoxConstraints(maxHeight: 220.h),
+                      child: _buildContentArea(t),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            // ===== 固定 actions =====
+            if (!keyboardVisible)
+              Padding(
+                padding: EdgeInsets.fromLTRB(
+                  16,
+                  8,
+                  16,
+                  8 + MediaQuery.viewInsetsOf(context).bottom,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    if (_step != _CpdsStep.complete)
+                      TextButton(
+                        onPressed: _cancelLoading ? null : _cancel,
+                        style: TextButton.styleFrom(
+                          side: const BorderSide(color: Color(0xFF00A2E9)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(4.r),
+                          ),
+                          minimumSize: Size(0, 36.h),
+                          textStyle: TextStyle(fontSize: 13.sp),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (_cancelLoading) ...[
+                              SizedBox(
+                                width: 14.w,
+                                height: 14.h,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Color(0xFF00A2E9),
+                                ),
+                              ),
+                              SizedBox(width: 6.w),
+                            ],
+                            Text(
+                              t.tips.cancel,
+                              style: TextStyle(color: Colors.white70),
+                            ),
+                          ],
+                        ),
+                      ),
+                    if (_step == _CpdsStep.select && _selectedFile != null) ...[
+                      SizedBox(width: 5.w),
+                      FilledButton(
+                        style: cpdsFilledButtonStyle(),
+                        onPressed: _goNext,
+                        child: Text(t.cpds.keyLoaderNext),
+                      ),
+                    ],
+                    if (_step == _CpdsStep.password)
+                      TextButton(
+                        style: cpdsTextButtonStyle(),
+                        onPressed: _verifying ? null : _goPrev,
+                        child: Text(
+                          t.cpds.keyLoaderPrev,
+                          style: TextStyle(color: Colors.white70),
+                        ),
+                      ),
+                    if (_step == _CpdsStep.download && _decryptOk)
+                      FilledButton(
+                        style: cpdsFilledButtonStyle(),
+                        onPressed: _downloading ? null : _download,
+                        child: Text(t.cpds.keyLoaderStepDownload),
+                      ),
+                    if (_step == _CpdsStep.complete)
+                      FilledButton(
+                        style: cpdsFilledButtonStyle(),
+                        onPressed: _completeCleanupDone
+                            ? () => _finish(_selectedFile)
+                            : null,
+                        child: _completeCleanupRunning
+                            ? SizedBox(
+                                width: 16.w,
+                                height: 16.h,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : Text(t.cpds.keyLoaderStepComplete),
+                      ),
+                  ],
+                ),
+              ),
           ],
         ),
       ),
-      actions: [
-        if (_step != _CpdsStep.complete)
-          TextButton(
-            onPressed: _cancelLoading ? null : _cancel,
-            style: TextButton.styleFrom(
-              side: const BorderSide(color: Color(0xFF00A2E9)),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(4.r),
-              ),
-              minimumSize: Size(0, 36.h),
-              textStyle: TextStyle(fontSize: 13.sp),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (_cancelLoading) ...[
-                  SizedBox(
-                    width: 14.w,
-                    height: 14.h,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Color(0xFF00A2E9),
-                    ),
-                  ),
-                  SizedBox(width: 6.w),
-                ],
-                Text(t.tips.cancel, style: TextStyle(color: Colors.white70)),
-              ],
-            ),
-          ),
-        if (_step == _CpdsStep.select && _selectedFile != null)
-          FilledButton(
-            style: cpdsFilledButtonStyle(),
-            onPressed: _goNext,
-            child: Text(t.cpds.keyLoaderNext),
-          ),
-        if (_step == _CpdsStep.password)
-          TextButton(
-            style: cpdsTextButtonStyle(),
-            onPressed: _verifying ? null : _goPrev,
-            child: Text(
-              t.cpds.keyLoaderPrev,
-              style: TextStyle(color: Colors.white70),
-            ),
-          ),
-        if (_step == _CpdsStep.download && _decryptOk)
-          FilledButton(
-            style: cpdsFilledButtonStyle(),
-            onPressed: _downloading ? null : _download,
-            child: Text(t.cpds.keyLoaderStepDownload),
-          ),
-        if (_step == _CpdsStep.complete)
-          FilledButton(
-            style: cpdsFilledButtonStyle(),
-            onPressed: _completeCleanupDone
-                ? () => _finish(_selectedFile)
-                : null,
-            child: _completeCleanupRunning
-                ? SizedBox(
-                    width: 16.w,
-                    height: 16.h,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Colors.white,
-                    ),
-                  )
-                : Text(t.cpds.keyLoaderStepComplete),
-          ),
-      ],
     );
+    // return AlertDialog(
+    //   backgroundColor: const Color(0xFF20262D),
+    //   // scrollable: true, // ★ 让 title + content 可滚动
+    //   insetPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
+    //   title: Row(
+    //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    //     children: [
+    //       Text(
+    //         t.cpds.browseSourceKeyLoader,
+    //         style: TextStyle(color: Colors.white, fontSize: 17.sp),
+    //       ),
+    //       if (_versionText.isNotEmpty)
+    //         Text(
+    //           '${CpdsMessages.tr(context, '注钥枪版本号：', 'Key loader version: ', 'رقم إصدار جهاز تحميل المفاتيح: ')}$_versionText',
+    //           style: TextStyle(color: Colors.white70, fontSize: 13.sp),
+    //         ),
+    //     ],
+    //   ),
+    //   content: SizedBox(
+    //     width: dialogWidth,
+    //     child: SingleChildScrollView(
+    //       child: Column(
+    //         mainAxisSize: MainAxisSize.min,
+    //         crossAxisAlignment: CrossAxisAlignment.stretch,
+    //         children: [
+    //           _KeyLoaderStepStrip(
+    //             labels: _labels(t),
+    //             statuses: _computeStepStatuses(),
+    //             activeIndex: _step.index,
+    //           ),
+    //           SizedBox(height: 12.h),
+    //           Flexible(
+    //             child: ConstrainedBox(
+    //               constraints: BoxConstraints(maxHeight: 220.h),
+    //               child: _buildContentArea(t),
+    //             ),
+    //           ),
+    //         ],
+    //       ),
+    //     ),
+    //   ),
+    //   actions: [
+    //     if (_step != _CpdsStep.complete)
+    //       TextButton(
+    //         onPressed: _cancelLoading ? null : _cancel,
+    //         style: TextButton.styleFrom(
+    //           side: const BorderSide(color: Color(0xFF00A2E9)),
+    //           shape: RoundedRectangleBorder(
+    //             borderRadius: BorderRadius.circular(4.r),
+    //           ),
+    //           minimumSize: Size(0, 36.h),
+    //           textStyle: TextStyle(fontSize: 13.sp),
+    //         ),
+    //         child: Row(
+    //           mainAxisSize: MainAxisSize.min,
+    //           children: [
+    //             if (_cancelLoading) ...[
+    //               SizedBox(
+    //                 width: 14.w,
+    //                 height: 14.h,
+    //                 child: CircularProgressIndicator(
+    //                   strokeWidth: 2,
+    //                   color: Color(0xFF00A2E9),
+    //                 ),
+    //               ),
+    //               SizedBox(width: 6.w),
+    //             ],
+    //             Text(t.tips.cancel, style: TextStyle(color: Colors.white70)),
+    //           ],
+    //         ),
+    //       ),
+    //     if (_step == _CpdsStep.select && _selectedFile != null)
+    //       FilledButton(
+    //         style: cpdsFilledButtonStyle(),
+    //         onPressed: _goNext,
+    //         child: Text(t.cpds.keyLoaderNext),
+    //       ),
+    //     if (_step == _CpdsStep.password)
+    //       TextButton(
+    //         style: cpdsTextButtonStyle(),
+    //         onPressed: _verifying ? null : _goPrev,
+    //         child: Text(
+    //           t.cpds.keyLoaderPrev,
+    //           style: TextStyle(color: Colors.white70),
+    //         ),
+    //       ),
+    //     if (_step == _CpdsStep.download && _decryptOk)
+    //       FilledButton(
+    //         style: cpdsFilledButtonStyle(),
+    //         onPressed: _downloading ? null : _download,
+    //         child: Text(t.cpds.keyLoaderStepDownload),
+    //       ),
+    //     if (_step == _CpdsStep.complete)
+    //       FilledButton(
+    //         style: cpdsFilledButtonStyle(),
+    //         onPressed: _completeCleanupDone
+    //             ? () => _finish(_selectedFile)
+    //             : null,
+    //         child: _completeCleanupRunning
+    //             ? SizedBox(
+    //                 width: 16.w,
+    //                 height: 16.h,
+    //                 child: CircularProgressIndicator(
+    //                   strokeWidth: 2,
+    //                   color: Colors.white,
+    //                 ),
+    //               )
+    //             : Text(t.cpds.keyLoaderStepComplete),
+    //       ),
+    //   ],
+    // );
   }
 
   Widget _buildContentArea(Translations t) {
@@ -1112,39 +1265,42 @@ class _CpdsKeyLoaderFileDialogState extends State<CpdsKeyLoaderFileDialog> {
       return _buildPassword(t);
     }
     if (_step == _CpdsStep.download) {
-      return Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Text(
-            _selectedFile ?? '',
-            textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.white, fontSize: 14.sp),
-          ),
-          if (_progressMax > 0) ...[
-            SizedBox(height: 12.h),
-            LinearProgressIndicator(
-              value: (_progress / _progressMax).clamp(0.0, 1.0),
-              minHeight: 4.h,
-              backgroundColor: const Color(0xFF282D33),
-              color: const Color(0xFF00A2E9),
-            ),
-            SizedBox(height: 6.h),
+      return SizedBox(
+        height: 80.w,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
             Text(
-              '$_progress / $_progressMax',
+              _selectedFile ?? '',
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.white54, fontSize: 12.sp),
+              style: TextStyle(color: Colors.white, fontSize: 14.sp),
             ),
+            if (_progressMax > 0) ...[
+              SizedBox(height: 12.h),
+              LinearProgressIndicator(
+                value: (_progress / _progressMax).clamp(0.0, 1.0),
+                minHeight: 4.h,
+                backgroundColor: const Color(0xFF282D33),
+                color: const Color(0xFF00A2E9),
+              ),
+              SizedBox(height: 6.h),
+              Text(
+                '$_progress / $_progressMax',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.white54, fontSize: 12.sp),
+              ),
+            ],
+            if (_downloadError != null) ...[
+              SizedBox(height: 12.h),
+              Text(
+                _downloadError!,
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Color(0xFFF15B64), fontSize: 13.sp),
+              ),
+            ],
           ],
-          if (_downloadError != null) ...[
-            SizedBox(height: 12.h),
-            Text(
-              _downloadError!,
-              textAlign: TextAlign.center,
-              style: TextStyle(color: Color(0xFFF15B64), fontSize: 13.sp),
-            ),
-          ],
-        ],
+        ),
       );
     }
     if (_step == _CpdsStep.decrypt) {

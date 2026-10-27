@@ -74,7 +74,7 @@ class _InjectEncryptStickPagerState extends State<KeyLoaderPager>
           child: Column(
             children: [
               Container(
-                height: 45.h,
+                // height: 45.h,
                 padding: const EdgeInsetsDirectional.fromSTEB(10, 0, 6, 0),
                 decoration: BoxDecoration(
                   color: Colors.black,
@@ -89,17 +89,20 @@ class _InjectEncryptStickPagerState extends State<KeyLoaderPager>
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    TextTitle(
-                      text: t.pager.injectEncrypt.keyLoaderManager,
-                      fontSize: 14,
+                    Padding(
+                      padding: EdgeInsetsGeometry.symmetric(vertical: 20.h),
+                      child: TextTitle(
+                        text: t.pager.injectEncrypt.keyLoaderManager,
+                        fontSize: 17.sp,
+                      ),
                     ),
                     Tooltip(
                       message: t.button.injectEncrypt.create,
                       child: InkWell(
                         onTap: () =>
                             showCustomDialog(DialogTypeEnum.create, null),
-                        child: const Padding(
-                          padding: EdgeInsets.all(6),
+                        child: Padding(
+                          padding: EdgeInsets.fromLTRB(6.w, 0, 6.w, 0),
                           child: Icon(Icons.add, size: 18, color: Colors.white),
                         ),
                       ),
@@ -113,70 +116,154 @@ class _InjectEncryptStickPagerState extends State<KeyLoaderPager>
                     : ListView.builder(
                         itemCount: data.length,
                         itemBuilder: (BuildContext context, int index) {
-                          return ListTile(
-                            contentPadding: EdgeInsetsDirectional.only(
-                              start: 10.w,
-                              end: 0,
-                            ),
-                            shape: Border(
-                              bottom: BorderSide(
-                                color: data[index].id == selectKeyLoader?.id
-                                    ? Color(0xFF004098)
-                                    : Colors.grey.shade700,
-                                width: 1,
-                              ),
-                            ),
-                            minVerticalPadding: 0,
-                            title: Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    data[index].name,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(fontSize: 14.sp),
+                          return Material(
+                            color: data[index].id == selectKeyLoader?.id
+                                ? const Color(0xFF004098)
+                                : Colors.transparent, // ★ 背景色
+                            child: InkWell(
+                              onTap: () {
+                                // ★ 点击
+                                setState(() {
+                                  selectKeyLoader = data[index];
+                                });
+                              },
+                              child: Container(
+                                padding: EdgeInsetsDirectional.only(
+                                  start: 10.w,
+                                  end: 0,
+                                ), // ★ contentPadding
+                                height: 40.h,
+                                constraints: BoxConstraints(
+                                  minHeight: 40.h,
+                                ), // ★ 最小高度，替代 ListTile 的 56
+                                decoration: BoxDecoration(
+                                  // ★ 底部边框
+                                  border: Border(
+                                    bottom: BorderSide(
+                                      color:
+                                          data[index].id == selectKeyLoader?.id
+                                          ? const Color(0xFF004098)
+                                          : Colors.grey.shade700,
+                                      width: 1,
+                                    ),
                                   ),
                                 ),
-                                PopupMenuButton<String>(
-                                  icon: Icon(Icons.more_vert, size: 17.sp),
-                                  onSelected: (value) {
-                                    if (value == "edit") {
-                                      showCustomDialog(
-                                        DialogTypeEnum.edit,
-                                        data[index],
-                                      );
-                                    } else {
-                                      delete(data[index]);
-                                    }
-                                  },
-                                  itemBuilder: (context) {
-                                    final ts = Translations.of(context);
-                                    return [
-                                      PopupMenuItem(
-                                        value: 'edit',
-                                        child: Text(
-                                          ts.button.radioManager.edit,
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        data[index].name,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          fontSize: 13.sp,
+                                          color: Colors
+                                              .white, // ★ ListTile 不在了，颜色要显式给
                                         ),
                                       ),
-                                      PopupMenuItem(
-                                        value: 'delete',
-                                        child: Text(
-                                          ts.button.radioManager.delete,
-                                        ),
-                                      ),
-                                    ];
-                                  },
+                                    ),
+                                    PopupMenuButton<String>(
+                                      icon: Icon(Icons.more_vert, size: 17.sp),
+                                      padding: EdgeInsets
+                                          .zero, // ★ 去掉 IconButton 默认内边距
+                                      onSelected: (value) {
+                                        if (value == "edit") {
+                                          showCustomDialog(
+                                            DialogTypeEnum.edit,
+                                            data[index],
+                                          );
+                                        } else {
+                                          delete(data[index]);
+                                        }
+                                      },
+                                      itemBuilder: (context) {
+                                        final ts = Translations.of(context);
+                                        return [
+                                          PopupMenuItem(
+                                            value: 'edit',
+                                            child: Text(
+                                              ts.button.radioManager.edit,
+                                            ),
+                                          ),
+                                          PopupMenuItem(
+                                            value: 'delete',
+                                            child: Text(
+                                              ts.button.radioManager.delete,
+                                            ),
+                                          ),
+                                        ];
+                                      },
+                                    ),
+                                  ],
                                 ),
-                              ],
+                              ),
                             ),
-                            selectedTileColor: Color(0xFF004098),
-                            selected: data[index].id == selectKeyLoader?.id,
-                            onTap: () {
-                              setState(() {
-                                selectKeyLoader = data[index];
-                              });
-                            },
                           );
+                          // return ListTile(
+                          //   contentPadding: EdgeInsetsDirectional.only(
+                          //     start: 10.w,
+                          //     end: 0,
+                          //   ),
+                          //   shape: Border(
+                          //     bottom: BorderSide(
+                          //       color: data[index].id == selectKeyLoader?.id
+                          //           ? Color(0xFF004098)
+                          //           : Colors.grey.shade700,
+                          //       width: 1,
+                          //     ),
+                          //   ),
+                          //   minVerticalPadding: 0,
+                          //   title: Row(
+                          //     children: [
+                          //       Expanded(
+                          //         child: Text(
+                          //           data[index].name,
+                          //           maxLines: 1,
+                          //           overflow: TextOverflow.ellipsis,
+                          //           style: TextStyle(fontSize: 14.sp),
+                          //         ),
+                          //       ),
+                          //       PopupMenuButton<String>(
+                          //         icon: Icon(Icons.more_vert, size: 17.sp),
+                          //         onSelected: (value) {
+                          //           if (value == "edit") {
+                          //             showCustomDialog(
+                          //               DialogTypeEnum.edit,
+                          //               data[index],
+                          //             );
+                          //           } else {
+                          //             delete(data[index]);
+                          //           }
+                          //         },
+                          //         itemBuilder: (context) {
+                          //           final ts = Translations.of(context);
+                          //           return [
+                          //             PopupMenuItem(
+                          //               value: 'edit',
+                          //               child: Text(
+                          //                 ts.button.radioManager.edit,
+                          //               ),
+                          //             ),
+                          //             PopupMenuItem(
+                          //               value: 'delete',
+                          //               child: Text(
+                          //                 ts.button.radioManager.delete,
+                          //               ),
+                          //             ),
+                          //           ];
+                          //         },
+                          //       ),
+                          //     ],
+                          //   ),
+                          //   selectedTileColor: Color(0xFF004098),
+                          //   selected: data[index].id == selectKeyLoader?.id,
+                          //   onTap: () {
+                          //     setState(() {
+                          //       selectKeyLoader = data[index];
+                          //     });
+                          //   },
+                          // );
+                          //
                         },
                       ),
               ),
