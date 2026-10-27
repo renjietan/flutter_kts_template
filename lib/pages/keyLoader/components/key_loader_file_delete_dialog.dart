@@ -1,7 +1,6 @@
 // ignore_for_file: cpd_lints/hardcoded_dimension
 import 'dart:async';
 import 'dart:convert';
-import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -344,9 +343,10 @@ class _KeyLoaderFileDeleteDialogState extends State<KeyLoaderFileDeleteDialog> {
         var closed = false;
         return AlertDialog(
           backgroundColor: const Color(0xFF20262D),
+          titlePadding: EdgeInsets.zero,
           title: Text(
             _tr('删除', 'Delete', 'حذف'),
-            style: const TextStyle(color: Colors.white, fontSize: 13),
+            style: TextStyle(color: Colors.white, fontSize: 13.sp),
           ),
           content: Text(
             _tr(
@@ -674,6 +674,8 @@ class _KeyLoaderFileDeleteDialogState extends State<KeyLoaderFileDeleteDialog> {
     });
   }
 
+  // final _scrollController = ScrollController(); // ★ 必须持有 controller
+
   @override
   Widget build(BuildContext context) {
     final showClose = _step == _DeleteStep.select && !_deleting;
@@ -709,11 +711,14 @@ class _KeyLoaderFileDeleteDialogState extends State<KeyLoaderFileDeleteDialog> {
     final body = Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _DeleteStepStrip(
-          labels: _stepLabels(),
-          statuses: _stepStatuses(),
-          activeIndex: _step.index,
-        ),
+        if ((defaultTargetPlatform == TargetPlatform.android &&
+                MediaQuery.sizeOf(context).shortestSide >= 500) ||
+            defaultTargetPlatform == TargetPlatform.windows)
+          _DeleteStepStrip(
+            labels: _stepLabels(),
+            statuses: _stepStatuses(),
+            activeIndex: _step.index,
+          ),
         if (showRefresh)
           Row(
             children: [
@@ -722,10 +727,7 @@ class _KeyLoaderFileDeleteDialogState extends State<KeyLoaderFileDeleteDialog> {
               if (_refreshError != null) ...[
                 Text(
                   _refreshError!,
-                  style: TextStyle(
-                    color: Color(0xFFF15B64),
-                    fontSize: 12.sp,
-                  ),
+                  style: TextStyle(color: Color(0xFFF15B64), fontSize: 12.sp),
                 ),
                 SizedBox(width: 8.w),
               ],
@@ -770,10 +772,7 @@ class _KeyLoaderFileDeleteDialogState extends State<KeyLoaderFileDeleteDialog> {
                             'تم فصل جهاز تحميل المفاتيح',
                           )
                         : _reconnectMessage,
-                    style: const TextStyle(
-                      color: Color(0xFFF15B64),
-                      fontSize: 13,
-                    ),
+                    style: TextStyle(color: Color(0xFFF15B64), fontSize: 13.sp),
                   ),
                 )
               : _step == _DeleteStep.select
@@ -785,10 +784,7 @@ class _KeyLoaderFileDeleteDialogState extends State<KeyLoaderFileDeleteDialog> {
 
     final actions = <Widget>[
       if (showClose)
-        TextButton(
-          onPressed: _close,
-          child: Text(_tr('关闭', 'Close', 'إغلاق')),
-        ),
+        TextButton(onPressed: _close, child: Text(_tr('关闭', 'Close', 'إغلاق'))),
       if (showReconnect)
         BaseButton(
           label: _tr('重新连接', 'Reconnect', 'إعادة الاتصال'),
@@ -814,11 +810,7 @@ class _KeyLoaderFileDeleteDialogState extends State<KeyLoaderFileDeleteDialog> {
         backgroundColor: const Color(0xFF20262D),
         insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         title: title,
-        content: SizedBox(
-          width: 720.w,
-          height: 460.h,
-          child: body,
-        ),
+        content: SizedBox(width: 720.w, height: 460.h, child: body),
         actions: actions,
       );
     }
@@ -833,10 +825,7 @@ class _KeyLoaderFileDeleteDialogState extends State<KeyLoaderFileDeleteDialog> {
         title: title,
       ),
       body: SafeArea(
-        child: Padding(
-          padding: EdgeInsets.all(12.w),
-          child: body,
-        ),
+        child: Padding(padding: EdgeInsets.all(12.w), child: body),
       ),
       bottomNavigationBar: actions.isEmpty
           ? null
@@ -965,8 +954,8 @@ class _KeyLoaderFileDeleteDialogState extends State<KeyLoaderFileDeleteDialog> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Container(
-          height: 34,
-          padding: const EdgeInsets.symmetric(horizontal: 8),
+          height: 30.h,
+          padding: EdgeInsets.symmetric(horizontal: 8.w),
           decoration: const BoxDecoration(color: Color(0xFF14191F)),
           child: Row(
             children: [
@@ -983,21 +972,21 @@ class _KeyLoaderFileDeleteDialogState extends State<KeyLoaderFileDeleteDialog> {
                 flex: 3,
                 child: Text(
                   _tr('文件名称', 'File name', 'اسم الملف'),
-                  style: TextStyle(color: headerColor, fontSize: 12),
+                  style: TextStyle(color: headerColor, fontSize: 12.sp),
                 ),
               ),
               Expanded(
                 flex: 2,
                 child: Text(
                   _tr('文件类型', 'File type', 'نوع الملف'),
-                  style: TextStyle(color: headerColor, fontSize: 12),
+                  style: TextStyle(color: headerColor, fontSize: 12.sp),
                 ),
               ),
               Expanded(
                 flex: 2,
                 child: Text(
                   _tr('状态', 'Status', 'الحالة'),
-                  style: TextStyle(color: headerColor, fontSize: 12),
+                  style: TextStyle(color: headerColor, fontSize: 12.sp),
                 ),
               ),
             ],
@@ -1009,8 +998,8 @@ class _KeyLoaderFileDeleteDialogState extends State<KeyLoaderFileDeleteDialog> {
             children: [
               for (final file in _visibleFiles)
                 Container(
-                  height: 36,
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  height: 36.h,
+                  padding: EdgeInsets.symmetric(horizontal: 8.w),
                   decoration: const BoxDecoration(
                     border: Border(
                       bottom: BorderSide(color: Color(0x1AFFFFFF)),
@@ -1032,9 +1021,9 @@ class _KeyLoaderFileDeleteDialogState extends State<KeyLoaderFileDeleteDialog> {
                         flex: 3,
                         child: Text(
                           file.name,
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: Colors.white70,
-                            fontSize: 13,
+                            fontSize: 13.sp,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -1046,7 +1035,7 @@ class _KeyLoaderFileDeleteDialogState extends State<KeyLoaderFileDeleteDialog> {
                           _fileTypeLabel(file.name),
                           style: TextStyle(
                             color: _fileTypeColor(file.name),
-                            fontSize: 12,
+                            fontSize: 13.sp,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -1058,7 +1047,7 @@ class _KeyLoaderFileDeleteDialogState extends State<KeyLoaderFileDeleteDialog> {
                           file.status ?? '',
                           style: TextStyle(
                             color: _statusColor(file.status),
-                            fontSize: 12,
+                            fontSize: 13.sp,
                           ),
                         ),
                       ),
@@ -1085,10 +1074,10 @@ class _KeyLoaderFileDeleteDialogState extends State<KeyLoaderFileDeleteDialog> {
               color: Color(0xFF00A2E9),
             ),
           ),
-          const SizedBox(height: 10),
+          SizedBox(height: 10.h),
           Text(
             label,
-            style: const TextStyle(color: Colors.white54, fontSize: 13),
+            style: TextStyle(color: Colors.white54, fontSize: 13.sp),
           ),
         ],
       ),
@@ -1177,7 +1166,7 @@ class _DeleteStepStrip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 50.h,
+      height: 40.h,
       padding: EdgeInsets.symmetric(horizontal: 8.w),
       decoration: BoxDecoration(
         color: const Color(0xFF14191F),
@@ -1251,8 +1240,8 @@ class _DeleteStepNode extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            width: 18,
-            height: 18,
+            width: 18.w,
+            height: 18.h,
             alignment: Alignment.center,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
@@ -1261,7 +1250,7 @@ class _DeleteStepNode extends StatelessWidget {
             ),
             child: Text(
               '${index + 1}',
-              style: TextStyle(fontSize: 10, color: numberColor),
+              style: TextStyle(fontSize: 10.sp, color: numberColor),
             ),
           ),
           const SizedBox(width: 4),
@@ -1270,7 +1259,7 @@ class _DeleteStepNode extends StatelessWidget {
               label,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(fontSize: 10, color: textColor),
+              style: TextStyle(fontSize: 10.sp, color: textColor),
             ),
           ),
         ],
