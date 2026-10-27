@@ -1,10 +1,10 @@
 // ignore_for_file: cpd_lints/hardcoded_dimension
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_kts_template/components/button/base.button.dart';
 import 'package:flutter_kts_template/components/step/step.progress.model.dart';
 import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 import 'package:flutter_kts_template/utils/arabic_digits.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class StepProgressDialog extends StatefulWidget {
   const StepProgressDialog({super.key, required this.controller, this.onClose});
@@ -100,16 +100,13 @@ class _StepProgressDialogState extends State<StepProgressDialog> {
                       alignment: Alignment.centerLeft,
                       child: Text(
                         version,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 13.sp,
-                        ),
+                        style: TextStyle(color: Colors.white, fontSize: 13.sp),
                       ),
                     ),
                   );
                 },
               ),
-              _buildDetailBox(),
+              Expanded(child: _buildDetailBox()),
               if (widget.onClose != null) ...[
                 SizedBox(height: 16.h),
                 Center(

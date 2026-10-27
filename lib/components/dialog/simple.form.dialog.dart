@@ -109,7 +109,7 @@ Future<void> SimpleFormDialog({
       actions: [
         BaseButton(
           minWidth: confirmBtnMinWidth?.w,
-          height: 34.h,
+          height: 36.h,
           textStyle: TextStyle(fontSize: 13.sp, color: Colors.white),
           label: confirmText ?? context.t.common.confirm,
           onPressed: () {
