@@ -1549,42 +1549,63 @@ class _VecInfoBoxState extends State<_VecInfoBox> {
               child: Stack(
                 alignment: Alignment.center,
                 children: [
-                  Positioned(
-                    left: 0,
-                    top: 0,
-                    bottom: 0,
-                    child: Center(
-                      child: GestureDetector(
-                        onTap: widget.onEdit,
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.edit_outlined,
-                              size: 15.w,
-                              color: Color(0xFF00A2E9),
-                            ),
-                            SizedBox(width: 4.w),
-                            Text(
-                              editLabel,
-                              style: TextStyle(
-                                color: Color(0xFF00A2E9),
-                                fontSize: 12.sp,
-                              ),
-                            ),
-                          ],
+                  // Positioned(
+                  //   left: 16.w,
+                  //   top: 0,
+                  //   bottom: 0,
+                  //   child: Center(
+                  //     child: GestureDetector(
+                  //       onTap: widget.onEdit,
+                  //       child: Row(
+                  //         mainAxisSize: MainAxisSize.min,
+                  //         children: [
+                  //           Icon(
+                  //             Icons.edit_outlined,
+                  //             size: 15.w,
+                  //             color: Color(0xFF00A2E9),
+                  //           ),
+                  //           SizedBox(width: 4.w),
+                  //           Text(
+                  //             editLabel,
+                  //             style: TextStyle(
+                  //               color: Color(0xFF00A2E9),
+                  //               fontSize: 12.sp,
+                  //             ),
+                  //           ),
+                  //         ],
+                  //       ),
+                  //     ),
+                  //   ),
+                  // ),
+                  GestureDetector(
+                    onTap: widget.onEdit,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          title,
+                          style: TextStyle(
+                            color: Color(0xFF00A2E9),
+                            fontSize: 14.sp,
+                          ),
                         ),
-                      ),
+                        SizedBox(width: 4.w),
+                        Icon(
+                          Icons.edit_outlined,
+                          size: 15.w,
+                          color: Color(0xFF00A2E9),
+                        ),
+                      ],
                     ),
                   ),
-                  Text(
-                    title,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+                  // Text(
+                  //   title,
+                  //   style: TextStyle(
+                  //     color: Colors.white,
+                  //     fontSize: 14.sp,
+                  //     fontWeight: FontWeight.w600,
+                  //   ),
+                  // ),
                   Positioned(
                     right: 0,
                     top: 0,
