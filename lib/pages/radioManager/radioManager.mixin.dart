@@ -547,7 +547,7 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
         title: title,
         confirmText: title,
         twoColumn: true,
-        dialogWidth: MediaQuery.sizeOf(context).width * 0.7,
+        dialogWidth: MediaQuery.sizeOf(context).width * 0.85,
         maskColor: Colors.black54,
         fields: fields,
         onConfirm: onConfirm,

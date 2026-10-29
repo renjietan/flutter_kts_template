@@ -490,7 +490,9 @@ class _CpdsFutureWarriorSaveDialogState
   Widget build(BuildContext context) {
     final t = Translations.of(context);
     final form = SizedBox(
-      width: widget.usePage ? double.infinity : 920.w,
+      width: widget.usePage
+          ? double.infinity
+          : MediaQuery.sizeOf(context).width * 0.7,
       child: FormBuilder(
         key: _formKey,
         child: SingleChildScrollView(
