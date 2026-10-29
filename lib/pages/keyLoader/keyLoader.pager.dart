@@ -89,11 +89,13 @@ class _InjectEncryptStickPagerState extends State<KeyLoaderPager>
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Padding(
-                      padding: EdgeInsetsGeometry.symmetric(vertical: 20.h),
-                      child: TextTitle(
-                        text: t.pager.injectEncrypt.keyLoaderManager,
-                        fontSize: 17.sp,
+                    Expanded(
+                      child: Padding(
+                        padding: EdgeInsetsGeometry.symmetric(vertical: 16.h),
+                        child: TextTitle(
+                          text: t.pager.injectEncrypt.keyLoaderManager,
+                          fontSize: 15.sp,
+                        ),
                       ),
                     ),
                     Tooltip(
