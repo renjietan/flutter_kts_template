@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_kts_template/api/KeyLoaders.api.dart';
 import 'package:flutter_kts_template/api/RadiosManagerApi.dart';
+import 'package:flutter_kts_template/components/Appbar/AutoCollapsibleAppBar.dart';
 import 'package:flutter_kts_template/core/cpds/model/cpds_models.dart';
 import 'package:flutter_kts_template/core/databaseManager/databaseManager.dart';
 import 'package:flutter_kts_template/core/entities/keyLoaderDetails/keyLoaderDetailsEntity.dart';
@@ -777,35 +778,47 @@ class _CpdsFutureWarriorSaveDialogState
     ];
 
     if (widget.usePage) {
+      final isKeyboardVisible = MediaQuery.of(context).viewInsets.bottom > 0;
       return Scaffold(
         backgroundColor: const Color(0xFF20262D),
-        appBar: PreferredSize(
-          preferredSize: Size.fromHeight(36.h),
-          child: AppBar(
-            backgroundColor: const Color(0xFF20262D),
-            foregroundColor: Colors.white,
-            elevation: 0,
-            centerTitle: true,
-            title: Text(
-              t.button.radioManager.save,
-              style: TextStyle(fontSize: 15.sp),
-            ),
-          ),
-        ),
+        // appBar: PreferredSize(
+        //   preferredSize: Size.fromHeight(36.h),
+        //   child: AppBar(
+        //     backgroundColor: const Color(0xFF20262D),
+        //     foregroundColor: Colors.white,
+        //     elevation: 0,
+        //     centerTitle: true,
+        //     title: Text(
+        //       t.button.radioManager.save,
+        //       style: TextStyle(fontSize: 15.sp),
+        //     ),
+        //   ),
+        // ),
         body: SafeArea(
-          child: SingleChildScrollView(
-            padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 16.h),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                form,
-                SizedBox(height: 16.h),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: actions,
+          child: Column(
+            children: [
+              AutoCollapsibleAppBar(
+                title: t.button.radioManager.save,
+                onConfirm: _save,
+                hideWhenKeyboardVisible: isKeyboardVisible,
+              ),
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 16.h),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      form,
+                      SizedBox(height: 16.h),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: actions,
+                      ),
+                    ],
+                  ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       );

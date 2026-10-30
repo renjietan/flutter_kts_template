@@ -26,6 +26,7 @@ import 'package:flutter_kts_template/core/utils/director.dart';
 import 'package:flutter_kts_template/core/utils/time.dart';
 import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 import 'package:flutter_kts_template/logger/logger.dart';
+import 'package:flutter_kts_template/pages/cpds/widgets/cpds_button_styles.dart';
 import 'package:flutter_kts_template/pages/cpds/widgets/cpds_messages.dart';
 import 'package:flutter_kts_template/pages/cpds/widgets/cpds_radio_picker.dart';
 import 'package:flutter_kts_template/pages/cpds/widgets/cpds_save_dialog.dart';
@@ -358,11 +359,11 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
         backgroundColor: const Color(0xFF20262D),
         title: Text(
           t.tips.title,
-          style: const TextStyle(color: Colors.white, fontSize: 17),
+          style: TextStyle(color: Colors.white, fontSize: 17.sp),
         ),
         content: Text(
           t.tips.keyLoaders.confirmDelete,
-          style: const TextStyle(color: Colors.white70, fontSize: 13),
+          style: TextStyle(color: Colors.white70, fontSize: 13.sp),
         ),
         actions: [
           TextButton(
@@ -373,6 +374,7 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
             ),
           ),
           FilledButton(
+            style: cpdsFilledButtonStyle(),
             onPressed: () => Navigator.of(dialogContext).pop(true),
             child: Text(t.common.confirm),
           ),
@@ -403,11 +405,11 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
         backgroundColor: const Color(0xFF20262D),
         title: Text(
           t.tips.title,
-          style: const TextStyle(color: Colors.white, fontSize: 17),
+          style: TextStyle(color: Colors.white, fontSize: 17.sp),
         ),
         content: Text(
           t.tips.keyLoaders.confirmDelete,
-          style: const TextStyle(color: Colors.white70, fontSize: 13),
+          style: TextStyle(color: Colors.white70, fontSize: 13.sp),
         ),
         actions: [
           TextButton(
@@ -418,6 +420,7 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
             ),
           ),
           FilledButton(
+            style: cpdsFilledButtonStyle(),
             onPressed: () => Navigator.of(dialogContext).pop(true),
             child: Text(t.common.confirm),
           ),
@@ -1141,10 +1144,10 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
     if (password == null || _exportCancelled) return;
 
     final selectedJson = selectedRows.map((item) => item.toJson()).toList();
-    GlobalLogger.logInfo(
-      'EXPORT_SELECTED ${const JsonEncoder.withIndent('  ').convert(selectedJson)}',
-    );
-    GlobalLogger.logInfo('EXPORT_PASSWORD $password');
+    // GlobalLogger.logInfo(
+    //   'EXPORT_SELECTED ${const JsonEncoder.withIndent('  ').convert(selectedJson)}',
+    // );
+    // GlobalLogger.logInfo('EXPORT_PASSWORD $password');
 
     final controller = StepProgressController([
       t.cpds.exportProgress.stepStart,

@@ -14,6 +14,7 @@ import 'package:flutter_kts_template/core/databaseManager/databaseManager.dart';
 import 'package:flutter_kts_template/core/entities/keyLoaderDetails/keyLoaderDetailsEntity.dart';
 import 'package:flutter_kts_template/logger/logger.dart';
 import 'package:flutter_kts_template/objectbox.g.dart';
+import 'package:flutter_kts_template/pages/cpds/widgets/cpds_button_styles.dart';
 import 'package:flutter_kts_template/pages/radioManager/radioManager.pager.dart';
 import 'package:flutter_kts_template/utils/arabic_digits.dart';
 import 'package:flutter_kts_template/utils/enum/dialog_enum.dart';
@@ -128,11 +129,12 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
             onPressed: () => Navigator.of(dialogContext).pop(false),
             child: Text(
               t.tips.cancel,
-              style: const TextStyle(color: Colors.white70),
+              style: TextStyle(color: Colors.white70, fontSize: 13.sp),
             ),
           ),
           FilledButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),
+            style: cpdsFilledButtonStyle(),
             child: Text(t.common.confirm),
           ),
         ],

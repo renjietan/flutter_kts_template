@@ -354,7 +354,7 @@ class _KeyLoaderFileDeleteDialogState extends State<KeyLoaderFileDeleteDialog> {
               'Deleted files cannot be recovered. Confirm deletion?',
               'لا يمكن استعادة الملفات المحذوفة. هل تريد تأكيد الحذف؟',
             ),
-            style: const TextStyle(color: Colors.white70, fontSize: 13),
+            style: TextStyle(color: Colors.white70, fontSize: 13.sp),
           ),
           actions: [
             TextButton(

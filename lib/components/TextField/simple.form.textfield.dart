@@ -15,7 +15,7 @@ class SimpleFormTextField extends StatefulWidget {
     required this.field,
     this.fillColor = const Color(0x9921262C),
     this.labelFontSize = 13,
-    this.contentPadding = 12,
+    this.contentPadding = 14,
   });
 
   @override

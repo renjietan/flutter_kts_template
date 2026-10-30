@@ -121,10 +121,9 @@ class _InjectEncryptStickPagerState extends State<KeyLoaderPager>
                           return Material(
                             color: data[index].id == selectKeyLoader?.id
                                 ? const Color(0xFF004098)
-                                : Colors.transparent, // ★ 背景色
+                                : Colors.transparent,
                             child: InkWell(
                               onTap: () {
-                                // ★ 点击
                                 setState(() {
                                   selectKeyLoader = data[index];
                                 });
@@ -133,13 +132,10 @@ class _InjectEncryptStickPagerState extends State<KeyLoaderPager>
                                 padding: EdgeInsetsDirectional.only(
                                   start: 10.w,
                                   end: 0,
-                                ), // ★ contentPadding
+                                ),
                                 height: 40.h,
-                                constraints: BoxConstraints(
-                                  minHeight: 40.h,
-                                ), // ★ 最小高度，替代 ListTile 的 56
+                                constraints: BoxConstraints(minHeight: 40.h),
                                 decoration: BoxDecoration(
-                                  // ★ 底部边框
                                   border: Border(
                                     bottom: BorderSide(
                                       color:
@@ -159,15 +155,13 @@ class _InjectEncryptStickPagerState extends State<KeyLoaderPager>
                                         overflow: TextOverflow.ellipsis,
                                         style: TextStyle(
                                           fontSize: 13.sp,
-                                          color: Colors
-                                              .white, // ★ ListTile 不在了，颜色要显式给
+                                          color: Colors.white,
                                         ),
                                       ),
                                     ),
                                     PopupMenuButton<String>(
                                       icon: Icon(Icons.more_vert, size: 17.sp),
-                                      padding: EdgeInsets
-                                          .zero, // ★ 去掉 IconButton 默认内边距
+                                      padding: EdgeInsets.zero,
                                       onSelected: (value) {
                                         if (value == "edit") {
                                           showCustomDialog(

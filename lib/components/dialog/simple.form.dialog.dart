@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:flutter_kts_template/components/Appbar/AutoCollapsibleAppBar.dart';
 import 'package:flutter_kts_template/components/TextField/simple.form.selectField.dart';
 import 'package:flutter_kts_template/components/text/text.title.dart';
 import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
@@ -458,7 +459,7 @@ class SimpleFormPage extends StatefulWidget {
     this.confirmText,
     this.twoColumn = false,
     this.labelFontSize = 14,
-    this.fieldContentPadding = 10,
+    this.fieldContentPadding = 11,
     this.backgroundColor = const Color(0xFF20262D),
   });
 
@@ -496,52 +497,14 @@ class _SimpleFormPageState extends State<SimpleFormPage> {
 
     return Scaffold(
       backgroundColor: widget.backgroundColor,
-      // appBar: PreferredSize(
-      //   preferredSize: Size.fromHeight(isKeyboardVisible ? 0 : 36.h),
-      //   child: AnimatedContainer(
-      //     duration: duration,
-      //     curve: Curves.easeInOut,
-      //     height: isKeyboardVisible ? 0 : 36.h,
-      //     child: ClipRect(
-      //       child: OverflowBox(
-      //         alignment: Alignment.topCenter,
-      //         maxHeight: 36.h, // 固定 AppBar 原始高度，动画只做裁剪
-      //         child: AppBar(
-      //           toolbarHeight: 36.h,
-      //           backgroundColor: widget.backgroundColor,
-      //           foregroundColor: Colors.white,
-      //           elevation: 0,
-      //           centerTitle: true,
-      //           title: Text(widget.title, style: TextStyle(fontSize: 15.sp)),
-      //         ),
-      //       ),
-      //     ),
-      //   ),
-      // ),
       body: SafeArea(
         top: !isKeyboardVisible, // 键盘弹起时 AppBar 消失，SafeArea 接管状态栏
         child: Column(
           children: [
-            AnimatedSize(
-              duration: const Duration(milliseconds: 200),
-              curve: Curves.easeInOut,
-              child: isKeyboardVisible
-                  ? const SizedBox.shrink()
-                  : SizedBox(
-                      height: 48.h,
-                      child: AppBar(
-                        toolbarHeight: 48.h,
-                        automaticallyImplyLeading: true,
-                        backgroundColor: widget.backgroundColor,
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                        centerTitle: true,
-                        title: Text(
-                          widget.title,
-                          style: TextStyle(fontSize: 15.sp),
-                        ),
-                      ),
-                    ),
+            AutoCollapsibleAppBar(
+              title: widget.title,
+              onConfirm: _submit,
+              hideWhenKeyboardVisible: isKeyboardVisible,
             ),
             Expanded(
               child: SingleChildScrollView(
@@ -566,7 +529,7 @@ class _SimpleFormPageState extends State<SimpleFormPage> {
                               fillColor,
                               borderColor,
                               widget.labelFontSize,
-                              widget.fieldContentPadding,
+                              widget.fieldContentPadding.h,
                             )
                           : Column(
                               mainAxisSize: MainAxisSize.min,
@@ -577,20 +540,9 @@ class _SimpleFormPageState extends State<SimpleFormPage> {
                                 fillColor,
                                 borderColor,
                                 widget.labelFontSize,
-                                widget.fieldContentPadding,
+                                widget.fieldContentPadding.h,
                               ),
                             ),
-                      SizedBox(height: 12.h),
-                      BaseButton(
-                        minWidth: double.infinity,
-                        height: 36.h,
-                        textStyle: TextStyle(
-                          fontSize: 13.sp,
-                          color: Colors.white,
-                        ),
-                        label: widget.confirmText ?? context.t.common.confirm,
-                        onPressed: _submit,
-                      ),
                     ],
                   ),
                 ),

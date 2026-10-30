@@ -205,7 +205,7 @@ class _CpdsChangePasswordDialogState extends State<CpdsChangePasswordDialog> {
         ),
         style: TextStyle(
           color: Colors.white,
-          fontSize: 18.sp,
+          fontSize: 17.sp,
           fontWeight: FontWeight.w700,
         ),
       ),
