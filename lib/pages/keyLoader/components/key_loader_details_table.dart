@@ -35,6 +35,7 @@ import 'package:flutter_kts_template/utils/files/FileTools.dart';
 import 'package:flutter_kts_template/utils/provider/radios.provider.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:path/path.dart' as p;
+import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 
 import 'key_loader_file_delete_dialog.dart';
@@ -481,26 +482,124 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
   /// FILE_CPD_CLEAR 清空 → LIGHT_GREEN_BLINK 闪烁 → FILE_UPLOAD 准备 →
   /// 分块传输 → LIGHT_GREEN 常亮 → MD5 校验。
   /// 检查/申请注钥枪 USB 权限（仅 Android 需要；Windows 无授权弹窗）。
+  // Future<bool> _ensureUsbPermission() async {
+  //   if (Platform.isWindows) return true;
+  //   if (!Platform.isAndroid) return false;
+  //   final manager = getKeyLoaderUsbBulkManager();
+  //   if (await manager.hasPermission()) {
+  //     return true;
+  //   }
+  //   final granted = await manager.requestPermission().timeout(
+  //     const Duration(seconds: 30),
+  //     onTimeout: () => false,
+  //   );
+  //   if (!granted) {
+  //     SimplePopup.error(t.cpds.keyLoaderPermissionDenied);
+  //     return false;
+  //   }
+  //   return true;
+  // }
   Future<bool> _ensureUsbPermission() async {
-    if (Platform.isWindows) return true;
-    if (!Platform.isAndroid) return false;
+    final t = Translations.of(context);
+    final noDeviceMessage = CpdsMessages.tr(
+      context,
+      '未检测到注钥枪，请连接后重试',
+      'Key loader not detected. Connect and retry.',
+      'لم يتم اكتشاف جهاز تحميل المفاتيح، يرجى التوصيل وإعادة المحاولة',
+    );
     final manager = getKeyLoaderUsbBulkManager();
-    if (await manager.hasPermission()) {
-      return true;
+    if (await manager.hasPermission()) return true;
+
+    if (!await manager.hasDevice()) {
+      if (!mounted) return false;
+      await showDialog<void>(
+        context: context,
+        barrierDismissible: false,
+        builder: (dialogContext) {
+          var closed = false;
+          return AlertDialog(
+            backgroundColor: const Color(0xFF20262D),
+            title: Text(
+              t.tips.title,
+              style: TextStyle(color: Colors.white, fontSize: 17.sp),
+            ),
+            content: Text(
+              noDeviceMessage,
+              style: TextStyle(color: Colors.white70, fontSize: 13.sp),
+            ),
+            actions: [
+              FilledButton(
+                style: cpdsFilledButtonStyle(),
+                onPressed: () {
+                  if (closed) return;
+                  closed = true;
+                  Navigator.of(dialogContext).pop();
+                },
+                child: Text(t.common.confirm),
+              ),
+            ],
+          );
+        },
+      );
+      return false;
     }
+
     final granted = await manager.requestPermission().timeout(
       const Duration(seconds: 30),
       onTimeout: () => false,
     );
-    if (!granted) {
-      SimplePopup.error(t.cpds.keyLoaderPermissionDenied);
-      return false;
-    }
-    return true;
+    if (granted) return true;
+    if (!mounted) return false;
+
+    final goAuth = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        var closed = false;
+        return AlertDialog(
+          backgroundColor: const Color(0xFF20262D),
+          title: Text(
+            t.tips.title,
+            style: TextStyle(color: Colors.white, fontSize: 17.sp),
+          ),
+          content: Text(
+            t.cpds.keyLoaderPermissionDenied,
+            style: TextStyle(color: Colors.white70, fontSize: 13.sp),
+          ),
+          actions: [
+            TextButton(
+              style: cpdsTextButtonStyle(),
+              onPressed: () {
+                if (closed) return;
+                closed = true;
+                Navigator.of(dialogContext).pop(false);
+              },
+              child: Text(
+                t.tips.cancel,
+                style: const TextStyle(color: Colors.white70),
+              ),
+            ),
+            FilledButton(
+              style: cpdsFilledButtonStyle(),
+              onPressed: () {
+                if (closed) return;
+                closed = true;
+                Navigator.of(dialogContext).pop(true);
+              },
+              child: Text(t.tips.ok),
+            ),
+          ],
+        );
+      },
+    );
+    if (goAuth != true) return false;
+    await openAppSettings();
+    return false;
   }
 
   Future<void> _openKeyLoaderFileDeleteDialog() async {
     if (_exporting) return;
+    if (!await _ensureUsbPermission()) return;
     if (defaultTargetPlatform == TargetPlatform.windows) {
       await showDialog<void>(
         context: context,
@@ -1130,9 +1229,7 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
     }
 
     // Android 端先申请 USB 权限，通过后再弹「设置密码」。
-    if (!await _ensureUsbPermission()) {
-      return;
-    }
+    if (!await _ensureUsbPermission()) return;
     if (_exportCancelled) return;
     if (!mounted) return;
 
@@ -1144,10 +1241,10 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
     if (password == null || _exportCancelled) return;
 
     final selectedJson = selectedRows.map((item) => item.toJson()).toList();
-    // GlobalLogger.logInfo(
-    //   'EXPORT_SELECTED ${const JsonEncoder.withIndent('  ').convert(selectedJson)}',
-    // );
-    // GlobalLogger.logInfo('EXPORT_PASSWORD $password');
+    GlobalLogger.logInfo(
+      'EXPORT_SELECTED ${const JsonEncoder.withIndent('  ').convert(selectedJson)}',
+    );
+    GlobalLogger.logInfo('EXPORT_PASSWORD $password');
 
     final controller = StepProgressController([
       t.cpds.exportProgress.stepStart,
