@@ -1542,7 +1542,7 @@ class _VecInfoBoxState extends State<_VecInfoBox> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: EdgeInsets.fromLTRB(12.w, 5.h, 17.w, 0),
+            padding: EdgeInsets.fromLTRB(12.w, 6.h, 17.w, 9.h),
             child: SizedBox(
               width: double.infinity,
               height: 28.h,
@@ -1598,14 +1598,6 @@ class _VecInfoBoxState extends State<_VecInfoBox> {
                       ],
                     ),
                   ),
-                  // Text(
-                  //   title,
-                  //   style: TextStyle(
-                  //     color: Colors.white,
-                  //     fontSize: 14.sp,
-                  //     fontWeight: FontWeight.w600,
-                  //   ),
-                  // ),
                   Positioned(
                     right: 0,
                     top: 0,
@@ -1630,63 +1622,58 @@ class _VecInfoBoxState extends State<_VecInfoBox> {
               ),
             ),
           ),
-          SizedBox(height: 6.h),
-          Padding(
-            padding: EdgeInsets.fromLTRB(12.w, 0, 12.w, 12.h),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: expanded
-                  ? [
-                      Row(
-                        children: [
-                          SizedBox(width: 16.w),
-                          _Meta(
-                            label: equipNameLabel,
-                            value: widget.veciInfo.equipName,
-                          ),
-                          SizedBox(width: 16.w),
-                          _Meta(label: ipLabel, value: widget.veciInfo.ip),
-                        ],
+          if (expanded)
+            Padding(
+              padding: EdgeInsets.fromLTRB(12.w, 0, 12.w, 12.h),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      SizedBox(width: 16.w),
+                      _Meta(
+                        label: equipNameLabel,
+                        value: widget.veciInfo.equipName,
                       ),
-                      SizedBox(height: 4.h),
-                      Row(
-                        children: [
-                          SizedBox(width: 16.w),
-                          _Meta(
-                            label: plateNoLabel,
-                            value: widget.veciInfo.plateNo,
-                          ),
-                          SizedBox(width: 16.w),
-                          _Meta(
-                            label: vehicleParamsLabel,
-                            value: widget.veciInfo.vehicleParams,
-                          ),
-                        ],
+                      SizedBox(width: 16.w),
+                      _Meta(label: ipLabel, value: widget.veciInfo.ip),
+                    ],
+                  ),
+                  SizedBox(height: 4.h),
+                  Row(
+                    children: [
+                      SizedBox(width: 16.w),
+                      _Meta(
+                        label: plateNoLabel,
+                        value: widget.veciInfo.plateNo,
                       ),
-                      SizedBox(height: 4.h),
-                      Row(
-                        children: [
-                          SizedBox(width: 16.w),
-                          _Meta(
-                            label: purposeLabel,
-                            value: widget.veciInfo.purpose,
-                          ),
-                        ],
+                      SizedBox(width: 16.w),
+                      _Meta(
+                        label: vehicleParamsLabel,
+                        value: widget.veciInfo.vehicleParams,
                       ),
-                      SizedBox(height: 4.h),
-                      Row(
-                        children: [
-                          SizedBox(width: 16.w),
-                          _Meta(
-                            label: remarkLabel,
-                            value: widget.veciInfo.remark,
-                          ),
-                        ],
+                    ],
+                  ),
+                  SizedBox(height: 4.h),
+                  Row(
+                    children: [
+                      SizedBox(width: 16.w),
+                      _Meta(
+                        label: purposeLabel,
+                        value: widget.veciInfo.purpose,
                       ),
-                    ]
-                  : [],
+                    ],
+                  ),
+                  SizedBox(height: 4.h),
+                  Row(
+                    children: [
+                      SizedBox(width: 16.w),
+                      _Meta(label: remarkLabel, value: widget.veciInfo.remark),
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
         ],
       ),
     );
