@@ -1,9 +1,10 @@
 // ignore_for_file: cpd_lints/hardcoded_dimension
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_kts_template/components/Appbar/AutoCollapsibleAppBar.dart';
+import 'package:flutter_kts_template/components/loading/simple.loading.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-import 'cpds_button_styles.dart';
 import 'cpds_messages.dart';
 
 /// 修改 `.cpdata` 密码的页面（移动端使用）：表单项与弹窗版保持一致。
@@ -93,6 +94,8 @@ class _CpdsChangePasswordPageState extends State<CpdsChangePasswordPage> {
     if (error == null) {
       Navigator.of(context).pop(true);
       return;
+    } else {
+      SimplePopup.warn(error);
     }
     setState(() {
       _loading = false;
@@ -187,164 +190,135 @@ class _CpdsChangePasswordPageState extends State<CpdsChangePasswordPage> {
 
   @override
   Widget build(BuildContext context) {
+    final viewInsets = MediaQuery.viewInsetsOf(context);
+    final isKeyboardVisible = MediaQuery.of(context).viewInsets.bottom > 0;
     return Scaffold(
       backgroundColor: const Color(0xFF20262D),
-      appBar: PreferredSize(
-        preferredSize: Size.fromHeight(36.h),
-        child: AppBar(
-          backgroundColor: const Color(0xFF20262D),
-          foregroundColor: Colors.white,
-          elevation: 0,
-          centerTitle: true,
-          title: Text(
-            style: TextStyle(fontSize: 15.sp),
-            CpdsMessages.tr(
-              context,
-              '修改密码',
-              'Change Password',
-              'تغيير كلمة المرور',
-            ),
-          ),
-        ),
-      ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: EdgeInsets.fromLTRB(24.w, 16.h, 24.w, 24.h),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                _buildPasswordField(
-                  label: CpdsMessages.tr(
-                    context,
-                    '原密码',
-                    'Old Password',
-                    'كلمة المرور القديمة',
-                  ),
-                  hint: CpdsMessages.tr(
-                    context,
-                    '请输入原密码',
-                    'Please enter the old password',
-                    'يرجى إدخال كلمة المرور القديمة',
-                  ),
-                  controller: _oldController,
-                  validator: (value) => _validate8Digits(
-                    value,
-                    CpdsMessages.tr(
-                      context,
-                      '请输入原密码',
-                      'Please enter the old password',
-                      'يرجى إدخال كلمة المرور القديمة',
-                    ),
-                    CpdsMessages.tr(
-                      context,
-                      '只允许输入八位数字',
-                      'Only 8 digits are allowed',
-                      'يُسمح فقط بإدخال ثمانية أرقام',
-                    ),
-                  ),
-                ),
-                SizedBox(height: 16.h),
-                _buildPasswordField(
-                  label: CpdsMessages.tr(
-                    context,
-                    '新密码',
-                    'New Password',
-                    'كلمة المرور الجديدة',
-                  ),
-                  hint: CpdsMessages.tr(
-                    context,
-                    '请输入新密码',
-                    'Please enter the new password',
-                    'يرجى إدخال كلمة المرور الجديدة',
-                  ),
-                  controller: _newController,
-                  validator: (value) => _validate8Digits(
-                    value,
-                    CpdsMessages.tr(
-                      context,
-                      '请输入新密码',
-                      'Please enter the new password',
-                      'يرجى إدخال كلمة المرور الجديدة',
-                    ),
-                    CpdsMessages.tr(
-                      context,
-                      '只允许输入八位数字',
-                      'Only 8 digits are allowed',
-                      'يُسمح فقط بإدخال ثمانية أرقام',
-                    ),
-                  ),
-                ),
-                SizedBox(height: 16.h),
-                _buildPasswordField(
-                  label: CpdsMessages.tr(
-                    context,
-                    '确认新密码',
-                    'Confirm New Password',
-                    'تأكيد كلمة المرور الجديدة',
-                  ),
-                  hint: CpdsMessages.tr(
-                    context,
-                    '请再次输入新密码',
-                    'Please enter the new password again',
-                    'يرجى إدخال كلمة المرور الجديدة مرة أخرى',
-                  ),
-                  controller: _confirmController,
-                  validator: _validateConfirm,
-                ),
-                if (_errorText != null) ...[
-                  SizedBox(height: 8.h),
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      _errorText!,
-                      style: TextStyle(
-                        color: Color(0xFFF15B64),
-                        fontSize: 12.sp,
-                      ),
-                    ),
-                  ),
-                ],
-                SizedBox(height: 24.h),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    TextButton(
-                      style: cpdsTextButtonStyle(),
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: Text(
-                        CpdsMessages.tr(context, '取消', 'Cancel', 'إلغاء'),
-                        style: TextStyle(color: Colors.white70),
-                      ),
-                    ),
-                    SizedBox(width: 8.w),
-                    FilledButton(
-                      style: cpdsFilledButtonStyle(),
-                      onPressed: _loading ? null : _submit,
-                      child: _loading
-                          ? SizedBox(
-                              width: 16.w,
-                              height: 16.h,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
-                              ),
-                            )
-                          : Text(
-                              CpdsMessages.tr(
-                                context,
-                                '确定',
-                                'Confirm',
-                                'تأكيد',
-                              ),
-                            ),
-                    ),
-                  ],
-                ),
-              ],
+        top: !isKeyboardVisible,
+        child: Column(
+          children: [
+            AutoCollapsibleAppBar(
+              title: CpdsMessages.tr(
+                context,
+                '修改密码',
+                'Change Password',
+                'تغيير كلمة المرور',
+              ),
+              confirmEnabled: !_loading,
+              onConfirm: _submit,
+              hideWhenKeyboardVisible: isKeyboardVisible,
             ),
-          ),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: EdgeInsets.fromLTRB(
+                  24.w,
+                  16.h,
+                  24.w,
+                  viewInsets.bottom,
+                ),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      _buildPasswordField(
+                        label: CpdsMessages.tr(
+                          context,
+                          '原密码',
+                          'Old Password',
+                          'كلمة المرور القديمة',
+                        ),
+                        hint: CpdsMessages.tr(
+                          context,
+                          '请输入原密码',
+                          'Please enter the old password',
+                          'يرجى إدخال كلمة المرور القديمة',
+                        ),
+                        controller: _oldController,
+                        validator: (value) => _validate8Digits(
+                          value,
+                          CpdsMessages.tr(
+                            context,
+                            '请输入原密码',
+                            'Please enter the old password',
+                            'يرجى إدخال كلمة المرور القديمة',
+                          ),
+                          CpdsMessages.tr(
+                            context,
+                            '只允许输入八位数字',
+                            'Only 8 digits are allowed',
+                            'يُسمح فقط بإدخال ثمانية أرقام',
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 16.h),
+                      _buildPasswordField(
+                        label: CpdsMessages.tr(
+                          context,
+                          '新密码',
+                          'New Password',
+                          'كلمة المرور الجديدة',
+                        ),
+                        hint: CpdsMessages.tr(
+                          context,
+                          '请输入新密码',
+                          'Please enter the new password',
+                          'يرجى إدخال كلمة المرور الجديدة',
+                        ),
+                        controller: _newController,
+                        validator: (value) => _validate8Digits(
+                          value,
+                          CpdsMessages.tr(
+                            context,
+                            '请输入新密码',
+                            'Please enter the new password',
+                            'يرجى إدخال كلمة المرور الجديدة',
+                          ),
+                          CpdsMessages.tr(
+                            context,
+                            '只允许输入八位数字',
+                            'Only 8 digits are allowed',
+                            'يُسمح فقط بإدخال ثمانية أرقام',
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 16.h),
+                      _buildPasswordField(
+                        label: CpdsMessages.tr(
+                          context,
+                          '确认新密码',
+                          'Confirm New Password',
+                          'تأكيد كلمة المرور الجديدة',
+                        ),
+                        hint: CpdsMessages.tr(
+                          context,
+                          '请再次输入新密码',
+                          'Please enter the new password again',
+                          'يرجى إدخال كلمة المرور الجديدة مرة أخرى',
+                        ),
+                        controller: _confirmController,
+                        validator: _validateConfirm,
+                      ),
+                      if (_errorText != null) ...[
+                        SizedBox(height: 8.h),
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            _errorText!,
+                            style: TextStyle(
+                              color: Color(0xFFF15B64),
+                              fontSize: 12.sp,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

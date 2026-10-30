@@ -1,5 +1,6 @@
 // ignore_for_file: cpd_lints/hardcoded_dimension
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import 'app_colors.dart';
 
@@ -115,7 +116,7 @@ class AppTheme {
         elevation: 0,
         centerTitle: false,
         titleTextStyle: TextStyle(
-          fontSize: 18,
+          fontSize: 15.sp,
           fontWeight: FontWeight.w600,
           color: AppColors.textPrimary,
         ),
@@ -126,6 +127,21 @@ class AppTheme {
         space: 1,
       ),
       iconTheme: const IconThemeData(color: AppColors.textSecondary, size: 20),
+      dialogTheme: DialogThemeData(
+        backgroundColor: Color(0xFF20262D),
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(12.r)),
+        ),
+        titleTextStyle: TextStyle(
+          color: Colors.white,
+          fontSize: 15.sp,
+          fontWeight: FontWeight.w600,
+        ),
+        elevation: 1,
+        contentTextStyle: TextStyle(color: Colors.white70, fontSize: 14.sp),
+        actionsPadding: EdgeInsets.fromLTRB(24.w, 0, 24.w, 12.h),
+      ),
     );
   }
 }

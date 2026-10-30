@@ -489,7 +489,6 @@ class _SimpleFormPageState extends State<SimpleFormPage> {
   @override
   Widget build(BuildContext context) {
     final isKeyboardVisible = MediaQuery.of(context).viewInsets.bottom > 0;
-    const duration = Duration(milliseconds: 200);
     const labelColor = Colors.white;
     const fillColor = Color(0x9921262C);
     const borderColor = Colors.white;
@@ -529,9 +528,9 @@ class _SimpleFormPageState extends State<SimpleFormPage> {
               child: isKeyboardVisible
                   ? const SizedBox.shrink()
                   : SizedBox(
-                      height: 36.h,
+                      height: 48.h,
                       child: AppBar(
-                        toolbarHeight: 36.h,
+                        toolbarHeight: 48.h,
                         automaticallyImplyLeading: true,
                         backgroundColor: widget.backgroundColor,
                         foregroundColor: Colors.white,

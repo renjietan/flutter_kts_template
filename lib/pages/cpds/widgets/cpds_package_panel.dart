@@ -230,7 +230,7 @@ class _CpdsPackagePanelState extends State<CpdsPackagePanel> {
                 SizedBox(width: 8.w),
                 BaseButton(
                   label: t.cpds.browse,
-                  minWidth: 100.w,
+                  // minWidth: 100.w,
                   height: 36.h,
                   icon: HyIcons.wenjian,
                   isLoading: widget.uploading,
@@ -258,7 +258,6 @@ class _CpdsPackagePanelState extends State<CpdsPackagePanel> {
                     Color(0xFFF3D19E),
                     Color(0xFFF3D19E),
                   ],
-                  minWidth: 110.w,
                   height: 36.h,
                   icon: Icons.lock_outline,
                   onPressed:

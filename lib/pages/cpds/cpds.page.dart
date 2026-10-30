@@ -828,70 +828,68 @@ class _CpdsPageState extends State<CpdsPage> {
     );
     final confirmText = Translations.of(context).common.confirm;
     final fields = <FormFieldConfig>[
-        FormFieldConfig(
-          name: 'equipName',
-          label: CpdsMessages.tr(
-            context,
-            '装备名称',
-            'Equipment Name',
-            'اسم المعدات',
-          ),
-          textEditingController: TextEditingController(text: veci.equipName),
-          enabled: false,
-          showLabelText: false,
+      FormFieldConfig(
+        name: 'equipName',
+        label: CpdsMessages.tr(
+          context,
+          '装备名称',
+          'Equipment Name',
+          'اسم المعدات',
         ),
-        FormFieldConfig(
-          name: 'ip',
-          label: CpdsMessages.tr(
-            context,
-            '装备标识',
-            'Equipment Tag',
-            'تعريف المعدات',
-          ),
-          textEditingController: TextEditingController(text: veci.ip),
-          enabled: false,
-          showLabelText: false,
+        textEditingController: TextEditingController(text: veci.equipName),
+        enabled: false,
+        showLabelText: false,
+      ),
+      FormFieldConfig(
+        name: 'ip',
+        label: CpdsMessages.tr(
+          context,
+          '装备标识',
+          'Equipment Tag',
+          'تعريف المعدات',
         ),
-        FormFieldConfig(
-          name: 'plateNo',
-          label: CpdsMessages.tr(context, '车牌号', 'Plate No.', 'رقم اللوحة'),
-          textEditingController: TextEditingController(text: veci.plateNo),
-          enabled: false,
-          showLabelText: false,
+        textEditingController: TextEditingController(text: veci.ip),
+        enabled: false,
+        showLabelText: false,
+      ),
+      FormFieldConfig(
+        name: 'plateNo',
+        label: CpdsMessages.tr(context, '车牌号', 'Plate No.', 'رقم اللوحة'),
+        textEditingController: TextEditingController(text: veci.plateNo),
+        enabled: false,
+        showLabelText: false,
+      ),
+      FormFieldConfig(
+        name: 'vehicleParams',
+        label: CpdsMessages.tr(
+          context,
+          '车辆基础参数',
+          'Vehicle Parameters',
+          'معايير المركبة',
         ),
-        FormFieldConfig(
-          name: 'vehicleParams',
-          label: CpdsMessages.tr(
-            context,
-            '车辆基础参数',
-            'Vehicle Parameters',
-            'معايير المركبة',
-          ),
-          textEditingController: TextEditingController(
-            text: veci.vehicleParams,
-          ),
-          enabled: false,
-          showLabelText: false,
-        ),
-        FormFieldConfig(
-          name: 'purpose',
-          label: CpdsMessages.tr(context, '用途', 'Purpose', 'الغرض'),
-          textEditingController: TextEditingController(text: veci.purpose),
-          enabled: false,
-          showLabelText: false,
-          fullWidth: true,
-        ),
-        FormFieldConfig(
-          name: 'remark',
-          label: CpdsMessages.tr(context, '备注', 'Remark', 'ملاحظات'),
-          textEditingController: _veciRemarkController,
-          showLabelText: false,
-          fullWidth: true,
-          height: 120.h,
-          inputFormatters: [LengthLimitingTextInputFormatter(200)],
-          counterTextBuilder: (value) =>
-              CpdsMessages.digits(context, '${value.characters.length}/200'),
-        ),
+        textEditingController: TextEditingController(text: veci.vehicleParams),
+        enabled: false,
+        showLabelText: false,
+      ),
+      FormFieldConfig(
+        name: 'purpose',
+        label: CpdsMessages.tr(context, '用途', 'Purpose', 'الغرض'),
+        textEditingController: TextEditingController(text: veci.purpose),
+        enabled: false,
+        showLabelText: false,
+        fullWidth: true,
+      ),
+      FormFieldConfig(
+        name: 'remark',
+        label: CpdsMessages.tr(context, '备注', 'Remark', 'ملاحظات'),
+        textEditingController: _veciRemarkController,
+        showLabelText: false,
+        fullWidth: true,
+        height: 120.h,
+        inputFormatters: [LengthLimitingTextInputFormatter(200)],
+        counterTextBuilder: (value) =>
+            CpdsMessages.digits(context, '${value.characters.length}/200'),
+      ),
     ];
     void handleConfirm(Map<String, dynamic> formData) {
       final remark = (formData['remark'] as String? ?? '').trim();
@@ -899,9 +897,7 @@ class _CpdsPageState extends State<CpdsPage> {
     }
 
     if (defaultTargetPlatform != TargetPlatform.windows) {
-      await Navigator.of(
-        context,
-      ).push<void>(
+      await Navigator.of(context).push<void>(
         MaterialPageRoute(
           builder: (_) => SimpleFormPage(
             title: title,
@@ -1877,10 +1873,7 @@ class _CpdsBrowseSourceDialogState extends State<_CpdsBrowseSourceDialog> {
     final t = Translations.of(context);
     return AlertDialog(
       backgroundColor: const Color(0xFF20262D),
-      title: Text(
-        t.cpds.browseSourceTitle,
-        style: TextStyle(color: Colors.white, fontSize: 17.sp),
-      ),
+      title: Text(t.cpds.browseSourceTitle),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -1915,7 +1908,7 @@ class _CpdsBrowseSourceDialogState extends State<_CpdsBrowseSourceDialog> {
     return InkWell(
       onTap: () => setState(() => _selected = value),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
         decoration: BoxDecoration(
           color: selected ? const Color(0xFF0E1114) : Colors.transparent,
           borderRadius: BorderRadius.circular(4.r),

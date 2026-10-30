@@ -980,7 +980,6 @@ class _CpdsKeyLoaderFileDialogState extends State<CpdsKeyLoaderFileDialog> {
     final dialogWidth = (screenWidth * 0.9).clamp(0.0, 960.0);
     final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
     final keyboardVisible = bottomInset > 0;
-    final keyboardHeight = bottomInset;
     return Dialog(
       backgroundColor: const Color(0xFF20262D),
       insetPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
@@ -1041,10 +1040,10 @@ class _CpdsKeyLoaderFileDialogState extends State<CpdsKeyLoaderFileDialog> {
             if (!keyboardVisible)
               Padding(
                 padding: EdgeInsets.fromLTRB(
-                  16,
-                  8,
-                  16,
-                  8 + MediaQuery.viewInsetsOf(context).bottom,
+                  16.w,
+                  8.h,
+                  16.w,
+                  8.h + MediaQuery.viewInsetsOf(context).bottom,
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.end,
