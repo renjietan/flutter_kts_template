@@ -205,7 +205,6 @@ class _CpdsChangePasswordPageState extends State<CpdsChangePasswordPage> {
                 'Change Password',
                 'تغيير كلمة المرور',
               ),
-              confirmEnabled: !_loading,
               onConfirm: _submit,
               hideWhenKeyboardVisible: isKeyboardVisible,
             ),

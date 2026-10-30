@@ -1,28 +1,16 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_kts_template/pages/cpds/widgets/cpds_button_styles.dart';
 import 'package:flutter_kts_template/pages/cpds/widgets/cpds_messages.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-/// 修改密码页顶部栏，键盘弹出时自动收起。
-class AutoCollapsibleAppBar extends StatelessWidget {
-  const AutoCollapsibleAppBar({
-    super.key,
-    required this.title,
-    required this.onConfirm,
-    this.confirmEnabled = true,
-    this.actions = const [],
-    this.onBack,
-    this.hideWhenKeyboardVisible = true, // 是否隐藏：键盘弹起时，可以从外部传入，让 APPBAR 隐藏
-  });
-
+class AutoCollapsibleAppBar extends StatefulWidget {
   /// 标题，由外部传入（已翻译好的文字）。
   final String title;
 
   /// “确定”按钮点击事件，通常用于提交表单。
-  final VoidCallback onConfirm;
-
-  /// 是否允许点击“确定”，可用于 loading 时禁用。
-  final bool confirmEnabled;
+  final FutureOr<void> Function() onConfirm;
 
   /// 追加到 Actions 的其他按钮。
   final List<Widget> actions;
@@ -33,12 +21,28 @@ class AutoCollapsibleAppBar extends StatelessWidget {
   /// 是否隐藏：键盘弹起时，可以从外部传入，让 APPBAR 隐藏
   final bool hideWhenKeyboardVisible;
 
+  const AutoCollapsibleAppBar({
+    super.key,
+    required this.title,
+    required this.onConfirm,
+    this.actions = const [],
+    this.onBack,
+    this.hideWhenKeyboardVisible = true, // 是否隐藏：键盘弹起时，可以从外部传入，让 APPBAR 隐藏
+  });
+
+  @override
+  State<AutoCollapsibleAppBar> createState() => _AutoCollapsibleAppBarState();
+}
+
+class _AutoCollapsibleAppBarState extends State<AutoCollapsibleAppBar> {
+  late bool loading = false;
+
   @override
   Widget build(BuildContext context) {
     return AnimatedSize(
       duration: const Duration(milliseconds: 200),
       curve: Curves.easeInOut,
-      child: hideWhenKeyboardVisible
+      child: widget.hideWhenKeyboardVisible
           ? const SizedBox.shrink()
           : SizedBox(
               height: 48.h,
@@ -51,7 +55,7 @@ class AutoCollapsibleAppBar extends StatelessWidget {
                 centerTitle: true,
                 leadingWidth: 80.w,
                 leading: InkWell(
-                  onTap: onBack ?? () => Navigator.of(context).pop(),
+                  onTap: widget.onBack ?? () => Navigator.of(context).pop(),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     crossAxisAlignment: CrossAxisAlignment.center,
@@ -77,11 +81,19 @@ class AutoCollapsibleAppBar extends StatelessWidget {
                     ],
                   ),
                 ),
-                title: Text(title, style: TextStyle(fontSize: 15.sp)),
+                title: Text(widget.title, style: TextStyle(fontSize: 15.sp)),
                 actions: [
                   TextButton(
                     style: cpdsTextButtonStyle(),
-                    onPressed: confirmEnabled ? onConfirm : null,
+                    onPressed: () async {
+                      if (loading == true) return;
+                      try {
+                        loading = true;
+                        widget.onConfirm();
+                      } finally {
+                        loading = false;
+                      }
+                    },
                     child: Text(
                       CpdsMessages.tr(context, '确定', 'Confirm', 'تأكيد'),
                       style: TextStyle(
@@ -90,7 +102,7 @@ class AutoCollapsibleAppBar extends StatelessWidget {
                       ),
                     ),
                   ),
-                  ...actions,
+                  ...widget.actions,
                   SizedBox(width: 15.w),
                 ],
               ),
