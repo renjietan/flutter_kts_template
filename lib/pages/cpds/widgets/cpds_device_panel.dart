@@ -1549,34 +1549,6 @@ class _VecInfoBoxState extends State<_VecInfoBox> {
               child: Stack(
                 alignment: Alignment.center,
                 children: [
-                  // Positioned(
-                  //   left: 16.w,
-                  //   top: 0,
-                  //   bottom: 0,
-                  //   child: Center(
-                  //     child: GestureDetector(
-                  //       onTap: widget.onEdit,
-                  //       child: Row(
-                  //         mainAxisSize: MainAxisSize.min,
-                  //         children: [
-                  //           Icon(
-                  //             Icons.edit_outlined,
-                  //             size: 15.w,
-                  //             color: Color(0xFF00A2E9),
-                  //           ),
-                  //           SizedBox(width: 4.w),
-                  //           Text(
-                  //             editLabel,
-                  //             style: TextStyle(
-                  //               color: Color(0xFF00A2E9),
-                  //               fontSize: 12.sp,
-                  //             ),
-                  //           ),
-                  //         ],
-                  //       ),
-                  //     ),
-                  //   ),
-                  // ),
                   GestureDetector(
                     onTap: widget.onEdit,
                     child: Row(

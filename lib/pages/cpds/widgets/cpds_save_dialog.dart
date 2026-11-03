@@ -493,7 +493,7 @@ class _CpdsFutureWarriorSaveDialogState
     final form = SizedBox(
       width: widget.usePage
           ? double.infinity
-          : MediaQuery.sizeOf(context).width * 0.7,
+          : MediaQuery.sizeOf(context).width * 0.85,
       child: FormBuilder(
         key: _formKey,
         child: SingleChildScrollView(
@@ -562,21 +562,26 @@ class _CpdsFutureWarriorSaveDialogState
                           const Color(0xFF292E33),
                         ),
                         horizontalMargin: 0,
-                        columnSpacing: 8,
+                        columnSpacing: 8.w,
                         columns: [
                           DataColumn(
-                            columnWidth: FlexColumnWidth(1.0),
+                            columnWidth: FlexColumnWidth(1.3),
                             label: Padding(
                               padding: EdgeInsets.only(left: 8.w),
                               child: Text(
                                 t.tableColumn.injectEncrypt.parameterPacket,
                                 overflow: TextOverflow.ellipsis,
                                 maxLines: 1,
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 15.sp,
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
                             ),
                           ),
                           DataColumn(
-                            columnWidth: FlexColumnWidth(1.3),
+                            columnWidth: FlexColumnWidth(2.0),
                             label: Padding(
                               padding: EdgeInsets.only(left: 8.w),
                               child: Text(
@@ -588,11 +593,16 @@ class _CpdsFutureWarriorSaveDialogState
                                 ),
                                 overflow: TextOverflow.ellipsis,
                                 maxLines: 1,
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 15.sp,
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
                             ),
                           ),
                           DataColumn(
-                            columnWidth: FlexColumnWidth(1.2),
+                            columnWidth: FlexColumnWidth(1.5),
                             label: Padding(
                               padding: EdgeInsets.only(left: 8.w),
                               child: Text(
@@ -604,6 +614,11 @@ class _CpdsFutureWarriorSaveDialogState
                                 ),
                                 overflow: TextOverflow.ellipsis,
                                 maxLines: 1,
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 15.sp,
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
                             ),
                           ),
@@ -615,6 +630,11 @@ class _CpdsFutureWarriorSaveDialogState
                                 t.Form.paramsInject.deviceType.text,
                                 overflow: TextOverflow.ellipsis,
                                 maxLines: 1,
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 15.sp,
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
                             ),
                           ),
@@ -626,28 +646,35 @@ class _CpdsFutureWarriorSaveDialogState
                                 t.tableColumn.injectEncrypt.radio,
                                 overflow: TextOverflow.ellipsis,
                                 maxLines: 1,
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 15.sp,
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
                             ),
                           ),
+                          // DataColumn(
+                          //   columnWidth: FlexColumnWidth(1.0),
+                          //   label: Padding(
+                          //     padding: EdgeInsets.only(left: 8.w),
+                          //     child: Text(
+                          //       t.tableColumn.injectEncrypt.location,
+                          //       overflow: TextOverflow.ellipsis,
+                          //       maxLines: 1,
+                          //       style: TextStyle(fontSize: 15.sp),
+                          //     ),
+                          //   ),
+                          // ),
                           DataColumn(
-                            columnWidth: FlexColumnWidth(1.0),
-                            label: Padding(
-                              padding: EdgeInsets.only(left: 8.w),
-                              child: Text(
-                                t.tableColumn.injectEncrypt.location,
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 1,
-                              ),
-                            ),
-                          ),
-                          DataColumn(
-                            columnWidth: FlexColumnWidth(1.0),
+                            columnWidth: FlexColumnWidth(1.5),
                             label: Padding(
                               padding: EdgeInsets.only(left: 8.w),
                               child: Text(
                                 t.tableColumn.injectEncrypt.SN,
                                 overflow: TextOverflow.ellipsis,
                                 maxLines: 1,
+                                style: TextStyle(fontSize: 15.sp),
                               ),
                             ),
                           ),
@@ -669,7 +696,7 @@ class _CpdsFutureWarriorSaveDialogState
                                   child: Text(
                                     device.id,
                                     overflow: TextOverflow.ellipsis,
-                                    maxLines: 1,
+                                    maxLines: 2,
                                   ),
                                 ),
                               ),
@@ -679,7 +706,7 @@ class _CpdsFutureWarriorSaveDialogState
                                   child: Text(
                                     device.alias,
                                     overflow: TextOverflow.ellipsis,
-                                    maxLines: 1,
+                                    maxLines: 2,
                                   ),
                                 ),
                               ),
@@ -689,7 +716,7 @@ class _CpdsFutureWarriorSaveDialogState
                                   child: Text(
                                     cpdsDisplayDownlinkIp(device.ip),
                                     overflow: TextOverflow.ellipsis,
-                                    maxLines: 1,
+                                    maxLines: 2,
                                   ),
                                 ),
                               ),
@@ -709,16 +736,16 @@ class _CpdsFutureWarriorSaveDialogState
                                   child: _buildRadioPicker(fwDevice),
                                 ),
                               ),
-                              DataCell(
-                                Padding(
-                                  padding: EdgeInsets.only(left: 8.w),
-                                  child: Text(
-                                    radio?.location ?? '--',
-                                    overflow: TextOverflow.ellipsis,
-                                    maxLines: 1,
-                                  ),
-                                ),
-                              ),
+                              // DataCell(
+                              //   Padding(
+                              //     padding: EdgeInsets.only(left: 8.w),
+                              //     child: Text(
+                              //       radio?.location ?? '--',
+                              //       overflow: TextOverflow.ellipsis,
+                              //       maxLines: 1,
+                              //     ),
+                              //   ),
+                              // ),
                               DataCell(
                                 Padding(
                                   padding: EdgeInsets.only(left: 8.w),
@@ -855,7 +882,7 @@ class CpdsFutureWarriorDuplicateDialog extends StatelessWidget {
           overflow: TextOverflow.ellipsis,
           style: TextStyle(
             color: Colors.white,
-            fontSize: 13.sp,
+            fontSize: 15.sp,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -863,13 +890,13 @@ class CpdsFutureWarriorDuplicateDialog extends StatelessWidget {
     );
   }
 
-  Widget _bodyCell(String text) {
+  Widget _bodyCell(String text, int maxLines) {
     return Center(
       child: Padding(
         padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 10.h),
         child: Text(
           text,
-          maxLines: 1,
+          maxLines: maxLines,
           overflow: TextOverflow.ellipsis,
           style: TextStyle(color: Colors.white, fontSize: 13.sp),
         ),
@@ -894,7 +921,7 @@ class CpdsFutureWarriorDuplicateDialog extends StatelessWidget {
         ),
       ),
       content: SizedBox(
-        width: 560.w,
+        width: MediaQuery.sizeOf(context).width * 0.7,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -916,11 +943,11 @@ class CpdsFutureWarriorDuplicateDialog extends StatelessWidget {
                   child: Table(
                     border: TableBorder.all(color: const Color(0xFF6B7480)),
                     columnWidths: const {
-                      0: FlexColumnWidth(1),
-                      1: FlexColumnWidth(1),
-                      2: FlexColumnWidth(1),
-                      3: FlexColumnWidth(1.2),
-                      4: FlexColumnWidth(1.2),
+                      0: FlexColumnWidth(2),
+                      1: FlexColumnWidth(2),
+                      2: FlexColumnWidth(1.5),
+                      3: FlexColumnWidth(1.5),
+                      4: FlexColumnWidth(1.5),
                     },
                     children: [
                       TableRow(
@@ -954,18 +981,24 @@ class CpdsFutureWarriorDuplicateDialog extends StatelessWidget {
                       for (final item in duplicates)
                         TableRow(
                           children: [
-                            _bodyCell(item['nodeName']?.toString() ?? '--'),
-                            _bodyCell(item['deviceAlias']?.toString() ?? '--'),
+                            _bodyCell(item['nodeName']?.toString() ?? '--', 2),
+                            _bodyCell(
+                              item['deviceAlias']?.toString() ?? '--',
+                              2,
+                            ),
                             _bodyCell(
                               item['dcPackageName']?.toString() ?? '--',
+                              1,
                             ),
                             _bodyCell(
                               _radioAliasOrDash(
                                 item['originalRadioAlias']?.toString(),
                               ),
+                              1,
                             ),
                             _bodyCell(
                               _radioAliasOrDash(item['radioAlias']?.toString()),
+                              1,
                             ),
                           ],
                         ),
