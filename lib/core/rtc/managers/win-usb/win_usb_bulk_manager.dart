@@ -84,7 +84,7 @@ class WinUsbBulkManager implements KeyLoaderUsbBulkManager {
       }
       if (path == null) {
         GlobalLogger.logError(
-          'WinUsbBulkManager: key loader WinUSB interface not found',
+          'WinUsbBulkManager: key injector WinUSB interface not found',
         );
         return false;
       }

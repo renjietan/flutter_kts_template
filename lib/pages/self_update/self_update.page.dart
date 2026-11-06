@@ -326,20 +326,16 @@ class _SelfUpdatePageState extends State<SelfUpdatePage> {
       entity: entity,
       usePage: defaultTargetPlatform != TargetPlatform.windows,
       onConfirm: (version, remark) {
-        Navigator.of(context).pop();
         widget.onEdit?.call(entity, version, remark);
       },
     );
     if (defaultTargetPlatform != TargetPlatform.windows) {
-      await Navigator.of(context).push<void>(
-        MaterialPageRoute(builder: (_) => editDialog),
-      );
+      await Navigator.of(
+        context,
+      ).push<void>(MaterialPageRoute(builder: (_) => editDialog));
       return;
     }
-    await showDialog<void>(
-      context: context,
-      builder: (_) => editDialog,
-    );
+    await showDialog<void>(context: context, builder: (_) => editDialog);
   }
 
   Future<void> _confirmDelete(InstallPackageEntity entity) async {

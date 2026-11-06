@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_kts_template/core/entities/installPackage/installPackageEntity.dart';
 import 'package:flutter_kts_template/core/selfUpdate/install_package_repository.dart';
@@ -21,9 +22,7 @@ void main() {
     tempDir = await Directory.systemTemp.createTemp('self_update_pager_test');
     store = await openStore(directory: tempDir.path);
     service = SelfUpdateService(
-      repository: InstallPackageRepository(
-        store.box<InstallPackageEntity>(),
-      ),
+      repository: InstallPackageRepository(store.box<InstallPackageEntity>()),
       storage: InstallPackageStorage(
         installDirectory: Directory(p.join(tempDir.path, 'install')),
       ),
@@ -37,15 +36,19 @@ void main() {
     }
   });
 
-  Future<void> pumpPager(WidgetTester tester) async {
+  Future<void> pumpPager(
+    WidgetTester tester, {
+    SelfUpdateService? serviceOverride,
+    Future<Uint8List?> Function()? pickZipFile,
+  }) async {
     LocaleSettings.setLocaleSync(AppLocale.zh);
     await tester.pumpWidget(
       TranslationProvider(
         child: MaterialApp(
           home: Scaffold(
             body: SelfUpdatePager(
-              service: service,
-              pickZipFile: () async => Uint8List(0),
+              service: serviceOverride ?? service,
+              pickZipFile: pickZipFile ?? () async => Uint8List(0),
             ),
           ),
         ),
@@ -81,4 +84,92 @@ void main() {
     expect(find.textContaining('版本号'), findsOneWidget);
     expect(find.text('备注（选填）'), findsOneWidget);
   });
+
+  testWidgets('confirm upload closes dialog on windows and keeps page', (
+    tester,
+  ) async {
+    debugDefaultTargetPlatformOverride = TargetPlatform.windows;
+    addTearDown(() => debugDefaultTargetPlatformOverride = null);
+
+    final fakeService = _FakeSelfUpdateService(
+      repository: service.repository,
+      storage: service.storage,
+    );
+    await pumpPager(
+      tester,
+      serviceOverride: fakeService,
+      pickZipFile: () async => Uint8List(0),
+    );
+
+    await tester.tap(find.text('文件上传'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('上传'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const ValueKey('version_field')),
+      '0.1.1.1',
+    );
+    await tester.tap(find.text('确定'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('上传安装包'), findsNothing);
+    expect(find.byType(SelfUpdatePage), findsOneWidget);
+  });
+
+  testWidgets('confirm upload closes page on mobile and keeps page', (
+    tester,
+  ) async {
+    debugDefaultTargetPlatformOverride = TargetPlatform.android;
+    addTearDown(() => debugDefaultTargetPlatformOverride = null);
+
+    final fakeService = _FakeSelfUpdateService(
+      repository: service.repository,
+      storage: service.storage,
+    );
+    await pumpPager(
+      tester,
+      serviceOverride: fakeService,
+      pickZipFile: () async => Uint8List(0),
+    );
+
+    await tester.tap(find.text('文件上传'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('上传'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const ValueKey('version_field')),
+      '0.1.1.1',
+    );
+    await tester.tap(find.text('确定'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('上传安装包'), findsNothing);
+    expect(find.byType(SelfUpdatePage), findsOneWidget);
+  });
+}
+
+class _FakeSelfUpdateService extends SelfUpdateService {
+  _FakeSelfUpdateService({required super.repository, required super.storage});
+
+  @override
+  Future<String> uploadZip(Uint8List bytes, {DateTime? now}) async {
+    return 'install_20260919_123456.zip';
+  }
+
+  @override
+  Future<void> savePackage({
+    required String version,
+    String? remark,
+    required String fileName,
+    DateTime? createdAt,
+  }) async {
+    repository.save(
+      InstallPackageEntity(
+        version: version,
+        fileName: fileName,
+        remark: remark,
+        createdAt: createdAt ?? DateTime(2026, 9, 19, 12, 34, 56),
+      ),
+    );
+  }
 }
