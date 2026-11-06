@@ -1059,7 +1059,7 @@ class _CpdsPageState extends State<CpdsPage> {
         CpdsMessages.tr(
           context,
           '请先选择业务网卡',
-          'Please select the business NIC first',
+          'Please select the Service NIC first',
           'يرجى تحديد بطاقة شبكة الأعمال أولاً',
         ),
       );
@@ -1095,7 +1095,7 @@ class _CpdsPageState extends State<CpdsPage> {
         CpdsMessages.tr(
           context,
           '请先选择业务网卡',
-          'Please select the business NIC first',
+          'Please select the Service NIC first',
           'يرجى تحديد بطاقة شبكة الأعمال أولاً',
         ),
       );
@@ -1174,7 +1174,7 @@ class _CpdsPageState extends State<CpdsPage> {
     final noDeviceMessage = CpdsMessages.tr(
       context,
       '未检测到注钥枪，请连接后重试',
-      'Key loader not detected. Connect and retry.',
+      'Key injector not detected. Connect and retry.',
       'لم يتم اكتشاف جهاز تحميل المفاتيح، يرجى التوصيل وإعادة المحاولة',
     );
     final manager = getKeyLoaderUsbBulkManager();

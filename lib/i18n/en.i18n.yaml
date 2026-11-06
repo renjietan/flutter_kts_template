@@ -2,8 +2,8 @@ app:
   title: My App
   appbar:
     paramsInject: Params inject
-    radioManager: Radio manager
-    keyManager: Key manager
+    radioManager: Radio Management
+    keyManager: Key Managementer
     updateCpdc: Update CPDC
 common:
   confirm: Confirm
@@ -58,18 +58,18 @@ pager:
       parse: parse
       finish: finish
   radioManager:
-    title: Radio manager
+    title: Radio Management
     netNode: Net Node
     fileParse: File Parse
   injectEncrypt:
     paramPairing: Parameter pairing
-    keyLoaderManager: Key loader
+    keyLoaderManager: Key Injector
 tips:
   title: Tips
   cancel: Cancel
   ok: Confirm
   paramsInject:
-    noKeyLoader: No Key Loader is available. Please go and add one
+    noKeyLoader: No key Injector is available. Please go and add one
     noRadio: No radio is available. Please go and add one
     selectRadios: Please select a radio
     gotoConfig: Binding completed. go to configuration now?
@@ -94,7 +94,7 @@ tableColumn:
     radioType_desc: Radio type
     columnInfo: Show column info
   injectEncrypt:
-    parameterPacket: Parameter Packet
+    parameterPacket: Parameter Package
     radio: Matching Radio
     consumer: Consumer
     location: Location
@@ -119,7 +119,7 @@ button:
   injectEncrypt:
     export: export
     create: Add
-    createKeyLoader: Add Key Loader
+    createKeyLoader: Add key Injector
 checkbox:
   DeselectAll: Deselect All
   SelectAll: Select All ({count})
@@ -154,11 +154,11 @@ Form:
       invalid: 5-30 letters, numbers, spaces, or "_"
   injectEncrypt:
     name:
-      label: Key loader
+      label: Key injector
       placeholder: Please enter name
       validate: Please enter name!
   paramsInject:
-    text: Key loader
+    text: Key injector
     deviceType:
       text: Device type
       validatorText: Please enter device type!
@@ -166,7 +166,7 @@ Form:
       text: Device IP
       validatorText: Please enter a valid IP address!
     selectKeyLoader:
-      text: "Key loader"
+      text: "Key injector"
       placeholder: "Please select"
 entity:
   sameName: Name must be unique
@@ -219,14 +219,14 @@ cpds:
   filePlaceholder: Select a communication package
   packageFileMissing: Communication parameter package file is missing
   fileBytesEmpty: File bytes are empty
-  browseConfirm: Re-uploading a file will clear communication parameter packages bound to key loaders. Continue?
+  browseConfirm: Re-uploading a file will clear communication parameter packages bound to key injectors. Continue?
   browseSourceTitle: Select file source
   browseSourceLocal: Local files
-  browseSourceKeyLoader: Key loader files
+  browseSourceKeyLoader: Key injector files
   keyLoaderPermissionDenied: USB permission not granted
-  keyLoaderConnectSuccess: Key loader connected
-  keyLoaderConnectFailed: Failed to connect to key loader
-  keyLoaderStepConnect: Connect key loader
+  keyLoaderConnectSuccess: Key injector connected
+  keyLoaderConnectFailed: Failed to connect to key injector
+  keyLoaderStepConnect: Connect key injector
   keyLoaderStepList: Get file list
   keyLoaderStepSelect: File selection
   keyLoaderStepSelected: File selected
@@ -247,7 +247,7 @@ cpds:
   keyLoaderStepDecrypt: Decrypt
   keyLoaderStepParse: Parse
   keyLoaderFileCorrupted: File incomplete, corrupted
-  keyLoaderDownloadTimeout: File receive timed out, replug the key loader
+  keyLoaderDownloadTimeout: File receive timed out, replug the key injector
   keyLoaderDeviceRemoved: USB device disconnected
   keyLoaderDecryptFailed: Decrypt failed
   keyLoaderSuccess: Download complete
@@ -262,7 +262,7 @@ cpds:
   currentTitle: Current Node
   online: "{online}/{expected} online"
   noSelection: Select a network node
-  networkInterfaceLabel: Business NIC
+  networkInterfaceLabel: Service NIC
   networkInterfacePlaceholder: Select a network interface
   networkInterfaceOption: "{name} · {ip} ({type})"
   networkInterfaceWired: Wired
@@ -339,7 +339,7 @@ cpds:
     detailPackFail: Package {index} packaging failed
     detailMerge: Merging tar packages into a ZIP package
     detailEncrypt: Encrypting the ZIP package
-  versionLabel: "Key loader version:"
+  versionLabel: "Key injector version:"
   usbProgress:
     stepPermission: Permission
     stepConnect: Connect
@@ -347,11 +347,11 @@ cpds:
     stepReady: Ready
     stepTransfer: Transfer
     stepComplete: Complete
-    stepUsb: Key loader
+    stepUsb: Key injector
     completed: Completed
     terminated: Terminated
     detailPermissionStart: Checking USB permission
-    detailConnectStart: Connecting key loader
+    detailConnectStart: Connecting key injector
     detailConnectSuccess: Connected
     detailConnectFail: Connection failed
     detailHandshakeStart: Sending LIGHT_GREEN, waiting for FILE_OK
@@ -376,8 +376,8 @@ cpds:
     detailGreenSuccess: Indicator steady on
     detailGreenTimeout: Indicator steady on timed out
     detailTransferStart: Chunked sending
-    detailTransferTimeout: File receive timed out, replug the key loader
-    detailComplete: Key loader received successfully
+    detailTransferTimeout: File receive timed out, replug the key injector
+    detailComplete: Key injector received successfully
     detailVerifyTimeout: Verification timed out
     detailVerifyFail: Verification failed
     detailVerifySaveFail: Write failed

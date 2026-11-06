@@ -19,7 +19,7 @@ class _SideMenuState extends State<SideMenu> with SideMenuMixin {
     //   selectedIndex = menuIndex.selectedIndex;
     // });
     return SizedBox(
-      width: 60.w,
+      width: 70.w,
       child: Container(
         color: const Color(0xFF171C22),
         child: SingleChildScrollView(
