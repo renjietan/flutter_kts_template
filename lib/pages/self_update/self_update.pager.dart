@@ -6,14 +6,14 @@ import 'package:flutter_kts_template/core/selfUpdate/scan/scan_controller.dart';
 import 'package:flutter_kts_template/core/selfUpdate/self_update_service.dart';
 import 'package:flutter_kts_template/core/selfUpdate/session/udp_update_transport.dart';
 import 'package:flutter_kts_template/core/selfUpdate/session/update_session.dart';
-import 'package:flutter_kts_template/core/selfUpdate/update/update_flow_coordinator.dart';
 import 'package:flutter_kts_template/core/selfUpdate/update/transfer_coordinator.dart';
+import 'package:flutter_kts_template/core/selfUpdate/update/update_flow_coordinator.dart';
 import 'package:flutter_kts_template/core/selfUpdate/update/update_step_controller.dart';
 import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
 import 'package:flutter_kts_template/pages/self_update/self_update.page.dart';
-import 'package:flutter_kts_template/pages/self_update/widgets/upload_package_dialog.dart';
 import 'package:flutter_kts_template/pages/self_update/widgets/scan_countdown_dialog.dart';
 import 'package:flutter_kts_template/pages/self_update/widgets/update_step_dialog.dart';
+import 'package:flutter_kts_template/pages/self_update/widgets/upload_package_dialog.dart';
 import 'package:path/path.dart' as p;
 
 /// 自更新上传页面的编排层。
@@ -101,15 +101,12 @@ class _SelfUpdatePagerState extends State<SelfUpdatePager> {
       },
     );
     if (defaultTargetPlatform != TargetPlatform.windows) {
-      await Navigator.of(context).push<void>(
-        MaterialPageRoute(builder: (_) => uploadDialog),
-      );
+      await Navigator.of(
+        context,
+      ).push<void>(MaterialPageRoute(builder: (_) => uploadDialog));
       return;
     }
-    await showDialog<void>(
-      context: context,
-      builder: (_) => uploadDialog,
-    );
+    await showDialog<void>(context: context, builder: (_) => uploadDialog);
   }
 
   Future<void> _handleDelete(InstallPackageEntity entity) async {
@@ -380,10 +377,10 @@ class _SelfUpdatePagerState extends State<SelfUpdatePager> {
       interfacesLoading: CpdsManager.instance.interfacesLoading,
       onRefreshInterfaces: _refreshInterfaces,
       onSelectInterface: _selectInterface,
-      onUpload: _handleUpload,
-      onDelete: _handleDelete,
-      onUpdate: _handleUpdate,
-      onEdit: _handleEdit,
+      onUpload: _handleUpload, // 表格-文件上传
+      onDelete: _handleDelete, // 表格-文件删除
+      onUpdate: _handleUpdate, // 表格-文件更新
+      onEdit: _handleEdit, // 表格-文件编辑
     );
   }
 }

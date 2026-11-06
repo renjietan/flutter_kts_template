@@ -1,7 +1,8 @@
 //应用初始化
 import 'dart:async';
 
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter_kts_template/config/args_config.dart';
 import 'package:flutter_kts_template/logger/logger.dart';
 
 import 'default_app.dart';
@@ -19,12 +20,14 @@ class AppInit {
       reportErrorAndLog(details);
     };
     runZoned<Future<void>>(
-          () async {
+      () async {
         callback();
       },
       zoneSpecification: ZoneSpecification(
         print: (Zone self, ZoneDelegate parent, Zone zone, String line) {
-          collectLog(parent, zone, line); // 收集日志
+          if (ArgsConfig.instance.logLevel == "debug") {
+            collectLog(parent, zone, line); // 收集日志
+          }
         },
       ),
       //未捕获的异常的回调
@@ -38,6 +41,7 @@ class AppInit {
 
   //日志拦截, 收集日志
   static void collectLog(ZoneDelegate parent, Zone zone, String line) {
+    // 生产环境下不打印日志
     parent.print(zone, "日志拦截: $line");
   }
 
@@ -50,9 +54,7 @@ class AppInit {
       // 该断言仅在 debug/profile 生效且非致命，过滤掉以免污染错误日志。
       // 功能层面（keydown 被丢导致 Ctrl+V 等失效）已由
       // KeyboardShortcutRecovery 在应用层兜底恢复；彻底修复需升级引擎。
-      GlobalLogger.logDebug(
-        'Ignored known benign Windows keyboard assertion: ${details.exception}',
-      );
+      GlobalLogger.logDebug('已忽略已知良性的 Windows 键盘断言: ${details.exception}');
       return;
     }
     final errorString = '异常: ${details.exception}\n堆栈: ${details.stack}';
@@ -68,9 +70,7 @@ class AppInit {
     }
     final String message = ex.toString();
     return message.contains('hardware_keyboard.dart') &&
-        message.contains(
-          'A KeyDownEvent is dispatched, but the state shows that the physical key is already pressed',
-        );
+        message.contains('调度了一个 KeyDownEvent，但状态显示该物理按键已被按下');
   }
 
   // 构建错误信息

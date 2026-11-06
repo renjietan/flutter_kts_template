@@ -277,30 +277,67 @@ class UpdateSession {
     if (command != null) {
       _buffer.clear();
     }
+
     final done = Completer<void>();
+    var endReason = 'unknown';
+
+    void completeDone() {
+      if (!done.isCompleted) {
+        done.complete();
+      }
+    }
+
+    void finish(String reason) {
+      if (done.isCompleted) {
+        return;
+      }
+      endReason = reason;
+      completeDone();
+    }
+
     void check() {
       final matching = _buffer.where(matches).toList();
       if (isDone != null && isDone(matching) && !done.isCompleted) {
-        done.complete();
+        finish('isDone');
       }
     }
 
     late StreamSubscription<UpdateReply> sub;
     sub = _notifier.stream.listen((_) => check());
+
     if (command != null) {
       await transport.send(command);
     }
+
     check();
+
+    Timer? timeoutTimer;
+    StreamSubscription<void>? resetSub;
+    StreamSubscription<void>? cancelSub;
+
+    timeoutTimer = Timer(timeout, () => finish('timeout'));
+
+    if (_resetSignal.isCompleted) {
+      finish('reset');
+    } else {
+      resetSub = _resetSignal.future.asStream().listen((_) => finish('reset'));
+    }
+
+    if (cancelSignal != null) {
+      cancelSub = cancelSignal.asStream().listen((_) => finish('cancel'));
+    }
+
     try {
-      await Future.any(<Future<void>>[
-        if (isDone != null) done.future,
-        Future<void>.delayed(timeout),
-        _resetSignal.future,
-        ?cancelSignal,
-      ]);
+      await done.future;
     } finally {
+      if (timeoutTimer != null) {
+        timeoutTimer.cancel();
+      }
+      await resetSub?.cancel();
+      await cancelSub?.cancel();
       await sub.cancel();
     }
+
     return _buffer.where(matches).toList();
   }
 }

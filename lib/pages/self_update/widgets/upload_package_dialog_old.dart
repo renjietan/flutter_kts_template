@@ -1,0 +1,279 @@
+// ignore_for_file: cpd_lints/hardcoded_dimension
+import 'package:composable_data_table/composable_data_table.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:flutter_kts_template/components/TextField/simple.form.textfield.dart';
+import 'package:flutter_kts_template/components/button/base.button.dart';
+import 'package:flutter_kts_template/theme/table.theme.dart';
+import 'package:flutter_kts_template/i18n/handle/translations.g.dart';
+import 'package:flutter_kts_template/utils/arabic_digits.dart';
+
+/// 文件上传弹窗（样式对齐电台管理）。
+///
+/// 三个区域：
+/// - version：必填，仅数字，格式 `0.1.1.1`（点分四段）；
+/// - 备注：textarea，选填，最长 150 字；
+/// - 文件上传：只读框 + 【上传】按钮，上传中按钮显示 loading。
+class UploadPackageDialog extends StatefulWidget {
+  const UploadPackageDialog({
+    super.key,
+    this.onPickFile,
+    this.onConfirm,
+    this.usePage = false,
+  });
+
+  /// 选择/上传文件，返回文件名；取消返回 null，失败抛出异常。
+  final Future<String?> Function()? onPickFile;
+
+  /// 校验通过后回调（version、备注、文件名）。
+  final void Function(String version, String? remark, String fileName)?
+  onConfirm;
+
+  final bool usePage;
+
+  @override
+  State<UploadPackageDialog> createState() => _UploadPackageDialogState();
+}
+
+class _UploadPackageDialogState extends State<UploadPackageDialog> {
+  static final RegExp _versionPattern = RegExp(r'^\d+\.\d+\.\d+\.\d+$');
+
+  final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>();
+  final TextEditingController _versionController = TextEditingController();
+  final TextEditingController _remarkController = TextEditingController();
+  final TextEditingController _fileNameController = TextEditingController();
+
+  bool _uploading = false;
+
+  @override
+  void dispose() {
+    _versionController.dispose();
+    _remarkController.dispose();
+    _fileNameController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _pickFile() async {
+    final onPickFile = widget.onPickFile;
+    if (onPickFile == null || _uploading) {
+      return;
+    }
+    setState(() {
+      _uploading = true;
+    });
+    try {
+      final name = await onPickFile();
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _uploading = false;
+        _fileNameController.text = name ?? '';
+      });
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _uploading = false;
+      });
+    }
+  }
+
+  void _submit() {
+    if (!(_formKey.currentState?.validate() ?? false)) {
+      return;
+    }
+
+    final remark = _remarkController.text.trim();
+    widget.onConfirm?.call(
+      _versionController.text.trim(),
+      remark.isEmpty ? null : remark,
+      _fileNameController.text.trim(),
+    );
+  }
+
+  String? _validateVersion(String? value) {
+    final version = value?.trim() ?? '';
+    if (version.isEmpty) {
+      return t.selfUpdate.versionRequired;
+    }
+    if (!_versionPattern.hasMatch(version)) {
+      return t.selfUpdate.versionFormat;
+    }
+    return null;
+  }
+
+  String? _validateFile(String? value) {
+    if ((value ?? '').trim().isEmpty) {
+      return t.selfUpdate.packageRequired;
+    }
+    return null;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final title = Text(
+      t.selfUpdate.uploadTitle,
+      style: TextStyle(color: Colors.white, fontSize: 16),
+    );
+    final actions = <Widget>[
+      TextButton(
+        onPressed: () => Navigator.of(context).pop(),
+        child: Text(
+          t.selfUpdate.cancel,
+          style: TextStyle(color: Colors.white70),
+        ),
+      ),
+      BaseButton(
+        label: t.selfUpdate.ok,
+        minWidth: 100,
+        borderRadius: 5,
+        onPressed: _submit,
+      ),
+    ];
+
+    if (widget.usePage) {
+      return Scaffold(
+        backgroundColor: const Color(0xFF20262D),
+        appBar: AppBar(
+          backgroundColor: const Color(0xFF20262D),
+          foregroundColor: Colors.white,
+          elevation: 0,
+          title: title,
+        ),
+        body: SafeArea(
+          child: SingleChildScrollView(
+            padding: EdgeInsets.all(16),
+            child: _buildForm(),
+          ),
+        ),
+        bottomNavigationBar: SafeArea(
+          child: Padding(
+            padding: EdgeInsets.all(16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: actions,
+            ),
+          ),
+        ),
+      );
+    }
+
+    return AlertDialog(
+      backgroundColor: const Color(0xFF20262D),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10),
+      ),
+      title: title,
+      content: SizedBox(
+        width: 560,
+        child: _buildForm(),
+      ),
+      actions: actions,
+    );
+  }
+
+  Widget _buildForm() {
+    return FormBuilder(
+      key: _formKey,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _buildFieldLabel(t.selfUpdate.version, required: true),
+          const SizedBox(height: 8),
+          SimpleFormTextField(
+            key: const ValueKey('version_field'),
+            field: FormFieldConfig(
+              name: 'version',
+              label: t.selfUpdate.version,
+              hintText: localizeDigits(context, t.selfUpdate.versionHint),
+              textEditingController: _versionController,
+              required: true,
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                LengthLimitingTextInputFormatter(30),
+              ],
+              validators: [_validateVersion],
+            ),
+          ),
+          const SizedBox(height: 16),
+          _buildFieldLabel(t.selfUpdate.remarkOptional),
+          const SizedBox(height: 8),
+          SimpleFormTextField(
+            key: const ValueKey('remark_field'),
+            field: FormFieldConfig(
+              name: 'remark',
+              label: t.selfUpdate.remarkOptional,
+              hintText: t.selfUpdate.remarkHint,
+              textEditingController: _remarkController,
+              keyboardType: TextInputType.multiline,
+              maxLines: null,
+              minLines: 3,
+              inputFormatters: [LengthLimitingTextInputFormatter(150)],
+              counterTextBuilder: (value) => localizeDigits(context, '${value.length}/150'),
+            ),
+          ),
+          const SizedBox(height: 16),
+          _buildFieldLabel(t.selfUpdate.packageLabel, required: true),
+          const SizedBox(height: 8),
+          DataTablePlusThemeProvider(
+            theme: getThemePreset(ThemePreset.dark),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Expanded(
+                  child: SimpleFormTextField(
+                    key: const ValueKey('file_field'),
+                    field: FormFieldConfig(
+                      name: 'fileName',
+                      label: t.selfUpdate.packageLabel,
+                      hintText: t.selfUpdate.packageHint,
+                      textEditingController: _fileNameController,
+                      readonly: true,
+                      validators: [_validateFile],
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                BaseButton(
+                  label: t.selfUpdate.upload,
+                  minWidth: 80,
+                  isLoading: _uploading,
+                  onPressed: _uploading ? null : _pickFile,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFieldLabel(String text, {bool required = false}) {
+    return Container(
+      alignment: AlignmentDirectional.centerStart,
+      child: required
+          ? Text.rich(
+              TextSpan(
+                children: [
+                  const TextSpan(
+                    text: '* ',
+                    style: TextStyle(color: Colors.red),
+                  ),
+                  TextSpan(
+                    text: text,
+                    style: const TextStyle(color: Colors.white, fontSize: 14),
+                  ),
+                ],
+              ),
+            )
+          : Text(
+              text,
+              style: const TextStyle(color: Colors.white, fontSize: 14),
+            ),
+    );
+  }
+}

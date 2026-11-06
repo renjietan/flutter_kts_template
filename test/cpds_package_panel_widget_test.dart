@@ -18,15 +18,14 @@ CpdsNode _node(String id, {int nodeType = 0}) => CpdsNode(
 CpdsUnit _unit(String id, {List<String> nodeIds = const []}) =>
     CpdsUnit(id: id, name: id, nodeIds: nodeIds, subUnits: const []);
 
-CpdsPackage _package(List<CpdsUnit> units, List<CpdsNode> nodes) =>
-    CpdsPackage(
-      fileName: 'test.zip',
-      fileSize: 0,
-      expandedSize: 0,
-      requiredWorkspace: 0,
-      units: units,
-      nodes: nodes,
-    );
+CpdsPackage _package(List<CpdsUnit> units, List<CpdsNode> nodes) => CpdsPackage(
+  fileName: 'test.zip',
+  fileSize: 0,
+  expandedSize: 0,
+  requiredWorkspace: 0,
+  units: units,
+  nodes: nodes,
+);
 
 Widget _wrap(CpdsPackage package) {
   LocaleSettings.setLocaleSync(AppLocale.zh);
@@ -39,21 +38,23 @@ Widget _wrap(CpdsPackage package) {
           onBrowse: () {},
           onSelectNode: (_) {},
           onSelectFutureWarrior: (_) {},
+          onEditNode: (String value) {},
+          onChangePassword: () {},
         ),
       ),
     ),
   );
 }
 
-Finder _treeText(String text) => find.descendant(
-  of: find.byType(ListView),
-  matching: find.text(text),
-);
+Finder _treeText(String text) =>
+    find.descendant(of: find.byType(ListView), matching: find.text(text));
 
 void main() {
   testWidgets('默认展开，点击 unit 可收起/展开', (tester) async {
     final package = _package(
-      [_unit('u1', nodeIds: ['n1', 'n3'])],
+      [
+        _unit('u1', nodeIds: ['n1', 'n3']),
+      ],
       [_node('n1', nodeType: 1), _node('n3', nodeType: 2)],
     );
     await tester.pumpWidget(_wrap(package));
@@ -81,7 +82,9 @@ void main() {
 
   testWidgets('没有 nodeType==1 时不显示 CS', (tester) async {
     final package = _package(
-      [_unit('u1', nodeIds: ['n3'])],
+      [
+        _unit('u1', nodeIds: ['n3']),
+      ],
       [_node('n3', nodeType: 2)],
     );
     await tester.pumpWidget(_wrap(package));
@@ -105,7 +108,9 @@ void main() {
     debugDefaultTargetPlatformOverride = TargetPlatform.windows;
     try {
       final package = _package(
-        [_unit('u1', nodeIds: ['n3', 'n4'])],
+        [
+          _unit('u1', nodeIds: ['n3', 'n4']),
+        ],
         [_node('n3', nodeType: 2), _node('n4', nodeType: 0)],
       );
       await tester.pumpWidget(_wrap(package));
@@ -128,7 +133,9 @@ void main() {
     debugDefaultTargetPlatformOverride = TargetPlatform.android;
     try {
       final package = _package(
-        [_unit('u1', nodeIds: ['n3'])],
+        [
+          _unit('u1', nodeIds: ['n3']),
+        ],
         [_node('n3', nodeType: 2)],
       );
       await tester.pumpWidget(_wrap(package));
@@ -156,7 +163,9 @@ void main() {
     debugDefaultTargetPlatformOverride = TargetPlatform.windows;
     try {
       final package = _package(
-        [_unit('u1', nodeIds: ['n3'])],
+        [
+          _unit('u1', nodeIds: ['n3']),
+        ],
         [_node('n3', nodeType: 2)],
       );
       await tester.pumpWidget(_wrap(package));

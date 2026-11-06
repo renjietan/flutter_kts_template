@@ -4,13 +4,15 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_kts_template/core/databaseManager/databaseManager.dart';
 import 'package:flutter_kts_template/core/express.dart';
 
+import 'config/args_config.dart';
 import 'core/rtc/managers/udp/udp.manager.dart';
 import 'init/app_init.dart';
 import 'logger/logger.dart';
 
 final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
 
-void main() {
+void main(List<String> args) {
+  ArgsConfig.instance.init(args);
   AppInit.run();
   ProcessSignal.sigint.watch().listen((_) async {
     GlobalLogger.logWTF("1、准备关闭数据库...");
