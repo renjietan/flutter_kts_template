@@ -45,6 +45,7 @@ class _UploadPackageDialogState extends State<UploadPackageDialog> {
   final TextEditingController _fileNameController = TextEditingController();
 
   bool _uploading = false;
+  bool _submitting = false;
 
   @override
   void dispose() {
@@ -82,16 +83,19 @@ class _UploadPackageDialogState extends State<UploadPackageDialog> {
   }
 
   void _submit() {
+    if (_submitting) {
+      return;
+    }
     if (!(_formKey.currentState?.validate() ?? false)) {
       return;
     }
 
+    _submitting = true;
+    final version = _versionController.text.trim();
     final remark = _remarkController.text.trim();
-    widget.onConfirm?.call(
-      _versionController.text.trim(),
-      remark.isEmpty ? null : remark,
-      _fileNameController.text.trim(),
-    );
+    final fileName = _fileNameController.text.trim();
+    Navigator.of(context).pop();
+    widget.onConfirm?.call(version, remark.isEmpty ? null : remark, fileName);
   }
 
   String? _validateVersion(String? value) {
@@ -163,14 +167,9 @@ class _UploadPackageDialogState extends State<UploadPackageDialog> {
 
     return AlertDialog(
       backgroundColor: const Color(0xFF20262D),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       title: title,
-      content: SizedBox(
-        width: 560,
-        child: _buildForm(),
-      ),
+      content: SizedBox(width: 560, child: _buildForm()),
       actions: actions,
     );
   }
@@ -213,7 +212,8 @@ class _UploadPackageDialogState extends State<UploadPackageDialog> {
               maxLines: null,
               minLines: 3,
               inputFormatters: [LengthLimitingTextInputFormatter(150)],
-              counterTextBuilder: (value) => localizeDigits(context, '${value.length}/150'),
+              counterTextBuilder: (value) =>
+                  localizeDigits(context, '${value.length}/150'),
             ),
           ),
           const SizedBox(height: 16),

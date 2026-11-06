@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_kts_template/core/entities/installPackage/installPackageEntity.dart';
 import 'package:flutter_kts_template/core/selfUpdate/install_package_repository.dart';
@@ -215,5 +216,79 @@ void main() {
     // 第 1 页显示最新（i=24），不显示最旧（i=0）。
     expect(find.text('f24.zip'), findsOneWidget);
     expect(find.text('f0.zip'), findsNothing);
+  });
+
+  testWidgets('confirm edit closes dialog on windows and keeps page', (
+    tester,
+  ) async {
+    debugDefaultTargetPlatformOverride = TargetPlatform.windows;
+    addTearDown(() => debugDefaultTargetPlatformOverride = null);
+
+    seed([
+      InstallPackageEntity(
+        version: '0.1.1.1',
+        fileName: 'a.zip',
+        createdAt: DateTime(2026, 1, 1),
+      ),
+    ]);
+    String? editedVersion;
+    await pumpPage(
+      tester,
+      onEdit: (entity, version, remark) {
+        editedVersion = version;
+      },
+    );
+
+    await tester.ensureVisible(find.byIcon(Icons.edit));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byIcon(Icons.edit));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const ValueKey('edit_version_field')),
+      '0.2.2.2',
+    );
+    await tester.tap(find.text('确定'));
+    await tester.pumpAndSettle();
+
+    expect(editedVersion, '0.2.2.2');
+    expect(find.text('编辑安装包'), findsNothing);
+    expect(find.byType(SelfUpdatePage), findsOneWidget);
+  });
+
+  testWidgets('confirm edit closes page on mobile and keeps page', (
+    tester,
+  ) async {
+    debugDefaultTargetPlatformOverride = TargetPlatform.android;
+    addTearDown(() => debugDefaultTargetPlatformOverride = null);
+
+    seed([
+      InstallPackageEntity(
+        version: '0.1.1.1',
+        fileName: 'a.zip',
+        createdAt: DateTime(2026, 1, 1),
+      ),
+    ]);
+    String? editedVersion;
+    await pumpPage(
+      tester,
+      onEdit: (entity, version, remark) {
+        editedVersion = version;
+      },
+    );
+
+    await tester.ensureVisible(find.byIcon(Icons.edit));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byIcon(Icons.edit));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const ValueKey('edit_version_field')),
+      '0.2.2.2',
+    );
+    await tester.tap(find.text('确定'));
+    await tester.pumpAndSettle();
+
+    expect(editedVersion, '0.2.2.2');
+    expect(find.text('编辑安装包'), findsNothing);
+    expect(find.byType(SelfUpdatePage), findsOneWidget);
   });
 }

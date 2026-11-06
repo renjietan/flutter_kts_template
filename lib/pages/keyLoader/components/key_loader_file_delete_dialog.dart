@@ -91,7 +91,7 @@ class _KeyLoaderFileDeleteDialogState extends State<KeyLoaderFileDeleteDialog> {
       _showError(
         _tr(
           '注钥枪连接失败',
-          'Key loader connection failed',
+          'Key injector connection failed',
           'فشل الاتصال بجهاز تحميل المفاتيح',
         ),
       );
@@ -327,7 +327,7 @@ class _KeyLoaderFileDeleteDialogState extends State<KeyLoaderFileDeleteDialog> {
         for (final file in targets) {
           file.status = _tr(
             '注钥枪断开连接',
-            'Key loader disconnected',
+            'Key injector disconnected',
             'تم فصل جهاز تحميل المفاتيح',
           );
         }
@@ -518,7 +518,7 @@ class _KeyLoaderFileDeleteDialogState extends State<KeyLoaderFileDeleteDialog> {
     if (!mounted || _closed) return;
     final disconnectedText = _tr(
       '注钥枪断开连接',
-      'Key loader disconnected',
+      'Key injector disconnected',
       'تم فصل جهاز تحميل المفاتيح',
     );
     if (_deleting && _currentFile != null) {
@@ -691,14 +691,14 @@ class _KeyLoaderFileDeleteDialogState extends State<KeyLoaderFileDeleteDialog> {
         Text(
           _tr(
             '从注钥枪中删除文件',
-            'Delete files from key loader',
+            'Delete files from key injector',
             'حذف الملفات من جهاز تحميل المفاتيح',
           ),
           style: TextStyle(color: Colors.white, fontSize: 15.sp),
         ),
         if (_versionText.isNotEmpty)
           Text(
-            '${_tr('注钥枪版本号：', 'Key loader version: ', 'رقم إصدار جهاز تحميل المفاتيح: ')}$_versionText',
+            '${_tr('注钥枪版本号：', 'Key injector version: ', 'رقم إصدار جهاز تحميل المفاتيح: ')}$_versionText',
             style: TextStyle(
               color: Colors.white70,
               fontSize: 13.sp,
@@ -768,7 +768,7 @@ class _KeyLoaderFileDeleteDialogState extends State<KeyLoaderFileDeleteDialog> {
                     _reconnectMessage.isEmpty
                         ? _tr(
                             '注钥枪断开连接',
-                            'Key loader disconnected',
+                            'Key injector disconnected',
                             'تم فصل جهاز تحميل المفاتيح',
                           )
                         : _reconnectMessage,
@@ -1099,7 +1099,7 @@ class _KeyLoaderFileDeleteDialogState extends State<KeyLoaderFileDeleteDialog> {
     return switch (step) {
       _DeleteStep.connect => _tr(
         '连接注钥枪',
-        'Connect key loader',
+        'Connect key injector',
         'الاتصال بجهاز تحميل المفاتيح',
       ),
       _DeleteStep.ready => _tr('就绪', 'Ready', 'جاهز'),

@@ -150,7 +150,7 @@ class _CpdsFutureWarriorSaveDialogState
         _keyLoaders = List<KeyLoadersEntity>.from(response.data.list as List);
       });
     } catch (error) {
-      GlobalLogger.logError('load key loaders failed: $error');
+      GlobalLogger.logError('load key injectors failed: $error');
     }
   }
 
@@ -302,7 +302,7 @@ class _CpdsFutureWarriorSaveDialogState
             CpdsMessages.tr(
               dialogContext,
               '请先选择注钥枪',
-              'Please select a key loader first',
+              'Please select a key injector first',
               'يرجى تحديد جهاز تحميل المفاتيح أولاً',
             ),
             style: TextStyle(color: Colors.white70, fontSize: 13.sp),
@@ -492,7 +492,7 @@ class _CpdsFutureWarriorSaveDialogState
     final form = SizedBox(
       width: widget.usePage
           ? double.infinity
-          : MediaQuery.sizeOf(context).width * 0.7,
+          : MediaQuery.sizeOf(context).width * 0.85,
       child: FormBuilder(
         key: _formKey,
         child: SingleChildScrollView(
@@ -570,7 +570,7 @@ class _CpdsFutureWarriorSaveDialogState
                               child: Text(
                                 t.tableColumn.injectEncrypt.parameterPacket,
                                 overflow: TextOverflow.ellipsis,
-                                maxLines: 1,
+                                maxLines: 2,
                               ),
                             ),
                           ),
@@ -598,7 +598,7 @@ class _CpdsFutureWarriorSaveDialogState
                                 CpdsMessages.tr(
                                   context,
                                   '下发IP',
-                                  'Downlink IP',
+                                  'Dst IP',
                                   'IP الإرسال',
                                 ),
                                 overflow: TextOverflow.ellipsis,
@@ -881,7 +881,7 @@ class CpdsFutureWarriorDuplicateDialog extends StatelessWidget {
         ),
       ),
       content: SizedBox(
-        width: 560.w,
+        width: MediaQuery.sizeOf(context).width * 0.75,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,

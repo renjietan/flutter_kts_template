@@ -389,7 +389,7 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
       });
       SimplePopup.success(t.common.OperationSuccess);
     } catch (error) {
-      GlobalLogger.logError('delete key loader detail failed: $error');
+      GlobalLogger.logError('delete key injector detail failed: $error');
       SimplePopup.error(error.toString());
     }
   }
@@ -435,7 +435,7 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
       });
       SimplePopup.success(t.common.OperationSuccess);
     } catch (error) {
-      GlobalLogger.logError('batch delete key loader details failed: $error');
+      GlobalLogger.logError('batch delete key injector details failed: $error');
       SimplePopup.error(error.toString());
     }
   }
@@ -449,7 +449,7 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
       await KeyLoadersApi.updateOneDetail(item.id, data: item.toJson());
       if (mounted) setState(() {});
     } catch (error) {
-      GlobalLogger.logError('clear key loader detail radio failed: $error');
+      GlobalLogger.logError('clear key injector detail radio failed: $error');
       SimplePopup.error(error.toString());
     }
   }
@@ -1684,8 +1684,8 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
                     height: 36.h,
                     label: CpdsMessages.tr(
                       context,
-                      '  从注钥枪中删除文件',
-                      'Delete files from key loader',
+                      '从注钥枪中删除文件',
+                      'Delete files from key injector',
                       'حذف الملفات من جهاز تحميل المفاتيح',
                     ),
                     onPressed: _exporting
@@ -1796,7 +1796,7 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
                 onPressed: _exporting ? null : _openKeyLoaderFileDeleteDialog,
                 icon: Icon(Icons.delete_forever_sharp, size: 13.sp),
                 label: Text(
-                  '${CpdsMessages.tr(context, '从注钥枪中删除文件', 'Delete files from key loader', 'حذف الملفات من جهاز تحميل المفاتيح')} ',
+                  '${CpdsMessages.tr(context, '从注钥枪中删除文件', 'Delete files from key injector', 'حذف الملفات من جهاز تحميل المفاتيح')} ',
                 ),
                 style: FilledButton.styleFrom(
                   backgroundColor: Color(0xFF00A2E9),
@@ -1834,7 +1834,7 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
               }
               if (snapshot.hasError) {
                 GlobalLogger.logError(
-                  'load key loader details: ${snapshot.error}',
+                  'load key injector details: ${snapshot.error}',
                 );
                 return _buildEmpty(context);
               }
@@ -1958,7 +1958,7 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
         },
       ),
       ColumnDefinition<KeyLoaderDetailsEntity>(
-        label: CpdsMessages.tr(context, '下发IP', 'Downlink IP', 'IP الإرسال'),
+        label: CpdsMessages.tr(context, '下发IP', 'Dst IP', 'IP الإرسال'),
         flex: 1,
         cellBuilder: TextCellBuilder.text<KeyLoaderDetailsEntity>(
           (item) => cpdsDisplayDownlinkIp(item.downlinkIp),
