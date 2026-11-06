@@ -22,13 +22,17 @@ class _SwitchLanguageState extends State<SwitchLanguage> {
   String _label(AppLocale locale) {
     switch (locale) {
       case AppLocale.zh:
-        return t.settings.zh;
+        // return t.settings.zh;
+        return "中文";
       case AppLocale.en:
-        return t.settings.en;
+        // return t.settings.en;
+        return "English";
       case AppLocale.arEg:
-        return t.settings.arEg;
+        // return t.settings.arEg;
+        return " العربية ";
       case AppLocale.arMa:
-        return t.settings.arMa;
+        // return t.settings.arMa;
+        return " العربية ";
     }
   }
 
@@ -55,10 +59,10 @@ class _SwitchLanguageState extends State<SwitchLanguage> {
       itemBuilder: (context) => [
         PopupMenuItem(value: AppLocale.zh, child: Text(_label(AppLocale.zh))),
         PopupMenuItem(value: AppLocale.en, child: Text(_label(AppLocale.en))),
-        PopupMenuItem(
-          value: AppLocale.arEg,
-          child: Text(_label(AppLocale.arEg)),
-        ),
+        // PopupMenuItem(
+        //   value: AppLocale.arEg,
+        //   child: Text(_label(AppLocale.arEg)),
+        // ),
         PopupMenuItem(
           value: AppLocale.arMa,
           child: Text(_label(AppLocale.arMa)),

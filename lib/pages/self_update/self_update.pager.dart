@@ -350,6 +350,7 @@ class _SelfUpdatePagerState extends State<SelfUpdatePager> {
         stepController.setPhase(UpdatePhase.finished);
         return;
       }
+      // 认证 -> 版本校验
       final ok = await transfer.run(devices);
       if (ok) {
         await transfer.runWrite();
