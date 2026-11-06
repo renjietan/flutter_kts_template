@@ -628,7 +628,6 @@ class TransferCoordinator {
     }
     for (var window = 0; window < UpdateSession.maxAttempts; window++) {
       _laterReplies.addAll(session.extractUpdateReplies());
-
       await session.collectUntil<WriteResultReply>(
         command: command,
         timeout: writeTimeout,
@@ -636,10 +635,14 @@ class TransferCoordinator {
         matches: (reply) => reply is WriteResultReply,
         isDone: (collected) {
           _applyWriteReplies(collected);
-          return _allWriteSuccess();
+          // return _allWriteSuccess();
+          return _hasBeenWritten();
         },
       );
-      if (_allWriteSuccess()) {
+      // if (_allWriteSuccess()) {
+      //   break;
+      // }
+      if (_hasBeenWritten()) {
         break;
       }
     }
@@ -652,7 +655,6 @@ class TransferCoordinator {
         device.detail = '';
       }
     }
-
     if (_selectedDevices.every((d) => d.status == t.selfUpdate.writeSuccess)) {
       controller.setStepStatus(5, StepStatus.success);
       controller.setActiveStep(6);
@@ -688,6 +690,14 @@ class TransferCoordinator {
 
   bool _allWriteSuccess() {
     return _selectedDevices.every((d) => d.status == t.selfUpdate.writeSuccess);
+  }
+
+  bool _hasBeenWritten() {
+    return _selectedDevices.every(
+      (d) =>
+          d.status == t.selfUpdate.writeFailedStatus ||
+          d.status == t.selfUpdate.writeSuccess,
+    );
   }
 
   void _applyWriteReplies(List<WriteResultReply> replies) {

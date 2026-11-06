@@ -206,7 +206,6 @@ layout:
   clearCache: Clear cache
   confirmExit: Confirm exit
   leavePagePrompt: Are you sure you want to leave this page?
-
 settings:
   zh: Chinese
   en: English
