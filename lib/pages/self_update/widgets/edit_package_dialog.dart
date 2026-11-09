@@ -36,6 +36,8 @@ class _EditPackageDialogState extends State<EditPackageDialog> {
   late final TextEditingController _remarkController;
   late final TextEditingController _fileNameController;
 
+  bool _submitting = false;
+
   @override
   void initState() {
     super.initState();
@@ -53,14 +55,18 @@ class _EditPackageDialogState extends State<EditPackageDialog> {
   }
 
   void _submit() {
+    if (_submitting) {
+      return;
+    }
     if (!(_formKey.currentState?.validate() ?? false)) {
       return;
     }
+
+    _submitting = true;
+    final version = _versionController.text.trim();
     final remark = _remarkController.text.trim();
-    widget.onConfirm?.call(
-      _versionController.text.trim(),
-      remark.isEmpty ? null : remark,
-    );
+    Navigator.of(context).pop();
+    widget.onConfirm?.call(version, remark.isEmpty ? null : remark);
   }
 
   String? _validateVersion(String? value) {

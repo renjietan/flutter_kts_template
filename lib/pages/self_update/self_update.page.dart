@@ -326,7 +326,6 @@ class _SelfUpdatePageState extends State<SelfUpdatePage> {
       entity: entity,
       usePage: defaultTargetPlatform != TargetPlatform.windows,
       onConfirm: (version, remark) {
-        Navigator.of(context).pop();
         widget.onEdit?.call(entity, version, remark);
       },
     );

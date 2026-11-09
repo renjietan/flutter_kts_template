@@ -96,7 +96,6 @@ class _SelfUpdatePagerState extends State<SelfUpdatePager> {
         if (!mounted) {
           return;
         }
-        Navigator.of(context).pop();
         _reload();
       },
     );
