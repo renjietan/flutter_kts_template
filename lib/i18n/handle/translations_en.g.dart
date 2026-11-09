@@ -8,6 +8,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
 import 'package:slang/generated.dart';
+
 import 'translations.g.dart';
 
 // Path: <root>
@@ -357,14 +358,14 @@ class _Translations$cpds$en extends Translations$cpds$zh {
 	@override String get filePlaceholder => 'Select a communication package';
 	@override String get packageFileMissing => 'Communication parameter package file is missing';
 	@override String get fileBytesEmpty => 'File bytes are empty';
-	@override String get browseConfirm => 'Re-uploading a file will clear communication parameter packages bound to key loaders. Continue?';
+	@override String get browseConfirm => 'Re-uploading a file will clear communication parameter packages bound to key injectors. Continue?';
 	@override String get browseSourceTitle => 'Select file source';
 	@override String get browseSourceLocal => 'Local files';
-	@override String get browseSourceKeyLoader => 'Key loader files';
+	@override String get browseSourceKeyLoader => 'Key injector files';
 	@override String get keyLoaderPermissionDenied => 'USB permission not granted';
-	@override String get keyLoaderConnectSuccess => 'Key loader connected';
-	@override String get keyLoaderConnectFailed => 'Failed to connect to key loader';
-	@override String get keyLoaderStepConnect => 'Connect key loader';
+	@override String get keyLoaderConnectSuccess => 'Key injector connected';
+	@override String get keyLoaderConnectFailed => 'Failed to connect to key injector';
+	@override String get keyLoaderStepConnect => 'Connect key injector';
 	@override String get keyLoaderStepList => 'Get file list';
 	@override String get keyLoaderStepSelect => 'File selection';
 	@override String get keyLoaderStepSelected => 'File selected';
@@ -385,7 +386,7 @@ class _Translations$cpds$en extends Translations$cpds$zh {
 	@override String get keyLoaderStepDecrypt => 'Decrypt';
 	@override String get keyLoaderStepParse => 'Parse';
 	@override String get keyLoaderFileCorrupted => 'File incomplete, corrupted';
-	@override String get keyLoaderDownloadTimeout => 'File receive timed out, replug the key loader';
+	@override String get keyLoaderDownloadTimeout => 'File receive timed out, replug the key injector';
 	@override String get keyLoaderDeviceRemoved => 'USB device disconnected';
 	@override String get keyLoaderDecryptFailed => 'Decrypt failed';
 	@override String get keyLoaderSuccess => 'Download complete';
@@ -400,7 +401,7 @@ class _Translations$cpds$en extends Translations$cpds$zh {
 	@override String get currentTitle => 'Current Node';
 	@override String online({required Object online, required Object expected}) => '${online}/${expected} online';
 	@override String get noSelection => 'Select a network node';
-	@override String get networkInterfaceLabel => 'Business NIC';
+	@override String get networkInterfaceLabel => 'Service NIC';
 	@override String get networkInterfacePlaceholder => 'Select a network interface';
 	@override String networkInterfaceOption({required Object name, required Object ip, required Object type}) => '${name} · ${ip} (${type})';
 	@override String get networkInterfaceWired => 'Wired';
@@ -418,7 +419,7 @@ class _Translations$cpds$en extends Translations$cpds$zh {
 	@override late final _Translations$cpds$setPassword$en setPassword = _Translations$cpds$setPassword$en._(_root);
 	@override late final _Translations$cpds$export$en export = _Translations$cpds$export$en._(_root);
 	@override late final _Translations$cpds$exportProgress$en exportProgress = _Translations$cpds$exportProgress$en._(_root);
-	@override String get versionLabel => 'Key loader version:';
+	@override String get versionLabel => 'Key injector version:';
 	@override late final _Translations$cpds$usbProgress$en usbProgress = _Translations$cpds$usbProgress$en._(_root);
 }
 
@@ -536,8 +537,8 @@ class _Translations$app$appbar$en extends Translations$app$appbar$zh {
 
 	// Translations
 	@override String get paramsInject => 'Params inject';
-	@override String get radioManager => 'Radio manager';
-	@override String get keyManager => 'Key manager';
+	@override String get radioManager => 'Radio Management';
+	@override String get keyManager => 'Key Managementer';
 	@override String get updateCpdc => 'Update CPDC';
 }
 
@@ -560,7 +561,7 @@ class _Translations$pager$radioManager$en extends Translations$pager$radioManage
 	final TranslationsEn _root; // ignore: unused_field
 
 	// Translations
-	@override String get title => 'Radio manager';
+	@override String get title => 'Radio Management';
 	@override String get netNode => 'Net Node';
 	@override String get fileParse => 'File Parse';
 }
@@ -573,7 +574,7 @@ class _Translations$pager$injectEncrypt$en extends Translations$pager$injectEncr
 
 	// Translations
 	@override String get paramPairing => 'Parameter pairing';
-	@override String get keyLoaderManager => 'Key loader';
+	@override String get keyLoaderManager => 'Key injector';
 }
 
 // Path: tips.paramsInject
@@ -583,7 +584,7 @@ class _Translations$tips$paramsInject$en extends Translations$tips$paramsInject$
 	final TranslationsEn _root; // ignore: unused_field
 
 	// Translations
-	@override String get noKeyLoader => 'No Key Loader is available. Please go and add one';
+	@override String get noKeyLoader => 'No key Injector is available. Please go and add one';
 	@override String get noRadio => 'No radio is available. Please go and add one';
 	@override String get selectRadios => 'Please select a radio';
 	@override String get gotoConfig => 'Binding completed. go to configuration now?';
@@ -637,7 +638,7 @@ class _Translations$tableColumn$injectEncrypt$en extends Translations$tableColum
 	final TranslationsEn _root; // ignore: unused_field
 
 	// Translations
-	@override String get parameterPacket => 'Parameter Packet';
+	@override String get parameterPacket => 'Parameter Package';
 	@override String get radio => 'Matching Radio';
 	@override String get consumer => 'Consumer';
 	@override String get location => 'Location';
@@ -685,7 +686,7 @@ class _Translations$button$injectEncrypt$en extends Translations$button$injectEn
 	// Translations
 	@override String get export => 'export';
 	@override String get create => 'Add';
-	@override String get createKeyLoader => 'Add Key Loader';
+	@override String get createKeyLoader => 'Add key Injector';
 }
 
 // Path: Form.radioManager
@@ -719,7 +720,7 @@ class _Translations$Form$paramsInject$en extends Translations$Form$paramsInject$
 	final TranslationsEn _root; // ignore: unused_field
 
 	// Translations
-	@override String get text => 'Key loader';
+	@override String get text => 'Key injector';
 	@override late final _Translations$Form$paramsInject$deviceType$en deviceType = _Translations$Form$paramsInject$deviceType$en._(_root);
 	@override late final _Translations$Form$paramsInject$deviceIp$en deviceIp = _Translations$Form$paramsInject$deviceIp$en._(_root);
 	@override late final _Translations$Form$paramsInject$selectKeyLoader$en selectKeyLoader = _Translations$Form$paramsInject$selectKeyLoader$en._(_root);
@@ -869,11 +870,11 @@ class _Translations$cpds$usbProgress$en extends Translations$cpds$usbProgress$zh
 	@override String get stepReady => 'Ready';
 	@override String get stepTransfer => 'Transfer';
 	@override String get stepComplete => 'Complete';
-	@override String get stepUsb => 'Key loader';
+	@override String get stepUsb => 'Key injector';
 	@override String get completed => 'Completed';
 	@override String get terminated => 'Terminated';
 	@override String get detailPermissionStart => 'Checking USB permission';
-	@override String get detailConnectStart => 'Connecting key loader';
+	@override String get detailConnectStart => 'Connecting key injector';
 	@override String get detailConnectSuccess => 'Connected';
 	@override String get detailConnectFail => 'Connection failed';
 	@override String get detailHandshakeStart => 'Sending LIGHT_GREEN, waiting for FILE_OK';
@@ -898,8 +899,8 @@ class _Translations$cpds$usbProgress$en extends Translations$cpds$usbProgress$zh
 	@override String get detailGreenSuccess => 'Indicator steady on';
 	@override String get detailGreenTimeout => 'Indicator steady on timed out';
 	@override String get detailTransferStart => 'Chunked sending';
-	@override String get detailTransferTimeout => 'File receive timed out, replug the key loader';
-	@override String get detailComplete => 'Key loader received successfully';
+	@override String get detailTransferTimeout => 'File receive timed out, replug the key injector';
+	@override String get detailComplete => 'Key injector received successfully';
 	@override String get detailVerifyTimeout => 'Verification timed out';
 	@override String get detailVerifyFail => 'Verification failed';
 	@override String get detailVerifySaveFail => 'Write failed';
@@ -1051,7 +1052,7 @@ class _Translations$Form$injectEncrypt$name$en extends Translations$Form$injectE
 	final TranslationsEn _root; // ignore: unused_field
 
 	// Translations
-	@override String get label => 'Key loader';
+	@override String get label => 'Key injector';
 	@override String get placeholder => 'Please enter name';
 	@override String get validate => 'Please enter name!';
 }
@@ -1085,6 +1086,6 @@ class _Translations$Form$paramsInject$selectKeyLoader$en extends Translations$Fo
 	final TranslationsEn _root; // ignore: unused_field
 
 	// Translations
-	@override String get text => 'Key loader';
+	@override String get text => 'Key injector';
 	@override String get placeholder => 'Please select';
 }

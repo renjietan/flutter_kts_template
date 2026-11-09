@@ -1140,7 +1140,7 @@ class _CpdsKeyLoaderFileDialogState extends State<CpdsKeyLoaderFileDialog> {
     //       ),
     //       if (_versionText.isNotEmpty)
     //         Text(
-    //           '${CpdsMessages.tr(context, '注钥枪版本号：', 'Key loader version: ', 'رقم إصدار جهاز تحميل المفاتيح: ')}$_versionText',
+    //           '${CpdsMessages.tr(context, '注钥枪版本号：', 'Key injector version: ', 'رقم إصدار جهاز تحميل المفاتيح: ')}$_versionText',
     //           style: TextStyle(color: Colors.white70, fontSize: 13.sp),
     //         ),
     //     ],
