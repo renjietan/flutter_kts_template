@@ -9,7 +9,6 @@ import 'package:flutter_kts_template/components/DropDown/SimpleDarkDropdown/simp
 import 'package:flutter_kts_template/components/button/base.button.dart';
 import 'package:flutter_kts_template/components/dialog/simple.form.dialog.dart';
 import 'package:flutter_kts_template/components/loading/simple.loading.dart';
-import 'package:flutter_kts_template/components/text/text.title.dart';
 import 'package:flutter_kts_template/core/databaseManager/databaseManager.dart';
 import 'package:flutter_kts_template/core/entities/keyLoaderDetails/keyLoaderDetailsEntity.dart';
 import 'package:flutter_kts_template/logger/logger.dart';
@@ -240,10 +239,10 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
     return TableFilterToolbar(
       padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 12.h),
       mainFilters: [
-        Padding(
-          padding: EdgeInsets.only(top: 6.h),
-          child: TextTitle(text: t.pager.radioManager.title),
-        ),
+        // Padding(
+        //   padding: EdgeInsets.only(top: 6.h),
+        //   child: TextTitle(text: t.pager.radioManager.title),
+        // ),
       ],
       trailingActions: [
         SimpleFilterSearchField(

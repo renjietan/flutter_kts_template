@@ -30,6 +30,8 @@ class _RadioManagerPagerState extends State<RadioManagerPager>
 
   AppLocale? _lastLocale;
 
+  final ScrollController _tableScrollController = ScrollController();
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -74,6 +76,13 @@ class _RadioManagerPagerState extends State<RadioManagerPager>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       getList();
     });
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    _tableScrollController.dispose();
+    super.dispose();
   }
 
   @override
@@ -180,29 +189,50 @@ class _RadioManagerPagerState extends State<RadioManagerPager>
           ),
           Divider(height: 1.h, thickness: 1, color: Color(0xFF353A41)),
           Expanded(
-            child: SingleChildScrollView(
-              child: DataTablePlusThemeProvider(
-                theme: _transparentTableTheme,
-                child: DataTablePlus<RadiosEntity>(
-                  items: data,
-                  idGetter: (item) => item.id.toString(),
-                  selectedIds: selectedIds,
-                  allSelected: allSelected,
-                  showCheckboxes: showCheckboxes,
-                  onSelectionChanged: toggleSelection,
-                  onSelectAllChanged: toggleSelectAll,
-                  columns: buildColumns(context),
-                  // 设置未null时,不显示操作列
-                  actionBuilder: buildActionCell,
-                  actionLabel: t.tableColumn.base.actions,
-                  emptyWidget: buildEmptyWidget(context),
-                  // 在列头下方显示[字段描述]
-                  // showColumnInfo: showColumnInfo,
-                  // 显示字段描述, showColumnInfo 设置为 false 时,此处无效
-                  // onToggleColumnInfo: () =>
-                  //     setState(() => showColumnInfo = !showColumnInfo),
-                ),
-              ),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                // 表格内容的最小宽度，不够就横向滚动。
+                // 6 列 × 约 140 宽 ≈ 840，取 900 留点余量，可按实际内容微调
+                final minTableWidth = 900.w;
+                final tableWidth = constraints.maxWidth > minTableWidth
+                    ? constraints.maxWidth
+                    : minTableWidth;
+                return Scrollbar(
+                  controller: _tableScrollController,
+                  child: SingleChildScrollView(
+                    controller: _tableScrollController,
+                    child: SingleChildScrollView(
+                      controller: _tableScrollController,
+                      scrollDirection: Axis.horizontal,
+                      child: DataTablePlusThemeProvider(
+                        theme: _transparentTableTheme,
+                        child: SizedBox(
+                          width: tableWidth,
+                          child: DataTablePlus<RadiosEntity>(
+                            items: data,
+                            idGetter: (item) => item.id.toString(),
+                            selectedIds: selectedIds,
+                            allSelected: allSelected,
+                            showCheckboxes: showCheckboxes,
+                            onSelectionChanged: toggleSelection,
+                            onSelectAllChanged: toggleSelectAll,
+                            columns: buildColumns(context),
+                            // 设置未null时,不显示操作列
+                            actionBuilder: buildActionCell,
+                            actionLabel: t.tableColumn.base.actions,
+                            emptyWidget: buildEmptyWidget(context),
+                            // 在列头下方显示[字段描述]
+                            // showColumnInfo: showColumnInfo,
+                            // 显示字段描述, showColumnInfo 设置为 false 时,此处无效
+                            // onToggleColumnInfo: () =>
+                            //     setState(() => showColumnInfo = !showColumnInfo),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
             ),
           ),
           // 分页

@@ -66,6 +66,7 @@ class _SelfUpdatePageState extends State<SelfUpdatePage> {
   List<InstallPackageEntity> _filtered = const [];
   String _keyword = '';
   int _page = 0;
+  final ScrollController _tableScrollController = ScrollController();
 
   @override
   void initState() {
@@ -76,6 +77,7 @@ class _SelfUpdatePageState extends State<SelfUpdatePage> {
   @override
   void dispose() {
     _searchController.dispose();
+    _tableScrollController.dispose();
     super.dispose();
   }
 
@@ -152,7 +154,9 @@ class _SelfUpdatePageState extends State<SelfUpdatePage> {
               ),
               const Spacer(),
               SizedBox(
-                width: 340.w,
+                width: defaultTargetPlatform != TargetPlatform.windows
+                    ? 290.w
+                    : 340.w,
                 child: CpdsNetworkInterfaceBar(
                   interfaces: widget.interfaces,
                   selectedName: widget.selectedInterfaceName,
@@ -199,7 +203,7 @@ class _SelfUpdatePageState extends State<SelfUpdatePage> {
       builder: (context, constraints) {
         final maxWidth = constraints.maxWidth.isFinite
             ? constraints.maxWidth
-            : 900.0;
+            : 900.0.w;
         const columnSpacing = 24.0;
         const horizontalMargin = 24.0;
         const versionWidth = 96.0;
@@ -218,74 +222,93 @@ class _SelfUpdatePageState extends State<SelfUpdatePage> {
           decoration: const BoxDecoration(
             border: Border(top: BorderSide(color: Color(0xFF353A41), width: 1)),
           ),
-          child: SingleChildScrollView(
-            child: DataTable(
-              dataRowMinHeight: 36.h,
-              dataRowMaxHeight: 36.h,
-              headingRowHeight: 36.h,
-              columnSpacing: columnSpacing,
-              columns: [
-                DataColumn(label: Text(t.selfUpdate.version)),
-                DataColumn(label: Text(t.selfUpdate.fileName)),
-                DataColumn(label: Text(t.selfUpdate.remark)),
-                DataColumn(label: Text(t.selfUpdate.createdAt)),
-                DataColumn(label: Text(t.selfUpdate.action)),
-              ],
-              rows: [
-                for (final entity in items)
-                  DataRow(
-                    cells: [
-                      DataCell(
-                        SizedBox(
-                          width: versionWidth,
-                          child: Text(
-                            localizeDigits(context, entity.version),
-                            style: TextStyle(fontSize: 13.sp),
-                          ),
-                        ),
-                      ),
-                      DataCell(
-                        SizedBox(
-                          width: fileNameWidth,
-                          child: Text(
-                            localizeDigits(context, entity.fileName),
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(fontSize: 13.sp),
-                          ),
-                        ),
-                      ),
-                      DataCell(
-                        SizedBox(
-                          width: remarkWidth,
-                          child: Text(
-                            entity.remark ?? '',
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(fontSize: 13.sp),
-                          ),
-                        ),
-                      ),
-                      DataCell(
-                        SizedBox(
-                          width: timeWidth,
-                          child: Text(
-                            localizeDigits(
-                              context,
-                              _formatTime(entity.createdAt),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final minTableWidth = 900.w;
+              final tableWidth = constraints.maxWidth > minTableWidth
+                  ? constraints.maxWidth
+                  : minTableWidth;
+              return Scrollbar(
+                controller: _tableScrollController,
+                scrollbarOrientation: ScrollbarOrientation.right,
+                child: SingleChildScrollView(
+                  controller: _tableScrollController,
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: SizedBox(
+                      width: tableWidth,
+                      child: DataTable(
+                        dataRowMinHeight: 36.h,
+                        dataRowMaxHeight: 36.h,
+                        headingRowHeight: 36.h,
+                        columnSpacing: columnSpacing.w,
+                        columns: [
+                          DataColumn(label: Text(t.selfUpdate.version)),
+                          DataColumn(label: Text(t.selfUpdate.fileName)),
+                          DataColumn(label: Text(t.selfUpdate.remark)),
+                          DataColumn(label: Text(t.selfUpdate.createdAt)),
+                          DataColumn(label: Text(t.selfUpdate.action)),
+                        ],
+                        rows: [
+                          for (final entity in items)
+                            DataRow(
+                              cells: [
+                                DataCell(
+                                  SizedBox(
+                                    width: versionWidth.w,
+                                    child: Text(
+                                      localizeDigits(context, entity.version),
+                                      style: TextStyle(fontSize: 13.sp),
+                                    ),
+                                  ),
+                                ),
+                                DataCell(
+                                  SizedBox(
+                                    width: fileNameWidth.w,
+                                    child: Text(
+                                      localizeDigits(context, entity.fileName),
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(fontSize: 13.sp),
+                                    ),
+                                  ),
+                                ),
+                                DataCell(
+                                  SizedBox(
+                                    width: remarkWidth.w,
+                                    child: Text(
+                                      entity.remark ?? '',
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(fontSize: 13.sp),
+                                    ),
+                                  ),
+                                ),
+                                DataCell(
+                                  SizedBox(
+                                    width: timeWidth.w,
+                                    child: Text(
+                                      localizeDigits(
+                                        context,
+                                        _formatTime(entity.createdAt),
+                                      ),
+                                      style: TextStyle(fontSize: 13.sp),
+                                    ),
+                                  ),
+                                ),
+                                DataCell(
+                                  SizedBox(
+                                    width: actionWidth.w,
+                                    child: _buildRowActions(entity),
+                                  ),
+                                ),
+                              ],
                             ),
-                            style: TextStyle(fontSize: 13.sp),
-                          ),
-                        ),
+                        ],
                       ),
-                      DataCell(
-                        SizedBox(
-                          width: actionWidth,
-                          child: _buildRowActions(entity),
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
-              ],
-            ),
+                ),
+              );
+            },
           ),
         );
       },
@@ -330,15 +353,12 @@ class _SelfUpdatePageState extends State<SelfUpdatePage> {
       },
     );
     if (defaultTargetPlatform != TargetPlatform.windows) {
-      await Navigator.of(context).push<void>(
-        MaterialPageRoute(builder: (_) => editDialog),
-      );
+      await Navigator.of(
+        context,
+      ).push<void>(MaterialPageRoute(builder: (_) => editDialog));
       return;
     }
-    await showDialog<void>(
-      context: context,
-      builder: (_) => editDialog,
-    );
+    await showDialog<void>(context: context, builder: (_) => editDialog);
   }
 
   Future<void> _confirmDelete(InstallPackageEntity entity) async {
