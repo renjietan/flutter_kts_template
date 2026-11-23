@@ -552,6 +552,7 @@ mixin RadioManagerMixin on State<RadioManagerPager> {
         maskColor: Colors.black54,
         fields: fields,
         onConfirm: onConfirm,
+        backgroundColor: Color(0xFF20262D),
       );
     }
   }

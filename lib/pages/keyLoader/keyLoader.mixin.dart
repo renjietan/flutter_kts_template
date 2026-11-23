@@ -175,6 +175,7 @@ mixin KeyLoaderMixin on State<KeyLoaderPager> {
         confirmBtnMinWidth: 160,
         fields: fields,
         onConfirm: onConfirm,
+        backgroundColor: Color(0xFF20262D),
       );
     }
   }

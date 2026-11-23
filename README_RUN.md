@@ -22,8 +22,10 @@
 - 推送文件到模拟器或真机: 
   - adb devices
   - adb push your_file.txt /sdcard/Download/
-  - adb shell am broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE -d file:///sdcard/Download/xxx.zip
-  - adb shell run-as com.hytera.cpd ls -l /data/user/0/com.hytera.cpd/app_flutter/CPD/uploads
+  - 推送后，发出广播，立即更新文件列表
+    - adb shell am broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE -d file:///sdcard/Download/xxx.zip
+  - 查询应用私有目录列表：
+    - adb shell run-as com.hytera.cpd ls -l /data/user/0/com.hytera.cpd/app_flutter/CPD/uploads
 - 设置
   - 平板
     - adb shell wm size 1920x1200

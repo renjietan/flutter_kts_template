@@ -1067,11 +1067,32 @@ class _FutureWarriorDeviceRow extends StatelessWidget {
               SizedBox(height: 6.h),
               Align(
                 alignment: Alignment.centerRight,
-                child: BaseButton(
-                  label: t.cpds.distribute,
-                  minWidth: 76.w,
-                  height: 30.h,
-                  onPressed: distributeDisabled ? null : onDistribute,
+                // child: BaseButton(
+                //   label: t.cpds.distribute,
+                //   minWidth: 76.w,
+                //   height: 30.h,
+                //   onPressed: distributeDisabled ? null : onDistribute,
+                // ),
+                child: Padding(
+                  padding: EdgeInsets.only(right: 10.w),
+                  child: TextButton(
+                    onPressed: distributeDisabled ? null : onDistribute,
+                    style: TextButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                        // borderRadius: .all(Radius.circular(20.sp)),
+                        side: BorderSide(
+                          color: distributeDisabled
+                              ? Colors.white24
+                              : Color(0xFF00A2E9),
+                          width: 1.sp,
+                        ),
+                      ),
+                    ),
+                    child: Text(
+                      t.cpds.distribute,
+                      style: TextStyle(fontSize: 11.sp),
+                    ),
+                  ),
                 ),
               ),
             ],
