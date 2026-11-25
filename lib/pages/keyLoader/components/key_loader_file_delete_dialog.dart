@@ -791,7 +791,7 @@ class _KeyLoaderFileDeleteDialogState extends State<KeyLoaderFileDeleteDialog> {
           height: 36.h,
           onPressed: _reconnect,
         ),
-      if (showDelete)
+      if (showDelete) ...[
         BaseButton(
           label: _tr('删除', 'Delete', 'حذف'),
           height: 36.h,
@@ -803,6 +803,51 @@ class _KeyLoaderFileDeleteDialogState extends State<KeyLoaderFileDeleteDialog> {
             Color(0xFFF56C6C),
           ],
         ),
+        BaseButton(
+          label: _tr('删除通信参数包', 'Delete', 'حذف'),
+          height: 36.h,
+          onPressed: _selected.isEmpty ? null : _deleteSelectedFiles,
+          colors: [
+            Color(0xFFF56C6C),
+            Color(0xFFF56C6C),
+            Color(0xFFF56C6C),
+            Color(0xFFF56C6C),
+          ],
+        ),
+        BaseButton(
+          label: _tr('删除密钥包', 'Delete', 'حذف'),
+          height: 36.h,
+          onPressed: _selected.isEmpty ? null : _deleteSelectedFiles,
+          colors: [
+            Color(0xFFF56C6C),
+            Color(0xFFF56C6C),
+            Color(0xFFF56C6C),
+            Color(0xFFF56C6C),
+          ],
+        ),
+        BaseButton(
+          label: _tr('删除其他文件', 'Delete', 'حذف'),
+          height: 36.h,
+          onPressed: _selected.isEmpty ? null : _deleteSelectedFiles,
+          colors: [
+            Color(0xFFF56C6C),
+            Color(0xFFF56C6C),
+            Color(0xFFF56C6C),
+            Color(0xFFF56C6C),
+          ],
+        ),
+        BaseButton(
+          label: _tr('清空', 'Clear', 'حذف'),
+          height: 36.h,
+          onPressed: _selected.isEmpty ? null : _deleteSelectedFiles,
+          colors: [
+            Color(0xFFF56C6C),
+            Color(0xFFF56C6C),
+            Color(0xFFF56C6C),
+            Color(0xFFF56C6C),
+          ],
+        ),
+      ],
     ];
 
     if (defaultTargetPlatform == TargetPlatform.windows) {
