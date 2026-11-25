@@ -1073,28 +1073,32 @@ class _FutureWarriorDeviceRow extends StatelessWidget {
                 //   height: 30.h,
                 //   onPressed: distributeDisabled ? null : onDistribute,
                 // ),
-                child: Padding(
-                  padding: EdgeInsets.only(right: 10.w),
-                  child: TextButton(
-                    onPressed: distributeDisabled ? null : onDistribute,
-                    style: TextButton.styleFrom(
-                      shape: RoundedRectangleBorder(
-                        // borderRadius: .all(Radius.circular(20.sp)),
-                        side: BorderSide(
-                          color: distributeDisabled
-                              ? Colors.white24
-                              : Color(0xFF00A2E9),
-                          width: 1.sp,
-                        ),
+                child: TextButton(
+                  onPressed: distributeDisabled ? null : onDistribute,
+                  style: TextButton.styleFrom(
+                    minimumSize: Size.zero, // 移除最小尺寸约束
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 14.w,
+                      vertical: 14.h,
+                    ),
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: .all(Radius.circular(5.sp)),
+                      side: BorderSide(
+                        color: distributeDisabled
+                            ? Colors.white24
+                            : Color(0xFF00A2E9),
+                        width: 1.sp,
                       ),
                     ),
-                    child: Text(
-                      t.cpds.distribute,
-                      style: TextStyle(fontSize: 11.sp),
-                    ),
+                  ),
+                  child: Text(
+                    t.cpds.distribute,
+                    style: TextStyle(fontSize: 11.sp),
                   ),
                 ),
               ),
+              SizedBox(height: 6.h),
             ],
           ],
         ),
