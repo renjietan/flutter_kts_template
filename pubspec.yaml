@@ -113,6 +113,8 @@ dependencies:
   protobuf: ^6.0.0
   ## 获取应用版本信息
   package_info_plus: ^9.0.1
+  ## 让 Flutter 桌面应用可以调整、移动、显示、隐藏和装饰自己的窗口。
+  window_manager: ^0.5.2
 
 dev_dependencies:
   flutter_test:

@@ -11,6 +11,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:unified_popups/unified_popups.dart';
+import 'package:window_manager/window_manager.dart';
 
 import '../i18n/handle/translations.g.dart';
 import '../logger/logger.dart';
@@ -25,6 +26,23 @@ class DefaultApp {
   static void run() async {
     WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
     FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
+    final isWindows = defaultTargetPlatform == TargetPlatform.windows;
+    if (isWindows) {
+      await windowManager.ensureInitialized();
+      // 3. 配置窗口选项，核心是 minimumSize
+      const windowOptions = WindowOptions(
+        size: Size(1000, 700), // 窗口启动时的初始尺寸
+        minimumSize: Size(640, 480), // 用户可将窗口缩放到的最小尺寸
+        center: true, // 窗口居中
+        // titleBarStyle: TitleBarStyle.normal, // 保留原生标题栏（默认）
+      );
+
+      // 4. 等待窗口准备就绪并显示
+      await windowManager.waitUntilReadyToShow(windowOptions, () async {
+        await windowManager.show();
+        await windowManager.focus();
+      });
+    }
     await GlobalLogger.init();
     await Shared.init();
     final savedLocale = Shared.getLocale();

@@ -313,12 +313,61 @@ class _KeyLoaderFileDeleteDialogState extends State<KeyLoaderFileDeleteDialog> {
     });
   }
 
-  Future<void> _deleteSelectedFiles() async {
+  Future<void> _deleteSelectedFiles(String type) async {
     if (_deleting) return;
-    final targets = _files
-        .where((file) => _selected.contains(file.name) && !file.deleted)
-        .toList();
-    if (targets.isEmpty) return;
+    var targets = [];
+    if (type == 'delete') {
+      targets = _files
+          .where((file) => _selected.contains(file.name) && !file.deleted)
+          .toList();
+    } else if (type == "delete_cpp") {
+      targets = _files
+          .where((file) => file.name.contains(".cpdata") && !file.deleted)
+          .toList();
+    } else if (type == "delete_key") {
+      targets = _files
+          .where((file) => file.name.contains(".key") && !file.deleted)
+          .toList();
+    } else if (type == "delete_other") {
+      targets = _files
+          .where((file) => file.name.contains(".pad") && !file.deleted)
+          .toList();
+    } else {
+      // clear
+      targets = _files.where((file) => !file.deleted).toList();
+    }
+    if (targets.isEmpty) {
+      if (!mounted || _closed) return;
+      await showDialog<bool>(
+        context: context,
+        barrierDismissible: false,
+        builder: (dialogContext) {
+          var closed = false;
+          return AlertDialog(
+            backgroundColor: const Color(0xFF20262D),
+            titlePadding: EdgeInsets.zero,
+            content: Text(
+              _tr('无可删除的文件', 'No files to delete', 'لا توجد ملفات قابلة للحذف'),
+              style: TextStyle(color: Colors.white70, fontSize: 13.sp),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  if (closed) return;
+                  closed = true;
+                  Navigator.of(dialogContext).pop(false);
+                },
+                child: Text(
+                  _tr('取消', 'Cancel', 'إلغاء'),
+                  style: const TextStyle(color: Colors.white70),
+                ),
+              ),
+            ],
+          );
+        },
+      );
+      return;
+    }
 
     final manager = _manager;
     if (manager == null || !(await manager.isConnected())) {
@@ -792,61 +841,77 @@ class _KeyLoaderFileDeleteDialogState extends State<KeyLoaderFileDeleteDialog> {
           onPressed: _reconnect,
         ),
       if (showDelete) ...[
-        BaseButton(
-          label: _tr('删除', 'Delete', 'حذف'),
-          height: 36.h,
-          onPressed: _selected.isEmpty ? null : _deleteSelectedFiles,
-          colors: [
-            Color(0xFFF56C6C),
-            Color(0xFFF56C6C),
-            Color(0xFFF56C6C),
-            Color(0xFFF56C6C),
+        PopupMenuButton<String>(
+          onSelected: (value) {
+            _deleteSelectedFiles(value);
+          },
+          itemBuilder: (context) => [
+            PopupMenuItem(
+              value: 'delete',
+              height: 36.h,
+              child: Text(
+                _tr('删除', 'Delete', 'حذف'),
+                style: TextStyle(fontSize: 11.sp, color: Color(0xFFF56C6C)),
+              ),
+            ),
+            PopupMenuItem(
+              value: 'delete_cpp',
+              height: 36.h,
+              child: Text(
+                _tr('删除通信参数包', 'Delete cpp files', 'حذف حزمة معلمات الاتصال'),
+                style: TextStyle(fontSize: 11.sp, color: Color(0xFFF56C6C)),
+              ),
+            ),
+            PopupMenuItem(
+              value: 'delete_key',
+              height: 36.h,
+              child: Text(
+                _tr('删除密钥包', 'Delete key files', 'حذف حزمة المفاتيح'),
+                style: TextStyle(fontSize: 11.sp, color: Color(0xFFF56C6C)),
+              ),
+            ),
+            PopupMenuItem(
+              value: 'delete_other',
+              height: 36.h,
+              child: Text(
+                _tr('删除其他文件', 'Delete other files', 'حذف الملفات الأخرى'),
+                style: TextStyle(fontSize: 11.sp, color: Color(0xFFF56C6C)),
+              ),
+            ),
+            PopupMenuItem(
+              value: 'clear',
+              height: 36.h,
+              child: Text(
+                _tr('清空', 'Clear', 'مسح'),
+                style: TextStyle(fontSize: 11.sp, color: Color(0xFFF56C6C)),
+              ),
+            ),
           ],
+          child: Padding(
+            padding: EdgeInsets.all(8),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  _tr('删除', 'Delete', 'حذف'),
+                  style: TextStyle(fontSize: 11.sp, color: Color(0xFFF56C6C)),
+                ),
+                Icon(Icons.arrow_drop_down),
+              ],
+            ),
+          ),
         ),
-        BaseButton(
-          label: _tr('删除通信参数包', 'Delete', 'حذف'),
-          height: 36.h,
-          onPressed: _selected.isEmpty ? null : _deleteSelectedFiles,
-          colors: [
-            Color(0xFFF56C6C),
-            Color(0xFFF56C6C),
-            Color(0xFFF56C6C),
-            Color(0xFFF56C6C),
-          ],
-        ),
-        BaseButton(
-          label: _tr('删除密钥包', 'Delete', 'حذف'),
-          height: 36.h,
-          onPressed: _selected.isEmpty ? null : _deleteSelectedFiles,
-          colors: [
-            Color(0xFFF56C6C),
-            Color(0xFFF56C6C),
-            Color(0xFFF56C6C),
-            Color(0xFFF56C6C),
-          ],
-        ),
-        BaseButton(
-          label: _tr('删除其他文件', 'Delete', 'حذف'),
-          height: 36.h,
-          onPressed: _selected.isEmpty ? null : _deleteSelectedFiles,
-          colors: [
-            Color(0xFFF56C6C),
-            Color(0xFFF56C6C),
-            Color(0xFFF56C6C),
-            Color(0xFFF56C6C),
-          ],
-        ),
-        BaseButton(
-          label: _tr('清空', 'Clear', 'حذف'),
-          height: 36.h,
-          onPressed: _selected.isEmpty ? null : _deleteSelectedFiles,
-          colors: [
-            Color(0xFFF56C6C),
-            Color(0xFFF56C6C),
-            Color(0xFFF56C6C),
-            Color(0xFFF56C6C),
-          ],
-        ),
+        // BaseButton(
+        //   label: _tr('删除其他文件', 'Delete other files', 'حذف الملفات الأخرى'),
+        //   height: 36.h,
+        //   onPressed: _selected.isEmpty ? null : _deleteSelectedFiles,
+        //   colors: [
+        //     Color(0xFFF56C6C),
+        //     Color(0xFFF56C6C),
+        //     Color(0xFFF56C6C),
+        //     Color(0xFFF56C6C),
+        //   ],
+        // ),
       ],
     ];
 

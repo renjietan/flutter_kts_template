@@ -13,7 +13,6 @@ import '../../api/RadiosManagerApi.dart';
 import '../../components/TextField/simple.form.textfield.dart';
 import '../../components/dialog/simple.form.dialog.dart';
 import '../../components/loading/simple.loading.dart';
-import '../../core/cpds/service/cpds_manager.dart';
 import '../../core/entities/keyLoaders/keyLoadersEntity.dart';
 import '../../i18n/handle/translations.g.dart';
 import '../../logger/logger.dart';
@@ -31,7 +30,7 @@ mixin KeyLoaderMixin on State<KeyLoaderPager> {
   final nameTextEditController = TextEditingController();
 
   void getList() {
-    if (!CpdsManager.instance.hasPackage) return;
+    // if (!CpdsManager.instance.hasPackage) return;
     KeyLoadersApi.getAll().then((res) {
       if (mounted) {
         context.read<KeyLoaderProvider>().setKeyLoaders = res.data.list;
