@@ -17,6 +17,7 @@ import 'package:flutter_kts_template/components/loading/simple.loading.dart';
 import 'package:flutter_kts_template/components/step/step.progress.dialog.dart';
 import 'package:flutter_kts_template/components/step/step.progress.model.dart';
 import 'package:flutter_kts_template/config/config.dart';
+import 'package:flutter_kts_template/core/cpds/service/cpds_manager.dart';
 import 'package:flutter_kts_template/core/entities/keyLoaderDetails/keyLoaderDetailsEntity.dart';
 import 'package:flutter_kts_template/core/entities/keyLoaders/keyLoadersEntity.dart';
 import 'package:flutter_kts_template/core/entities/radios/radiosEntity.dart';
@@ -91,6 +92,10 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
       _radiosProvider = provider;
       provider.addListener(_onRadiosChanged);
     });
+  }
+
+  String _tr(String zh, String en, String ar) {
+    return CpdsMessages.tr(context, zh, en, ar);
   }
 
   void _onRadiosChanged() {
@@ -772,11 +777,7 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
         return false;
       }
       if (spaceReadyResult != _UsbReplyResult.ok) {
-        controller?.addLine(
-          usb.detailError,
-          color: failColor,
-          number: '4-5',
-        );
+        controller?.addLine(usb.detailError, color: failColor, number: '4-5');
         controller?.appendStep(usb.terminated, terminated: true);
         return false;
       }
@@ -795,9 +796,7 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
         return false;
       }
       try {
-        spaceLine = await reader.nextLine(
-          timeout: const Duration(seconds: 3),
-        );
+        spaceLine = await reader.nextLine(timeout: const Duration(seconds: 3));
       } on TimeoutException {
         controller?.addLine(
           transferTimeoutText,
@@ -836,11 +835,7 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
         controller?.appendStep(usb.terminated, terminated: true);
         return false;
       } else {
-        controller?.addLine(
-          usb.detailError,
-          color: failColor,
-          number: '4-5',
-        );
+        controller?.addLine(usb.detailError, color: failColor, number: '4-5');
         controller?.appendStep(usb.terminated, terminated: true);
         return false;
       }
@@ -1309,6 +1304,36 @@ class _KeyLoaderDetailsTableState extends State<KeyLoaderDetailsTable> {
 
   Future<void> _exportSelected() async {
     if (_exporting) return;
+    if (!CpdsManager.instance.hasPackage) {
+      await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          backgroundColor: const Color(0xFF20262D),
+          title: Text(
+            t.tips.title,
+            style: TextStyle(color: Colors.white, fontSize: 17.sp),
+          ),
+          content: Text(
+            _tr(
+              "请先导入通信参数包!",
+              "Please import the communication parameter package first",
+              "يرجى أولاً استيراد حزمة معلمات الاتصال",
+            ),
+            style: TextStyle(color: Colors.white70, fontSize: 13.sp),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: Text(
+                t.tips.cancel,
+                style: TextStyle(color: Colors.white70, fontSize: 13.sp),
+              ),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
     setState(() {
       _exporting = true;
     });
